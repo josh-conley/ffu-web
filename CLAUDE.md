@@ -79,23 +79,19 @@ npm run preview   # preview production build
 
 ---
 
-## Status (as of initial scaffold)
-**Phase 0 (scaffold) — in progress.** Done: Vite React-TS app created; deps installed (react-router-dom,
-tailwindcss + @tailwindcss/vite, vitest + @vitest/coverage-v8 + jsdom + Testing Library); base configs are
-the create-vite defaults; this CLAUDE.md added.
+## Status
+**Phase 0 (scaffold) — ✅ complete** (commit `ba3e443`). Full TS `strict` + `noUncheckedIndexedAccess` +
+`@/*` alias; `vite.config.ts` wired with Tailwind v4, base `'/'`, and Vitest (jsdom + `src/test/setup.ts`);
+ESLint caps `max-lines` (300) / `max-lines-per-function` (80) / `complexity` (12) + `no-explicit-any`, with
+vitest globals for tests; Tailwind entry CSS w/ class-based `dark` variant; layer folders
+`src/{config,data,selectors,hooks,components,pages}` (each with a README); minimal BrowserRouter shell
+(`Layout` + `Overview`) + a smoke test; `public/404.html` SPA fallback + index.html redirect decoder;
+scripts `test`/`test:coverage`/`typecheck`; CI (`lint → typecheck → test → build`). All four gates green.
 
-**Finish Phase 0 next (first task next session):**
-- Enable full TS `strict` (the generated tsconfig.app.json lacks `"strict": true`); add `noUncheckedIndexedAccess`; add `@/*` path alias.
-- `vite.config.ts`: add Tailwind plugin, `@` alias, `base: '/'`, and Vitest config (jsdom + setup file).
-- ESLint flat config: add `max-lines`, `max-lines-per-function`, `complexity` rules; vitest globals for tests.
-- Tailwind v4 entry CSS (`@import "tailwindcss";`) + dark-mode variant; remove create-vite demo boilerplate.
-- Create folder structure `src/{config,data,selectors,hooks,components,pages}` + a minimal BrowserRouter shell + `public/404.html`.
-- `package.json` scripts: `test`, `test:coverage`, `typecheck`.
-- `.github/workflows/ci.yml`: install → lint → typecheck → test → build.
-
-**Then Phase 1 (the real first milestone):** copy old inputs into a throwaway `legacy-source/` (old
-`public/data` + `constants.ts`), define normalized domain types, write `migrate-to-v2` + a **per-game**
-validation harness (zero-diff vs legacy) before any UI. See the plan for the full schema.
+**Phase 1 (the real first milestone) — in progress.** Copy old inputs into a throwaway `legacy-source/`
+(old `public/data` + `constants.ts`), define normalized domain types (`src/data/types.ts`), write
+`scripts/migrate-to-v2.mjs` + a **per-game** validation harness (zero-diff vs legacy) before any UI. See
+the plan for the full schema.
 
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned

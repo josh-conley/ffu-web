@@ -13,6 +13,10 @@ dist-ssr
 coverage
 *.local
 
+# Throwaway Phase 1 migration inputs (reproducible from sibling ffu-app repo).
+# Deleted once per-game validation passes — see legacy-source/README.md.
+legacy-source
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

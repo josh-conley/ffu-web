@@ -19,7 +19,8 @@ const vitestGlobals = {
 }
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // `legacy-source` is throwaway old-repo code (gitignored) — not ours to lint.
+  globalIgnores(['dist', 'legacy-source']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
