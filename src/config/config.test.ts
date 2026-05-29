@@ -7,8 +7,12 @@ import {
   playoffWeeks,
   regularSeasonWeeks,
   seasonLength,
+  getOwner,
+  formatOwner,
+  ownerNames,
   MEMBERS,
   SEASONS,
+  OWNERS,
 } from './index'
 
 describe('member registry', () => {
@@ -53,6 +57,27 @@ describe('season registry', () => {
 
   it('covers all 20 legacy tier-seasons', () => {
     expect(SEASONS).toHaveLength(20)
+  })
+})
+
+describe('owners', () => {
+  it('has unique owner ids', () => {
+    const ids = OWNERS.map((o) => o.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('every ownerId referenced by a member resolves to an Owner', () => {
+    for (const m of MEMBERS) {
+      for (const o of m.owners) {
+        expect(getOwner(o.ownerId), `${m.ffuId} → ${o.ownerId}`).toBeDefined()
+      }
+    }
+  })
+
+  it('formats and resolves the Minutemen owner (Josh C.)', () => {
+    expect(formatOwner({ id: 'x', firstName: 'Josh', lastInitial: 'C' })).toBe('Josh C.')
+    expect(ownerNames('ffu-023')).toEqual(['Josh C.'])
+    expect(ownerNames('ffu-002')).toEqual([]) // not yet collected
   })
 })
 
