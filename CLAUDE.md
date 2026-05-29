@@ -88,10 +88,23 @@ vitest globals for tests; Tailwind entry CSS w/ class-based `dark` variant; laye
 (`Layout` + `Overview`) + a smoke test; `public/404.html` SPA fallback + index.html redirect decoder;
 scripts `test`/`test:coverage`/`typecheck`; CI (`lint → typecheck → test → build`). All four gates green.
 
-**Phase 1 (the real first milestone) — in progress.** Copy old inputs into a throwaway `legacy-source/`
-(old `public/data` + `constants.ts`), define normalized domain types (`src/data/types.ts`), write
-`scripts/migrate-to-v2.mjs` + a **per-game** validation harness (zero-diff vs legacy) before any UI. See
-the plan for the full schema.
+**Phase 1 (the big de-risk) — ✅ core complete** (commits `b88fd48`, `4484ace`). Normalized domain types
+authored (`src/config/types.ts`, `src/data/types.ts`); throwaway `legacy-source/` snapshot in place
+(gitignored); `scripts/migrate-to-v2.mjs` emits 20 normalized seasons + 20 drafts + `seasons.json` into
+`public/data`, collapsing dual IDs to one `ffuId` and merging Team Dogecoin (ffu-032→**ffu-031**, confirmed
+w/ user); `scripts/validate-migration.mjs` is the per-game harness → **zero diffs across all 20
+tier-seasons** (per-game members+scores, seed/record/points/placement/promo/releg, derived high/low,
+drafts). Run via `npm run migrate` / `npm run validate`.
+- Data realities (differ from plan assumptions): **divisions exist only in 2025**; legacy standings
+  high/low span ALL games incl. playoffs (not regular-season only).
+- `legacy-source/` kept (gitignored) until the schema is locked through Phase 2/3, then delete.
+
+**Next — finish Phase 1 tail + Phase 2 (data layer):**
+- Carry over reference data (`public/data/players`, `public/data/historical-teams`, `public/team-logos`)
+  from `ffu-app` (needed by Drafts/roster, deferred from Phase 0).
+- Author the TS config source of truth (`members.ts`/`seasons.ts`) + emit JSON mirror; build
+  `LeagueDataProvider`/`StaticFileProvider` (async, domain-phrased) + `LineupProvider`; thin hooks.
+- **Owner names still needed from user** to populate the `Owner[]` model (display-only; not blocking).
 
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned
