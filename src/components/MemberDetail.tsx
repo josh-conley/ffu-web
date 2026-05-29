@@ -45,17 +45,13 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
   )
 }
 
-export function MemberDetail({ career, history, onBack }: { career: CareerStats; history: MemberSeason[]; onBack: () => void }) {
+export function MemberDetail({ career, history }: { career: CareerStats; history: MemberSeason[] }) {
   const member = getMember(career.memberId)
   const owners = ownerNames(career.memberId)
   const tenure = career.firstYear === null ? '' : `${career.firstYear}–${career.lastYear} · ${career.seasons} seasons`
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={onBack} className="text-sm text-slate-500 hover:underline dark:text-slate-400">
-        ← All members
-      </button>
-
       <header className="flex items-center gap-4">
         <TeamLogo ffuId={career.memberId} size={48} />
         <div>

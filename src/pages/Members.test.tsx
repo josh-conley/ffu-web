@@ -42,3 +42,9 @@ it('shows a member detail with derived debut year + owner', async () => {
   expect(screen.getByText(/Josh · 2018–2025/)).toBeInTheDocument() // owner (first-name only) + derived tenure
   expect(screen.getByText(/2018–2025 · 8 seasons/)).toBeInTheDocument() // derived tenure
 })
+
+it('shows a head-to-head comparison when ?vs is set', async () => {
+  renderAt('/members?member=ffu-023&vs=ffu-009')
+  await waitFor(() => expect(screen.getByText('Head-to-Head')).toBeInTheDocument())
+  expect(screen.getByText('Championships')).toBeInTheDocument() // career compare row
+})
