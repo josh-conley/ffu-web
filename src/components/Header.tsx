@@ -8,6 +8,7 @@ const NAV = [
   { to: '/matchups', label: 'Matchups', end: false },
   { to: '/records', label: 'Records', end: false },
   { to: '/members', label: 'Members', end: false },
+  { to: '/all-time', label: 'All-Time', end: false },
 ]
 
 export function Header() {
