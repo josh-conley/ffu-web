@@ -103,12 +103,23 @@ drafts). Run via `npm run migrate` / `npm run validate`.
   playoff concern (deferred).
 - `legacy-source/` kept (gitignored) until the schema is locked through Phase 2/3, then delete.
 
-**Next — finish Phase 1 tail + Phase 2 (data layer):**
-- Carry over reference data (`public/data/players`, `public/data/historical-teams`, `public/team-logos`)
-  from `ffu-app` (needed by Drafts/roster, deferred from Phase 0).
-- Author the TS config source of truth (`members.ts`/`seasons.ts`) + emit JSON mirror; build
-  `LeagueDataProvider`/`StaticFileProvider` (async, domain-phrased) + `LineupProvider`; thin hooks.
-- **Owner names still needed from user** to populate the `Owner[]` model (display-only; not blocking).
+**Phase 2 (data layer) — ✅ core complete** (commits `ad06ed4`, `5834a09`).
+- **Config** (`src/config/`): `members.ts` (63 franchises, ffu-031 holds both Dogecoin accounts),
+  `seasons.ts` (20 tier-seasons, era + hasDivisions folded in), `eras.ts` (single reader of era rules),
+  `index.ts` helpers (`getMember`, `nameForYear`, `memberBySleeperId`, `getSeasonMeta`, `tiersForYear`) +
+  tests. Data files are pure/regenerable; helpers separate.
+- **Provider + hooks** (`src/data/`, `src/hooks/`): `LeagueDataProvider` (async, domain-phrased) +
+  `StaticFileProvider` (reads `public/data`, coalesces reads, validates at the boundary via `validate.ts`) +
+  `provider` singleton; `useSeasons`/`useSeason`/`useDraft` over `useAsyncData`. Tested against real files.
+- **Deliberate deviations from plan (documented why):** (a) TS config is imported directly (typed, sync)
+  rather than fetched as a JSON mirror — the mirror is deferred (no consumer until a real backend); (b)
+  reference-data carry-over (players 30MB / historical-teams / team-logos) deferred to Phase 4 where the
+  consumers + size/naming decisions live; (c) `LineupProvider` deferred (post-core roster modal).
+- **Owner names still needed from user** to populate `Member.owners[]` (stubbed `[]`; display-only, not blocking).
+
+**Next — Phase 3 (selectors):** pure, memoized, tested derivations over the validated data —
+`standings` (regular-season ordering + tiebreakers + division seeding), `upr`, `records`, `headToHead`,
+`career`. Port logic from old `ranking.ts`/`upr-calculator.ts`; unit-test against known seasons.
 
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned
