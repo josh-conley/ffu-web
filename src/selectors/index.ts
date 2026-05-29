@@ -1,0 +1,7 @@
+// Public API of the selectors layer — pure, tested derivations over validated season data.
+export * from './games'
+export * from './upr'
+export * from './records'
+export * from './standings'
+export * from './headToHead'
+export * from './career'
