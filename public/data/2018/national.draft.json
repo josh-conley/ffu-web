@@ -1,0 +1,2184 @@
+{
+  "schemaVersion": 1,
+  "tier": "NATIONAL",
+  "year": "2018",
+  "draftId": "espn-2018-national-draft",
+  "type": "snake",
+  "rounds": 15,
+  "draftOrder": {
+    "ffu-051": 1,
+    "ffu-041": 2,
+    "ffu-009": 3,
+    "ffu-031": 4,
+    "ffu-h03": 5,
+    "ffu-045": 6,
+    "ffu-042": 7,
+    "ffu-h08": 8,
+    "ffu-024": 9,
+    "ffu-h06": 10,
+    "ffu-h02": 11,
+    "ffu-010": 12
+  },
+  "picks": [
+    {
+      "overall": 1,
+      "round": 1,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-ezekiel-elliott",
+        "name": "Ezekiel Elliott",
+        "position": "RB",
+        "nflTeam": "DAL"
+      }
+    },
+    {
+      "overall": 2,
+      "round": 1,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-le'veon-bell",
+        "name": "Le'Veon Bell",
+        "position": "RB",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 3,
+      "round": 1,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-todd-gurley",
+        "name": "Todd Gurley",
+        "position": "RB",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 4,
+      "round": 1,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-antonio-brown",
+        "name": "Antonio Brown",
+        "position": "WR",
+        "nflTeam": "PIT"
+      }
+    },
+    {
+      "overall": 5,
+      "round": 1,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-david-johnson",
+        "name": "David Johnson",
+        "position": "RB",
+        "nflTeam": "ARI"
+      }
+    },
+    {
+      "overall": 6,
+      "round": 1,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-saquon-barkley",
+        "name": "Saquon Barkley",
+        "position": "RB",
+        "nflTeam": "NYG"
+      }
+    },
+    {
+      "overall": 7,
+      "round": 1,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-alvin-kamara",
+        "name": "Alvin Kamara",
+        "position": "RB",
+        "nflTeam": "NO"
+      }
+    },
+    {
+      "overall": 8,
+      "round": 1,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-kareem-hunt",
+        "name": "Kareem Hunt",
+        "position": "RB",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 9,
+      "round": 1,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-julio-jones",
+        "name": "Julio Jones",
+        "position": "WR",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 10,
+      "round": 1,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-leonard-fournette",
+        "name": "Leonard Fournette",
+        "position": "RB",
+        "nflTeam": "JAX"
+      }
+    },
+    {
+      "overall": 11,
+      "round": 1,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-deandre-hopkins",
+        "name": "DeAndre Hopkins",
+        "position": "WR",
+        "nflTeam": "HOU"
+      }
+    },
+    {
+      "overall": 12,
+      "round": 1,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-odell-beckham",
+        "name": "Odell Beckham",
+        "position": "WR",
+        "nflTeam": "NYG"
+      }
+    },
+    {
+      "overall": 13,
+      "round": 2,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-dalvin-cook",
+        "name": "Dalvin Cook",
+        "position": "RB",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 14,
+      "round": 2,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-keenan-allen",
+        "name": "Keenan Allen",
+        "position": "WR",
+        "nflTeam": "LAC"
+      }
+    },
+    {
+      "overall": 15,
+      "round": 2,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-melvin-gordon",
+        "name": "Melvin Gordon",
+        "position": "RB",
+        "nflTeam": "LAC"
+      }
+    },
+    {
+      "overall": 16,
+      "round": 2,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-christian-mccaffrey",
+        "name": "Christian McCaffrey",
+        "position": "RB",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 17,
+      "round": 2,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-devonta-freeman",
+        "name": "Devonta Freeman",
+        "position": "RB",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 18,
+      "round": 2,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-michael-thomas",
+        "name": "Michael Thomas",
+        "position": "WR",
+        "nflTeam": "NO"
+      }
+    },
+    {
+      "overall": 19,
+      "round": 2,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-a.j.-green",
+        "name": "A.J. Green",
+        "position": "WR",
+        "nflTeam": "CIN"
+      }
+    },
+    {
+      "overall": 20,
+      "round": 2,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-davante-adams",
+        "name": "Davante Adams",
+        "position": "WR",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 21,
+      "round": 2,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-mike-evans",
+        "name": "Mike Evans",
+        "position": "WR",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 22,
+      "round": 2,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-rob-gronkowski",
+        "name": "Rob Gronkowski",
+        "position": "TE",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 23,
+      "round": 2,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-t.y.-hilton",
+        "name": "T.Y. Hilton",
+        "position": "WR",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 24,
+      "round": 2,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-lesean-mccoy",
+        "name": "LeSean McCoy",
+        "position": "RB",
+        "nflTeam": "BUF"
+      }
+    },
+    {
+      "overall": 25,
+      "round": 3,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-demaryius-thomas",
+        "name": "Demaryius Thomas",
+        "position": "WR",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 26,
+      "round": 3,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-tyreek-hill",
+        "name": "Tyreek Hill",
+        "position": "WR",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 27,
+      "round": 3,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-joe-mixon",
+        "name": "Joe Mixon",
+        "position": "RB",
+        "nflTeam": "CIN"
+      }
+    },
+    {
+      "overall": 28,
+      "round": 3,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-jordan-howard",
+        "name": "Jordan Howard",
+        "position": "RB",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 29,
+      "round": 3,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-travis-kelce",
+        "name": "Travis Kelce",
+        "position": "TE",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 30,
+      "round": 3,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-larry-fitzgerald",
+        "name": "Larry Fitzgerald",
+        "position": "WR",
+        "nflTeam": "ARI"
+      }
+    },
+    {
+      "overall": 31,
+      "round": 3,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-jerick-mckinnon",
+        "name": "Jerick McKinnon",
+        "position": "RB",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 32,
+      "round": 3,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-adam-thielen",
+        "name": "Adam Thielen",
+        "position": "WR",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 33,
+      "round": 3,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-stefon-diggs",
+        "name": "Stefon Diggs",
+        "position": "WR",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 34,
+      "round": 3,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-doug-baldwin",
+        "name": "Doug Baldwin",
+        "position": "WR",
+        "nflTeam": "SEA"
+      }
+    },
+    {
+      "overall": 35,
+      "round": 3,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-zach-ertz",
+        "name": "Zach Ertz",
+        "position": "TE",
+        "nflTeam": "PHI"
+      }
+    },
+    {
+      "overall": 36,
+      "round": 3,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-allen-robinson",
+        "name": "Allen Robinson",
+        "position": "WR",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 37,
+      "round": 4,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-royce-freeman",
+        "name": "Royce Freeman",
+        "position": "RB",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 38,
+      "round": 4,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-golden-tate",
+        "name": "Golden Tate",
+        "position": "WR",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 39,
+      "round": 4,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-amari-cooper",
+        "name": "Amari Cooper",
+        "position": "WR",
+        "nflTeam": "LV"
+      }
+    },
+    {
+      "overall": 40,
+      "round": 4,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-kenyan-drake",
+        "name": "Kenyan Drake",
+        "position": "RB",
+        "nflTeam": "MIA"
+      }
+    },
+    {
+      "overall": 41,
+      "round": 4,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-marvin-jones",
+        "name": "Marvin Jones",
+        "position": "WR",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 42,
+      "round": 4,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-jarvis-landry",
+        "name": "Jarvis Landry",
+        "position": "WR",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 43,
+      "round": 4,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-alex-collins",
+        "name": "Alex Collins",
+        "position": "RB",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 44,
+      "round": 4,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-josh-gordon",
+        "name": "Josh Gordon",
+        "position": "WR",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 45,
+      "round": 4,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-derrick-henry",
+        "name": "Derrick Henry",
+        "position": "RB",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 46,
+      "round": 4,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-brandin-cooks",
+        "name": "Brandin Cooks",
+        "position": "WR",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 47,
+      "round": 4,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-lamar-miller",
+        "name": "Lamar Miller",
+        "position": "RB",
+        "nflTeam": "HOU"
+      }
+    },
+    {
+      "overall": 48,
+      "round": 4,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-tom-brady",
+        "name": "Tom Brady",
+        "position": "QB",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 49,
+      "round": 5,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-julian-edelman",
+        "name": "Julian Edelman",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 50,
+      "round": 5,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-mark-ingram",
+        "name": "Mark Ingram",
+        "position": "RB",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 51,
+      "round": 5,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-aaron-rodgers",
+        "name": "Aaron Rodgers",
+        "position": "QB",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 52,
+      "round": 5,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-juju-smith-schuster",
+        "name": "JuJu Smith-Schuster",
+        "position": "WR",
+        "nflTeam": "PIT"
+      }
+    },
+    {
+      "overall": 53,
+      "round": 5,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-alshon-jeffery",
+        "name": "Alshon Jeffery",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 54,
+      "round": 5,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-marshawn-lynch",
+        "name": "Marshawn Lynch",
+        "position": "RB",
+        "nflTeam": "LV"
+      }
+    },
+    {
+      "overall": 55,
+      "round": 5,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-dion-lewis",
+        "name": "Dion Lewis",
+        "position": "RB",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 56,
+      "round": 5,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-jay-ajayi",
+        "name": "Jay Ajayi",
+        "position": "RB",
+        "nflTeam": "PHI"
+      }
+    },
+    {
+      "overall": 57,
+      "round": 5,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-chris-hogan",
+        "name": "Chris Hogan",
+        "position": "WR",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 58,
+      "round": 5,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-emmanuel-sanders",
+        "name": "Emmanuel Sanders",
+        "position": "WR",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 59,
+      "round": 5,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-duke-johnson",
+        "name": "Duke Johnson",
+        "position": "RB",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 60,
+      "round": 5,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-michael-crabtree",
+        "name": "Michael Crabtree",
+        "position": "WR",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 61,
+      "round": 6,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-greg-olsen",
+        "name": "Greg Olsen",
+        "position": "TE",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 62,
+      "round": 6,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-rex-burkhead",
+        "name": "Rex Burkhead",
+        "position": "RB",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 63,
+      "round": 6,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-marquise-goodwin",
+        "name": "Marquise Goodwin",
+        "position": "WR",
+        "nflTeam": "SF"
+      }
+    },
+    {
+      "overall": 64,
+      "round": 6,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-kerryon-johnson",
+        "name": "Kerryon Johnson",
+        "position": "RB",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 65,
+      "round": 6,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-delanie-walker",
+        "name": "Delanie Walker",
+        "position": "TE",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 66,
+      "round": 6,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-robert-woods",
+        "name": "Robert Woods",
+        "position": "WR",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 67,
+      "round": 6,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-pierre-garcon",
+        "name": "Pierre Garcon",
+        "position": "WR",
+        "nflTeam": "SF"
+      }
+    },
+    {
+      "overall": 68,
+      "round": 6,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-isaiah-crowell",
+        "name": "Isaiah Crowell",
+        "position": "RB",
+        "nflTeam": "NYJ"
+      }
+    },
+    {
+      "overall": 69,
+      "round": 6,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-jimmy-graham",
+        "name": "Jimmy Graham",
+        "position": "TE",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 70,
+      "round": 6,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-tevin-coleman",
+        "name": "Tevin Coleman",
+        "position": "RB",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 71,
+      "round": 6,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-carlos-hyde",
+        "name": "Carlos Hyde",
+        "position": "RB",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 72,
+      "round": 6,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-jack-doyle",
+        "name": "Jack Doyle",
+        "position": "TE",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 73,
+      "round": 7,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-sammy-watkins",
+        "name": "Sammy Watkins",
+        "position": "WR",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 74,
+      "round": 7,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-randall-cobb",
+        "name": "Randall Cobb",
+        "position": "WR",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 75,
+      "round": 7,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-corey-davis",
+        "name": "Corey Davis",
+        "position": "WR",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 76,
+      "round": 7,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-andrew-luck",
+        "name": "Andrew Luck",
+        "position": "QB",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 77,
+      "round": 7,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-cam-newton",
+        "name": "Cam Newton",
+        "position": "QB",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 78,
+      "round": 7,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-devin-funchess",
+        "name": "Devin Funchess",
+        "position": "TE",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 79,
+      "round": 7,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-carson-wentz",
+        "name": "Carson Wentz",
+        "position": "QB",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 80,
+      "round": 7,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-deshaun-watson",
+        "name": "Deshaun Watson",
+        "position": "QB",
+        "nflTeam": "HOU"
+      }
+    },
+    {
+      "overall": 81,
+      "round": 7,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-russell-wilson",
+        "name": "Russell Wilson",
+        "position": "QB",
+        "nflTeam": "SEA"
+      }
+    },
+    {
+      "overall": 82,
+      "round": 7,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-chris-thompson",
+        "name": "Chris Thompson",
+        "position": "RB",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 83,
+      "round": 7,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-evan-engram",
+        "name": "Evan Engram",
+        "position": "TE",
+        "nflTeam": "NYG"
+      }
+    },
+    {
+      "overall": 84,
+      "round": 7,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-jacksonville-jaguars",
+        "name": "Jacksonville Jaguars",
+        "position": "DEF",
+        "nflTeam": "JAX"
+      }
+    },
+    {
+      "overall": 85,
+      "round": 8,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-will-fuller",
+        "name": "Will Fuller",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 86,
+      "round": 8,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-robbie-chosen",
+        "name": "Robbie Chosen",
+        "position": "WR",
+        "nflTeam": "NYJ"
+      }
+    },
+    {
+      "overall": 87,
+      "round": 8,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-rashaad-penny",
+        "name": "Rashaad Penny",
+        "position": "RB",
+        "nflTeam": "SEA"
+      }
+    },
+    {
+      "overall": 88,
+      "round": 8,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-ronald-jones",
+        "name": "Ronald Jones",
+        "position": "RB",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 89,
+      "round": 8,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-tarik-cohen",
+        "name": "Tarik Cohen",
+        "position": "RB",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 90,
+      "round": 8,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-kyle-rudolph",
+        "name": "Kyle Rudolph",
+        "position": "TE",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 91,
+      "round": 8,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-jordan-reed",
+        "name": "Jordan Reed",
+        "position": "TE",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 92,
+      "round": 8,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-cooper-kupp",
+        "name": "Cooper Kupp",
+        "position": "WR",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 93,
+      "round": 8,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-los-angeles-rams",
+        "name": "Los Angeles Rams",
+        "position": "DEF",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 94,
+      "round": 8,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-jamaal-williams",
+        "name": "Jamaal Williams",
+        "position": "RB",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 95,
+      "round": 8,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-sterling-shepard",
+        "name": "Sterling Shepard",
+        "position": "WR",
+        "nflTeam": "NYG"
+      }
+    },
+    {
+      "overall": 96,
+      "round": 8,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-adrian-peterson",
+        "name": "Adrian Peterson",
+        "position": "RB",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 97,
+      "round": 9,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-jordy-nelson",
+        "name": "Jordy Nelson",
+        "position": "WR",
+        "nflTeam": "LV"
+      }
+    },
+    {
+      "overall": 98,
+      "round": 9,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-peyton-barber",
+        "name": "Peyton Barber",
+        "position": "RB",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 99,
+      "round": 9,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-jamison-crowder",
+        "name": "Jamison Crowder",
+        "position": "WR",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 100,
+      "round": 9,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-allen-hurns",
+        "name": "Allen Hurns",
+        "position": "WR",
+        "nflTeam": "DAL"
+      }
+    },
+    {
+      "overall": 101,
+      "round": 9,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-chris-carson",
+        "name": "Chris Carson",
+        "position": "RB",
+        "nflTeam": "SEA"
+      }
+    },
+    {
+      "overall": 102,
+      "round": 9,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-kirk-cousins",
+        "name": "Kirk Cousins",
+        "position": "QB",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 103,
+      "round": 9,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-calvin-ridley",
+        "name": "Calvin Ridley",
+        "position": "WR",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 104,
+      "round": 9,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-greg-zuerlein",
+        "name": "Greg Zuerlein",
+        "position": "K",
+        "nflTeam": "LAR"
+      }
+    },
+    {
+      "overall": 105,
+      "round": 9,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-trey-burton",
+        "name": "Trey Burton",
+        "position": "TE",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 106,
+      "round": 9,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-nelson-agholor",
+        "name": "Nelson Agholor",
+        "position": "WR",
+        "nflTeam": "PHI"
+      }
+    },
+    {
+      "overall": 107,
+      "round": 9,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-kelvin-benjamin",
+        "name": "Kelvin Benjamin",
+        "position": "TE",
+        "nflTeam": "BUF"
+      }
+    },
+    {
+      "overall": 108,
+      "round": 9,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-josh-doctson",
+        "name": "Josh Doctson",
+        "position": "WR",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 109,
+      "round": 10,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-devante-parker",
+        "name": "DeVante Parker",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 110,
+      "round": 10,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-sony-michel",
+        "name": "Sony Michel",
+        "position": "RB",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 111,
+      "round": 10,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-matthew-stafford",
+        "name": "Matthew Stafford",
+        "position": "QB",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 112,
+      "round": 10,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-marlon-mack",
+        "name": "Marlon Mack",
+        "position": "RB",
+        "nflTeam": "ARI"
+      }
+    },
+    {
+      "overall": 113,
+      "round": 10,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-philadelphia-eagles",
+        "name": "Philadelphia Eagles",
+        "position": "DEF",
+        "nflTeam": "PHI"
+      }
+    },
+    {
+      "overall": 114,
+      "round": 10,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-giovani-bernard",
+        "name": "Giovani Bernard",
+        "position": "RB",
+        "nflTeam": "CIN"
+      }
+    },
+    {
+      "overall": 115,
+      "round": 10,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-ty-montgomery",
+        "name": "Ty Montgomery",
+        "position": "RB",
+        "nflTeam": "GB"
+      }
+    },
+    {
+      "overall": 116,
+      "round": 10,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-james-white",
+        "name": "James White",
+        "position": "RB",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 117,
+      "round": 10,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-anthony-miller",
+        "name": "Anthony Miller",
+        "position": "WR",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 118,
+      "round": 10,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-kenny-golladay",
+        "name": "Kenny Golladay",
+        "position": "WR",
+        "nflTeam": "NYJ"
+      }
+    },
+    {
+      "overall": 119,
+      "round": 10,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-cameron-meredith",
+        "name": "Cameron Meredith",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 120,
+      "round": 10,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-houston-texans",
+        "name": "Houston Texans",
+        "position": "DEF",
+        "nflTeam": "HOU"
+      }
+    },
+    {
+      "overall": 121,
+      "round": 11,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-mohamed-sanu",
+        "name": "Mohamed Sanu",
+        "position": "WR",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 122,
+      "round": 11,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-david-njoku",
+        "name": "David Njoku",
+        "position": "TE",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 123,
+      "round": 11,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-minnesota-vikings",
+        "name": "Minnesota Vikings",
+        "position": "DEF",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 124,
+      "round": 11,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-stephen-gostkowski",
+        "name": "Stephen Gostkowski",
+        "position": "K",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 125,
+      "round": 11,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-kenny-stills",
+        "name": "Kenny Stills",
+        "position": "WR",
+        "nflTeam": "MIA"
+      }
+    },
+    {
+      "overall": 126,
+      "round": 11,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-baltimore-ravens",
+        "name": "Baltimore Ravens",
+        "position": "DEF",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 127,
+      "round": 11,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-jared-cook",
+        "name": "Jared Cook",
+        "position": "TE",
+        "nflTeam": "LV"
+      }
+    },
+    {
+      "overall": 128,
+      "round": 11,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-marqise-lee",
+        "name": "Marqise Lee",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 129,
+      "round": 11,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-keelan-cole",
+        "name": "Keelan Cole",
+        "position": "WR",
+        "nflTeam": "JAX"
+      }
+    },
+    {
+      "overall": 130,
+      "round": 11,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-george-kittle",
+        "name": "George Kittle",
+        "position": "TE",
+        "nflTeam": "SF"
+      }
+    },
+    {
+      "overall": 131,
+      "round": 11,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-ben-roethlisberger",
+        "name": "Ben Roethlisberger",
+        "position": "QB",
+        "nflTeam": "PIT"
+      }
+    },
+    {
+      "overall": 132,
+      "round": 11,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-paul-richardson",
+        "name": "Paul Richardson",
+        "position": "WR",
+        "nflTeam": "WAS"
+      }
+    },
+    {
+      "overall": 133,
+      "round": 12,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-drew-brees",
+        "name": "Drew Brees",
+        "position": "QB",
+        "nflTeam": "NO"
+      }
+    },
+    {
+      "overall": 134,
+      "round": 12,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-tyler-lockett",
+        "name": "Tyler Lockett",
+        "position": "WR",
+        "nflTeam": "SEA"
+      }
+    },
+    {
+      "overall": 135,
+      "round": 12,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-los-angeles-chargers",
+        "name": "Los Angeles Chargers",
+        "position": "DEF",
+        "nflTeam": "LAC"
+      }
+    },
+    {
+      "overall": 136,
+      "round": 12,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-new-england-patriots",
+        "name": "New England Patriots",
+        "position": "DEF",
+        "nflTeam": "NE"
+      }
+    },
+    {
+      "overall": 137,
+      "round": 12,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-danny-amendola",
+        "name": "Danny Amendola",
+        "position": "WR",
+        "nflTeam": "MIA"
+      }
+    },
+    {
+      "overall": 138,
+      "round": 12,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-chris-boswell",
+        "name": "Chris Boswell",
+        "position": "K",
+        "nflTeam": "PIT"
+      }
+    },
+    {
+      "overall": 139,
+      "round": 12,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-matt-bryant",
+        "name": "Matt Bryant",
+        "position": "K",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 140,
+      "round": 12,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-michael-gallup",
+        "name": "Michael Gallup",
+        "position": "WR",
+        "nflTeam": "DAL"
+      }
+    },
+    {
+      "overall": 141,
+      "round": 12,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-john-ross",
+        "name": "John Ross",
+        "position": "WR",
+        "nflTeam": "CIN"
+      }
+    },
+    {
+      "overall": 142,
+      "round": 12,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-o.j.-howard",
+        "name": "O.J. Howard",
+        "position": "TE",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 143,
+      "round": 12,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-d.j.-moore",
+        "name": "D.J. Moore",
+        "position": "WR",
+        "nflTeam": "DAL"
+      }
+    },
+    {
+      "overall": 144,
+      "round": 12,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-jordan-wilkins",
+        "name": "Jordan Wilkins",
+        "position": "RB",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 145,
+      "round": 13,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-dez-bryant",
+        "name": "Dez Bryant",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 146,
+      "round": 13,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-new-orleans-saints",
+        "name": "New Orleans Saints",
+        "position": "DEF",
+        "nflTeam": "NO"
+      }
+    },
+    {
+      "overall": 147,
+      "round": 13,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-mike-williams",
+        "name": "Mike Williams",
+        "position": "WR",
+        "nflTeam": "LAC"
+      }
+    },
+    {
+      "overall": 148,
+      "round": 13,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-christian-kirk",
+        "name": "Christian Kirk",
+        "position": "WR",
+        "nflTeam": "ARI"
+      }
+    },
+    {
+      "overall": 149,
+      "round": 13,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-desean-jackson",
+        "name": "DeSean Jackson",
+        "position": "WR",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 150,
+      "round": 13,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-c.j.-anderson",
+        "name": "C.J. Anderson",
+        "position": "RB",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 151,
+      "round": 13,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-denver-broncos",
+        "name": "Denver Broncos",
+        "position": "DEF",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 152,
+      "round": 13,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-rishard-matthews",
+        "name": "Rishard Matthews",
+        "position": "WR",
+        "nflTeam": "FA"
+      }
+    },
+    {
+      "overall": 153,
+      "round": 13,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-john-brown",
+        "name": "John Brown",
+        "position": "WR",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 154,
+      "round": 13,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-wil-lutz",
+        "name": "Wil Lutz",
+        "position": "K",
+        "nflTeam": "NO"
+      }
+    },
+    {
+      "overall": 155,
+      "round": 13,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-theo-riddick",
+        "name": "Theo Riddick",
+        "position": "RB",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 156,
+      "round": 13,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-matt-ryan",
+        "name": "Matt Ryan",
+        "position": "QB",
+        "nflTeam": "ATL"
+      }
+    },
+    {
+      "overall": 157,
+      "round": 14,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-chris-godwin",
+        "name": "Chris Godwin",
+        "position": "WR",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 158,
+      "round": 14,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-justin-tucker",
+        "name": "Justin Tucker",
+        "position": "K",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 159,
+      "round": 14,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-aaron-jones",
+        "name": "Aaron Jones",
+        "position": "RB",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 160,
+      "round": 14,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-jimmy-garoppolo",
+        "name": "Jimmy Garoppolo",
+        "position": "QB",
+        "nflTeam": "SF"
+      }
+    },
+    {
+      "overall": 161,
+      "round": 14,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-patrick-mahomes",
+        "name": "Patrick Mahomes",
+        "position": "QB",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 162,
+      "round": 14,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-courtland-sutton",
+        "name": "Courtland Sutton",
+        "position": "WR",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 163,
+      "round": 14,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-willie-snead",
+        "name": "Willie Snead",
+        "position": "WR",
+        "nflTeam": "BAL"
+      }
+    },
+    {
+      "overall": 164,
+      "round": 14,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-tennessee-titans",
+        "name": "Tennessee Titans",
+        "position": "DEF",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 165,
+      "round": 14,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-philip-rivers",
+        "name": "Philip Rivers",
+        "position": "QB",
+        "nflTeam": "LAC"
+      }
+    },
+    {
+      "overall": 166,
+      "round": 14,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-latavius-murray",
+        "name": "Latavius Murray",
+        "position": "RB",
+        "nflTeam": "MIN"
+      }
+    },
+    {
+      "overall": 167,
+      "round": 14,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-marcus-mariota",
+        "name": "Marcus Mariota",
+        "position": "QB",
+        "nflTeam": "TEN"
+      }
+    },
+    {
+      "overall": 168,
+      "round": 14,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-baker-mayfield",
+        "name": "Baker Mayfield",
+        "position": "QB",
+        "nflTeam": "TB"
+      }
+    },
+    {
+      "overall": 169,
+      "round": 15,
+      "slot": 1,
+      "memberId": "ffu-051",
+      "player": {
+        "id": "espn-player-robbie-gould",
+        "name": "Robbie Gould",
+        "position": "K",
+        "nflTeam": "SF"
+      }
+    },
+    {
+      "overall": 170,
+      "round": 15,
+      "slot": 2,
+      "memberId": "ffu-041",
+      "player": {
+        "id": "espn-player-adam-vinatieri",
+        "name": "Adam Vinatieri",
+        "position": "K",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 171,
+      "round": 15,
+      "slot": 3,
+      "memberId": "ffu-009",
+      "player": {
+        "id": "espn-player-harrison-butker",
+        "name": "Harrison Butker",
+        "position": "K",
+        "nflTeam": "KC"
+      }
+    },
+    {
+      "overall": 172,
+      "round": 15,
+      "slot": 4,
+      "memberId": "ffu-031",
+      "player": {
+        "id": "espn-player-eric-ebron",
+        "name": "Eric Ebron",
+        "position": "TE",
+        "nflTeam": "IND"
+      }
+    },
+    {
+      "overall": 173,
+      "round": 15,
+      "slot": 5,
+      "memberId": "ffu-h03",
+      "player": {
+        "id": "espn-player-jake-elliott",
+        "name": "Jake Elliott",
+        "position": "K",
+        "nflTeam": "PHI"
+      }
+    },
+    {
+      "overall": 174,
+      "round": 15,
+      "slot": 6,
+      "memberId": "ffu-045",
+      "player": {
+        "id": "espn-player-nick-chubb",
+        "name": "Nick Chubb",
+        "position": "RB",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 175,
+      "round": 15,
+      "slot": 7,
+      "memberId": "ffu-042",
+      "player": {
+        "id": "espn-player-mitchell-trubisky",
+        "name": "Mitchell Trubisky",
+        "position": "QB",
+        "nflTeam": "CHI"
+      }
+    },
+    {
+      "overall": 176,
+      "round": 15,
+      "slot": 8,
+      "memberId": "ffu-h08",
+      "player": {
+        "id": "espn-player-devontae-booker",
+        "name": "Devontae Booker",
+        "position": "RB",
+        "nflTeam": "DEN"
+      }
+    },
+    {
+      "overall": 177,
+      "round": 15,
+      "slot": 9,
+      "memberId": "ffu-024",
+      "player": {
+        "id": "espn-player-matt-prater",
+        "name": "Matt Prater",
+        "position": "K",
+        "nflTeam": "DET"
+      }
+    },
+    {
+      "overall": 178,
+      "round": 15,
+      "slot": 10,
+      "memberId": "ffu-h06",
+      "player": {
+        "id": "espn-player-tyrod-taylor",
+        "name": "Tyrod Taylor",
+        "position": "QB",
+        "nflTeam": "CLE"
+      }
+    },
+    {
+      "overall": 179,
+      "round": 15,
+      "slot": 11,
+      "memberId": "ffu-h02",
+      "player": {
+        "id": "espn-player-carolina-panthers",
+        "name": "Carolina Panthers",
+        "position": "DEF",
+        "nflTeam": "CAR"
+      }
+    },
+    {
+      "overall": 180,
+      "round": 15,
+      "slot": 12,
+      "memberId": "ffu-010",
+      "player": {
+        "id": "espn-player-graham-gano",
+        "name": "Graham Gano",
+        "position": "K",
+        "nflTeam": "CAR"
+      }
+    }
+  ]
+}

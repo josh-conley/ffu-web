@@ -1,0 +1,1615 @@
+{
+  "schemaVersion": 1,
+  "tier": "PREMIER",
+  "year": "2021",
+  "era": "sleeper",
+  "platformLeagueId": "710961812656455680",
+  "teams": [
+    {
+      "memberId": "ffu-001",
+      "record": {
+        "wins": 10,
+        "losses": 4,
+        "ties": 0
+      },
+      "points": {
+        "for": 1752.8,
+        "against": 1606.2
+      },
+      "seed": 1,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 1,
+      "placementName": "1st"
+    },
+    {
+      "memberId": "ffu-028",
+      "record": {
+        "wins": 10,
+        "losses": 4,
+        "ties": 0
+      },
+      "points": {
+        "for": 1693.8,
+        "against": 1577.6
+      },
+      "seed": 2,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 2,
+      "placementName": "2nd"
+    },
+    {
+      "memberId": "ffu-031",
+      "record": {
+        "wins": 8,
+        "losses": 6,
+        "ties": 0
+      },
+      "points": {
+        "for": 1751,
+        "against": 1629.7
+      },
+      "seed": 3,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 3,
+      "placementName": "3rd"
+    },
+    {
+      "memberId": "ffu-009",
+      "record": {
+        "wins": 8,
+        "losses": 6,
+        "ties": 0
+      },
+      "points": {
+        "for": 1710.3,
+        "against": 1529.65
+      },
+      "seed": 4,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 4,
+      "placementName": "4th"
+    },
+    {
+      "memberId": "ffu-023",
+      "record": {
+        "wins": 8,
+        "losses": 6,
+        "ties": 0
+      },
+      "points": {
+        "for": 1729.95,
+        "against": 1606.2
+      },
+      "seed": 5,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 5,
+      "placementName": "5th"
+    },
+    {
+      "memberId": "ffu-036",
+      "record": {
+        "wins": 7,
+        "losses": 7,
+        "ties": 0
+      },
+      "points": {
+        "for": 1393.8,
+        "against": 1784.05
+      },
+      "seed": 6,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 6,
+      "placementName": "6th"
+    },
+    {
+      "memberId": "ffu-029",
+      "record": {
+        "wins": 6,
+        "losses": 8,
+        "ties": 0
+      },
+      "points": {
+        "for": 1570.6,
+        "against": 1620.55
+      },
+      "seed": 7,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 7,
+      "placementName": "7th"
+    },
+    {
+      "memberId": "ffu-024",
+      "record": {
+        "wins": 6,
+        "losses": 8,
+        "ties": 0
+      },
+      "points": {
+        "for": 1441.25,
+        "against": 1579.85
+      },
+      "seed": 8,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 8,
+      "placementName": "8th"
+    },
+    {
+      "memberId": "ffu-008",
+      "record": {
+        "wins": 5,
+        "losses": 9,
+        "ties": 0
+      },
+      "points": {
+        "for": 1796.99,
+        "against": 1695.55
+      },
+      "seed": 9,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 9,
+      "placementName": "9th"
+    },
+    {
+      "memberId": "ffu-010",
+      "record": {
+        "wins": 4,
+        "losses": 10,
+        "ties": 0
+      },
+      "points": {
+        "for": 1386.35,
+        "against": 1635.05
+      },
+      "seed": 10,
+      "promoted": false,
+      "relegated": false,
+      "finalPlacement": 10,
+      "placementName": "10th"
+    },
+    {
+      "memberId": "ffu-041",
+      "record": {
+        "wins": 6,
+        "losses": 8,
+        "ties": 0
+      },
+      "points": {
+        "for": 1552.05,
+        "against": 1563.75
+      },
+      "seed": 11,
+      "promoted": false,
+      "relegated": true,
+      "finalPlacement": 11,
+      "placementName": "11th"
+    },
+    {
+      "memberId": "ffu-051",
+      "record": {
+        "wins": 6,
+        "losses": 8,
+        "ties": 0
+      },
+      "points": {
+        "for": 1640.3,
+        "against": 1591.05
+      },
+      "seed": 12,
+      "promoted": false,
+      "relegated": true,
+      "finalPlacement": 12,
+      "placementName": "12th"
+    }
+  ],
+  "games": [
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 130.55
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 116.45
+        }
+      ]
+    },
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-010",
+          "score": 108.05
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 107.95
+        }
+      ]
+    },
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 150.35
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 132.9
+        }
+      ]
+    },
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 130.65
+        },
+        {
+          "memberId": "ffu-028",
+          "score": 104.3
+        }
+      ]
+    },
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 132.65
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 114.5
+        }
+      ]
+    },
+    {
+      "week": 1,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 158.35
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 113.9
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 129.8
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 107.5
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-010",
+          "score": 125.7
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 125.25
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 117.15
+        },
+        {
+          "memberId": "ffu-028",
+          "score": 108.35
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 150.8
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 131.35
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 101.85
+        },
+        {
+          "memberId": "ffu-001",
+          "score": 100.55
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 180.25
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 66.3
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 138.75
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 116
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 115.45
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 97.65
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 116.2
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 106.2
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 147.8
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 113.1
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 132.6
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 113.75
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 104.1
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 93.1
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 172.1
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 99.8
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 130.5
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 93.05
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 116.55
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 111.15
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-010",
+          "score": 122.8
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 117.85
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 130.5
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 116.7
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 115.3
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 94.85
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 173.1
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 137.75
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 156.5
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 126.1
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 122.5
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 121.15
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 157.4
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 82.95
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 123.25
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 103.2
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 164.35
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 134.8
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 132.25
+        },
+        {
+          "memberId": "ffu-028",
+          "score": 89.55
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 153.85
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 145.45
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 131.55
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 92.05
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 152.05
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 128.15
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 143.15
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 103.35
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 108.15
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 72.65
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 137.6
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 110.65
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 116.8
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 105
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 140.7
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 129.1
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-010",
+          "score": 116.65
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 43.3
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 96.8
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 77.8
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 151.25
+        },
+        {
+          "memberId": "ffu-001",
+          "score": 101.7
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 121.85
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 119.65
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 105.55
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 76.5
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 132.45
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 125.35
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 133.45
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 84.2
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 92.65
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 91.05
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 115.85
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 97
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 136.45
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 107.5
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 129.7
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 109.4
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 115.2
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 112.8
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 83.7
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 66
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 105.8
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 104.65
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 117.4
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 100.9
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 152.2
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 127.75
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 99.4
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 98.9
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 135.95
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 55.45
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 98.55
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 44.8
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 144.5
+        },
+        {
+          "memberId": "ffu-028",
+          "score": 99.3
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 119.7
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 84.6
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 108.15
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 77.8
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 103.75
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 92.8
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 134.35
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 102.65
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-036",
+          "score": 108.6
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 106.05
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 114.45
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 85.3
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 161.15
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 147.55
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 122.5
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 109.35
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 97.1
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 88.4
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 135.15
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 78.45
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 138.3
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 134.5
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 118.55
+        },
+        {
+          "memberId": "ffu-001",
+          "score": 80.85
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 118.85
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 113.85
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 118.45
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 81
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-051",
+          "score": 148.25
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 111.25
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 148.05
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 83.85
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 124.55
+        },
+        {
+          "memberId": "ffu-008",
+          "score": 115
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 131.15
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 105.5
+        }
+      ]
+    },
+    {
+      "week": 13,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 131.4
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 88.1
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 122.85
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 85.35
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 94.55
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 91.15
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 166.15
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 59.25
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 157
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 119.95
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 129.45
+        },
+        {
+          "memberId": "ffu-001",
+          "score": 99
+        }
+      ]
+    },
+    {
+      "week": 14,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 122.9
+        },
+        {
+          "memberId": "ffu-029",
+          "score": 118.65
+        }
+      ]
+    },
+    {
+      "week": 15,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 112.7
+        },
+        {
+          "memberId": "ffu-023",
+          "score": 100.1
+        }
+      ],
+      "round": "Quarterfinal",
+      "bracket": "championship"
+    },
+    {
+      "week": 15,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-009",
+          "score": 141
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 78.5
+        }
+      ],
+      "round": "Quarterfinal",
+      "bracket": "championship"
+    },
+    {
+      "week": 15,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 105.75
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 91.1
+        }
+      ],
+      "round": "Toilet Bowl Quarterfinal",
+      "bracket": "consolation"
+    },
+    {
+      "week": 15,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 117.6
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 76
+        }
+      ],
+      "round": "Toilet Bowl Quarterfinal",
+      "bracket": "consolation"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 100.35
+        },
+        {
+          "memberId": "ffu-031",
+          "score": 66.95
+        }
+      ],
+      "round": "Semifinal",
+      "bracket": "championship"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-028",
+          "score": 146.6
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 123
+        }
+      ],
+      "round": "Semifinal",
+      "bracket": "championship"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-023",
+          "score": 134.75
+        },
+        {
+          "memberId": "ffu-036",
+          "score": 95.2
+        }
+      ],
+      "round": "5th Place",
+      "bracket": "placement"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-010",
+          "score": 144.55
+        },
+        {
+          "memberId": "ffu-041",
+          "score": 114
+        }
+      ],
+      "round": "Toilet Bowl Semifinal",
+      "bracket": "consolation"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 143.2
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 41.6
+        }
+      ],
+      "round": "Toilet Bowl Semifinal",
+      "bracket": "consolation"
+    },
+    {
+      "week": 16,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-029",
+          "score": 151.5
+        },
+        {
+          "memberId": "ffu-024",
+          "score": 126.3
+        }
+      ],
+      "round": "7th Place",
+      "bracket": "placement"
+    },
+    {
+      "week": 17,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-001",
+          "score": 146.6
+        },
+        {
+          "memberId": "ffu-028",
+          "score": 101.6
+        }
+      ],
+      "round": "Championship",
+      "bracket": "championship"
+    },
+    {
+      "week": 17,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-031",
+          "score": 175.85
+        },
+        {
+          "memberId": "ffu-009",
+          "score": 119.6
+        }
+      ],
+      "round": "3rd Place",
+      "bracket": "placement"
+    },
+    {
+      "week": 17,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-041",
+          "score": 111.65
+        },
+        {
+          "memberId": "ffu-051",
+          "score": 89.55
+        }
+      ],
+      "round": "Last Place",
+      "bracket": "consolation"
+    },
+    {
+      "week": 17,
+      "isPlayoff": true,
+      "participants": [
+        {
+          "memberId": "ffu-008",
+          "score": 129.2
+        },
+        {
+          "memberId": "ffu-010",
+          "score": 115.45
+        }
+      ],
+      "round": "9th Place",
+      "bracket": "placement"
+    }
+  ]
+}

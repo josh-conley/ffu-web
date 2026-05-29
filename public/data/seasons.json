@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "seasons": [
+    {
+      "tier": "PREMIER",
+      "year": "2018",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2018",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2019",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2019",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2020",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2020",
+      "era": "espn",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2021",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2021",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2022",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "MASTERS",
+      "year": "2022",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2022",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2023",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "MASTERS",
+      "year": "2023",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2023",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2024",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "MASTERS",
+      "year": "2024",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2024",
+      "era": "sleeper",
+      "hasDivisions": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2025",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "MASTERS",
+      "year": "2025",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2025",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasDraft": true,
+      "hasLineups": false
+    }
+  ]
+}
