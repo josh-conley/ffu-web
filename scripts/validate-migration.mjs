@@ -21,8 +21,31 @@ const TIERS = ['premier', 'masters', 'national']
 
 const diffs = []
 const fail = (ctx, msg) => diffs.push(`${ctx}: ${msg}`)
+// Known legacy glitches: stored standings points that drifted from their own game scores.
+// Games are authoritative; recorded here for transparency, not treated as failures.
+const pointsDrift = []
 const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'))
 const round2 = (n) => Math.round(n * 100) / 100
+
+/** Regular-season W-L-T + points per member, derived from the NEW games (the source of truth). */
+function deriveRegularTotals(season) {
+  const totals = new Map()
+  for (const g of season.games) {
+    if (g.isPlayoff) continue
+    const [a, b] = g.participants
+    if (!a || !b) continue
+    for (const [self, opp] of [[a, b], [b, a]]) {
+      const t = totals.get(self.memberId) ?? { wins: 0, losses: 0, ties: 0, pf: 0, pa: 0 }
+      t.pf += self.score
+      t.pa += opp.score
+      if (self.score > opp.score) t.wins += 1
+      else if (self.score < opp.score) t.losses += 1
+      else t.ties += 1
+      totals.set(self.memberId, t)
+    }
+  }
+  return totals
+}
 
 // ── Per-game: legacy matchups ↔ new games (member-set + scores), 1:1 ──────────────────
 
@@ -72,6 +95,7 @@ function validateGames(ctx, legacy, season) {
 
 function validateTeams(ctx, legacy, season) {
   const teams = new Map(season.teams.map((t) => [t.memberId, t]))
+  const totals = deriveRegularTotals(season)
   const placements = new Map((legacy.playoffResults ?? []).map((p) => [resolveId(p.userId), p]))
   const promoted = new Set((legacy.promotions ?? []).map(resolveId))
   const relegated = new Set((legacy.relegations ?? []).map(resolveId))
@@ -88,12 +112,24 @@ function validateTeams(ctx, legacy, season) {
     }
     // `rank` is the final post-playoff placement → finalPlacement (not a regular-season seed).
     if (t.finalPlacement !== s.rank) fail(ctx, `${id} finalPlacement ${t.finalPlacement} != legacy rank ${s.rank}`)
+    if (s.division != null && t.divisionId !== s.division)
+      fail(ctx, `${id} divisionId ${t.divisionId} != ${s.division}`)
+
+    // Stored record/points are Sleeper's aggregates — preserved verbatim (zero-diff vs legacy).
     if (t.record.wins !== s.wins || t.record.losses !== s.losses || t.record.ties !== (s.ties ?? 0))
       fail(ctx, `${id} record ${JSON.stringify(t.record)} != ${s.wins}-${s.losses}-${s.ties ?? 0}`)
     if (round2(t.points.for) !== round2(s.pointsFor) || round2(t.points.against) !== round2(s.pointsAgainst))
       fail(ctx, `${id} points ${JSON.stringify(t.points)} != ${s.pointsFor}/${s.pointsAgainst}`)
-    if (s.division != null && t.divisionId !== s.division)
-      fail(ctx, `${id} divisionId ${t.divisionId} != ${s.division}`)
+
+    // Cross-check that the games reproduce the record (W-L-T always agrees), and record where the
+    // per-game sum differs from Sleeper's stored aggregate (informational — Sleeper is SoT).
+    const d = totals.get(id) ?? { wins: 0, losses: 0, ties: 0, pf: 0, pa: 0 }
+    if (d.wins !== t.record.wins || d.losses !== t.record.losses || d.ties !== t.record.ties)
+      fail(ctx, `${id} games-derived record ${d.wins}-${d.losses}-${d.ties} != stored ${JSON.stringify(t.record)}`)
+    if (round2(d.pf) !== round2(t.points.for))
+      pointsDrift.push(`${ctx} ${id} pointsFor: games=${round2(d.pf)} stored=${t.points.for}`)
+    if (round2(d.pa) !== round2(t.points.against))
+      pointsDrift.push(`${ctx} ${id} pointsAgainst: games=${round2(d.pa)} stored=${t.points.against}`)
 
     const pr = placements.get(id)
     if (pr && t.finalPlacement !== pr.placement)
@@ -181,6 +217,12 @@ function run() {
 
   console.log('\n=== Co-owner merge report ===')
   for (const [from, to] of Object.entries(MERGES)) console.log(`  ${from} → ${to}`)
+
+  console.log(`\n=== Sleeper aggregate vs per-game sum (${pointsDrift.length}) ===`)
+  console.log("  Sleeper's stored season points differ from the sum of its own weekly scores in")
+  console.log('  these cases. We keep Sleeper aggregates for standings display (Sleeper is SoT);')
+  console.log('  game-level stats are derived from games. W-L-T always agrees. Informational only.')
+  for (const d of pointsDrift) console.log('  ' + d)
 
   console.log(`\nValidated ${checked} tier-seasons.`)
   if (diffs.length) {

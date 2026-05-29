@@ -30,9 +30,17 @@ export interface SeasonTeam {
   memberId: string
   /** Omitted in no-division eras (divisions exist only from 2025). */
   divisionId?: number
-  /** Regular-season totals (not including playoffs). */
+  /**
+   * Regular-season totals as reported by the UPSTREAM provider (Sleeper roster
+   * `settings.wins`/`fpts`/`fpts_against`). Stored as FACTS, not derived — Sleeper is the source
+   * of truth and the live weekly fetch (from Sept) hands us these aggregates directly, so we
+   * mirror them to stay consistent with what owners see on Sleeper. NOTE: Sleeper's season
+   * aggregate can differ slightly from the sum of its own weekly matchup scores (45 historical
+   * cases, ≤±4 pts; W-L-T always agrees). We use these stored totals for season DISPLAY, and
+   * derive game-level stats (UPR inputs, records, H2H, margins, running records) from `games`.
+   * The Charter "don't store derived data" rule targets OUR computations, not ingested facts.
+   */
   record: TeamRecord
-  /** Regular-season totals (not including playoffs). */
   points: TeamPoints
   /**
    * Final standing after playoffs — the authoritative recorded outcome. In legacy this is

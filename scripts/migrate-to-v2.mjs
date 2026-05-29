@@ -94,6 +94,9 @@ function buildTeams(legacy) {
     const pr = placements.get(s.userId)
     const team = {
       memberId: resolveId(s.userId),
+      // Sleeper's authoritative season aggregates, preserved verbatim as facts (Sleeper provides
+      // these directly; the per-game sum can differ by a few pts — see data/types.ts). W-L-T
+      // always matches the games.
       record: { wins: s.wins, losses: s.losses, ties: s.ties ?? 0 },
       points: { for: s.pointsFor, against: s.pointsAgainst },
       // `rank` IS the final post-playoff placement (== playoffResults.placement in all data);
