@@ -1,4 +1,4 @@
-import type { SeasonData } from '@/data'
+import type { SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
 import { winPct } from './standings'
 
@@ -118,4 +118,20 @@ function finalizeCareer(c: CareerStats, playoffCount: number, latestYear: number
 
 export function careerFor(seasons: SeasonData[], memberId: string): CareerStats | undefined {
   return careerStats(seasons).get(memberId)
+}
+
+export interface MemberSeason {
+  year: string
+  tier: Tier
+  team: SeasonTeam
+}
+
+/** A member's per-season rows (record/points/finish), chronological — for the Members detail view. */
+export function memberSeasons(seasons: SeasonData[], memberId: string): MemberSeason[] {
+  const rows: MemberSeason[] = []
+  for (const season of seasons) {
+    const team = season.teams.find((t) => t.memberId === memberId)
+    if (team !== undefined) rows.push({ year: season.year, tier: season.tier, team })
+  }
+  return rows.sort((a, b) => Number(a.year) - Number(b.year))
 }
