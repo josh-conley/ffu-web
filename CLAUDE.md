@@ -164,6 +164,11 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
 - To run locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
   `--headless=new --screenshot=out.png <url>`).
 
+**Deploy (done early, out of plan order):** staging site **live at `new.ffunion.com`** (GitHub Pages,
+auto-deploys on push to `main` via `.github/workflows/deploy.yml`); apex `ffunion.com` still serves the
+old `ffu-app` site untouched. Full setup, gotchas, and the apex **cutover checklist** are in `DEPLOY.md`.
+Phase 5 (cutover + `old.<domain>`) is now mostly pre-wired.
+
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned
   "Team Dogecoin" primary/secondary owners and which merged identity wins.
