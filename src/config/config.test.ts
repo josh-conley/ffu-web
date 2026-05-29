@@ -8,7 +8,6 @@ import {
   regularSeasonWeeks,
   seasonLength,
   getOwner,
-  formatOwner,
   ownerNames,
   MEMBERS,
   SEASONS,
@@ -74,10 +73,10 @@ describe('owners', () => {
     }
   })
 
-  it('formats and resolves the Minutemen owner (Josh C.)', () => {
-    expect(formatOwner({ id: 'x', firstName: 'Josh', lastInitial: 'C' })).toBe('Josh C.')
-    expect(ownerNames('ffu-023')).toEqual(['Josh C.'])
-    expect(ownerNames('ffu-002')).toEqual([]) // not yet collected
+  it('shows the last initial only when the first name is shared', () => {
+    expect(ownerNames('ffu-023')).toEqual(['Josh']) // unique first name → no initial
+    expect(ownerNames('ffu-031')).toEqual(['Tyler H.', 'Michael']) // co-owned: Tyler shared → initial, Michael unique
+    expect(ownerNames('ffu-015')).toEqual([]) // name not collected yet → "—"
   })
 })
 

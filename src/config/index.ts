@@ -46,14 +46,17 @@ export function getOwner(ownerId: string): Owner | undefined {
   return ownersById.get(ownerId)
 }
 
-/** Display form for an owner, e.g. "Josh C." */
-export function formatOwner(owner: Owner): string {
-  return `${owner.firstName} ${owner.lastInitial}.`
+/**
+ * "First L." when a last initial is present, else just the first name. Last initials are only
+ * stored in OWNERS for shared first names (e.g. two Tylers), so they appear only where needed.
+ */
+function displayOwner(owner: Owner): string {
+  return owner.lastInitial !== '' ? `${owner.firstName} ${owner.lastInitial}.` : owner.firstName
 }
 
 /**
- * Display names of a member's owners (primary first), e.g. ["Josh C."]. Empty if unknown yet —
- * placeholder owners (blank `firstName`) are skipped so the UI shows "—" until a real name is filled.
+ * Display names of a member's owners (primary first), e.g. ["Josh"] or ["Tyler H."]. Empty if
+ * unknown yet — placeholder owners (blank `firstName`) are skipped so the UI shows "—".
  */
 export function ownerNames(ffuId: string): string[] {
   const member = byFfuId.get(ffuId)
@@ -62,7 +65,7 @@ export function ownerNames(ffuId: string): string[] {
     .sort((a, b) => (a.role === 'primary' ? -1 : 0) - (b.role === 'primary' ? -1 : 0))
     .map((o) => ownersById.get(o.ownerId))
     .filter((o): o is Owner => o !== undefined && o.firstName !== '')
-    .map(formatOwner)
+    .map(displayOwner)
 }
 
 export { MEMBERS, SEASONS, OWNERS }

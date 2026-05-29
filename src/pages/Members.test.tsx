@@ -39,6 +39,6 @@ it('shows a member detail with derived debut year + owner', async () => {
   // Header heading (not the directory link)
   await waitFor(() => expect(screen.getByRole('heading', { name: 'The Minutemen' })).toBeInTheDocument())
   expect(screen.getByText('Season History')).toBeInTheDocument()
-  expect(screen.getByText(/Josh C\./)).toBeInTheDocument() // owner
+  expect(screen.getByText(/Josh · 2018–2025/)).toBeInTheDocument() // owner (first-name only) + derived tenure
   expect(screen.getByText(/2018–2025 · 8 seasons/)).toBeInTheDocument() // derived tenure
 })
