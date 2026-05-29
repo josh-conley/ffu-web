@@ -117,9 +117,23 @@ drafts). Run via `npm run migrate` / `npm run validate`.
   consumers + size/naming decisions live; (c) `LineupProvider` deferred (post-core roster modal).
 - **Owner names still needed from user** to populate `Member.owners[]` (stubbed `[]`; display-only, not blocking).
 
-**Next — Phase 3 (selectors):** pure, memoized, tested derivations over the validated data —
-`standings` (regular-season ordering + tiebreakers + division seeding), `upr`, `records`, `headToHead`,
-`career`. Port logic from old `ranking.ts`/`upr-calculator.ts`; unit-test against known seasons.
+**Phase 3 (selectors) — ✅ complete** (commits `a9dfea8`, `a5ab489`, `281b399`, `9e31456`). Pure, tested
+derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
+- `games.ts` — winner/tie/margin + `regularSeasonTotals` (derive-from-symmetric-participants base).
+- `upr.ts` — UPR ported verbatim over regular-season games.
+- `records.ts` — all-time high/low/blowout/closest/combined (`buildRecordBook`).
+- `standings.ts` — regular-season ordering (winPct→pointsFor, tie-aware) + division grouping, using the
+  STORED Sleeper record/points for display.
+- `headToHead.ts` — pairwise H2H across seasons. `career.ts` — career totals/championships/best finish.
+- **Key modeling decision** (see memory `sleeper-aggregates-stored-not-derived`): Sleeper's season
+  aggregates (`record`/`points`) stay STORED and are used for display; we derive only OUR stats from
+  games. H2H tiebreaker + division-leader playoff seeding (top-2 + 3rd-leader bump) are deferred
+  (active-season-only in legacy).
+
+**Next — Phase 4 (core UI):** shell (`Layout`/`Header`/theme/`TeamLogo`/`LoadingSpinner`/`ErrorMessage`/
+`Overview`), then vertical slices **Standings first**, then Matchups, Records, Drafts, Members, All-Time
+Stats. Build shared primitives once (`DataTable`, `SeasonLeaguePicker`, `LeagueBadge`, league color map,
+`useUrlState`). Reference-data carry-over (logos/players/historical-teams) happens here as consumers appear.
 
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned
