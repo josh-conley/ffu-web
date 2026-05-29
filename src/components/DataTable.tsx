@@ -82,7 +82,9 @@ export function DataTable<T>({
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-        <table className="min-w-full text-sm">
+        {/* w-max so columns keep natural width and the box scrolls on narrow screens instead
+            of squishing; min-w-full still fills the container on desktop. */}
+        <table className="w-max min-w-full text-sm">
           <thead className="bg-accent">
             <tr>
               {columns.map((col) => (

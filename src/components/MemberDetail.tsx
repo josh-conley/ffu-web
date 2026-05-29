@@ -17,7 +17,7 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
   const TD = 'px-3 py-2 tabular-nums'
   return (
     <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-      <table className="min-w-full text-sm">
+      <table className="w-max min-w-full text-sm">
         <thead className="bg-accent">
           <tr>
             <th scope="col" className={TH}>Year</th>

@@ -13,7 +13,9 @@ const TD = 'px-3 py-2 whitespace-nowrap'
 export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: Map<string, number>; year: string }) {
   return (
     <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-      <table className="min-w-full text-sm">
+      {/* w-max so columns keep their natural width and the box scrolls on narrow screens
+          instead of squishing; min-w-full still fills the container on desktop. */}
+      <table className="w-max min-w-full text-sm">
         <thead className="bg-accent">
           <tr>
             <th scope="col" className={TH}>#</th>

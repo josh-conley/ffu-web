@@ -50,7 +50,7 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
         {ties} · {h2h.pointsFor.toFixed(1)}–{h2h.pointsAgainst.toFixed(1)} pts
       </p>
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-        <table className="min-w-full text-sm">
+        <table className="w-max min-w-full text-sm">
           <thead className="bg-surface-2">
             <tr className="text-xs uppercase tracking-wider text-muted">
               <th scope="col" className="px-3 py-2 text-left font-bold">Year</th>

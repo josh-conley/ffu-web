@@ -29,7 +29,9 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
   const rounds = Array.from({ length: draft.rounds }, (_, i) => i + 1)
 
   return (
-    <div className="overflow-x-auto border border-border bg-surface shadow-sm">
+    // Full-bleed on phones (cancel the page's px-4) so the board uses the whole screen width
+    // and ~4 columns are visible at a time, Sleeper-style; constrained again at md.
+    <div className="-mx-4 overflow-x-auto border-y border-border bg-surface shadow-sm md:mx-0 md:border">
       <table className="text-xs">
         <thead className="bg-surface-2">
           <tr>
@@ -53,7 +55,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
                 return (
                   <td key={slot} className="px-2 py-1 align-top">
                     {pick && (
-                      <div className="w-28">
+                      <div className="w-20 md:w-28">
                         <div className="truncate font-medium" title={pick.player.name}>{pick.player.name}</div>
                         <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted">
                           <span className={`rounded px-1 font-semibold ${posClass(pick.player.position)}`}>{pick.player.position}</span>

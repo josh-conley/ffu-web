@@ -35,7 +35,7 @@ export function Overview() {
         <p className="mt-1 text-muted">{years.length} seasons · champions by tier</p>
       </div>
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-        <table className="min-w-full text-sm">
+        <table className="w-max min-w-full text-sm">
           <thead className="border-b border-border bg-surface-2">
             <tr>
               <th scope="col" className="px-3 py-2.5 text-left font-bold uppercase tracking-wider text-muted">Year</th>
