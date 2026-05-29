@@ -4,7 +4,7 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -14,6 +14,16 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Path alias — Charter §6 strict layering; import via "@/..." not deep relatives.
+       (No baseUrl: TS 6+ resolves paths relative to this config file.) */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* Strictness — Charter §4 "types first; no any escape hatches" */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
 
     /* Linting */
     "noUnusedLocals": true,
