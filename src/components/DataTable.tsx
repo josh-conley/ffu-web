@@ -31,7 +31,7 @@ function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefine
 
 function Pagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (p: number) => void }) {
   const btn =
-    'inline-flex min-h-11 items-center rounded-md border border-border px-3 py-1 hover:bg-surface-2 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0 md:px-2'
+    'inline-flex items-center rounded-md border border-border px-3 py-1.5 hover:bg-surface-2 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:px-2 md:py-1'
   return (
     <div className="flex items-center justify-end gap-3 text-sm text-muted">
       <span>
