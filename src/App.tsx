@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { Overview } from '@/pages/Overview'
+import { Standings } from '@/pages/Standings'
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Overview />} />
+          <Route path="standings" element={<Standings />} />
         </Route>
       </Routes>
     </BrowserRouter>
