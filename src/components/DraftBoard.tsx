@@ -1,0 +1,73 @@
+import type { DraftData, DraftPick } from '@/data'
+import { TeamLogo } from './TeamLogo'
+
+const POS_COLOR: Record<string, string> = {
+  QB: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
+  RB: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+  WR: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
+  TE: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+  K: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+  DEF: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
+}
+const posClass = (p: string) => POS_COLOR[p] ?? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+
+/** Map slot → team. Prefer draftOrder; fall back to round-1 picks if it's empty. */
+function teamsBySlot(draft: DraftData): Map<number, string> {
+  const bySlot = new Map<number, string>()
+  for (const [memberId, slot] of Object.entries(draft.draftOrder)) bySlot.set(slot, memberId)
+  if (bySlot.size === 0) {
+    for (const p of draft.picks) if (p.round === 1) bySlot.set(p.slot, p.memberId)
+  }
+  return bySlot
+}
+
+export function DraftBoard({ draft }: { draft: DraftData }) {
+  const teamBySlot = teamsBySlot(draft)
+  const slots = [...teamBySlot.keys()].sort((a, b) => a - b)
+  const byCell = new Map<string, DraftPick>()
+  for (const p of draft.picks) byCell.set(`${p.round}-${p.slot}`, p)
+  const rounds = Array.from({ length: draft.rounds }, (_, i) => i + 1)
+
+  return (
+    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+      <table className="text-xs">
+        <thead className="bg-slate-50 dark:bg-slate-800/50">
+          <tr>
+            <th className="px-2 py-2 text-slate-400">Rd</th>
+            {slots.map((slot) => (
+              <th key={slot} className="px-2 py-2">
+                <span className="flex flex-col items-center gap-1">
+                  {teamBySlot.get(slot) && <TeamLogo ffuId={teamBySlot.get(slot)!} size={20} />}
+                  <span className="text-slate-400">{slot}</span>
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          {rounds.map((round) => (
+            <tr key={round}>
+              <td className="px-2 py-1 text-center text-slate-400">{round}</td>
+              {slots.map((slot) => {
+                const pick = byCell.get(`${round}-${slot}`)
+                return (
+                  <td key={slot} className="px-2 py-1 align-top">
+                    {pick && (
+                      <div className="w-28">
+                        <div className="truncate font-medium" title={pick.player.name}>{pick.player.name}</div>
+                        <div className="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                          <span className={`rounded px-1 ${posClass(pick.player.position)}`}>{pick.player.position}</span>
+                          {pick.player.nflTeam && <span>{pick.player.nflTeam}</span>}
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}

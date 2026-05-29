@@ -4,24 +4,25 @@ import { tiersForYear } from '@/config'
 import { useSeason, useSeasons } from './useLeagueData'
 import { useUrlState } from './useUrlState'
 
-export interface SeasonView {
+export interface SeasonPicker {
   years: string[]
   year: string
   tier: Tier
   setYear: (year: string) => void
   setTier: (tier: Tier) => void
-  season: SeasonData | undefined
-  loading: boolean
-  error: Error | undefined
+  /** True once the manifest has resolved and year/tier are valid (gate dependent fetches on this). */
+  ready: boolean
+  manifestLoading: boolean
+  manifestError: Error | undefined
 }
 
 /**
- * The shared "manifest → pick year/tier (URL state) → load that season" flow used by every
- * season-scoped page (Standings, Matchups, …). Defaults to the latest year + Premier, clamps the
- * URL params to what actually exists (ESPN years have no Masters), and skips the season fetch
- * until the manifest resolves so we never request an empty path.
+ * Shared "manifest → pick year/tier (URL state)" flow for every season-scoped page. Defaults to
+ * the latest year + Premier and clamps the URL params to what actually exists (ESPN years have no
+ * Masters). Does NOT fetch the season — pages load whatever they need (season, draft, …) gated on
+ * `ready`.
  */
-export function useSeasonView(): SeasonView {
+export function useSeasonPicker(): SeasonPicker {
   const { data: manifest, loading: manifestLoading, error: manifestError } = useSeasons()
   const years = manifest ? [...new Set(manifest.map((s) => s.year))].sort().reverse() : []
 
@@ -32,17 +33,27 @@ export function useSeasonView(): SeasonView {
   const tiers = year === '' ? [] : tiersForYear(year)
   const tier = (tiers.includes(tierParam as Tier) ? tierParam : (tiers[0] ?? 'PREMIER')) as Tier
 
-  const ready = year !== ''
-  const { data: season, loading: seasonLoading, error: seasonError } = useSeason(tier, year, ready)
+  return { years, year, tier, setYear, setTier: (t) => setTier(t), ready: year !== '', manifestLoading, manifestError }
+}
 
+export interface SeasonView extends Pick<SeasonPicker, 'years' | 'year' | 'tier' | 'setYear' | 'setTier'> {
+  season: SeasonData | undefined
+  loading: boolean
+  error: Error | undefined
+}
+
+/** `useSeasonPicker` + the loaded season for that year/tier (Standings, Matchups). */
+export function useSeasonView(): SeasonView {
+  const picker = useSeasonPicker()
+  const { data: season, loading, error } = useSeason(picker.tier, picker.year, picker.ready)
   return {
-    years,
-    year,
-    tier,
-    setYear,
-    setTier: (t) => setTier(t),
+    years: picker.years,
+    year: picker.year,
+    tier: picker.tier,
+    setYear: picker.setYear,
+    setTier: picker.setTier,
     season,
-    loading: manifestLoading || (ready && seasonLoading),
-    error: manifestError ?? seasonError,
+    loading: picker.manifestLoading || (picker.ready && loading),
+    error: picker.manifestError ?? error,
   }
 }
