@@ -149,18 +149,24 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
 - **Matchups slice** (commit `e179db1`): `gamesByWeek` selector + `MatchupCard`; `/matchups` route. Week
   sections of matchup cards (winner emphasized, playoff round label). Integration test.
 - **Records slice + DataTable** (commit `adbdf8b`): generic sortable/paginated **`DataTable`** primitive;
-  `useAllSeasons` hook; Records page with 6 leaderboards (`?record=`) over `buildRecordBook`. Verified in
-  browser. **43 tests, all gates green.**
+  `useAllSeasons` hook; Records page with 6 leaderboards (`?record=`) over `buildRecordBook`.
+- **Members slice** (commit `7da3a83`): `memberSeasons` selector; `MembersDirectory` (sortable career grid)
+  + `MemberDetail` (header w/ owner + derived tenure + Active badge, stat tiles, season history); `?member=`
+  URL state. Route /members. Verified in browser.
+- **Owner data**: `OWNERS` registry (`owners.ts`) + helpers (`getOwner`/`formatOwner`/`ownerNames`); only
+  **owner-001 Josh C. (ffu-023)** filled so far — rest pending from user (add to owners.ts + members.ts).
+- **Derived, not stored** (legacy constants were unreliable — see memory `legacy-constants-values-are-unreliable`):
+  removed `joinedYear` (wrong 43/63) and `isActive` (true for everyone incl. historical) from the Member
+  type; `careerStats` now derives `firstYear`/`lastYear`/`isActive`. **49 tests, all gates green.**
 
 **Resume here — Phase 4 remaining slices:**
-1. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
+1. **Members follow-ups**: 2-player compare + H2H view (`headToHead` selector done) + progression chart.
+2. **All-Time Stats** (career grid via `careerStats` + `DataTable`; season history; UPR horserace — needs a
+   progression chart) + **Overview** (champions per tier — `finalPlacement===1` across seasons).
+3. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
    compress vs. fetch-from-Sleeper) + `public/data/historical-teams` for `historicalTeam` resolution. Needs
    `ffu-app` (auto-available via settings now). No draft selector yet — add one or read `DraftData` directly.
-2. **Members** (career + season history + 2-player compare + H2H) — uses `career`/`headToHead` selectors
-   (done); reuse `DataTable`. **owner names** from user would enable "First L." display (not blocking).
-3. **All-Time Stats** (career grid via `careerStats` + `DataTable`; season history; UPR horserace — needs a
-   progression chart) + **Overview** (champions per tier — `finalPlacement===1` across seasons).
-- Shared primitive still to build: progression/line chart (UPR horserace, member progression).
+- Shared primitive still to build: progression/line chart (UPR horserace, member progression + H2H).
 - To run locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
   `--headless=new --screenshot=out.png <url>`).
 
