@@ -15,8 +15,10 @@ correct, and safe — and is deliberate practice in building software *responsib
 The complete rebuild plan + all prior context, decisions, data-model design, and execution phases is at:
 **`~/.claude/plans/ffu-rebuild-plan.md`** — read it in full before doing substantial work.
 
-The old codebase (source of logic to port + data to migrate) is at `~/Development/ffu-app`. Run Claude in
-this repo with `--add-dir ~/Development/ffu-app` to read it without polluting this repo's git history.
+The old codebase (source of logic to port + data to migrate) is at `~/Development/ffu-app`. It's wired into
+this repo as an additional directory via `.claude/settings.local.json` (`permissions.additionalDirectories:
+["../ffu-app"]`), so every session can read it automatically — **no `--add-dir` flag needed**. (That file is
+gitignored + read at session start, so the access applies from the next session after it's set.)
 
 ---
 
