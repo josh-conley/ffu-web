@@ -144,17 +144,24 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
   + 2019 ESPN flat/2-tier both correct; seed visibly decoupled from finish; historical names + logo
   fallbacks working. 41 tests, all gates green.
 
-**Resume here tomorrow — Phase 4 continued (next slices, in order):**
-1. **Matchups** page (week-by-week results) — and **extract a shared `DataTable`** while doing it (deferred
-   from Standings until a 2nd consumer reveals the right abstraction; Standings can adopt it after).
-2. **Records** page — wire `buildRecordBook` (6 leaderboards) to UI.
-3. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — decide
-   compress vs. fetch) + `public/data/historical-teams` for `historicalTeam` resolution.
-4. **Members** (career + season history + 2-player compare + H2H) — uses `career`/`headToHead` selectors;
-   **owner names** from user would enable "First L." display (not blocking).
-5. **All-Time Stats** (career grid / season history / UPR horserace) + **Overview** (champions per tier).
-- Shared primitives still to build once: `DataTable` (sortable/paginated), progression chart.
-- To run the app locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
+- **Shared season flow** (commit `649c751`): `useSeasonView` hook (manifest → `?year=&tier=` → season,
+  with an `enabled` flag on `useAsyncData`) — used by Standings + Matchups.
+- **Matchups slice** (commit `e179db1`): `gamesByWeek` selector + `MatchupCard`; `/matchups` route. Week
+  sections of matchup cards (winner emphasized, playoff round label). Integration test.
+- **Records slice + DataTable** (commit `adbdf8b`): generic sortable/paginated **`DataTable`** primitive;
+  `useAllSeasons` hook; Records page with 6 leaderboards (`?record=`) over `buildRecordBook`. Verified in
+  browser. **43 tests, all gates green.**
+
+**Resume here — Phase 4 remaining slices:**
+1. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
+   compress vs. fetch-from-Sleeper) + `public/data/historical-teams` for `historicalTeam` resolution. Needs
+   `ffu-app` (auto-available via settings now). No draft selector yet — add one or read `DraftData` directly.
+2. **Members** (career + season history + 2-player compare + H2H) — uses `career`/`headToHead` selectors
+   (done); reuse `DataTable`. **owner names** from user would enable "First L." display (not blocking).
+3. **All-Time Stats** (career grid via `careerStats` + `DataTable`; season history; UPR horserace — needs a
+   progression chart) + **Overview** (champions per tier — `finalPlacement===1` across seasons).
+- Shared primitive still to build: progression/line chart (UPR horserace, member progression).
+- To run locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
   `--headless=new --screenshot=out.png <url>`).
 
 ## Open items needed from the user
