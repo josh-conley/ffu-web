@@ -96,15 +96,14 @@ function buildTeams(legacy) {
       memberId: resolveId(s.userId),
       record: { wins: s.wins, losses: s.losses, ties: s.ties ?? 0 },
       points: { for: s.pointsFor, against: s.pointsAgainst },
-      seed: s.rank,
+      // `rank` IS the final post-playoff placement (== playoffResults.placement in all data);
+      // NOT a regular-season seed. The regular-season seed is derived, not stored.
+      finalPlacement: s.rank,
       promoted: promoted.has(s.userId),
       relegated: relegated.has(s.userId),
     }
     if (s.division != null) team.divisionId = s.division
-    if (pr) {
-      team.finalPlacement = pr.placement
-      if (pr.placementName) team.placementName = pr.placementName
-    }
+    if (pr?.placementName) team.placementName = pr.placementName
     return team
   })
 }

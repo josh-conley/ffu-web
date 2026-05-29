@@ -16,10 +16,9 @@
         "for": 1963.15,
         "against": 1772.4
       },
-      "seed": 1,
+      "finalPlacement": 1,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 1,
       "placementName": "1st"
     },
     {
@@ -33,10 +32,9 @@
         "for": 1915.05,
         "against": 1627.6
       },
-      "seed": 2,
+      "finalPlacement": 2,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 2,
       "placementName": "2nd"
     },
     {
@@ -50,10 +48,9 @@
         "for": 1925.7,
         "against": 1745.1
       },
-      "seed": 3,
+      "finalPlacement": 3,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 3,
       "placementName": "3rd"
     },
     {
@@ -67,10 +64,9 @@
         "for": 1659.55,
         "against": 1628.3
       },
-      "seed": 4,
+      "finalPlacement": 4,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 4,
       "placementName": "4th"
     },
     {
@@ -84,10 +80,9 @@
         "for": 1777.25,
         "against": 1672.45
       },
-      "seed": 5,
+      "finalPlacement": 5,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 5,
       "placementName": "5th"
     },
     {
@@ -101,10 +96,9 @@
         "for": 1811.55,
         "against": 1631.7
       },
-      "seed": 6,
+      "finalPlacement": 6,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 6,
       "placementName": "6th"
     },
     {
@@ -118,10 +112,9 @@
         "for": 1757.25,
         "against": 1803.25
       },
-      "seed": 7,
+      "finalPlacement": 7,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 7,
       "placementName": "7th"
     },
     {
@@ -135,10 +128,9 @@
         "for": 1764.9,
         "against": 1630.1
       },
-      "seed": 8,
+      "finalPlacement": 8,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 8,
       "placementName": "8th"
     },
     {
@@ -152,10 +144,9 @@
         "for": 1590.99,
         "against": 1664.45
       },
-      "seed": 9,
+      "finalPlacement": 9,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 9,
       "placementName": "9th"
     },
     {
@@ -169,10 +160,9 @@
         "for": 1569.2,
         "against": 1815.2
       },
-      "seed": 10,
+      "finalPlacement": 10,
       "promoted": false,
       "relegated": false,
-      "finalPlacement": 10,
       "placementName": "10th"
     },
     {
@@ -186,10 +176,9 @@
         "for": 1545.85,
         "against": 1753.6
       },
-      "seed": 11,
+      "finalPlacement": 11,
       "promoted": false,
       "relegated": true,
-      "finalPlacement": 11,
       "placementName": "11th"
     },
     {
@@ -203,10 +192,9 @@
         "for": 1306.25,
         "against": 1842.55
       },
-      "seed": 12,
+      "finalPlacement": 12,
       "promoted": false,
       "relegated": true,
-      "finalPlacement": 12,
       "placementName": "12th"
     }
   ],

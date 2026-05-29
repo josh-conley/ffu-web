@@ -30,13 +30,22 @@ export interface SeasonTeam {
   memberId: string
   /** Omitted in no-division eras (divisions exist only from 2025). */
   divisionId?: number
+  /** Regular-season totals (not including playoffs). */
   record: TeamRecord
+  /** Regular-season totals (not including playoffs). */
   points: TeamPoints
-  /** Authoritative final regular-season rank (selector also re-derives + verifies). */
-  seed: number
-  /** Standing after playoffs; absent if a team didn't reach a final placement. */
+  /**
+   * Final standing after playoffs — the authoritative recorded outcome. In legacy this is
+   * `standings[].rank` (verified identical to `playoffResults[].placement` in all data).
+   * Absent only for an unfinished, active season.
+   *
+   * NOTE: the regular-season playoff *seed* is deliberately NOT stored. It's a derived,
+   * active-season concern (division-leader seeding + H2H tiebreakers) that only matters while
+   * a live season's playoffs are being set; completed seasons care only about finalPlacement.
+   * When active-season support returns (deferred), a selector derives the seed on demand.
+   */
   finalPlacement?: number
-  /** Optional display override; else derived from `finalPlacement`. */
+  /** Optional display label for `finalPlacement` (e.g. "1st"); else derived. */
   placementName?: string
   promoted: boolean
   relegated: boolean

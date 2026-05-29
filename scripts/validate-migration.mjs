@@ -86,7 +86,8 @@ function validateTeams(ctx, legacy, season) {
       fail(ctx, `missing team ${id}`)
       continue
     }
-    if (t.seed !== s.rank) fail(ctx, `${id} seed ${t.seed} != rank ${s.rank}`)
+    // `rank` is the final post-playoff placement → finalPlacement (not a regular-season seed).
+    if (t.finalPlacement !== s.rank) fail(ctx, `${id} finalPlacement ${t.finalPlacement} != legacy rank ${s.rank}`)
     if (t.record.wins !== s.wins || t.record.losses !== s.losses || t.record.ties !== (s.ties ?? 0))
       fail(ctx, `${id} record ${JSON.stringify(t.record)} != ${s.wins}-${s.losses}-${s.ties ?? 0}`)
     if (round2(t.points.for) !== round2(s.pointsFor) || round2(t.points.against) !== round2(s.pointsAgainst))

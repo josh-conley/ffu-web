@@ -93,10 +93,14 @@ authored (`src/config/types.ts`, `src/data/types.ts`); throwaway `legacy-source/
 (gitignored); `scripts/migrate-to-v2.mjs` emits 20 normalized seasons + 20 drafts + `seasons.json` into
 `public/data`, collapsing dual IDs to one `ffuId` and merging Team Dogecoin (ffu-032→**ffu-031**, confirmed
 w/ user); `scripts/validate-migration.mjs` is the per-game harness → **zero diffs across all 20
-tier-seasons** (per-game members+scores, seed/record/points/placement/promo/releg, derived high/low,
+tier-seasons** (per-game members+scores, record/points/finalPlacement/promo/releg, derived high/low,
 drafts). Run via `npm run migrate` / `npm run validate`.
 - Data realities (differ from plan assumptions): **divisions exist only in 2025**; legacy standings
-  high/low span ALL games incl. playoffs (not regular-season only).
+  high/low span ALL games incl. playoffs (not regular-season only). **Legacy `standings[].rank` is the
+  final post-playoff placement** (== `playoffResults.placement` in all 240 entries), NOT a regular-season
+  seed → it maps to `finalPlacement`. Regular-season `record`/`points` are stored; the regular-season
+  *seed* (division leaders + H2H tiebreakers) is deliberately NOT stored — it's a derived, active-season
+  playoff concern (deferred).
 - `legacy-source/` kept (gitignored) until the schema is locked through Phase 2/3, then delete.
 
 **Next — finish Phase 1 tail + Phase 2 (data layer):**
