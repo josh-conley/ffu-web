@@ -40,7 +40,7 @@ export function SeasonLeaguePicker({
             type="button"
             onClick={() => onTier(t)}
             aria-pressed={t === tier}
-            className={`border px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+            className={`inline-flex min-h-11 items-center border px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0 ${
               t === tier
                 ? `border-transparent ${LEAGUE_STYLES[t].solidHeader}`
                 : 'border-border bg-surface text-muted hover:bg-surface-2 hover:text-text'

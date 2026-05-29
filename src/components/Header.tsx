@@ -1,16 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from './ThemeToggle'
-
-// Nav grows as pages land (Phase 4). Only routes that exist are linked.
-const NAV = [
-  { to: '/', label: 'Overview', end: true },
-  { to: '/standings', label: 'Standings', end: false },
-  { to: '/matchups', label: 'Matchups', end: false },
-  { to: '/records', label: 'Records', end: false },
-  { to: '/drafts', label: 'Drafts', end: false },
-  { to: '/members', label: 'Members', end: false },
-  { to: '/all-time', label: 'All-Time', end: false },
-]
+import { MobileNav } from './MobileNav'
+import { NAV } from './nav'
 
 export function Header() {
   return (
@@ -25,7 +16,8 @@ export function Header() {
             </span>
           </span>
         </NavLink>
-        <nav className="flex items-center gap-0.5">
+        {/* Desktop nav row (>=md). Below md the hamburger drawer takes over. */}
+        <nav className="hidden items-center gap-0.5 md:flex">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
@@ -44,6 +36,11 @@ export function Header() {
           ))}
           <ThemeToggle />
         </nav>
+        {/* Mobile controls (<md): theme toggle + hamburger. */}
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <MobileNav items={NAV} />
+        </div>
       </div>
     </header>
   )
