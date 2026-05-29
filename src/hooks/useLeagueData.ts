@@ -9,6 +9,21 @@ export function useSeasons() {
   return useAsyncData('seasons', () => provider.getSeasons())
 }
 
+/** Every season loaded (for all-time views like Records / All-Time Stats). */
+export function useAllSeasons() {
+  const { data: manifest, loading, error } = useSeasons()
+  const all = useAsyncData(
+    'all-seasons',
+    () => Promise.all((manifest ?? []).map((s) => provider.getSeason(s.tier, s.year))),
+    manifest !== undefined,
+  )
+  return {
+    data: all.data,
+    loading: loading || (manifest !== undefined && all.loading),
+    error: error ?? all.error,
+  }
+}
+
 export function useSeason(tier: Tier, year: string, enabled = true) {
   return useAsyncData(`season:${tier}:${year}`, () => provider.getSeason(tier, year), enabled)
 }

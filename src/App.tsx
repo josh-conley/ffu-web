@@ -3,6 +3,7 @@ import { Layout } from '@/components/Layout'
 import { Overview } from '@/pages/Overview'
 import { Standings } from '@/pages/Standings'
 import { Matchups } from '@/pages/Matchups'
+import { Records } from '@/pages/Records'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Route index element={<Overview />} />
           <Route path="standings" element={<Standings />} />
           <Route path="matchups" element={<Matchups />} />
+          <Route path="records" element={<Records />} />
         </Route>
       </Routes>
     </BrowserRouter>
