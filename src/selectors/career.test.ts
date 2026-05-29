@@ -34,6 +34,8 @@ describe('careerStats (synthetic)', () => {
     expect(a.runnerUps).toBe(1) // 2024 finalPlacement 2
     expect(a.bestFinish).toBe(1)
     expect(a.playoffAppearances).toBe(1) // reached the 2023 championship bracket
+    expect(a.firstYear).toBe(2023) // FFU debut (derived, not a stored joinedYear)
+    expect(a.lastYear).toBe(2024)
   })
 })
 
