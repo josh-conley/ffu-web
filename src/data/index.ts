@@ -8,6 +8,8 @@ export type { LeagueDataProvider } from './provider'
 export type {
   SeasonData,
   SeasonTeam,
+  TeamRecord,
+  TeamPoints,
   Game,
   GameParticipant,
   Division,
