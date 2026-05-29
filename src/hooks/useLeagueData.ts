@@ -9,10 +9,10 @@ export function useSeasons() {
   return useAsyncData('seasons', () => provider.getSeasons())
 }
 
-export function useSeason(tier: Tier, year: string) {
-  return useAsyncData(`season:${tier}:${year}`, () => provider.getSeason(tier, year))
+export function useSeason(tier: Tier, year: string, enabled = true) {
+  return useAsyncData(`season:${tier}:${year}`, () => provider.getSeason(tier, year), enabled)
 }
 
-export function useDraft(tier: Tier, year: string) {
-  return useAsyncData(`draft:${tier}:${year}`, () => provider.getDraft(tier, year))
+export function useDraft(tier: Tier, year: string, enabled = true) {
+  return useAsyncData(`draft:${tier}:${year}`, () => provider.getDraft(tier, year), enabled)
 }

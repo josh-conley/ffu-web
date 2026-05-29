@@ -18,10 +18,11 @@ interface Resolved<T> {
  * `loading` is derived by comparing the resolved key to the current key, so a key change shows
  * loading during render without a synchronous setState in the effect.
  */
-export function useAsyncData<T>(key: string, fetcher: () => Promise<T>): AsyncState<T> {
+export function useAsyncData<T>(key: string, fetcher: () => Promise<T>, enabled = true): AsyncState<T> {
   const [resolved, setResolved] = useState<Resolved<T>>()
 
   useEffect(() => {
+    if (!enabled) return
     let active = true
     fetcher().then(
       (data) => active && setResolved({ key, data }),
@@ -32,9 +33,9 @@ export function useAsyncData<T>(key: string, fetcher: () => Promise<T>): AsyncSt
     }
     // `fetcher` is a fresh closure each render; `key` is the stable request identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key])
+  }, [key, enabled])
 
-  if (resolved?.key === key) {
+  if (enabled && resolved?.key === key) {
     return { data: resolved.data, error: resolved.error, loading: false }
   }
   return { data: undefined, error: undefined, loading: true }
