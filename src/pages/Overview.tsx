@@ -31,25 +31,25 @@ export function Overview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Fantasy Football Union</h1>
-        <p className="mt-1 text-slate-600 dark:text-slate-400">{years.length} seasons · champions by tier</p>
+        <h1 className="text-3xl font-extrabold uppercase tracking-tight">Fantasy Football Union</h1>
+        <p className="mt-1 text-muted">{years.length} seasons · champions by tier</p>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800/50">
+          <thead className="border-b border-border bg-surface-2">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400">Year</th>
+              <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wider text-muted">Year</th>
               {TIERS.map((t) => (
-                <th key={t} className="px-3 py-2 text-left">
+                <th key={t} className="px-3 py-2.5 text-left">
                   <LeagueBadge tier={t} />
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border">
             {years.map((year) => (
-              <tr key={year} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-3 py-2 font-medium tabular-nums">{year}</td>
+              <tr key={year} className="hover:bg-surface-2">
+                <td className="px-3 py-2 font-bold tabular-nums">{year}</td>
                 {TIERS.map((tier) => {
                   const id = champions.get(`${year}|${tier}`)
                   return (
@@ -60,7 +60,7 @@ export function Overview() {
                           {nameForYear(id, year) ?? id}
                         </span>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-muted">—</span>
                       )}
                     </td>
                   )

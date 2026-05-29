@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { getMember } from '@/config'
+import { SELECT } from './controls'
 
 /** Dropdown of members (by current name), used to pick a compare target. */
 export function MemberSelect({
@@ -28,7 +29,7 @@ export function MemberSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+      className={SELECT}
     >
       <option value="">{placeholder}</option>
       {options.map((o) => (

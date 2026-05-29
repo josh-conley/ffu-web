@@ -5,12 +5,16 @@ import { TeamLogo } from './TeamLogo'
 
 function ParticipantRow({ memberId, score, year, isWinner }: { memberId: string; score: number; year: string; isWinner: boolean }) {
   return (
-    <div className={`flex items-center justify-between gap-2 ${isWinner ? 'font-semibold' : 'text-slate-600 dark:text-slate-400'}`}>
+    <div
+      className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${
+        isWinner ? 'border-accent font-semibold' : 'border-transparent text-muted'
+      }`}
+    >
       <span className="flex items-center gap-2 truncate">
         <TeamLogo ffuId={memberId} size={24} />
         <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
       </span>
-      <span className="tabular-nums">{score.toFixed(2)}</span>
+      <span className="font-mono tabular-nums">{score.toFixed(2)}</span>
     </div>
   )
 }
@@ -18,9 +22,9 @@ function ParticipantRow({ memberId, score, year, isWinner }: { memberId: string;
 export function MatchupCard({ game, year }: { game: Game; year: string }) {
   const winner = winnerOf(game)
   return (
-    <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-800">
+    <div className="border border-border bg-surface p-3 shadow-sm">
       {game.round && (
-        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">
           {game.round}
         </div>
       )}

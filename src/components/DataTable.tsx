@@ -14,7 +14,7 @@ export interface SortState {
   dir: 'asc' | 'desc'
 }
 
-const TH_BASE = 'px-3 py-2 font-medium text-slate-500 dark:text-slate-400'
+const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider text-accent-fg'
 const TD_BASE = 'px-3 py-2'
 
 function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefined): T[] {
@@ -30,9 +30,9 @@ function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefine
 }
 
 function Pagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (p: number) => void }) {
-  const btn = 'rounded-md border border-slate-300 px-2 py-1 disabled:opacity-40 dark:border-slate-700'
+  const btn = 'rounded-md border border-border px-2 py-1 hover:bg-surface-2 disabled:opacity-40'
   return (
-    <div className="flex items-center justify-end gap-3 text-sm text-slate-500 dark:text-slate-400">
+    <div className="flex items-center justify-end gap-3 text-sm text-muted">
       <span>
         Page {page + 1} of {pageCount}
       </span>
@@ -80,9 +80,9 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800/50">
+          <thead className="bg-accent">
             <tr>
               {columns.map((col) => (
                 <th
@@ -97,9 +97,9 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border">
             {pageRows.map((row, i) => (
-              <tr key={getRowKey(row, i)} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+              <tr key={getRowKey(row, i)} className="hover:bg-surface-2">
                 {columns.map((col) => (
                   <td key={col.key} className={`${TD_BASE} ${col.align === 'right' ? 'text-right' : ''}`}>
                     {col.render(row)}

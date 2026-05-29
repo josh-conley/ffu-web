@@ -7,14 +7,14 @@ function recordLabel(row: StandingRow): string {
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
 }
 
-const TH = 'px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400'
+const TH = 'px-3 py-2.5 text-left font-bold uppercase tracking-wider text-accent-fg'
 const TD = 'px-3 py-2 whitespace-nowrap'
 
 export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: Map<string, number>; year: string }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+    <div className="overflow-x-auto border border-border bg-surface shadow-sm">
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-50 dark:bg-slate-800/50">
+        <thead className="bg-accent">
           <tr>
             <th className={TH}>#</th>
             <th className={TH}>Team</th>
@@ -26,26 +26,26 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
             <th className={TH}>Finish</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className="divide-y divide-border">
           {rows.map((row) => {
             const { team } = row
             return (
-              <tr key={team.memberId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className={`${TD} tabular-nums text-slate-500`}>{row.rank}</td>
+              <tr key={team.memberId} className="hover:bg-surface-2">
+                <td className={`${TD} tabular-nums text-muted`}>{row.rank}</td>
                 <td className={TD}>
                   <span className="flex items-center gap-2">
                     <TeamLogo ffuId={team.memberId} />
-                    <span className="font-medium">{nameForYear(team.memberId, year) ?? team.memberId}</span>
+                    <span className="font-semibold">{nameForYear(team.memberId, year) ?? team.memberId}</span>
                     {team.promoted && <span title="Promoted" className="text-emerald-600 dark:text-emerald-400">▲</span>}
-                    {team.relegated && <span title="Relegated" className="text-red-600 dark:text-red-400">▼</span>}
+                    {team.relegated && <span title="Relegated" className="text-national">▼</span>}
                   </span>
                 </td>
                 <td className={`${TD} tabular-nums`}>{recordLabel(row)}</td>
                 <td className={`${TD} text-right tabular-nums`}>{team.points.for.toFixed(2)}</td>
                 <td className={`${TD} text-right tabular-nums`}>{team.points.against.toFixed(2)}</td>
                 <td className={`${TD} text-right tabular-nums`}>{(row.winPct * 100).toFixed(1)}%</td>
-                <td className={`${TD} text-right tabular-nums`}>{upr.get(team.memberId)?.toFixed(2) ?? '—'}</td>
-                <td className={`${TD} text-slate-500`}>{team.placementName ?? team.finalPlacement ?? '—'}</td>
+                <td className={`${TD} text-right font-mono tabular-nums`}>{upr.get(team.memberId)?.toFixed(2) ?? '—'}</td>
+                <td className={`${TD} text-muted`}>{team.placementName ?? team.finalPlacement ?? '—'}</td>
               </tr>
             )
           })}

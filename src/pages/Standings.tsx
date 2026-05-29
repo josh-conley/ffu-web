@@ -17,7 +17,8 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
       <div className="space-y-6">
         {divisions.map((group) => (
           <section key={group.division.id}>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+              <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
               {group.division.name}
             </h2>
             <StandingsTable rows={group.rows} upr={upr} year={year} />
@@ -35,7 +36,7 @@ export function Standings() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Standings</h1>
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight">Standings</h1>
         {years.length > 0 && (
           <SeasonLeaguePicker years={years} year={year} tier={tier} onYear={setYear} onTier={setTier} />
         )}

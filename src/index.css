@@ -3,3 +3,86 @@
 /* Class-based dark mode (toggled via `.dark` on <html>), not OS-only — a theme
    toggle is part of the planned shell. https://tailwindcss.com/docs/dark-mode */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Brand type: Barlow (athletic, condensed-ish) for everything, JetBrains Mono for stats.
+   @import is acceptable for now; self-host later if perf matters. */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Design tokens (FFU identity: red accent, warm near-black dark, gold/purple/red tiers).
+   LIGHT values live here on :root; dark counterparts override in `.dark` below. Plain
+   `@theme` (not `inline`) so utilities compile to `var(--color-*)` and the dark overrides
+   cascade at runtime. */
+@theme {
+  /* Type */
+  --font-sans: 'Barlow', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Brand accent (FFU red) — same in light & dark */
+  --color-accent: #dc2626;
+  --color-accent-hover: #b91c1c;
+  --color-accent-fg: #ffffff; /* AA: #fff on #dc2626 = 4.5:1 */
+
+  /* Semantic surfaces — LIGHT defaults */
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+
+  /* Tier colors — solid (for colored headers/dots) + soft badge bg/fg, LIGHT defaults.
+     Restores the old-site identity: Premier gold, Masters purple, National red. */
+  --color-premier: #ca8a04;
+  --color-premier-bg: #fef9c3;
+  --color-premier-fg: #854d0e;
+  --color-masters: #9333ea;
+  --color-masters-bg: #f3e8ff;
+  --color-masters-fg: #6b21a8;
+  --color-national: #dc2626;
+  --color-national-bg: #fee2e2;
+  --color-national-fg: #991b1b;
+
+  /* Radius */
+  --radius-card: 0.5rem;
+
+  /* Offset color for the angular "cutout decal" drop-shadow (light default). */
+  --decal-shadow: rgb(0 0 0 / 0.12);
+}
+
+/* DARK overrides — warm near-black, not cool slate. */
+.dark {
+  --color-bg: #141416;
+  --color-surface: #1c1c1f;
+  --color-surface-2: #242428;
+  --color-border: #34343a;
+  --color-text: #f3f4f6;
+  --color-muted: #9ca3af;
+
+  --color-premier-bg: #422006;
+  --color-premier-fg: #fde047;
+  --color-masters-bg: #3b0764;
+  --color-masters-fg: #e9d5ff;
+  --color-national-bg: #450a0a;
+  --color-national-fg: #fecaca;
+
+  --decal-shadow: rgb(0 0 0 / 0.5);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* FFU "cutout decal" motif — a single clipped bottom-right corner (athletic, broadcast-
+   graphics feel) used as a deliberate accent on cards/tiles/chips. Pair with `.decal` for a
+   hard offset drop-shadow; drop-shadow (not box-shadow) follows the clipped shape. */
+@utility angular {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+@utility angular-sm {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
+}
+@utility decal {
+  filter: drop-shadow(4px 4px 0 var(--decal-shadow));
+}

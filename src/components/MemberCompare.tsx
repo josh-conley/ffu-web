@@ -11,10 +11,10 @@ function CompareRow({ label, a, b, dir, fmt }: { label: string; a: number; b: nu
   const aWins = dir === 'high' ? a > b : dir === 'low' ? a < b : false
   const bWins = dir === 'high' ? b > a : dir === 'low' ? b < a : false
   return (
-    <tr className="border-t border-slate-100 dark:border-slate-800">
-      <td className={`px-3 py-2 text-right tabular-nums ${aWins ? better : ''}`}>{f(a)}</td>
-      <td className="px-3 py-2 text-center text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</td>
-      <td className={`px-3 py-2 text-left tabular-nums ${bWins ? better : ''}`}>{f(b)}</td>
+    <tr className="border-t border-border">
+      <td className={`px-3 py-2 text-right font-mono tabular-nums ${aWins ? better : ''}`}>{f(a)}</td>
+      <td className="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-muted">{label}</td>
+      <td className={`px-3 py-2 text-left font-mono tabular-nums ${bWins ? better : ''}`}>{f(b)}</td>
     </tr>
   )
 }
@@ -38,7 +38,7 @@ function CareerCompare({ a, b }: { a: CareerStats; b: CareerStats }) {
 
 function H2H({ h2h }: { h2h: H2HRecord }) {
   if (h2h.meetings.length === 0) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">No head-to-head meetings yet.</p>
+    return <p className="text-sm text-muted">No head-to-head meetings yet.</p>
   }
   const ties = h2h.ties > 0 ? ` (${h2h.ties} tie${h2h.ties > 1 ? 's' : ''})` : ''
   return (
@@ -49,14 +49,14 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
         <span className="font-semibold">{name(h2h.opponentId)}</span>
         {ties} · {h2h.pointsFor.toFixed(1)}–{h2h.pointsAgainst.toFixed(1)} pts
       </p>
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="min-w-full text-sm">
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-border">
             {h2h.meetings.map((m, i) => (
-              <tr key={`${m.year}-${m.tier}-${m.week}-${i}`}>
+              <tr key={`${m.year}-${m.tier}-${m.week}-${i}`} className="hover:bg-surface-2">
                 <td className="px-3 py-2 tabular-nums">{m.year}</td>
                 <td className="px-3 py-2"><LeagueBadge tier={m.tier} /></td>
-                <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{m.round ?? `Wk ${m.week}`}</td>
+                <td className="px-3 py-2 text-muted">{m.round ?? `Wk ${m.week}`}</td>
                 <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'W' ? better : ''}`}>{m.score.toFixed(2)}</td>
                 <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'L' ? better : ''}`}>{m.opponentScore.toFixed(2)}</td>
               </tr>
@@ -82,12 +82,12 @@ export function MemberCompare({ a, b, h2h }: { a: CareerStats; b: CareerStats; h
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 dark:border-slate-800">
+      <div className="border border-border bg-surface shadow-sm">
         <CareerCompare a={a} b={b} />
       </div>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Head-to-Head</h2>
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Head-to-Head</h2>
         <H2H h2h={h2h} />
       </section>
     </div>

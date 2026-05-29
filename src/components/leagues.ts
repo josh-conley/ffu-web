@@ -1,29 +1,35 @@
 import type { Tier } from '@/config'
 
 // Single source of truth for tier presentation (Charter DRY — was copy-pasted across pages in the
-// old app). Premier (top) = amber/gold, Masters = sky, National = emerald.
+// old app). Colors mirror the old FFU site identity: Premier = gold, Masters = purple, National =
+// red. Values resolve to semantic tokens defined in src/index.css (light + dark).
 export interface LeagueStyle {
   label: string
-  /** Tailwind classes for a filled badge. */
+  /** Tailwind classes for a soft filled badge. */
   badge: string
-  /** Accent dot / bar color. */
+  /** Accent dot / bar color (solid tier color). */
   dot: string
+  /** Solid colored header bar (e.g. Standings tier sections). */
+  solidHeader: string
 }
 
 export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
   PREMIER: {
     label: 'Premier',
-    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-    dot: 'bg-amber-500',
+    badge: 'bg-premier-bg text-premier-fg',
+    dot: 'bg-premier',
+    solidHeader: 'bg-premier text-black',
   },
   MASTERS: {
     label: 'Masters',
-    badge: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-    dot: 'bg-sky-500',
+    badge: 'bg-masters-bg text-masters-fg',
+    dot: 'bg-masters',
+    solidHeader: 'bg-masters text-white',
   },
   NATIONAL: {
     label: 'National',
-    badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
-    dot: 'bg-emerald-500',
+    badge: 'bg-national-bg text-national-fg',
+    dot: 'bg-national',
+    solidHeader: 'bg-national text-white',
   },
 }

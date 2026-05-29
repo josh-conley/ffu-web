@@ -1,6 +1,7 @@
 import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { LEAGUE_STYLES } from './leagues'
+import { SELECT } from './controls'
 
 // Year dropdown + tier buttons. Tiers shown reflect what existed that year (ESPN era had no
 // Masters). Reused by every season-scoped page.
@@ -24,7 +25,7 @@ export function SeasonLeaguePicker({
         value={year}
         onChange={(e) => onYear(e.target.value)}
         aria-label="Season year"
-        className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+        className={SELECT}
       >
         {years.map((y) => (
           <option key={y} value={y}>
@@ -39,10 +40,10 @@ export function SeasonLeaguePicker({
             type="button"
             onClick={() => onTier(t)}
             aria-pressed={t === tier}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+            className={`border px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
               t === tier
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                ? `border-transparent ${LEAGUE_STYLES[t].solidHeader}`
+                : 'border-border bg-surface text-muted hover:bg-surface-2 hover:text-text'
             }`}
           >
             {LEAGUE_STYLES[t].label}

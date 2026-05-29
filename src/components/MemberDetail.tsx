@@ -5,20 +5,20 @@ import { LeagueBadge } from './LeagueBadge'
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-800">
-      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
+    <div className="angular-sm decal border-t-[3px] border-t-accent bg-surface-2 p-3">
+      <div className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</div>
+      <div className="mt-1 font-mono text-lg font-bold tabular-nums text-text">{value}</div>
     </div>
   )
 }
 
 function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
-  const TH = 'px-3 py-2 text-left font-medium text-slate-500 dark:text-slate-400'
+  const TH = 'px-3 py-2.5 text-left font-bold uppercase tracking-wider text-accent-fg'
   const TD = 'px-3 py-2 tabular-nums'
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+    <div className="overflow-x-auto border border-border bg-surface shadow-sm">
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-50 dark:bg-slate-800/50">
+        <thead className="bg-accent">
           <tr>
             <th className={TH}>Year</th>
             <th className={TH}>Tier</th>
@@ -28,15 +28,15 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
             <th className={TH}>Finish</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className="divide-y divide-border">
           {rows.map(({ year, tier, team }) => (
-            <tr key={`${year}-${tier}`}>
+            <tr key={`${year}-${tier}`} className="hover:bg-surface-2">
               <td className={TD}>{year}</td>
               <td className="px-3 py-2"><LeagueBadge tier={tier} /></td>
               <td className={`${TD} text-right`}>{team.record.wins}-{team.record.losses}{team.record.ties > 0 ? `-${team.record.ties}` : ''}</td>
               <td className={`${TD} text-right`}>{team.points.for.toFixed(2)}</td>
               <td className={`${TD} text-right`}>{team.points.against.toFixed(2)}</td>
-              <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{team.placementName ?? team.finalPlacement ?? '—'}</td>
+              <td className="px-3 py-2 text-muted">{team.placementName ?? team.finalPlacement ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -56,10 +56,10 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
         <TeamLogo ffuId={career.memberId} size={48} />
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{member?.name ?? career.memberId}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{member?.name ?? career.memberId}</h1>
             {career.isActive && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">Active</span>}
           </div>
-          <div className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="text-sm text-muted">
             {owners.length > 0 ? owners.join(' / ') : 'Owner TBD'}
             {tenure && ` · ${tenure}`}
           </div>
@@ -78,7 +78,10 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
       </div>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Season History</h2>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+          <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
+          Season History
+        </h2>
         <SeasonHistory rows={history} />
       </section>
     </div>

@@ -13,7 +13,8 @@ function MatchupsContent({ season, year }: { season: SeasonData; year: string })
     <div className="space-y-8">
       {weeks.map(({ week, games }) => (
         <section key={week}>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+            <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
             Week {week}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -33,7 +34,7 @@ export function Matchups() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Matchups</h1>
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight">Matchups</h1>
         {years.length > 0 && (
           <SeasonLeaguePicker years={years} year={year} tier={tier} onYear={setYear} onTier={setTier} />
         )}

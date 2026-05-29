@@ -42,9 +42,9 @@ export function AllTimeStats() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">All-Time Stats</h1>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Stats</h1>
       <DataTable columns={columns} rows={careers} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-muted">
         Career UPR applies the season UPR formula over each member's entire regular-season history.
       </p>
     </div>

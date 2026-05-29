@@ -39,7 +39,7 @@ export function Members() {
   if (!selected) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight">Members</h1>
         <MembersDirectory careers={careers} onSelect={(id) => update({ member: id, vs: '' })} />
       </div>
     )
@@ -52,7 +52,7 @@ export function Members() {
         <button
           type="button"
           onClick={() => update({ member: '', vs: '' })}
-          className="text-sm text-slate-500 hover:underline dark:text-slate-400"
+          className="text-sm font-semibold text-muted hover:text-accent"
         >
           ← All members
         </button>

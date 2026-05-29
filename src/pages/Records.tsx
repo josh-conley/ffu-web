@@ -4,6 +4,7 @@ import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { buildRecordBook, type MatchupRecord, type TeamGameRecord } from '@/selectors'
 import { DataTable, type Column } from '@/components/DataTable'
+import { segButton } from '@/components/controls'
 import { LeagueBadge } from '@/components/LeagueBadge'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -27,7 +28,7 @@ function rank<T>(rows: T[]): Ranked<T>[] {
 
 function SeasonCell({ year, tier, week, round }: { year: string; tier: TeamGameRecord['tier']; week: number; round?: string }) {
   return (
-    <span className="flex items-center gap-2 whitespace-nowrap text-slate-500 dark:text-slate-400">
+    <span className="flex items-center gap-2 whitespace-nowrap text-muted">
       <span className="tabular-nums">{year}</span>
       <LeagueBadge tier={tier} />
       <span>{round ?? `Wk ${week}`}</span>
@@ -70,7 +71,7 @@ function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
             <span key={t.memberId} className={`flex items-center gap-2 ${t.memberId === r.winnerId ? 'font-semibold' : ''}`}>
               <TeamLogo ffuId={t.memberId} size={20} />
               <span>{nameForYear(t.memberId, r.year) ?? t.memberId}</span>
-              <span className="tabular-nums text-slate-500 dark:text-slate-400">{t.score.toFixed(2)}</span>
+              <span className="font-mono tabular-nums text-muted">{t.score.toFixed(2)}</span>
             </span>
           ))}
         </span>
@@ -92,7 +93,7 @@ export function Records() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Records</h1>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">Records</h1>
       <div className="flex flex-wrap gap-1">
         {MODES.map((m) => (
           <button
@@ -100,11 +101,7 @@ export function Records() {
             type="button"
             onClick={() => setMode(m.key)}
             aria-pressed={m.key === active.key}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              m.key === active.key
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-            }`}
+            className={segButton(m.key === active.key)}
           >
             {m.label}
           </button>

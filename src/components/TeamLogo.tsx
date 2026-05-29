@@ -12,7 +12,7 @@ export function TeamLogo({ ffuId, size = 28 }: { ffuId: string; size?: number })
     return (
       <span
         style={dimension}
-        className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+        className="inline-flex shrink-0 items-center justify-center rounded-full bg-surface-2 text-[10px] font-semibold text-muted ring-1 ring-border"
         aria-hidden
       >
         {member?.abbreviation ?? '?'}

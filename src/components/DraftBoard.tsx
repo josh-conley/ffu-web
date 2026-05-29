@@ -7,9 +7,9 @@ const POS_COLOR: Record<string, string> = {
   WR: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
   TE: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
   K: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
-  DEF: 'bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
+  DEF: 'bg-surface-2 text-muted',
 }
-const posClass = (p: string) => POS_COLOR[p] ?? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
 
 /** Map slot → team. Prefer draftOrder; fall back to round-1 picks if it's empty. */
 function teamsBySlot(draft: DraftData): Map<number, string> {
@@ -29,25 +29,25 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
   const rounds = Array.from({ length: draft.rounds }, (_, i) => i + 1)
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+    <div className="overflow-x-auto border border-border bg-surface shadow-sm">
       <table className="text-xs">
-        <thead className="bg-slate-50 dark:bg-slate-800/50">
+        <thead className="bg-surface-2">
           <tr>
-            <th className="px-2 py-2 text-slate-400">Rd</th>
+            <th className="px-2 py-2 text-muted">Rd</th>
             {slots.map((slot) => (
               <th key={slot} className="px-2 py-2">
                 <span className="flex flex-col items-center gap-1">
                   {teamBySlot.get(slot) && <TeamLogo ffuId={teamBySlot.get(slot)!} size={20} />}
-                  <span className="text-slate-400">{slot}</span>
+                  <span className="text-muted">{slot}</span>
                 </span>
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className="divide-y divide-border">
           {rounds.map((round) => (
-            <tr key={round}>
-              <td className="px-2 py-1 text-center text-slate-400">{round}</td>
+            <tr key={round} className="hover:bg-surface-2">
+              <td className="px-2 py-1 text-center text-muted">{round}</td>
               {slots.map((slot) => {
                 const pick = byCell.get(`${round}-${slot}`)
                 return (
@@ -55,8 +55,8 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
                     {pick && (
                       <div className="w-28">
                         <div className="truncate font-medium" title={pick.player.name}>{pick.player.name}</div>
-                        <div className="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                          <span className={`rounded px-1 ${posClass(pick.player.position)}`}>{pick.player.position}</span>
+                        <div className="mt-0.5 flex items-center gap-1 text-[10px] text-muted">
+                          <span className={`rounded px-1 font-semibold ${posClass(pick.player.position)}`}>{pick.player.position}</span>
                           {pick.player.nflTeam && <span>{pick.player.nflTeam}</span>}
                         </div>
                       </div>
