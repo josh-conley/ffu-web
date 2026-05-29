@@ -130,10 +130,30 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
   games. H2H tiebreaker + division-leader playoff seeding (top-2 + 3rd-leader bump) are deferred
   (active-season-only in legacy).
 
-**Next — Phase 4 (core UI):** shell (`Layout`/`Header`/theme/`TeamLogo`/`LoadingSpinner`/`ErrorMessage`/
-`Overview`), then vertical slices **Standings first**, then Matchups, Records, Drafts, Members, All-Time
-Stats. Build shared primitives once (`DataTable`, `SeasonLeaguePicker`, `LeagueBadge`, league color map,
-`useUrlState`). Reference-data carry-over (logos/players/historical-teams) happens here as consumers appear.
+**Phase 4 (core UI) — in progress.** Done so far:
+- **Shell** (commit `804de67`): `Header` (nav + theme toggle), `Layout`, `useTheme` (class-based dark,
+  FOUC-prevented via inline script in `index.html`), `LoadingSpinner`, `ErrorMessage`, `LeagueBadge` +
+  single `LEAGUE_STYLES` color map, `TeamLogo` (serves `/team-logos/{ffuId}.png`, abbreviation fallback).
+  Carried over 41 team logos renamed to `{ffuId}.png` (unmatched/historical members use the fallback).
+- **Standings slice** (commit `f1b84df`): `useUrlState` (one uniform `?year=&tier=` helper),
+  `SeasonLeaguePicker`, `StandingsTable`, `Standings` page + `/standings` route. Loads manifest → latest
+  season; groups by division (2025) else flat table; uses `standings` + `seasonUpr` selectors. Integration
+  test renders real 2025 data. **Verified in a real browser** (Chrome headless screenshots): 2025 divisions
+  + 2019 ESPN flat/2-tier both correct; seed visibly decoupled from finish; historical names + logo
+  fallbacks working. 41 tests, all gates green.
+
+**Resume here tomorrow — Phase 4 continued (next slices, in order):**
+1. **Matchups** page (week-by-week results) — and **extract a shared `DataTable`** while doing it (deferred
+   from Standings until a 2nd consumer reveals the right abstraction; Standings can adopt it after).
+2. **Records** page — wire `buildRecordBook` (6 leaderboards) to UI.
+3. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — decide
+   compress vs. fetch) + `public/data/historical-teams` for `historicalTeam` resolution.
+4. **Members** (career + season history + 2-player compare + H2H) — uses `career`/`headToHead` selectors;
+   **owner names** from user would enable "First L." display (not blocking).
+5. **All-Time Stats** (career grid / season history / UPR horserace) + **Overview** (champions per tier).
+- Shared primitives still to build once: `DataTable` (sortable/paginated), progression chart.
+- To run the app locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
+  `--headless=new --screenshot=out.png <url>`).
 
 ## Open items needed from the user
 - **Owner names** (first name + last initial per `ffuId`) for the new `Owner` model; confirm the co-owned
