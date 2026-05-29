@@ -173,6 +173,14 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
 **Phase 4 core UI — ✅ complete.** All 7 pages live: Overview, Standings, Matchups, Records, Drafts,
 Members (directory/detail/compare), All-Time.
 
+**▶ NEXT (top priority, per user 2026-05-29): STYLING OVERHAUL before cutover.** Site looks bland; borrow
+the OLD site's design language + color scheme (live at `ffunion.com`) with a fresh modern twist. Immediate
+step: a **UI/UX design agent was mid-spawn when the prior session ended (interrupted before it ran — no
+saved state); launch it fresh** for a design-system proposal + samples, then implement (Tailwind v4 `@theme`
+tokens in `src/index.css`; league colors stay in `src/components/leagues.ts`). **Full handoff + the
+ready-to-spawn agent prompt are in memory `styling-overhaul-handoff` — read it first.** (User deprioritized
+the progression chart + minor refinements below.)
+
 **Resume here — remaining (polish / Phase 5):**
 1. **Progression/line chart** component (last shared primitive, optional) → All-Time **UPR horserace** +
    Members season-progression view.
