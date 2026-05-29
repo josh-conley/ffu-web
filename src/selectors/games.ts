@@ -102,3 +102,19 @@ export function regularSeasonTotals(season: SeasonData): Map<string, TeamTotals>
   for (const t of totals.values()) finalize(t)
   return totals
 }
+
+export interface WeekGames {
+  week: number
+  games: Game[]
+}
+
+/** Games grouped by week, ascending (for week-by-week views like Matchups). */
+export function gamesByWeek(season: SeasonData): WeekGames[] {
+  const byWeek = new Map<number, Game[]>()
+  for (const game of season.games) {
+    const games = byWeek.get(game.week)
+    if (games === undefined) byWeek.set(game.week, [game])
+    else games.push(game)
+  }
+  return [...byWeek.entries()].sort((a, b) => a[0] - b[0]).map(([week, games]) => ({ week, games }))
+}

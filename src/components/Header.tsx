@@ -5,6 +5,7 @@ import { ThemeToggle } from './ThemeToggle'
 const NAV = [
   { to: '/', label: 'Overview', end: true },
   { to: '/standings', label: 'Standings', end: false },
+  { to: '/matchups', label: 'Matchups', end: false },
 ]
 
 export function Header() {
