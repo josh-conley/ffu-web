@@ -38,9 +38,9 @@ export function Overview() {
         <table className="min-w-full text-sm">
           <thead className="border-b border-border bg-surface-2">
             <tr>
-              <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wider text-muted">Year</th>
+              <th scope="col" className="px-3 py-2.5 text-left font-bold uppercase tracking-wider text-muted">Year</th>
               {TIERS.map((t) => (
-                <th key={t} className="px-3 py-2.5 text-left">
+                <th key={t} scope="col" className="px-3 py-2.5 text-left">
                   <LeagueBadge tier={t} />
                 </th>
               ))}

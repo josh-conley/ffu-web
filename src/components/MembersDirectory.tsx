@@ -12,7 +12,7 @@ export function MembersDirectory({ careers, onSelect }: { careers: CareerStats[]
         header: 'Team',
         sortValue: (c) => getMember(c.memberId)?.name ?? c.memberId,
         render: (c) => (
-          <button type="button" onClick={() => onSelect(c.memberId)} className="flex items-center gap-2 hover:underline">
+          <button type="button" onClick={() => onSelect(c.memberId)} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             <TeamLogo ffuId={c.memberId} size={22} />
             <span className="font-medium">{getMember(c.memberId)?.name ?? c.memberId}</span>
             {c.isActive && <span className="size-1.5 rounded-full bg-emerald-500" title="Active" aria-label="Active" />}

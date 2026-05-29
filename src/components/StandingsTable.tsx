@@ -16,14 +16,14 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
       <table className="min-w-full text-sm">
         <thead className="bg-accent">
           <tr>
-            <th className={TH}>#</th>
-            <th className={TH}>Team</th>
-            <th className={TH}>Record</th>
-            <th className={`${TH} text-right`}>PF</th>
-            <th className={`${TH} text-right`}>PA</th>
-            <th className={`${TH} text-right`}>Win%</th>
-            <th className={`${TH} text-right`}>UPR</th>
-            <th className={TH}>Finish</th>
+            <th scope="col" className={TH}>#</th>
+            <th scope="col" className={TH}>Team</th>
+            <th scope="col" className={TH}>Record</th>
+            <th scope="col" className={`${TH} text-right`} title="Points For">PF</th>
+            <th scope="col" className={`${TH} text-right`} title="Points Against">PA</th>
+            <th scope="col" className={`${TH} text-right`}>Win%</th>
+            <th scope="col" className={`${TH} text-right`} title="Union Power Ranking">UPR</th>
+            <th scope="col" className={TH}>Finish</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -36,8 +36,8 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
                   <span className="flex items-center gap-2">
                     <TeamLogo ffuId={team.memberId} />
                     <span className="font-semibold">{nameForYear(team.memberId, year) ?? team.memberId}</span>
-                    {team.promoted && <span title="Promoted" className="text-emerald-600 dark:text-emerald-400">▲</span>}
-                    {team.relegated && <span title="Relegated" className="text-national">▼</span>}
+                    {team.promoted && <span title="Promoted" aria-label="Promoted" className="text-emerald-600 dark:text-emerald-400">▲</span>}
+                    {team.relegated && <span title="Relegated" aria-label="Relegated" className="text-national">▼</span>}
                   </span>
                 </td>
                 <td className={`${TD} tabular-nums`}>{recordLabel(row)}</td>

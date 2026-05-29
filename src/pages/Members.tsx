@@ -52,7 +52,7 @@ export function Members() {
         <button
           type="button"
           onClick={() => update({ member: '', vs: '' })}
-          className="text-sm font-semibold text-muted hover:text-accent"
+          className="rounded text-sm font-semibold text-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           ← All members
         </button>

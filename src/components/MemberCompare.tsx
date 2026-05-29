@@ -51,6 +51,15 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
       </p>
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="min-w-full text-sm">
+          <thead className="bg-surface-2">
+            <tr className="text-xs uppercase tracking-wider text-muted">
+              <th scope="col" className="px-3 py-2 text-left font-bold">Year</th>
+              <th scope="col" className="px-3 py-2 text-left font-bold">Tier</th>
+              <th scope="col" className="px-3 py-2 text-left font-bold">When</th>
+              <th scope="col" className="px-3 py-2 text-right font-bold">{name(h2h.memberId)}</th>
+              <th scope="col" className="px-3 py-2 text-right font-bold">{name(h2h.opponentId)}</th>
+            </tr>
+          </thead>
           <tbody className="divide-y divide-border">
             {h2h.meetings.map((m, i) => (
               <tr key={`${m.year}-${m.tier}-${m.week}-${i}`} className="hover:bg-surface-2">

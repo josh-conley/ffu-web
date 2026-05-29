@@ -30,7 +30,8 @@ function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefine
 }
 
 function Pagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (p: number) => void }) {
-  const btn = 'rounded-md border border-border px-2 py-1 hover:bg-surface-2 disabled:opacity-40'
+  const btn =
+    'inline-flex min-h-11 items-center rounded-md border border-border px-3 py-1 hover:bg-surface-2 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0 md:px-2'
   return (
     <div className="flex items-center justify-end gap-3 text-sm text-muted">
       <span>
@@ -87,12 +88,23 @@ export function DataTable<T>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`${TH_BASE} ${col.align === 'right' ? 'text-right' : 'text-left'} ${col.sortValue ? 'cursor-pointer select-none' : ''}`}
-                  onClick={() => toggleSort(col)}
+                  scope="col"
+                  className={`${TH_BASE} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                   aria-sort={sort?.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
-                  {col.header}
-                  {sort?.key === col.key && <span aria-hidden> {sort.dir === 'asc' ? '▲' : '▼'}</span>}
+                  {col.sortValue ? (
+                    // Button (not a click-only th) so sorting is keyboard-operable and announced.
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(col)}
+                      className={`flex w-full items-center gap-1 uppercase tracking-wider select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${col.align === 'right' ? 'justify-end' : ''}`}
+                    >
+                      {col.header}
+                      {sort?.key === col.key && <span aria-hidden>{sort.dir === 'asc' ? '▲' : '▼'}</span>}
+                    </button>
+                  ) : (
+                    col.header
+                  )}
                 </th>
               ))}
             </tr>

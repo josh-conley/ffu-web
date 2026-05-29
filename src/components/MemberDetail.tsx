@@ -20,12 +20,12 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
       <table className="min-w-full text-sm">
         <thead className="bg-accent">
           <tr>
-            <th className={TH}>Year</th>
-            <th className={TH}>Tier</th>
-            <th className={`${TH} text-right`}>Record</th>
-            <th className={`${TH} text-right`}>PF</th>
-            <th className={`${TH} text-right`}>PA</th>
-            <th className={TH}>Finish</th>
+            <th scope="col" className={TH}>Year</th>
+            <th scope="col" className={TH}>Tier</th>
+            <th scope="col" className={`${TH} text-right`}>Record</th>
+            <th scope="col" className={`${TH} text-right`} title="Points For">PF</th>
+            <th scope="col" className={`${TH} text-right`} title="Points Against">PA</th>
+            <th scope="col" className={TH}>Finish</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">

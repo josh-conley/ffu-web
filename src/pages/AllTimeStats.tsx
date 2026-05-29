@@ -15,7 +15,7 @@ function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
       header: 'Team',
       sortValue: (c) => getMember(c.memberId)?.name ?? c.memberId,
       render: (c) => (
-        <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 hover:underline">
+        <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           <TeamLogo ffuId={c.memberId} size={22} />
           <span className="font-medium">{getMember(c.memberId)?.name ?? c.memberId}</span>
         </Link>
