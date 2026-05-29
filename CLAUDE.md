@@ -153,20 +153,26 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
 - **Members slice** (commit `7da3a83`): `memberSeasons` selector; `MembersDirectory` (sortable career grid)
   + `MemberDetail` (header w/ owner + derived tenure + Active badge, stat tiles, season history); `?member=`
   URL state. Route /members. Verified in browser.
-- **Owner data**: `OWNERS` registry (`owners.ts`) + helpers (`getOwner`/`formatOwner`/`ownerNames`); only
-  **owner-001 Josh C. (ffu-023)** filled so far — rest pending from user (add to owners.ts + members.ts).
-- **Derived, not stored** (legacy constants were unreliable — see memory `legacy-constants-values-are-unreliable`):
-  removed `joinedYear` (wrong 43/63) and `isActive` (true for everyone incl. historical) from the Member
-  type; `careerStats` now derives `firstYear`/`lastYear`/`isActive`. **49 tests, all gates green.**
+- **Members compare** (commit `8442602`): `MemberSelect` + `MemberCompare` (side-by-side career +
+  head-to-head via `headToHead`); `?member=&vs=` URL state (atomic via `useSearchParams`).
+- **Overview + All-Time** (commit `8514471`): `careerUpr` selector; Overview champions matrix (year × tier);
+  All-Time leaderboard (`/all-time`) sortable on seasons/record/win%/PF/titles/playoff apps/career UPR.
+- **Owner data**: `OWNERS` registry (`owners.ts`, ids mirror ffuId) + `ownerNames` (last initial only when a
+  first name is shared); names populated by user incl. Team Dogecoin co-owners. ffu-019/033 first names TBD.
+- **Derived, not stored** (legacy constants unreliable — memory `legacy-constants-values-are-unreliable`):
+  `joinedYear` + `isActive` removed from Member; `careerStats` derives `firstYear`/`lastYear`/`isActive`.
+- **Data note**: ffu-035 (ZBoser) & ffu-048 (dewdoc) are in the config registry but never appear in any
+  season's data → excluded from career/all-time views. (Confirm whether they should be in the registry.)
+- **All pages live; 52 tests, all gates green.** Pages: Overview, Standings, Matchups, Records, Members
+  (directory/detail/compare), All-Time.
 
-**Resume here — Phase 4 remaining slices:**
-1. **Members follow-ups**: 2-player compare + H2H view (`headToHead` selector done) + progression chart.
-2. **All-Time Stats** (career grid via `careerStats` + `DataTable`; season history; UPR horserace — needs a
-   progression chart) + **Overview** (champions per tier — `finalPlacement===1` across seasons).
-3. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
+**Resume here — Phase 4 remaining:**
+1. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
    compress vs. fetch-from-Sleeper) + `public/data/historical-teams` for `historicalTeam` resolution. Needs
    `ffu-app` (auto-available via settings now). No draft selector yet — add one or read `DraftData` directly.
-- Shared primitive still to build: progression/line chart (UPR horserace, member progression + H2H).
+2. **Progression/line chart** component (last shared primitive) → All-Time **UPR horserace** + a Members
+   season progression view. (All-Time career UPR currently has no min-seasons qualifier — low-season members
+   top it; consider a qualifier or note.)
 - To run locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
   `--headless=new --screenshot=out.png <url>`).
 
