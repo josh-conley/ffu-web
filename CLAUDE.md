@@ -166,13 +166,22 @@ derivations over validated data (`src/selectors/`, barrel `index.ts`; 40 tests):
 - **All pages live; 52 tests, all gates green.** Pages: Overview, Standings, Matchups, Records, Members
   (directory/detail/compare), All-Time.
 
-**Resume here — Phase 4 remaining:**
-1. **Drafts** page (board + list) — needs reference-data carry-over: `public/data/players` (30MB — DECIDE
-   compress vs. fetch-from-Sleeper) + `public/data/historical-teams` for `historicalTeam` resolution. Needs
-   `ffu-app` (auto-available via settings now). No draft selector yet — add one or read `DraftData` directly.
-2. **Progression/line chart** component (last shared primitive) → All-Time **UPR horserace** + a Members
-   season progression view. (All-Time career UPR currently has no min-seasons qualifier — low-season members
-   top it; consider a qualifier or note.)
+- **Drafts** (commit `5f6616e`): `DraftBoard` (rounds × slots grid) + `DraftList` (sortable) from the
+  embedded `*.draft.json` (no player-pool carry-over needed); season picker + board/list toggle. Extracted
+  `useSeasonPicker` from `useSeasonView`. Route /drafts. **54 tests.**
+
+**Phase 4 core UI — ✅ complete.** All 7 pages live: Overview, Standings, Matchups, Records, Drafts,
+Members (directory/detail/compare), All-Time.
+
+**Resume here — remaining (polish / Phase 5):**
+1. **Progression/line chart** component (last shared primitive, optional) → All-Time **UPR horserace** +
+   Members season-progression view.
+2. **Optional refinements**: All-Time career UPR has no min-seasons qualifier (low-season members top it);
+   `historicalTeam` (precise draft-year NFL team) deferred — would need `players`/`historical-teams` carry-over;
+   confirm ffu-035/ffu-048 (never appear in data) belong in the registry; fill remaining owner names.
+3. **Phase 5 — cutover** (mostly pre-wired; see `DEPLOY.md`): point apex `ffunion.com` → this repo, old →
+   `old.ffunion.com`. Deferred-from-core (out of scope unless requested): H2H Matrix, Draft Fun Facts,
+   Playoff Machine, live active-week features, static lineup backfill.
 - To run locally: `npm run dev` → http://localhost:5173 (screenshot via installed Chrome headless:
   `--headless=new --screenshot=out.png <url>`).
 
