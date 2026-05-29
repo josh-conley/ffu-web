@@ -25,7 +25,7 @@ export const OWNERS: Owner[] = [
   { id: 'owner-016', firstName: '', lastInitial: '' }, // MustachePapi
   { id: 'owner-017', firstName: 'Kaylee', lastInitial: '' }, // The Riveters
   { id: 'owner-018', firstName: 'Mitch', lastInitial: '' }, // Crawfordsville's Finest
-  { id: 'owner-019', firstName: '???', lastInitial: 'F' }, // LegendsRise (first name TBD)
+  { id: 'owner-019', firstName: '', lastInitial: 'F' }, // LegendsRise (first name TBD)
   { id: 'owner-020', firstName: 'Bob', lastInitial: '' }, // The Tooth Tuggers
   { id: 'owner-021', firstName: 'Jack', lastInitial: '' }, // Nighthawks
   { id: 'owner-022', firstName: 'Ben', lastInitial: '' }, // The Gaston Ramblers
