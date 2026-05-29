@@ -32,7 +32,7 @@ export const MEMBERS: Member[] = [
   { ffuId: 'ffu-020', name: 'The Tooth Tuggers', abbreviation: 'TT', owners: [], platformIds: { sleeper: ['856248808915480576'] } },
   { ffuId: 'ffu-021', name: 'Nighthawks', abbreviation: 'HAWK', owners: [], platformIds: { sleeper: ['864966364937461760'] } },
   { ffuId: 'ffu-022', name: 'The Gaston Ramblers', abbreviation: 'TGR', owners: [], platformIds: { sleeper: ['865078270985629696'] } },
-  { ffuId: 'ffu-023', name: 'The Minutemen', abbreviation: 'MMEN', historicalNames: { '2020': 'The Minutemen' }, owners: [{ ownerId: 'owner-001', role: 'primary' }], platformIds: { sleeper: ['84006772809285632'], espn: ['mmen'] } },
+  { ffuId: 'ffu-023', name: 'The Minutemen', abbreviation: 'MMEN', historicalNames: { '2020': 'The Minutemen' }, owners: [{ ownerId: 'owner-023', role: 'primary' }], platformIds: { sleeper: ['84006772809285632'], espn: ['mmen'] } },
   { ffuId: 'ffu-024', name: 'Act More Stupidly', abbreviation: 'AMS', historicalNames: { '2020': 'Goat Emoji II' }, owners: [], platformIds: { sleeper: ['325766631336714240'], espn: ['swaggy'] } },
   { ffuId: 'ffu-025', name: 'Indianapolis Aztecs', abbreviation: 'AZTC', owners: [], platformIds: { sleeper: ['386791325690994688'], espn: ['aztecs'] } },
   { ffuId: 'ffu-026', name: 'Raging Rhinos', abbreviation: 'RAGE', historicalNames: { '2020': 'Currier Island Raging Rhinos' }, owners: [], platformIds: { sleeper: ['462383465753473024'], espn: ['rhinos'] } },

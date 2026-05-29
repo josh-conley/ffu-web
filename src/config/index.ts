@@ -51,14 +51,17 @@ export function formatOwner(owner: Owner): string {
   return `${owner.firstName} ${owner.lastInitial}.`
 }
 
-/** Display names of a member's owners (primary first), e.g. ["Josh C."]. Empty if unknown yet. */
+/**
+ * Display names of a member's owners (primary first), e.g. ["Josh C."]. Empty if unknown yet —
+ * placeholder owners (blank `firstName`) are skipped so the UI shows "—" until a real name is filled.
+ */
 export function ownerNames(ffuId: string): string[] {
   const member = byFfuId.get(ffuId)
   if (member === undefined) return []
   return [...member.owners]
     .sort((a, b) => (a.role === 'primary' ? -1 : 0) - (b.role === 'primary' ? -1 : 0))
     .map((o) => ownersById.get(o.ownerId))
-    .filter((o): o is Owner => o !== undefined)
+    .filter((o): o is Owner => o !== undefined && o.firstName !== '')
     .map(formatOwner)
 }
 
