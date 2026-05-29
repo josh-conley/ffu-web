@@ -36,6 +36,13 @@ describe('careerStats (synthetic)', () => {
     expect(a.playoffAppearances).toBe(1) // reached the 2023 championship bracket
     expect(a.firstYear).toBe(2023) // FFU debut (derived, not a stored joinedYear)
     expect(a.lastYear).toBe(2024)
+    expect(a.isActive).toBe(true) // played the latest season (2024)
+  })
+
+  it('marks a member who missed the latest season inactive', () => {
+    const b = careerStats(seasons).get('b')!
+    expect(b.lastYear).toBe(2023)
+    expect(b.isActive).toBe(false) // last played 2023; latest season is 2024
   })
 })
 

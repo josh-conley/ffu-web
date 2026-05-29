@@ -30,10 +30,10 @@ export interface Member {
   ffuId: string
   name: string
   abbreviation: string
-  isActive: boolean
-  // NOTE: no `joinedYear` — a member's FFU debut is DERIVED from the season data
-  // (`careerStats().firstYear`), not stored. The legacy constants value was unreliable (43/63
-  // were wrong — it reflected Sleeper migration, not first season). The data is the authority.
+  // NOTE: no `joinedYear` / `isActive` — both are DERIVED from the season data
+  // (`careerStats().firstYear` / `.isActive`), not stored. The legacy constants values were
+  // unreliable (joinedYear wrong for 43/63; isActive was `true` even for long-gone historical
+  // teams). The migrated data is the authority for our own notions.
   historicalNames?: Record<string, string> // year -> team name used that season
   owners: MemberOwner[]
   platformIds: { sleeper?: string[]; espn?: string[] }

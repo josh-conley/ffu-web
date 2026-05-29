@@ -28,6 +28,8 @@ export interface CareerStats {
   /** First / most-recent season the member played (their true FFU debut + latest year). */
   firstYear: number | null
   lastYear: number | null
+  /** Played the most recent season in the data (derived; replaces the unreliable config flag). */
+  isActive: boolean
   finishes: SeasonFinish[]
 }
 
@@ -66,6 +68,7 @@ function emptyCareer(memberId: string): CareerStats {
     bestFinish: null,
     firstYear: null,
     lastYear: null,
+    isActive: false,
     finishes: [],
   }
 }
@@ -93,15 +96,16 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
     }
   }
 
+  const latestYear = Math.max(0, ...seasons.map((s) => Number(s.year)))
   for (const [memberId, c] of career) {
-    finalizeCareer(c, playoffSeasons.get(memberId)?.size ?? 0)
+    finalizeCareer(c, playoffSeasons.get(memberId)?.size ?? 0, latestYear)
   }
 
   return career
 }
 
 /** Fill the derived fields once a member's per-season totals are accumulated. */
-function finalizeCareer(c: CareerStats, playoffCount: number): void {
+function finalizeCareer(c: CareerStats, playoffCount: number, latestYear: number): void {
   c.winPct = winPct({ wins: c.wins, losses: c.losses, ties: c.ties })
   c.playoffAppearances = playoffCount
   const placements = c.finishes.map((f) => f.finalPlacement).filter((n): n is number => n !== null)
@@ -109,6 +113,7 @@ function finalizeCareer(c: CareerStats, playoffCount: number): void {
   const yearsPlayed = c.finishes.map((f) => Number(f.year))
   c.firstYear = yearsPlayed.length > 0 ? Math.min(...yearsPlayed) : null
   c.lastYear = yearsPlayed.length > 0 ? Math.max(...yearsPlayed) : null
+  c.isActive = c.lastYear === latestYear
 }
 
 export function careerFor(seasons: SeasonData[], memberId: string): CareerStats | undefined {
