@@ -69,21 +69,21 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
       {/* w-full + table-fixed = 12 equal columns that fill the container (no horizontal scroll on
           desktop/tablet); min-w keeps cells readable on phones, where it falls back to scrolling. */}
       <table className="w-full min-w-[60rem] table-fixed text-xs">
-        {/* Broadcast-style header: near-black bar (echoes the navbar) + white team names over an
-            FFU-red accent rule, framing the colorful pick grid below. */}
+        {/* Light themed header lifted by an FFU-red accent rule (echoes the navbar) — frames the
+            colorful pick grid without the weight of a solid dark bar. */}
         <thead>
           <tr>
             {slots.map((slot) => {
               const ownerId = teamBySlot.get(slot)
               return (
-                <th key={slot} scope="col" className="border-b-2 border-accent bg-[#0a0a0b] px-1 py-2.5">
+                <th key={slot} scope="col" className="border-b-2 border-accent bg-surface-2 px-1 py-2.5">
                   <span className="flex w-full flex-col items-center gap-1">
                     {ownerId && <TeamLogo ffuId={ownerId} size={24} />}
-                    <span className="max-w-full truncate text-[11px] font-bold text-white">
+                    <span className="max-w-full truncate text-[11px] font-semibold">
                       {ownerId ? (nameForYear(ownerId, draft.year) ?? ownerId) : slot}
                     </span>
                     {ownerId && (
-                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/55">
+                      <span className="text-[9px] font-medium uppercase tracking-widest text-muted">
                         {getMember(ownerId)?.abbreviation}
                       </span>
                     )}
