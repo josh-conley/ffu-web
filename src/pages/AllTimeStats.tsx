@@ -2,17 +2,22 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { careerStats, careerUpr, championshipTitles, type CareerStats } from '@/selectors'
 import { DataTable, type Column } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
+import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TierDots, Trophies } from '@/components/Trophies'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
-const TIER_OPTIONS = (['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label }))
+const LEAGUE_OPTIONS = [
+  { value: 'ALL', label: 'All Leagues' },
+  ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
+]
 
 function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
   return [
@@ -66,37 +71,52 @@ function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
 
 export function AllTimeStats() {
   const { data: seasons, loading, error } = useAllSeasons()
-  const careers = useMemo(() => (seasons ? [...careerStats(seasons).values()] : []), [seasons])
-  const upr = useMemo(() => (seasons ? careerUpr(seasons) : new Map<string, number>()), [seasons])
+  // League scopes the underlying seasons, so the table shows stats earned WITHIN that tier (not
+  // all-time stats for anyone who happened to play it once). 'ALL' = full career across tiers.
+  const [league, setLeague] = useUrlState('league', 'ALL')
+  const scoped = useMemo(
+    () => (seasons ? (league === 'ALL' ? seasons : seasons.filter((s) => s.tier === league)) : undefined),
+    [seasons, league],
+  )
+  const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
+  const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
   const columns = useMemo(() => buildColumns(upr), [upr])
 
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
-    const maxTitles = Math.max(1, ...careers.map((c) => c.championships))
-    return [
-      { key: 'league', label: 'Played In', options: TIER_OPTIONS, predicate: (c, v) => c.finishes.some((f) => f.tier === v) },
-      { key: 'minSeasons', label: 'Min Seasons', type: 'range', min: 1, max: maxSeasons, predicate: (c, v) => c.seasons >= Number(v) },
-      { key: 'minTitles', label: 'Min Titles', type: 'range', min: 0, max: maxTitles, predicate: (c, v) => c.championships >= Number(v) },
-    ]
+    return [{ key: 'minSeasons', label: 'Min Seasons', type: 'range', min: 1, max: maxSeasons, predicate: (c, v) => c.seasons >= Number(v) }]
   }, [careers])
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
 
+  const scopeLabel = league === 'ALL' ? 'all-time, across every league' : `within ${LEAGUE_STYLES[league as keyof typeof LEAGUE_STYLES]?.label ?? league} only`
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Leaderboard</h1>
-      <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
+          <select className={`${SELECT} w-full sm:w-44`} value={league} onChange={(e) => setLeague(e.target.value)} aria-label="League">
+            {LEAGUE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
+      </div>
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
-        <DataTable key={JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
+        <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
       )}
       <p className="text-sm text-muted">
-        Career UPR applies the season UPR formula over each member's entire regular-season history. Trophies and
-        dots are colored by league: <span className="font-semibold text-premier">Premier</span>,{' '}
-        <span className="font-semibold text-masters">Masters</span>, <span className="font-semibold text-national">National</span>.
+        Stats are {scopeLabel}. Career UPR applies the season UPR formula over each member's regular-season
+        history; trophies and dots are colored by league:{' '}
+        <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}
+        <span className="font-semibold text-national">National</span>.
       </p>
     </div>
   )
