@@ -37,3 +37,12 @@ it('switches to the list view', async () => {
   await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Player' })).toBeInTheDocument())
   expect(screen.getByText('Christian McCaffrey')).toBeInTheDocument()
 })
+
+it('filters the list by position from the URL', async () => {
+  // pos=QB should exclude the #1 RB (McCaffrey) but still render some rows.
+  renderAt('/drafts?year=2024&tier=PREMIER&view=list&pos=QB')
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Player' })).toBeInTheDocument())
+  expect(screen.queryByText('Christian McCaffrey')).not.toBeInTheDocument()
+  // header row + at least one QB pick
+  expect(screen.getAllByRole('row').length).toBeGreaterThan(1)
+})
