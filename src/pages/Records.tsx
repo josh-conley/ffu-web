@@ -4,7 +4,7 @@ import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { buildRecordBook, type MatchupRecord, type TeamGameRecord } from '@/selectors'
 import { DataTable, type Column } from '@/components/DataTable'
-import { segButton } from '@/components/controls'
+import { SELECT } from '@/components/controls'
 import { LeagueBadge } from '@/components/LeagueBadge'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -21,6 +21,9 @@ const MODES = [
   { key: 'highCombined', label: 'Highest Combined', kind: 'matchup' },
   { key: 'lowCombined', label: 'Lowest Combined', kind: 'matchup' },
 ] as const
+
+const TEAM_MODES = MODES.filter((m) => m.kind === 'team')
+const MATCHUP_MODES = MODES.filter((m) => m.kind === 'matchup')
 
 function rank<T>(rows: T[]): Ranked<T>[] {
   return rows.map((row, i) => ({ ...row, rank: i + 1 }))
@@ -94,19 +97,21 @@ export function Records() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">Records</h1>
-      <div className="flex flex-wrap gap-1">
-        {MODES.map((m) => (
-          <button
-            key={m.key}
-            type="button"
-            onClick={() => setMode(m.key)}
-            aria-pressed={m.key === active.key}
-            className={segButton(m.key === active.key)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Record</span>
+        <select className={`${SELECT} w-full sm:w-64`} value={active.key} onChange={(e) => setMode(e.target.value)} aria-label="Record type">
+          <optgroup label="Single Game">
+            {TEAM_MODES.map((m) => (
+              <option key={m.key} value={m.key}>{m.label}</option>
+            ))}
+          </optgroup>
+          <optgroup label="Matchups">
+            {MATCHUP_MODES.map((m) => (
+              <option key={m.key} value={m.key}>{m.label}</option>
+            ))}
+          </optgroup>
+        </select>
+      </label>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage error={error} />}

@@ -29,8 +29,8 @@ it('loads all seasons and renders a records leaderboard with pagination', async 
     </MemoryRouter>,
   )
 
-  // Mode selector is present immediately; the table fills once all seasons resolve.
-  expect(screen.getByRole('button', { name: 'Biggest Blowouts' })).toBeInTheDocument()
+  // Mode selector (dropdown) is present immediately; the table fills once all seasons resolve.
+  expect(screen.getByRole('combobox', { name: 'Record type' })).toBeInTheDocument()
   await waitFor(() => expect(screen.getByText('Page 1 of', { exact: false })).toBeInTheDocument())
   // pageSize 15 → 15 body rows + 1 header row.
   expect(screen.getAllByRole('row').length).toBe(16)
