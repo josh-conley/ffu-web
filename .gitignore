@@ -12,6 +12,7 @@ dist
 dist-ssr
 coverage
 *.local
+tmp
 
 # Throwaway Phase 1 migration inputs (reproducible from sibling ffu-app repo).
 # Deleted once per-game validation passes — see legacy-source/README.md.

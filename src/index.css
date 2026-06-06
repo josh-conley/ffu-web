@@ -17,10 +17,10 @@
   --font-sans: 'Barlow', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Brand accent (FFU red) — same in light & dark */
-  --color-accent: #dc2626;
-  --color-accent-hover: #b91c1c;
-  --color-accent-fg: #ffffff; /* AA: #fff on #dc2626 = 4.5:1 */
+  /* Brand accent (FFU "Main" red from the newsletter) — same in light & dark */
+  --color-accent: #cc0000;
+  --color-accent-hover: #a30000;
+  --color-accent-fg: #ffffff; /* AA: #fff on #cc0000 ≈ 5.9:1 */
 
   /* Semantic surfaces — LIGHT defaults */
   --color-bg: #f9fafb;
@@ -31,14 +31,14 @@
   --color-muted: #6b7280;
 
   /* Tier colors — solid (for colored headers/dots) + soft badge bg/fg, LIGHT defaults.
-     Restores the old-site identity: Premier gold, Masters purple, National red. */
-  --color-premier: #ca8a04;
-  --color-premier-bg: #fef9c3;
-  --color-premier-fg: #854d0e;
-  --color-masters: #9333ea;
+     Exact newsletter identity: Premier amber, Masters purple, National (bright) red. */
+  --color-premier: #fca800;
+  --color-premier-bg: #ffedcc;
+  --color-premier-fg: #8a4d00;
+  --color-masters: #bc2ce0;
   --color-masters-bg: #f3e8ff;
   --color-masters-fg: #6b21a8;
-  --color-national: #dc2626;
+  --color-national: #f0303c;
   --color-national-bg: #fee2e2;
   --color-national-fg: #991b1b;
 
@@ -58,8 +58,8 @@
   --color-text: #f3f4f6;
   --color-muted: #9ca3af;
 
-  --color-premier-bg: #422006;
-  --color-premier-fg: #fde047;
+  --color-premier-bg: #3d2600;
+  --color-premier-fg: #ffc861;
   --color-masters-bg: #3b0764;
   --color-masters-fg: #e9d5ff;
   --color-national-bg: #450a0a;

@@ -11,6 +11,8 @@ export interface LeagueStyle {
   dot: string
   /** Solid colored header bar (e.g. Standings tier sections). */
   solidHeader: string
+  /** Tier color as text / icon foreground (e.g. a championship trophy). */
+  text: string
 }
 
 export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
@@ -19,17 +21,20 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     badge: 'bg-premier-bg text-premier-fg',
     dot: 'bg-premier',
     solidHeader: 'bg-premier text-black',
+    text: 'text-premier',
   },
   MASTERS: {
     label: 'Masters',
     badge: 'bg-masters-bg text-masters-fg',
     dot: 'bg-masters',
     solidHeader: 'bg-masters text-white',
+    text: 'text-masters',
   },
   NATIONAL: {
     label: 'National',
     badge: 'bg-national-bg text-national-fg',
     dot: 'bg-national',
     solidHeader: 'bg-national text-white',
+    text: 'text-national',
   },
 }

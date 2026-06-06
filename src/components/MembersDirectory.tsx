@@ -1,8 +1,11 @@
 import { useMemo } from 'react'
 import { getMember, ownerNames } from '@/config'
+import type { Tier } from '@/config'
 import type { CareerStats, MembersByLeague } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
+
+const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
 const TrophyIcon = (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -15,20 +18,34 @@ const TrophyIcon = (
   </svg>
 )
 
-/** A championship is one trophy; cap the icons and append "×N" past the cap to keep cards tidy. */
-function Trophies({ count }: { count: number }) {
-  if (count <= 0) return null
-  const shown = Math.min(count, 4)
+interface Title {
+  year: string
+  tier: Tier
+}
+
+/** The championships a member won (Premier → Masters → National, then by year), one per title. */
+const championships = (c: CareerStats): Title[] =>
+  c.finishes
+    .filter((f) => f.finalPlacement === 1)
+    .map((f) => ({ year: f.year, tier: f.tier }))
+    .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier) || a.year.localeCompare(b.year))
+
+/** Full summary like "Premier 2022, 2024 · National 2019" — for the group's accessible label. */
+const trophyLabel = (titles: Title[]): string =>
+  TIER_ORDER.filter((t) => titles.some((x) => x.tier === t))
+    .map((t) => `${LEAGUE_STYLES[t].label} ${titles.filter((x) => x.tier === t).map((x) => x.year).join(', ')}`)
+    .join(' · ')
+
+/** One trophy per championship, colored by the league it was won in; hover shows the year won. */
+function Trophies({ titles }: { titles: Title[] }) {
+  if (titles.length === 0) return null
   return (
-    <span
-      className="flex shrink-0 items-center gap-0.5 text-amber-500 dark:text-amber-400"
-      title={`${count} championship${count === 1 ? '' : 's'}`}
-      aria-label={`${count} championship${count === 1 ? '' : 's'}`}
-    >
-      {Array.from({ length: shown }, (_, i) => (
-        <span key={i}>{TrophyIcon}</span>
+    <span className="flex shrink-0 items-center gap-0.5" aria-label={trophyLabel(titles)}>
+      {titles.map((t, i) => (
+        <span key={i} className={LEAGUE_STYLES[t.tier].text} title={t.year}>
+          {TrophyIcon}
+        </span>
       ))}
-      {count > shown && <span className="text-xs font-bold">×{count}</span>}
     </span>
   )
 }
@@ -49,7 +66,7 @@ function MemberCard({ career, onSelect }: { career: CareerStats; onSelect: (id: 
         <div className="truncate font-bold">{teamName(career)}</div>
         <div className="truncate text-sm text-muted">{owners || '—'}</div>
       </div>
-      <Trophies count={career.championships} />
+      <Trophies titles={championships(career)} />
     </button>
   )
 }
@@ -67,7 +84,7 @@ function PastRow({ career, onSelect }: { career: CareerStats; onSelect: (id: str
         <span className="font-medium">{teamName(career)}</span>
         {owners && <span className="text-muted"> · {owners}</span>}
       </span>
-      <Trophies count={career.championships} />
+      <Trophies titles={championships(career)} />
     </button>
   )
 }

@@ -31,26 +31,24 @@ function snakeArrow(round: number, slot: number, numTeams: number, totalRounds: 
 function PickCell({ pick, ownerId, numTeams, totalRounds }: { pick: DraftPick; ownerId: string | undefined; numTeams: number; totalRounds: number }) {
   const traded = ownerId !== undefined && pick.memberId !== ownerId
   return (
-    <div className={`flex min-h-[4.25rem] w-full flex-col p-1 ${posBg(pick.player.position)} ${traded ? 'border-l-2 border-l-accent/40' : ''}`}>
+    // Uniform 3-line cell (meta · name · position). A trade fills the footer's otherwise-empty
+    // right edge — no extra row — so traded and non-traded cells share identical dimensions/layout.
+    // border-l-2 is on every cell (transparent by default) so the traded accent edge never shifts text.
+    <div className={`flex w-full flex-col gap-1 border-l-2 p-1.5 ${posBg(pick.player.position)} ${traded ? 'border-l-accent/40' : 'border-l-transparent'}`}>
       <div className="flex items-center justify-between text-[10px] tabular-nums text-muted">
         <span className="font-semibold">{pickLabel(pick, numTeams)}</span>
-        <span>#{pick.overall}</span>
+        <span className="flex items-center gap-1">
+          <span>#{pick.overall}</span>
+          <span aria-hidden className="font-semibold">{snakeArrow(pick.round, pick.slot, numTeams, totalRounds)}</span>
+        </span>
       </div>
-      {/* Name takes the slack so it sits vertically centered between the meta and position rows. */}
-      <div className="flex flex-1 items-center py-0.5">
-        <span className="w-full truncate font-medium" title={pick.player.name}>{shortName(pick.player)}</span>
-      </div>
+      <div className="truncate font-medium" title={pick.player.name}>{shortName(pick.player)}</div>
       <div className="flex items-center justify-between gap-1 text-[10px] text-muted">
         <span className="flex min-w-0 items-center gap-1">
           <span className={`rounded px-1 font-semibold ${posClass(pick.player.position)}`}>{pick.player.position}</span>
           {pick.player.nflTeam && pick.player.position !== 'DEF' && <span className="truncate">{pick.player.nflTeam}</span>}
         </span>
-        <span aria-hidden className="font-semibold">{snakeArrow(pick.round, pick.slot, numTeams, totalRounds)}</span>
-      </div>
-      {/* Reserved row so a traded tag never changes the cell's size. The "→ {ABBR}" (the team that
-          acquired the pick) is accent-colored to read distinctly from the muted snake-flow arrows. */}
-      <div className="h-3.5 truncate text-[10px] font-medium text-accent">
-        {traded ? `→ ${getMember(pick.memberId)?.abbreviation ?? '?'}` : ''}
+        {traded && <span className="shrink-0 font-medium text-accent">→ {getMember(pick.memberId)?.abbreviation ?? '?'}</span>}
       </div>
     </div>
   )
@@ -67,23 +65,25 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
     // Near-full-bleed: break out of the page's centered max-width container to (almost) the full
     // viewport — the board is a wide horizontally-scrollable grid — but leave a small gutter on each
     // side rather than running flush to the screen edge.
-    <div className="mx-[calc(50%-50vw+1rem)] overflow-x-auto border-y border-border bg-surface shadow-sm">
+    <div className="mx-[calc(50%-50vw+1rem)] overflow-x-auto border border-border bg-surface shadow-sm">
       {/* w-full + table-fixed = 12 equal columns that fill the container (no horizontal scroll on
           desktop/tablet); min-w keeps cells readable on phones, where it falls back to scrolling. */}
       <table className="w-full min-w-[60rem] table-fixed text-xs">
-        <thead className="bg-surface-2">
+        {/* Broadcast-style header: near-black bar (echoes the navbar) + white team names over an
+            FFU-red accent rule, framing the colorful pick grid below. */}
+        <thead>
           <tr>
             {slots.map((slot) => {
               const ownerId = teamBySlot.get(slot)
               return (
-                <th key={slot} scope="col" className="px-1 py-2">
-                  <span className="flex w-full flex-col items-center gap-0.5">
-                    {ownerId && <TeamLogo ffuId={ownerId} size={20} />}
-                    <span className="max-w-full truncate font-semibold">
+                <th key={slot} scope="col" className="border-b-2 border-accent bg-[#0a0a0b] px-1 py-2.5">
+                  <span className="flex w-full flex-col items-center gap-1">
+                    {ownerId && <TeamLogo ffuId={ownerId} size={24} />}
+                    <span className="max-w-full truncate text-[11px] font-bold text-white">
                       {ownerId ? (nameForYear(ownerId, draft.year) ?? ownerId) : slot}
                     </span>
                     {ownerId && (
-                      <span className="text-[10px] font-normal tracking-wide text-muted">
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-white/55">
                         {getMember(ownerId)?.abbreviation}
                       </span>
                     )}
