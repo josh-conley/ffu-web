@@ -28,8 +28,8 @@ function renderAt(path: string) {
 
 it('renders the draft board for a season', async () => {
   renderAt('/drafts?year=2024&tier=PREMIER')
-  // #1 overall pick in 2024 Premier.
-  await waitFor(() => expect(screen.getByText('Christian McCaffrey')).toBeInTheDocument())
+  // #1 overall pick in 2024 Premier — the board abbreviates names to "F. Last" to fit all columns.
+  await waitFor(() => expect(screen.getByText('C. McCaffrey')).toBeInTheDocument())
 })
 
 it('switches to the list view', async () => {
