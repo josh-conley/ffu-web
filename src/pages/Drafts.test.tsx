@@ -34,6 +34,6 @@ it('renders the draft board for a season', async () => {
 
 it('switches to the list view', async () => {
   renderAt('/drafts?year=2024&tier=PREMIER&view=list')
-  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'College' })).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Player' })).toBeInTheDocument())
   expect(screen.getByText('Christian McCaffrey')).toBeInTheDocument()
 })

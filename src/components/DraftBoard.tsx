@@ -1,5 +1,6 @@
 import type { DraftData, DraftPick, DraftPlayer } from '@/data'
 import { getMember, nameForYear } from '@/config'
+import { pickLabel, teamsBySlot } from '@/selectors'
 import { TeamLogo } from './TeamLogo'
 
 const POS_COLOR: Record<string, string> = {
@@ -23,26 +24,6 @@ const POS_BG: Record<string, string> = {
   DEF: 'bg-surface-2',
 }
 const posBg = (p: string) => POS_BG[p] ?? 'bg-surface-2'
-
-/** Map slot → original draft-order owner. Prefer draftOrder; fall back to round-1 picks if empty. */
-function teamsBySlot(draft: DraftData): Map<number, string> {
-  const bySlot = new Map<number, string>()
-  for (const [memberId, slot] of Object.entries(draft.draftOrder)) bySlot.set(slot, memberId)
-  if (bySlot.size === 0) {
-    for (const p of draft.picks) if (p.round === 1) bySlot.set(p.slot, p.memberId)
-  }
-  return bySlot
-}
-
-/**
- * Pick label in true draft notation (e.g. `6.09`), derived from the OVERALL pick so snake
- * even-rounds read correctly — the within-round position reverses each round, but `overall` does
- * not, so `overall - (round-1)*teams` is the real pick-in-round regardless of slot.
- */
-function pickLabel(pick: DraftPick, numTeams: number): string {
-  const inRound = numTeams > 0 ? pick.overall - (pick.round - 1) * numTeams : pick.slot
-  return `${pick.round}.${String(inRound).padStart(2, '0')}`
-}
 
 /** Compact player label so all columns fit without horizontal scroll: skill players become
  *  "F. Last"; defenses (no personal name) become their team abbreviation. */
