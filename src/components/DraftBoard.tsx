@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { DraftData, DraftPick, DraftPlayer } from '@/data'
 import { getMember, nameForYear } from '@/config'
 import { pickLabel, teamsBySlot } from '@/selectors'
@@ -27,14 +28,34 @@ function snakeArrow(round: number, slot: number, numTeams: number, totalRounds: 
 }
 
 /** One pick. Every cell is the same fixed shape; trades surface as a subtle neutral edge + a muted
- *  "via {ABBR}" tag (the acquiring team), and the snake-flow direction sits in the bottom-right. */
-function PickCell({ pick, ownerId, numTeams, totalRounds }: { pick: DraftPick; ownerId: string | undefined; numTeams: number; totalRounds: number }) {
+ *  "via {ABBR}" tag (the acquiring team), and the snake-flow direction sits in the bottom-right.
+ *  Clicking a pick highlights every pick its drafter made (see DraftBoard's `highlighted` state). */
+function PickCell({ pick, ownerId, numTeams, totalRounds, highlighted, onToggle }: {
+  pick: DraftPick
+  ownerId: string | undefined
+  numTeams: number
+  totalRounds: number
+  highlighted: string | null
+  onToggle: (id: string) => void
+}) {
   const traded = ownerId !== undefined && pick.memberId !== ownerId
+  const isHighlight = highlighted === pick.memberId
+  const dimmed = highlighted !== null && !isHighlight
+  const state = isHighlight
+    ? 'relative z-10 ring-2 ring-accent'
+    : dimmed
+      ? 'opacity-30'
+      : 'hover:ring-1 hover:ring-muted/50'
   return (
     // Uniform 3-line cell (meta · name · position). A trade fills the footer's otherwise-empty
     // right edge — no extra row — so traded and non-traded cells share identical dimensions/layout.
     // border-l-2 is on every cell (transparent by default) so the traded accent edge never shifts text.
-    <div className={`flex w-full flex-col gap-1 border-l-2 p-1.5 ${posBg(pick.player.position)} ${traded ? 'border-l-accent/40' : 'border-l-transparent'}`}>
+    <button
+      type="button"
+      onClick={() => onToggle(pick.memberId)}
+      aria-pressed={isHighlight}
+      className={`flex w-full flex-col gap-1 border-l-2 p-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${posBg(pick.player.position)} ${traded ? 'border-l-accent/40' : 'border-l-transparent'} ${state}`}
+    >
       <div className="flex items-center justify-between text-[10px] tabular-nums text-muted">
         <span className="font-semibold">{pickLabel(pick, numTeams)}</span>
         <span className="flex items-center gap-1">
@@ -50,7 +71,7 @@ function PickCell({ pick, ownerId, numTeams, totalRounds }: { pick: DraftPick; o
         </span>
         {traded && <span className="shrink-0 font-medium text-accent">→ {getMember(pick.memberId)?.abbreviation ?? '?'}</span>}
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -60,6 +81,10 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
   const byCell = new Map<string, DraftPick>()
   for (const p of draft.picks) byCell.set(`${p.round}-${p.slot}`, p)
   const rounds = Array.from({ length: draft.rounds }, (_, i) => i + 1)
+
+  // Click a team (header or any of its picks) to spotlight every pick it made; click again to clear.
+  const [highlighted, setHighlighted] = useState<string | null>(null)
+  const toggle = (id: string) => setHighlighted((prev) => (prev === id ? null : id))
 
   return (
     // Near-full-bleed: break out of the page's centered max-width container to (almost) the full
@@ -75,9 +100,15 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
           <tr>
             {slots.map((slot) => {
               const ownerId = teamBySlot.get(slot)
+              const dim = highlighted !== null && ownerId !== highlighted
               return (
-                <th key={slot} scope="col" className="border-b-2 border-accent bg-surface-2 px-1 py-2.5">
-                  <span className="flex w-full flex-col items-center gap-1">
+                <th key={slot} scope="col" className="border-b-2 border-accent bg-surface-2 p-0">
+                  <button
+                    type="button"
+                    onClick={() => ownerId && toggle(ownerId)}
+                    aria-pressed={ownerId !== undefined && highlighted === ownerId}
+                    className={`flex w-full flex-col items-center gap-1 px-1 py-2.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${dim ? 'opacity-40' : 'hover:bg-surface'}`}
+                  >
                     {ownerId && <TeamLogo ffuId={ownerId} size={24} />}
                     <span className="max-w-full truncate text-[11px] font-semibold">
                       {ownerId ? (nameForYear(ownerId, draft.year) ?? ownerId) : slot}
@@ -87,7 +118,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
                         {getMember(ownerId)?.abbreviation}
                       </span>
                     )}
-                  </span>
+                  </button>
                 </th>
               )
             })}
@@ -100,7 +131,16 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
                 const pick = byCell.get(`${round}-${slot}`)
                 return (
                   <td key={slot} className="p-0.5 align-top">
-                    {pick && <PickCell pick={pick} ownerId={teamBySlot.get(slot)} numTeams={slots.length} totalRounds={draft.rounds} />}
+                    {pick && (
+                      <PickCell
+                        pick={pick}
+                        ownerId={teamBySlot.get(slot)}
+                        numTeams={slots.length}
+                        totalRounds={draft.rounds}
+                        highlighted={highlighted}
+                        onToggle={toggle}
+                      />
+                    )}
                   </td>
                 )
               })}
