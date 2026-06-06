@@ -28,10 +28,12 @@ function renderAt(path: string) {
 
 afterEach(() => vi.unstubAllGlobals())
 
-it('lists members in the directory', async () => {
+it('lists members grouped by league with a past-members section', async () => {
   renderAt('/members')
   await waitFor(() => expect(screen.getByText('The Minutemen')).toBeInTheDocument())
-  expect(screen.getByRole('columnheader', { name: /Titles/ })).toBeInTheDocument()
+  // league section headings (current leagues) + the past-members section
+  expect(screen.getByRole('heading', { name: 'Premier' })).toBeInTheDocument()
+  expect(screen.getByText('Past Members')).toBeInTheDocument()
 })
 
 it('shows a member detail with derived debut year + owner', async () => {

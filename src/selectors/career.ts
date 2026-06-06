@@ -167,3 +167,43 @@ export function memberSeasons(seasons: SeasonData[], memberId: string): MemberSe
   }
   return rows.sort((a, b) => Number(a.year) - Number(b.year))
 }
+
+export interface LeagueRoster {
+  tier: Tier
+  members: CareerStats[]
+}
+export interface MembersByLeague {
+  /** Active members grouped by the league they're in this (latest) season, in tier order. */
+  current: LeagueRoster[]
+  /** Everyone who has played but isn't in the latest season. */
+  past: CareerStats[]
+}
+
+const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
+
+/**
+ * Roster for the Members directory: active members bucketed by their latest-season league, plus a
+ * past-members list. Grouping only — display ordering and names are a view concern. An active
+ * member's current league is the tier of their finish in the latest year.
+ */
+export function membersByLeague(seasons: SeasonData[]): MembersByLeague {
+  const careers = careerStats(seasons)
+  const latestYear = seasons.reduce((max, s) => (s.year > max ? s.year : max), '')
+  const byTier = new Map<Tier, CareerStats[]>()
+  const past: CareerStats[] = []
+  for (const c of careers.values()) {
+    const currentTier = c.isActive ? c.finishes.find((f) => f.year === latestYear)?.tier : undefined
+    if (currentTier) {
+      const bucket = byTier.get(currentTier) ?? []
+      bucket.push(c)
+      byTier.set(currentTier, bucket)
+    } else {
+      past.push(c)
+    }
+  }
+  const current = TIER_ORDER.flatMap((tier) => {
+    const members = byTier.get(tier)
+    return members ? [{ tier, members }] : []
+  })
+  return { current, past }
+}

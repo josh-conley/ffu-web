@@ -106,7 +106,7 @@ export function MobileNav({ items }: { items: readonly NavItem[] }) {
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
         aria-label="Open menu"
-        className="flex size-11 items-center justify-center rounded-md text-text hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="flex size-11 items-center justify-center rounded-md text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
       >
         {MENU_ICON}
       </button>

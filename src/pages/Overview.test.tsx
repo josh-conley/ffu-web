@@ -8,7 +8,7 @@ for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../pub
 
 afterEach(() => vi.unstubAllGlobals())
 
-it('renders the champions matrix across all seasons', async () => {
+it('renders champions grouped by league', async () => {
   vi.stubGlobal('fetch', (url: string) => {
     const body = FILES[url]
     return Promise.resolve(
@@ -23,7 +23,7 @@ it('renders the champions matrix across all seasons', async () => {
       <Overview />
     </MemoryRouter>,
   )
-  await waitFor(() => expect(screen.getByText('8 seasons · champions by tier')).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByText('Champions by Season')).toBeInTheDocument())
   // 2024 Premier champion (ffu-009) shows its current name.
   expect(screen.getAllByText('Fort Wayne Banana Bread').length).toBeGreaterThan(0)
 })

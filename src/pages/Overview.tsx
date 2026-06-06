@@ -3,7 +3,7 @@ import type { SeasonData } from '@/data'
 import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
-import { ChampionsMatrix } from '@/components/ChampionsMatrix'
+import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -37,14 +37,11 @@ export function Overview() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-extrabold uppercase tracking-tight">Fantasy Football Union</h1>
-        <p className="mt-1 text-muted">{years.length} seasons · champions by tier</p>
-      </div>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
-        <ChampionsMatrix years={years} champions={champions} />
+        <ChampionsByLeague years={years} champions={champions} />
       </section>
     </div>
   )

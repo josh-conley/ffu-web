@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { careerStats, careerFor } from './career'
+import { careerStats, careerFor, membersByLeague } from './career'
 import premier2024 from '../../public/data/2024/premier.json'
 
 const seasons: SeasonData[] = [
@@ -51,5 +51,18 @@ describe('careerFor (real 2024 Premier)', () => {
     const c = careerFor([premier2024 as unknown as SeasonData], 'ffu-009')
     expect(c?.championships).toBe(1)
     expect(c?.bestFinish).toBe(1)
+  })
+})
+
+describe('membersByLeague', () => {
+  const { current, past } = membersByLeague(seasons)
+
+  it('groups active members by their latest-season league', () => {
+    // latest season is 2024 Premier; only 'a' played it
+    expect(current).toEqual([{ tier: 'PREMIER', members: [expect.objectContaining({ memberId: 'a' })] }])
+  })
+
+  it('puts members who missed the latest season in past', () => {
+    expect(past.map((c) => c.memberId)).toEqual(['b']) // last played 2023
   })
 })
