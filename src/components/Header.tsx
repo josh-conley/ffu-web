@@ -1,9 +1,12 @@
+import { Fragment } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useNavHref } from '@/hooks/useNavHref'
 import { ThemeToggle } from './ThemeToggle'
 import { MobileNav } from './MobileNav'
 import { NAV } from './nav'
 
 export function Header() {
+  const hrefFor = useNavHref()
   return (
     <header className="sticky top-0 z-20 border-b-2 border-accent bg-surface/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
@@ -19,20 +22,22 @@ export function Header() {
         {/* Desktop nav row (>=md). Below md the hamburger drawer takes over. */}
         <nav className="hidden items-center gap-0.5 md:flex">
           {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
-                  isActive
-                    ? 'angular-sm bg-accent text-accent-fg'
-                    : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
+            <Fragment key={item.to}>
+              {item.startGroup && <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />}
+              <NavLink
+                to={hrefFor(item)}
+                end={item.end}
+                className={({ isActive }) =>
+                  `px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
+                    isActive
+                      ? 'angular-sm bg-accent text-accent-fg'
+                      : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            </Fragment>
           ))}
           <ThemeToggle />
         </nav>

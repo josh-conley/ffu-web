@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { Overview } from './Overview'
 
 const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
@@ -17,7 +18,11 @@ it('renders the champions matrix across all seasons', async () => {
     )
   })
 
-  render(<Overview />)
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  )
   await waitFor(() => expect(screen.getByText('8 seasons · champions by tier')).toBeInTheDocument())
   // 2024 Premier champion (ffu-009) shows its current name.
   expect(screen.getAllByText('Fort Wayne Banana Bread').length).toBeGreaterThan(0)

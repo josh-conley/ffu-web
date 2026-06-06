@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
+import { useNavHref } from '@/hooks/useNavHref'
 import type { NavItem } from './nav'
 
 const MENU_ICON = (
@@ -28,6 +29,7 @@ function NavDrawer({
   panelRef: React.RefObject<HTMLDivElement | null>
   onClose: () => void
 }) {
+  const hrefFor = useNavHref()
   return createPortal(
     <div className="fixed inset-0 z-50">
       {/* Scrim closes on tap. */}
@@ -49,19 +51,21 @@ function NavDrawer({
           {CLOSE_ICON}
         </button>
         {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
-                isActive ? 'angular-sm bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
+          <Fragment key={item.to}>
+            {item.startGroup && <div aria-hidden className="my-1 border-t border-border" />}
+            <NavLink
+              to={hrefFor(item)}
+              end={item.end}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
+                  isActive ? 'angular-sm bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          </Fragment>
         ))}
       </div>
     </div>,

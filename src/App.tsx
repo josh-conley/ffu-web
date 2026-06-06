@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { Overview } from '@/pages/Overview'
 import { Standings } from '@/pages/Standings'
@@ -19,7 +19,9 @@ export default function App() {
           <Route path="matchups" element={<Matchups />} />
           <Route path="records" element={<Records />} />
           <Route path="members" element={<Members />} />
-          <Route path="all-time" element={<AllTimeStats />} />
+          <Route path="leaderboard" element={<AllTimeStats />} />
+          {/* Old path before the All-Time → Leaderboard rename; redirect stale bookmarks. */}
+          <Route path="all-time" element={<Navigate to="/leaderboard" replace />} />
           <Route path="drafts" element={<Drafts />} />
           <Route path="*" element={<NotFound />} />
         </Route>
