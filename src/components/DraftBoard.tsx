@@ -42,10 +42,10 @@ function PickCell({ pick, ownerId, numTeams, totalRounds, highlighted, onToggle 
   const isHighlight = highlighted === pick.memberId
   const dimmed = highlighted !== null && !isHighlight
   const state = isHighlight
-    ? 'relative z-10 ring-2 ring-accent'
+    ? 'relative z-10 ring-1 ring-accent/50'
     : dimmed
       ? 'opacity-30'
-      : 'hover:ring-1 hover:ring-muted/50'
+      : 'hover:ring-1 hover:ring-muted/40'
   return (
     // Uniform 3-line cell (meta · name · position). A trade fills the footer's otherwise-empty
     // right edge — no extra row — so traded and non-traded cells share identical dimensions/layout.
