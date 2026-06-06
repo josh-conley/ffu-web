@@ -1,8 +1,43 @@
 import type { FilterDef } from '@/hooks/useFilters'
 import { SELECT } from './controls'
 
-/** Renders a row of dropdowns from FilterDefs (+ a Clear when any are active). Presentational —
- *  state lives in useFilters. Reused by any filtered view. */
+/** Dropdown control for a select filter. */
+function SelectControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { options: unknown }>; value: string; onChange: (v: string) => void }) {
+  return (
+    <select className={SELECT} aria-label={def.label} value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">All</option>
+      {def.options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+/** Slider control for a range filter — shows the current "≥ N" value, or "Any" at the minimum. */
+function RangeControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'range' }>; value: string; onChange: (v: string) => void }) {
+  const current = value ? Number(value) : def.min
+  return (
+    <div className="flex h-11 items-center gap-2 md:h-auto">
+      <input
+        type="range"
+        aria-label={def.label}
+        min={def.min}
+        max={def.max}
+        step={def.step ?? 1}
+        value={current}
+        // At the minimum the filter is "off" (clear it) so it doesn't count as active.
+        onChange={(e) => onChange(e.target.value === String(def.min) ? '' : e.target.value)}
+        className="w-32 accent-accent"
+      />
+      <span className="w-10 text-sm font-semibold tabular-nums">{current > def.min ? `≥ ${current}` : 'Any'}</span>
+    </div>
+  )
+}
+
+/** Renders a row of controls from FilterDefs (selects + range sliders) + a Clear when any are
+ *  active. Presentational — state lives in useFilters. Reused by any filtered view. */
 export function FilterBar<T>({
   defs,
   values,
@@ -17,23 +52,15 @@ export function FilterBar<T>({
   activeCount: number
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
       {defs.map((def) => (
         <label key={def.key} className="flex flex-col gap-1">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">{def.label}</span>
-          <select
-            className={SELECT}
-            aria-label={def.label}
-            value={values[def.key] ?? ''}
-            onChange={(e) => onChange(def.key, e.target.value)}
-          >
-            <option value="">All</option>
-            {def.options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          {def.type === 'range' ? (
+            <RangeControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+          ) : (
+            <SelectControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+          )}
         </label>
       ))}
       {activeCount > 0 && (

@@ -8,6 +8,8 @@ import { calculateUpr } from './upr'
 // STORED Sleeper record/points (consistent with season display) and counts placements. The
 // regular-season seed is never involved here.
 
+const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
+
 export interface SeasonFinish {
   year: string
   tier: Tier
@@ -26,6 +28,8 @@ export interface CareerStats {
   championships: number // finalPlacement === 1
   runnerUps: number // finalPlacement === 2
   playoffAppearances: number // reached the championship bracket
+  /** Tier of each playoff (championship-bracket) appearance — for the by-league breakdown. */
+  playoffTiers: Tier[]
   bestFinish: number | null
   /** First / most-recent season the member played (their true FFU debut + latest year). */
   firstYear: number | null
@@ -33,6 +37,19 @@ export interface CareerStats {
   /** Played the most recent season in the data (derived; replaces the unreliable config flag). */
   isActive: boolean
   finishes: SeasonFinish[]
+}
+
+export interface TitleWin {
+  year: string
+  tier: Tier
+}
+
+/** A member's championships (Premier → Masters → National, then by year) — one per title won. */
+export function championshipTitles(c: CareerStats): TitleWin[] {
+  return c.finishes
+    .filter((f) => f.finalPlacement === 1)
+    .map((f) => ({ year: f.year, tier: f.tier }))
+    .sort((a, b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier) || a.year.localeCompare(b.year))
 }
 
 /** Set of "year|tier" each member reached the championship bracket (vs consolation). */
@@ -67,6 +84,7 @@ function emptyCareer(memberId: string): CareerStats {
     championships: 0,
     runnerUps: 0,
     playoffAppearances: 0,
+    playoffTiers: [],
     bestFinish: null,
     firstYear: null,
     lastYear: null,
@@ -100,16 +118,25 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
 
   const latestYear = Math.max(0, ...seasons.map((s) => Number(s.year)))
   for (const [memberId, c] of career) {
-    finalizeCareer(c, playoffSeasons.get(memberId)?.size ?? 0, latestYear)
+    finalizeCareer(c, playoffSeasons.get(memberId), latestYear)
   }
 
   return career
 }
 
 /** Fill the derived fields once a member's per-season totals are accumulated. */
-function finalizeCareer(c: CareerStats, playoffCount: number, latestYear: number): void {
+function finalizeCareer(c: CareerStats, playoffSet: Set<string> | undefined, latestYear: number): void {
   c.winPct = winPct({ wins: c.wins, losses: c.losses, ties: c.ties })
-  c.playoffAppearances = playoffCount
+  const playoffTiers: Tier[] = []
+  if (playoffSet) {
+    for (const key of playoffSet) {
+      const tier = key.split('|')[1] // key is `${year}|${tier}`
+      if (tier) playoffTiers.push(tier as Tier)
+    }
+  }
+  playoffTiers.sort((a, b) => TIER_ORDER.indexOf(a) - TIER_ORDER.indexOf(b))
+  c.playoffAppearances = playoffTiers.length
+  c.playoffTiers = playoffTiers
   const placements = c.finishes.map((f) => f.finalPlacement).filter((n): n is number => n !== null)
   c.bestFinish = placements.length > 0 ? Math.min(...placements) : null
   const yearsPlayed = c.finishes.map((f) => Number(f.year))
@@ -178,8 +205,6 @@ export interface MembersByLeague {
   /** Everyone who has played but isn't in the latest season. */
   past: CareerStats[]
 }
-
-const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
 /**
  * Roster for the Members directory: active members bucketed by their latest-season league, plus a

@@ -10,14 +10,29 @@ export interface FilterOption {
   label: string
 }
 
-export interface FilterDef<T> {
+interface BaseFilter<T> {
   /** URL param key + identity. */
   key: string
   label: string
-  options: FilterOption[]
   /** Called only for the active (non-empty) value; AND-ed across all active filters. */
   predicate: (row: T, value: string) => boolean
 }
+
+/** Dropdown filter (the default). */
+export interface SelectFilter<T> extends BaseFilter<T> {
+  type?: 'select'
+  options: FilterOption[]
+}
+
+/** Slider filter — "at least N". Inactive (shows all) when the value is at `min`. */
+export interface RangeFilter<T> extends BaseFilter<T> {
+  type: 'range'
+  min: number
+  max: number
+  step?: number
+}
+
+export type FilterDef<T> = SelectFilter<T> | RangeFilter<T>
 
 /** Pure filter application — every active filter must pass (AND). Inactive (empty) filters pass. */
 export function applyFilters<T>(defs: FilterDef<T>[], values: Record<string, string>, rows: T[]): T[] {
