@@ -38,8 +38,6 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
                   <span className="flex items-center gap-2">
                     <TeamLogo ffuId={team.memberId} />
                     <span className="font-semibold">{nameForYear(team.memberId, year) ?? team.memberId}</span>
-                    {team.promoted && <span title="Promoted" aria-label="Promoted" className="text-emerald-600 dark:text-emerald-400">▲</span>}
-                    {team.relegated && <span title="Relegated" aria-label="Relegated" className="text-national">▼</span>}
                   </span>
                 </td>
                 <td className={`${TD} tabular-nums`}>{recordLabel(row)}</td>
