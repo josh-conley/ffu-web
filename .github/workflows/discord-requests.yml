@@ -10,7 +10,10 @@ name: Discord site requests
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # every 15 min (GitHub may delay scheduled runs under load)
+    # Every ~15 min, but on ODD minutes — GitHub deprioritizes/drops crons on the congested round
+    # minutes (:00/:15/:30/:45), so :07/:22/:37/:52 fire far more reliably. (Cron is still best-effort
+    # and can lag several minutes.)
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch: {} # run manually to test
 
 # One at a time. A request is also claimed via a 👀 reaction, but this is belt + suspenders.
