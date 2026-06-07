@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { SeasonData } from '@/data'
 import { useSeasonView } from '@/hooks/useSeasonView'
+import { useUrlState } from '@/hooks/useUrlState'
 import { regularSeasonStandings, seasonUpr, standingsByDivision } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { StandingsTable } from '@/components/StandingsTable'
@@ -11,19 +12,39 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
   const upr = useMemo(() => seasonUpr(season), [season])
   const divisions = useMemo(() => standingsByDivision(season), [season])
   const flat = useMemo(() => regularSeasonStandings(season), [season])
+  const [view, setView] = useUrlState('view', 'division')
 
   if (divisions) {
+    const showDivisions = view !== 'overall'
     return (
       <div className="space-y-6">
-        {divisions.map((group) => (
-          <section key={group.division.id}>
-            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
-              <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
-              {group.division.name}
-            </h2>
-            <StandingsTable rows={group.rows} upr={upr} year={year} />
-          </section>
-        ))}
+        <div className="flex gap-1 rounded border border-border bg-surface-2 p-0.5 w-fit text-sm font-medium">
+          <button
+            onClick={() => setView('division')}
+            className={`rounded px-3 py-1 transition-colors ${showDivisions ? 'bg-accent text-accent-fg' : 'text-muted hover:text-text'}`}
+          >
+            By Division
+          </button>
+          <button
+            onClick={() => setView('overall')}
+            className={`rounded px-3 py-1 transition-colors ${!showDivisions ? 'bg-accent text-accent-fg' : 'text-muted hover:text-text'}`}
+          >
+            Overall
+          </button>
+        </div>
+        {showDivisions ? (
+          divisions.map((group) => (
+            <section key={group.division.id}>
+              <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+                <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
+                {group.division.name}
+              </h2>
+              <StandingsTable rows={group.rows} upr={upr} year={year} />
+            </section>
+          ))
+        ) : (
+          <StandingsTable rows={flat} upr={upr} year={year} />
+        )}
       </div>
     )
   }
