@@ -22,12 +22,19 @@ permissions:
   contents: write # push the auto/* branch
   pull-requests: write # open the PR
 
+# Tunable guardrails — dial these as you learn the commissioner's usage:
+#   MAX_TURNS    hard cap on agent steps per request (stops a runaway; ~simple 5-12, medium 15-35)
+#   CLAUDE_MODEL sonnet = lighter on the Pro allotment + plenty for site tweaks (vs opus)
+env:
+  MAX_TURNS: '40'
+  CLAUDE_MODEL: sonnet
+
 jobs:
   process:
     # Skip (don't fail) until configured — set DISCORD_CHANNEL_ID to turn the pipeline on.
     if: ${{ vars.DISCORD_CHANNEL_ID != '' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12 # wall-clock backstop
     steps:
       - uses: actions/checkout@v4
         with:
@@ -69,16 +76,22 @@ jobs:
           {
             echo "You are working in the FFU web repository as an autonomous agent."
             echo "Read CLAUDE.md and follow the Engineering Charter strictly."
-            echo "Implement the following request from the league commissioner. Then run the gates"
-            echo "(npm run typecheck, npm run lint, npm test) and fix until ALL are green. Commit the"
-            echo "change with a clear message. Do NOT push and do NOT open a PR."
-            echo "If the request is ambiguous, unsafe, or you cannot complete it well, make NO changes"
-            echo "and write a one-paragraph reason to a file named BLOCKED.txt instead."
+            echo ""
+            echo "SCOPE: this is an automated ad-hoc request channel for SMALL changes. First assess"
+            echo "scope. If the request is large or multi-feature (roughly: a whole new page/feature,"
+            echo "or more than a handful of files), do NOT implement it — write a one-paragraph note to"
+            echo "a file named BLOCKED.txt saying it's too large for an automated request and should be"
+            echo "done manually, then STOP. Keep changes focused and minimal."
+            echo ""
+            echo "Otherwise: implement the request, then run the gates (npm run typecheck, npm run lint,"
+            echo "npm test) and fix until ALL are green. Commit with a clear message. Do NOT push and do"
+            echo "NOT open a PR. If the request is ambiguous or unsafe, make NO changes and write the"
+            echo "reason to BLOCKED.txt instead."
             echo ""
             echo "--- REQUEST ---"
             cat request.txt
           } > prompt.txt
-          claude -p "$(cat prompt.txt)" --dangerously-skip-permissions
+          claude -p "$(cat prompt.txt)" --model "$CLAUDE_MODEL" --max-turns "$MAX_TURNS" --dangerously-skip-permissions
 
       # 3) Decide the outcome. Blocked or no-op → fail (the report step picks up the reason).
       - name: Verify result
