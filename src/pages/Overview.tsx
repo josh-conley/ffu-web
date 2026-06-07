@@ -38,6 +38,7 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
+      <p>what up!!!</p>
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
