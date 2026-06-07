@@ -38,6 +38,7 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <p className="text-sm text-muted">this is a test for the preview url</p>
+      <p className="text-sm text-muted">finally working?</p>
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
