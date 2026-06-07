@@ -78,9 +78,10 @@ async function next() {
   console.log(`Claimed request ${pick.id} from @${pick.author.username}`)
 }
 
-async function done(msgId, prUrl) {
+async function done(msgId, prUrl, previewUrl) {
   await react(msgId, EMOJI.done)
-  await reply(msgId, `✅ Done — added to the review PR:\n${prUrl}`)
+  const preview = previewUrl ? `\n🔍 Live preview (ready in ~1 min): ${previewUrl}` : ''
+  await reply(msgId, `✅ Done — added to the review PR:\n${prUrl}${preview}`)
 }
 
 async function fail(msgId, reason) {
@@ -91,7 +92,7 @@ async function fail(msgId, reason) {
 const [cmd, ...args] = process.argv.slice(2)
 const commands = {
   next,
-  done: () => done(args[0], args[1]),
+  done: () => done(args[0], args[1], args[2]),
   fail: () => fail(args[0], args.slice(1).join(' ')),
 }
 const run = commands[cmd]

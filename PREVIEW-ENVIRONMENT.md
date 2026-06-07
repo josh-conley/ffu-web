@@ -1,148 +1,44 @@
-# Preview Environment Plan
+# Preview environment
 
-**Goal:** When `auto/requests` is updated with a Discord request, the requestor gets a live
-preview URL alongside the PR link so they can see the change before it merges to `main`.
+**Goal:** when `auto/requests` updates from a Discord request, the requestor gets a **live preview
+URL** in the bot's ✅ reply, so they can see the change rendered before it's merged to `main`.
 
----
+GitHub Pages only serves one site per repo (`main` → `new.ffunion.com`, owned by `deploy.yml`), so
+previews need a second host. **Cloudflare Pages** is the fit: native per-branch preview deploys, free
+tier (500 builds/mo), same build (`npm run build` → `dist`), no changes to GitHub Pages.
 
-## Why the current setup can't do this
+## How it works
 
-GitHub Pages supports **one deployment per repo**. The `deploy.yml` workflow owns that slot
-(`new.ffunion.com` → `main`). There is no way to simultaneously serve `auto/requests` as a
-second GitHub Pages site from the same repo.
-
----
-
-## Recommended approach: Cloudflare Pages for branch previews
-
-**Cloudflare Pages** is the right fit:
-
-- Native branch preview deployments — every branch push gets a stable, auto-generated URL.
-- Same build command (`npm run build`, output `dist`), same `vite.config.ts` — no build changes
-  needed. The `public/CNAME` file (a GitHub Pages artifact) is harmless on Cloudflare; ignore it.
-- Free tier is generous: 500 builds/month, unlimited requests. Discord requests are rare.
-- Branch URL is predictable and permanent for the branch lifetime:
-  `auto-requests.<project-name>.pages.dev` (Cloudflare sanitizes `/` → `-`).
-- We can alias `preview.ffunion.com` to that branch — a stable CNAME the Discord bot can always
-  report, regardless of whether Cloudflare's internal URL is known.
-
-### Architecture after this change
-
-| URL | Source | Branch | Trigger |
+| URL | Host | Branch | Trigger |
 |---|---|---|---|
-| `ffunion.com` / `new.ffunion.com` | GitHub Pages | `main` | `deploy.yml` on push |
-| `preview.ffunion.com` | Cloudflare Pages | `auto/requests` | Cloudflare GitHub integration auto-detects push |
+| `new.ffunion.com` | GitHub Pages | `main` | `deploy.yml` |
+| `auto-requests.<project>.pages.dev` | Cloudflare Pages | `auto/requests` | Cloudflare auto-builds on push |
 
-Both deployments coexist. No changes to the existing `deploy.yml` or GitHub Pages config.
+Cloudflare gives each branch a **stable alias** (`<branch-slug>.<project>.pages.dev`, `/`→`-`), so
+`auto/requests` is always reachable at the same URL — it survives the branch resetting between batches.
 
----
+## Status
 
-## What needs to happen
+- ✅ **Code (done):** the bot's success reply appends `🔍 Live preview: <url>` when the repo variable
+  **`PREVIEW_URL`** is set (`discord.mjs` `done()` + the workflow's Report-success step). Empty = the
+  line is omitted, so this is a no-op until configured.
+- ⏳ **Setup (manual, one-time):** create the Cloudflare Pages project + set `PREVIEW_URL`.
 
-### Step 1 — One-time Cloudflare setup (manual, on laptop)
+## One-time setup
 
-1. **Create a Cloudflare account** if you don't already have one (free).
-2. **Create a Pages project** connected to the `ffu-web` GitHub repo:
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Root directory: (leave blank / repo root)
-   - Node.js version: 22 (set in environment variables: `NODE_VERSION = 22`)
-3. **Branch deploy settings** — you only need `auto/requests` deployed here; `main` stays on
-   GitHub Pages. In the Cloudflare Pages project settings:
-   - Production branch: set to something that won't conflict (e.g., `cf-production-unused`) so
-     Cloudflare doesn't shadow the GitHub Pages production site.
-   - Preview branches: enable and include `auto/requests` (or all branches — fine either way).
-4. **Custom domain for the preview branch**:
-   - In the project → Custom domains → add `preview.ffunion.com`.
-   - Cloudflare will provision the CNAME automatically if you're using Cloudflare DNS, OR
-   - Add a Namecheap `CNAME` record: `preview` → `<project-name>.pages.dev`.
-   - Then in Pages → `auto/requests` branch settings, assign `preview.ffunion.com` to that branch.
+1. **Cloudflare account** (free) → **Workers & Pages** → **Create** → **Pages** → connect the
+   `ffu-web` GitHub repo.
+2. Build settings: build command `npm run build`, output dir `dist`, env var `NODE_VERSION=22`.
+   Leave `main` as the production branch (its Cloudflare URL just goes unused — GitHub Pages still
+   serves `new.ffunion.com`). Enable preview deployments for all branches (default).
+3. After the first build, grab the project name and confirm `https://auto-requests.<project>.pages.dev`
+   loads the `auto/requests` branch.
+4. Add a repo **variable** (Settings → Secrets and variables → Actions → **Variables**):
+   `PREVIEW_URL = https://auto-requests.<project>.pages.dev`. Done — the next request's reply links it.
 
-   > Note: Cloudflare Pages custom domains on preview branches require the "Preview branches → Custom
-   > domains" setting; this is available on the free plan as of 2025.
+**Optional:** a prettier `preview.ffunion.com` via a Namecheap `CNAME` (`preview` → `<project>.pages.dev`)
+plus a Cloudflare custom-domain mapping. Start with the `.pages.dev` alias; the custom domain is just
+cosmetics and can come later.
 
-5. **Confirm** the first deployment completes and `preview.ffunion.com` resolves correctly.
-
-### Step 2 — Update `discord.mjs` (code change)
-
-The `done()` function currently reports only the PR URL. Add the preview URL:
-
-```js
-// automation/discord-requests/discord.mjs
-
-async function done(msgId, prUrl, previewUrl) {
-  await react(msgId, EMOJI.done)
-  const previewLine = previewUrl ? `\n🔍 Preview: ${previewUrl}` : ''
-  await reply(msgId, `✅ Done — added to the review PR:\n${prUrl}${previewLine}`)
-}
-```
-
-And in the `commands` dispatcher:
-
-```js
-done: () => done(args[0], args[1], args[2]),
-```
-
-### Step 3 — Update `discord-requests.yml` (workflow change)
-
-Pass the preview URL to the `done` step. Since `preview.ffunion.com` is stable once set up,
-hardcode it (no API call needed):
-
-```yaml
-# Add to env: block at workflow level (or job level):
-PREVIEW_URL: 'https://preview.ffunion.com'
-```
-
-```yaml
-# In the "Report success" step:
-run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "$PREVIEW_URL"
-```
-
-> **Timing note:** Cloudflare Pages deploys are triggered by the `git push origin auto/requests`
-> step (Step 5 in the workflow). The Cloudflare build typically takes 30–90 seconds after that push.
-> The Discord reply goes out immediately after the push succeeds, so the preview URL may not resolve
-> for ~1–2 minutes. That's fine — the bot can note this with parenthetical text:
-> `🔍 Preview (ready in ~1 min): https://preview.ffunion.com`
-
-### Step 4 — Update `DEPLOY.md`
-
-Add a section documenting the preview environment: what it serves, how it's triggered, and the
-Cloudflare Pages project name. This prevents the next-person-to-look confusion.
-
----
-
-## Trade-offs considered
-
-| Option | Why rejected |
-|---|---|
-| Second GitHub Pages repo (`ffu-web-preview`) | Requires a second repo + cross-repo PAT for push; adds management overhead. |
-| Netlify | 300 build-minutes/month free — workable, but Cloudflare is more generous and already the DNS provider for `ffunion.com`. |
-| Vercel | Free tier restricts commercial use; this is a personal league site but the policy is ambiguous. |
-| `cloudflare/pages-action` GitHub Action (explicit trigger) | Adds Cloudflare API token as a secret; more moving parts. Auto-detection via GitHub integration is simpler. |
-| Deploy from workflow to a known path (e.g., GitHub Releases / S3) | Requires external credentials + custom hosting; far more work for the same result. |
-
----
-
-## Sequencing for Opus
-
-Implement in this order — each step is independently testable:
-
-1. **Step 1** (manual by user): Cloudflare Pages setup + DNS. Confirm `preview.ffunion.com` shows
-   the current `auto/requests` branch content (or a blank Cloudflare page if branch is clean).
-2. **Step 2**: Update `discord.mjs` — trivial; unit-testable by reading the file.
-3. **Step 3**: Update `discord-requests.yml` — one env var + one argument change.
-4. **Step 4**: Update `DEPLOY.md`.
-5. **End-to-end test**: Post a test Discord request; confirm the success reply includes the preview
-   URL and it resolves within a couple minutes.
-
-Steps 2–4 are all small code changes and can be done in a single commit. Step 1 is the only
-manual prerequisite.
-
----
-
-## Open question
-
-Should the Cloudflare Pages project also serve `auto/*` wildcard branches (i.e., future
-automation branches), or only `auto/requests`? The latter is cleaner for now; the former is
-zero-config on Cloudflare (deploy all non-main branches = all branches starting with `auto/`
-are automatically previewed). Recommend wildcard for flexibility — costs nothing.
+> The DNS for `ffunion.com` is at **Namecheap** (see `DEPLOY.md`), not Cloudflare — the `.pages.dev`
+> alias needs no DNS at all, which is why it's the recommended starting point.

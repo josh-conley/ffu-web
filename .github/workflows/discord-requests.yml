@@ -143,13 +143,13 @@ jobs:
           fi
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
-      # 6a) Success → ✅ + PR link in Discord.
+      # 6a) Success → ✅ + PR link (+ live preview link if PREVIEW_URL is configured) in Discord.
       - name: Report success
         if: steps.req.outputs.has_request == 'true'
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ vars.DISCORD_CHANNEL_ID }}
-        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}"
+        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "${{ vars.PREVIEW_URL }}"
 
       # 6b) Failure → ❌ + reason in Discord.
       - name: Report failure
