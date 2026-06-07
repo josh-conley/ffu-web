@@ -1,5 +1,5 @@
 import type { FilterDef } from '@/hooks/useFilters'
-import { SELECT } from './controls'
+import { SELECT, segButton } from './controls'
 
 /** Dropdown control for a select filter. */
 function SelectControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { options: unknown }>; value: string; onChange: (v: string) => void }) {
@@ -15,18 +15,13 @@ function SelectControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>,
   )
 }
 
-/** Checkbox control for a toggle filter (label inline). On = value '1'. */
+/** Segmented-button control for a toggle filter (on = solid FFU red), matching the site's toggles. */
 function ToggleControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'toggle' }>; value: string; onChange: (v: string) => void }) {
+  const on = value === '1'
   return (
-    <label className="flex h-11 cursor-pointer items-center gap-2 text-sm font-semibold md:h-auto">
-      <input
-        type="checkbox"
-        checked={value === '1'}
-        onChange={(e) => onChange(e.target.checked ? '1' : '')}
-        className="size-4 accent-accent"
-      />
+    <button type="button" onClick={() => onChange(on ? '' : '1')} aria-pressed={on} className={segButton(on)}>
       {def.label}
-    </label>
+    </button>
   )
 }
 
