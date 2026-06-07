@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
-import { nameForYear } from '@/config'
+import { getMember, nameForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
+import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { buildRecordBook, type MatchupRecord, type TeamGameRecord } from '@/selectors'
 import { DataTable, type Column } from '@/components/DataTable'
+import { FilterBar } from '@/components/FilterBar'
 import { SELECT } from '@/components/controls'
+import { LEAGUE_STYLES } from '@/components/leagues'
 import { LeagueBadge } from '@/components/LeagueBadge'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -12,6 +15,13 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 
 type Ranked<T> = T & { rank: number }
 type MatchupMode = 'blowout' | 'closest' | 'highCombined' | 'lowCombined'
+type AnyRecord = TeamGameRecord | MatchupRecord
+
+const TIER_OPTIONS = (['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label }))
+
+/** Does a record involve this member? Matchups check both teams; a team-game record is the scorer's. */
+const involvesMember = (r: AnyRecord, id: string): boolean =>
+  'teams' in r ? r.teams.some((t) => t.memberId === id) : r.memberId === id
 
 const MODES = [
   { key: 'highest', label: 'Highest Scores', kind: 'team' },
@@ -88,51 +98,73 @@ function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
 export function Records() {
   const { data: seasons, loading, error } = useAllSeasons()
   const [mode, setMode] = useUrlState('record', 'highest')
+  const active = MODES.find((m) => m.key === mode) ?? MODES[0]
+
   const book = useMemo(() => (seasons ? buildRecordBook(seasons) : undefined), [seasons])
   const teamCols = useMemo(() => teamColumns(), [])
   const matchupCols = useMemo(() => matchupColumns(mode as MatchupMode), [mode])
 
-  const active = (MODES.find((m) => m.key === mode) ?? MODES[0])
+  const yearOptions = useMemo(
+    () => [...new Set((seasons ?? []).map((s) => s.year))].sort().reverse().map((y) => ({ value: y, label: y })),
+    [seasons],
+  )
+  const memberOptions = useMemo(() => {
+    const ids = new Set<string>()
+    for (const s of seasons ?? []) for (const t of s.teams) ids.add(t.memberId)
+    return [...ids].map((id) => ({ value: id, label: getMember(id)?.name ?? id })).sort((a, b) => a.label.localeCompare(b.label))
+  }, [seasons])
+
+  const filterDefs = useMemo<FilterDef<AnyRecord>[]>(
+    () => [
+      { key: 'tier', label: 'League', options: TIER_OPTIONS, predicate: (r, v) => r.tier === v },
+      { key: 'year', label: 'Year', options: yearOptions, predicate: (r, v) => r.year === v },
+      { key: 'member', label: 'Team', options: memberOptions, predicate: (r, v) => involvesMember(r, v) },
+    ],
+    [yearOptions, memberOptions],
+  )
+
+  // Stable reference to the active leaderboard's rows (book arrays are pre-sorted, full lists).
+  const activeRows = useMemo<AnyRecord[]>(() => {
+    if (!book) return []
+    if (active.kind === 'team') return active.key === 'highest' ? book.highestGames : book.lowestGames
+    return matchupRows(book, active.key as MatchupMode)
+  }, [book, active.kind, active.key])
+  const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, activeRows)
+  const tableKey = active.key + JSON.stringify(values)
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">Records</h1>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Record</span>
-        <select className={`${SELECT} w-full sm:w-64`} value={active.key} onChange={(e) => setMode(e.target.value)} aria-label="Record type">
-          <optgroup label="Single Game">
-            {TEAM_MODES.map((m) => (
-              <option key={m.key} value={m.key}>{m.label}</option>
-            ))}
-          </optgroup>
-          <optgroup label="Matchups">
-            {MATCHUP_MODES.map((m) => (
-              <option key={m.key} value={m.key}>{m.label}</option>
-            ))}
-          </optgroup>
-        </select>
-      </label>
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">Record</span>
+          <select className={`${SELECT} w-full sm:w-56`} value={active.key} onChange={(e) => setMode(e.target.value)} aria-label="Record type">
+            <optgroup label="Single Game">
+              {TEAM_MODES.map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Matchups">
+              {MATCHUP_MODES.map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
+          </select>
+        </label>
+        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
+      </div>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage error={error} />}
-      {book && active.kind === 'team' && (
-        <DataTable
-          key={active.key}
-          columns={teamCols}
-          rows={rank(active.key === 'highest' ? book.highestGames : book.lowestGames)}
-          getRowKey={(r) => `${r.year}-${r.tier}-${r.week}-${r.memberId}`}
-          pageSize={15}
-        />
-      )}
-      {book && active.kind === 'matchup' && (
-        <DataTable
-          key={active.key}
-          columns={matchupCols}
-          rows={rank(matchupRows(book, active.key as MatchupMode))}
-          getRowKey={(r) => `${r.year}-${r.tier}-${r.week}-${r.teams[0]?.memberId ?? ''}`}
-          pageSize={15}
-        />
-      )}
+      {book &&
+        (filtered.length === 0 ? (
+          <p className="text-muted">No records match these filters.</p>
+        ) : active.kind === 'team' ? (
+          // safe: activeRows (and so `filtered`) are team-game records in this mode
+          <DataTable key={tableKey} columns={teamCols} rows={rank(filtered as TeamGameRecord[])} getRowKey={(r) => `${r.year}-${r.tier}-${r.week}-${r.memberId}`} pageSize={15} />
+        ) : (
+          <DataTable key={tableKey} columns={matchupCols} rows={rank(filtered as MatchupRecord[])} getRowKey={(r) => `${r.year}-${r.tier}-${r.week}-${r.teams[0]?.memberId ?? ''}`} pageSize={15} />
+        ))}
     </div>
   )
 }
