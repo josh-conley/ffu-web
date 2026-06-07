@@ -156,7 +156,8 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm run build
-          npx wrangler@4 pages project create ffu-web-preview --production-branch main 2>/dev/null || true
+          # Production branch = auto/requests so a custom domain (preview.ffunion.com) serves it.
+          npx wrangler@4 pages project create ffu-web-preview --production-branch auto/requests 2>/dev/null || true
           npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true
           # Report the STABLE per-branch alias (always the latest auto/requests), not the per-deploy hash.
           echo "preview_url=https://auto-requests.ffu-web-preview.pages.dev" >> "$GITHUB_OUTPUT"
