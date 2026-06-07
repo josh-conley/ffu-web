@@ -3,42 +3,40 @@
 **Goal:** when `auto/requests` updates from a Discord request, the requestor gets a **live preview
 URL** in the bot's ✅ reply, so they can see the change rendered before it's merged to `main`.
 
-GitHub Pages only serves one site per repo (`main` → `new.ffunion.com`, owned by `deploy.yml`), so
-previews need a second host. **Cloudflare Pages** is the fit: native per-branch preview deploys, free
-tier (500 builds/mo), same build (`npm run build` → `dist`), no changes to GitHub Pages.
+GitHub Pages serves one site per repo (`main` → `new.ffunion.com`), so previews need a second host.
+We use **Cloudflare Pages**, deployed **explicitly from our own GitHub Action** with `wrangler` —
+*not* Cloudflare's Git auto-detection, which proved unreliable. Deploying ourselves means it's
+deterministic: a failure shows up in the Actions log instead of silently not building.
 
 ## How it works
 
-| URL | Host | Branch | Trigger |
-|---|---|---|---|
-| `new.ffunion.com` | GitHub Pages | `main` | `deploy.yml` |
-| `auto-requests.<project>.pages.dev` | Cloudflare Pages | `auto/requests` | Cloudflare auto-builds on push |
+After a request lands on `auto/requests`, the workflow:
+1. `npm run build` → `dist`
+2. `wrangler pages deploy dist --project-name ffu-web-preview --branch auto/requests`
+3. captures the resulting `*.ffu-web-preview.pages.dev` URL and includes it in the bot's ✅ reply.
 
-Cloudflare gives each branch a **stable alias** (`<branch-slug>.<project>.pages.dev`, `/`→`-`), so
-`auto/requests` is always reachable at the same URL — it survives the branch resetting between batches.
+The deploy step is `continue-on-error` — a preview hiccup never fails the request (the PR is already
+open). `main` is untouched (GitHub Pages still owns `new.ffunion.com`); the Cloudflare project only
+ever serves `auto/requests` previews.
 
-## Status
+## Setup (one-time)
 
-- ✅ **Code (done):** the bot's success reply appends `🔍 Live preview: <url>` when the repo variable
-  **`PREVIEW_URL`** is set (`discord.mjs` `done()` + the workflow's Report-success step). Empty = the
-  line is omitted, so this is a no-op until configured.
-- ⏳ **Setup (manual, one-time):** create the Cloudflare Pages project + set `PREVIEW_URL`.
+Create a **Cloudflare API token** and grab your **account ID**, then add both as repo **secrets**:
 
-## One-time setup
+1. Cloudflare → **My Profile → API Tokens → Create Token → Custom token**. Permissions:
+   **Account → Cloudflare Pages → Edit**. Scope it to your account. Create → copy the token.
+2. **Account ID:** Cloudflare dashboard → Workers & Pages (or any account page) → it's in the URL
+   `dash.cloudflare.com/<account-id>/...` and in the right-hand sidebar.
+3. Repo → Settings → Secrets and variables → Actions → **Secrets**:
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
 
-1. **Cloudflare account** (free) → **Workers & Pages** → **Create** → **Pages** → connect the
-   `ffu-web` GitHub repo.
-2. Build settings: build command `npm run build`, output dir `dist`, env var `NODE_VERSION=22`.
-   Leave `main` as the production branch (its Cloudflare URL just goes unused — GitHub Pages still
-   serves `new.ffunion.com`). Enable preview deployments for all branches (default).
-3. After the first build, grab the project name and confirm `https://auto-requests.<project>.pages.dev`
-   loads the `auto/requests` branch.
-4. Add a repo **variable** (Settings → Secrets and variables → Actions → **Variables**):
-   `PREVIEW_URL = https://auto-requests.<project>.pages.dev`. Done — the next request's reply links it.
+That's it — `wrangler` creates the `ffu-web-preview` Pages project on first deploy. No Cloudflare-UI
+project wiring, no DNS. (The earlier `.workers.dev` Worker and any `PREVIEW_URL` variable are no
+longer used and can be deleted.)
 
-**Optional:** a prettier `preview.ffunion.com` via a Namecheap `CNAME` (`preview` → `<project>.pages.dev`)
-plus a Cloudflare custom-domain mapping. Start with the `.pages.dev` alias; the custom domain is just
-cosmetics and can come later.
-
-> The DNS for `ffunion.com` is at **Namecheap** (see `DEPLOY.md`), not Cloudflare — the `.pages.dev`
-> alias needs no DNS at all, which is why it's the recommended starting point.
+## Notes
+- The deploy adds ~1–2 min per request (build + upload); the bot says "ready in ~1 min."
+- Client-side routes (e.g. visiting `/standings` directly) may 404 on Cloudflare without an SPA
+  fallback — the root URL + clicking around works; if deep links 404 we'll add a `_redirects` file.
+- Optional later: a prettier `preview.ffunion.com` via a Namecheap CNAME to the project. Cosmetic.
