@@ -4,7 +4,7 @@ name: Discord site requests
 # unhandled request, implements it with Claude Code, runs the gates, opens a PR (never auto-merges),
 # and reports back in Discord (✅ + PR link, or ❌ + reason). Inert until the secrets/vars below exist.
 #
-# Required repo SECRETS:  DISCORD_BOT_TOKEN, ANTHROPIC_API_KEY
+# Required repo SECRETS:  DISCORD_BOT_TOKEN, CLAUDE_CODE_OAUTH_TOKEN  (Pro/Max subscription token)
 # Required repo VARIABLES: DISCORD_CHANNEL_ID, DISCORD_COMMISSIONER_ID
 # See automation/discord-requests/README.md for bot setup (intents/permissions).
 
@@ -57,12 +57,13 @@ jobs:
           echo "base_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           npm ci
 
-      # 2) Implement with Claude Code. This step ONLY gets the Anthropic key — NOT the Discord or
-      #    GitHub tokens — so a prompt-injected request can't exfiltrate those creds.
+      # 2) Implement with Claude Code, authed with the Pro/Max SUBSCRIPTION token (not pay-per-use
+      #    API billing). This step ONLY gets that token — NOT the Discord or GitHub tokens — so a
+      #    prompt-injected request can't exfiltrate those creds.
       - name: Implement with Claude Code
         if: steps.req.outputs.has_request == 'true'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           npm install -g @anthropic-ai/claude-code
           {

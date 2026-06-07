@@ -33,7 +33,8 @@ Enable Developer Mode in Discord (User Settings → Advanced), then right-click:
 ### 3. Add to the repo (Settings → Secrets and variables → Actions)
 **Secrets:**
 - `DISCORD_BOT_TOKEN`
-- `ANTHROPIC_API_KEY` (from https://console.anthropic.com — funds the cloud agent)
+- `CLAUDE_CODE_OAUTH_TOKEN` — generate with `claude setup-token` (uses your Claude Pro/Max
+  subscription instead of pay-per-use API billing; counts against your plan's usage limits)
 
 **Variables:**
 - `DISCORD_CHANNEL_ID`
