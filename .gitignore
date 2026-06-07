@@ -14,6 +14,11 @@ coverage
 *.local
 tmp
 
+# Transient artifacts written by the Discord request pipeline (workflow + local tests)
+request.txt
+prompt.txt
+BLOCKED.txt
+
 # Throwaway Phase 1 migration inputs (reproducible from sibling ffu-app repo).
 # Deleted once per-game validation passes — see legacy-source/README.md.
 legacy-source
