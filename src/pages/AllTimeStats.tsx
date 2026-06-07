@@ -84,7 +84,11 @@ export function AllTimeStats() {
 
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
-    return [{ key: 'minSeasons', label: 'Min Seasons', type: 'range', min: 1, max: maxSeasons, predicate: (c, v) => c.seasons >= Number(v) }]
+    return [
+      // isActive is relative to the scope: "in the latest season" of the selected league (or overall).
+      { key: 'active', label: 'Active only', type: 'toggle', predicate: (c) => c.isActive },
+      { key: 'minSeasons', label: 'Min Seasons', type: 'range', min: 1, max: maxSeasons, predicate: (c, v) => c.seasons >= Number(v) },
+    ]
   }, [careers])
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
 

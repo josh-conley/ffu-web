@@ -32,7 +32,12 @@ export interface RangeFilter<T> extends BaseFilter<T> {
   step?: number
 }
 
-export type FilterDef<T> = SelectFilter<T> | RangeFilter<T>
+/** Checkbox filter — on/off. Active value is '1'; the predicate decides what "on" keeps. */
+export interface ToggleFilter<T> extends BaseFilter<T> {
+  type: 'toggle'
+}
+
+export type FilterDef<T> = SelectFilter<T> | RangeFilter<T> | ToggleFilter<T>
 
 /** Pure filter application — every active filter must pass (AND). Inactive (empty) filters pass. */
 export function applyFilters<T>(defs: FilterDef<T>[], values: Record<string, string>, rows: T[]): T[] {

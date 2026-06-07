@@ -15,6 +15,21 @@ function SelectControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>,
   )
 }
 
+/** Checkbox control for a toggle filter (label inline). On = value '1'. */
+function ToggleControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'toggle' }>; value: string; onChange: (v: string) => void }) {
+  return (
+    <label className="flex h-11 cursor-pointer items-center gap-2 text-sm font-semibold md:h-auto">
+      <input
+        type="checkbox"
+        checked={value === '1'}
+        onChange={(e) => onChange(e.target.checked ? '1' : '')}
+        className="size-4 accent-accent"
+      />
+      {def.label}
+    </label>
+  )
+}
+
 /** Slider control for a range filter — shows the current "≥ N" value, or "Any" at the minimum. */
 function RangeControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'range' }>; value: string; onChange: (v: string) => void }) {
   const current = value ? Number(value) : def.min
@@ -53,16 +68,20 @@ export function FilterBar<T>({
 }) {
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-      {defs.map((def) => (
-        <label key={def.key} className="flex flex-col gap-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">{def.label}</span>
-          {def.type === 'range' ? (
-            <RangeControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
-          ) : (
-            <SelectControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
-          )}
-        </label>
-      ))}
+      {defs.map((def) =>
+        def.type === 'toggle' ? (
+          <ToggleControl key={def.key} def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+        ) : (
+          <label key={def.key} className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">{def.label}</span>
+            {def.type === 'range' ? (
+              <RangeControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+            ) : (
+              <SelectControl def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+            )}
+          </label>
+        ),
+      )}
       {activeCount > 0 && (
         <button
           type="button"
