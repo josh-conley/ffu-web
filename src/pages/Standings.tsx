@@ -3,6 +3,7 @@ import type { SeasonData } from '@/data'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
 import { regularSeasonStandings, seasonUpr, standingsByDivision } from '@/selectors'
+import { segButton } from '@/components/controls'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { StandingsTable } from '@/components/StandingsTable'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -18,17 +19,11 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
     const showDivisions = view !== 'overall'
     return (
       <div className="space-y-6">
-        <div className="flex gap-1 rounded border border-border bg-surface-2 p-0.5 w-fit text-sm font-medium">
-          <button
-            onClick={() => setView('division')}
-            className={`rounded px-3 py-1 transition-colors ${showDivisions ? 'bg-accent text-accent-fg' : 'text-muted hover:text-text'}`}
-          >
+        <div className="flex gap-1">
+          <button type="button" onClick={() => setView('division')} aria-pressed={showDivisions} className={segButton(showDivisions)}>
             By Division
           </button>
-          <button
-            onClick={() => setView('overall')}
-            className={`rounded px-3 py-1 transition-colors ${!showDivisions ? 'bg-accent text-accent-fg' : 'text-muted hover:text-text'}`}
-          >
+          <button type="button" onClick={() => setView('overall')} aria-pressed={!showDivisions} className={segButton(!showDivisions)}>
             Overall
           </button>
         </div>
