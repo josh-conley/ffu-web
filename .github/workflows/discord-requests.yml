@@ -157,10 +157,9 @@ jobs:
         run: |
           npm run build
           npx wrangler@4 pages project create ffu-web-preview --production-branch main 2>/dev/null || true
-          OUT="$(npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true 2>&1)"
-          echo "$OUT"
-          URL="$(echo "$OUT" | grep -oE 'https://[a-z0-9-]+\.ffu-web-preview\.pages\.dev' | tail -1)"
-          echo "preview_url=$URL" >> "$GITHUB_OUTPUT"
+          npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true
+          # Report the STABLE per-branch alias (always the latest auto/requests), not the per-deploy hash.
+          echo "preview_url=https://auto-requests.ffu-web-preview.pages.dev" >> "$GITHUB_OUTPUT"
 
       # 6a) Success → ✅ + PR link (+ the live preview URL when the Cloudflare deploy produced one).
       - name: Report success
@@ -168,7 +167,9 @@ jobs:
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ vars.DISCORD_CHANNEL_ID }}
-        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "${{ steps.deploy.outputs.preview_url }}"
+        # Prefer the PREVIEW_URL variable (set it to the custom domain once it's live), else the
+        # stable .pages.dev branch alias from the deploy step.
+        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "${{ vars.PREVIEW_URL || steps.deploy.outputs.preview_url }}"
 
       # 6b) Failure → ❌ + reason in Discord.
       - name: Report failure
