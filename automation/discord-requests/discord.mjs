@@ -80,7 +80,7 @@ async function next() {
 
 async function done(msgId, prUrl) {
   await react(msgId, EMOJI.done)
-  await reply(msgId, `✅ Done — opened a PR for review:\n${prUrl}`)
+  await reply(msgId, `✅ Done — added to the review PR:\n${prUrl}`)
 }
 
 async function fail(msgId, reason) {

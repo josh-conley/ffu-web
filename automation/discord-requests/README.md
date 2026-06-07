@@ -1,19 +1,28 @@
 # Autonomous Discord → PR pipeline
 
 The league commissioner posts a request in a Discord channel; a scheduled GitHub Action implements
-it with Claude Code, runs the gates, **opens a PR** (never auto-merges), and replies in Discord with
-the PR link (✅) or the reason it couldn't (❌). Runs entirely in GitHub's cloud — your computer can
-be off.
+it with Claude Code, runs the gates, stacks it onto a **single rolling PR** (never auto-merges), and
+replies in Discord with the PR link (✅) or the reason it couldn't (❌). Runs entirely in GitHub's
+cloud — your computer can be off.
 
 ```
 commissioner posts in #channel
         │
         ▼  (every 15 min, or manual)
-GitHub Action: claim 👀 → Claude implements + commits → gates → push branch → open PR
+GitHub Action: claim 👀 → Claude implements + commits → gates → stack onto auto/requests → 1 PR
         │
         ▼
 reply in Discord:  ✅ + PR link   |   ❌ + reason
 ```
+
+### Rolling PR (why one branch, not one-per-request)
+Each request becomes a **commit** on a single long-lived `auto/requests` branch, surfaced as **one
+open PR**. So a day of requests = one tidy PR (each commit is one request) to review and merge in a
+single pass — no merge conflicts between independent PRs. After you merge it, the branch resets to
+`main` on the next request. To reject one request, drop/revert its commit (the rest still merge).
+
+Caveat: if you push directly to `main` while requests are pending, the rolling branch won't include
+those changes until the batch is merged — resolve once at merge time if they overlap.
 
 ## One-time setup
 
