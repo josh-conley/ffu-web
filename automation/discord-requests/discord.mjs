@@ -7,7 +7,8 @@
 //   node discord.mjs fail <msgId> <reason> → reply with the reason + react ❌
 //
 // Env: DISCORD_BOT_TOKEN (required), DISCORD_CHANNEL_ID (required),
-//      DISCORD_COMMISSIONER_ID (recommended — only this author's messages are treated as requests).
+//      DISCORD_COMMISSIONER_ID (recommended) — a comma-separated list of user IDs allowed to make
+//      requests (e.g. "commishId,yourId"); only these authors' messages are treated as requests.
 import { writeFileSync, appendFileSync } from 'node:fs'
 
 const API = 'https://discord.com/api/v10'
@@ -21,7 +22,13 @@ const need = (name) => {
 }
 const TOKEN = need('DISCORD_BOT_TOKEN')
 const CHANNEL = need('DISCORD_CHANNEL_ID')
-const COMMISSIONER = process.env.DISCORD_COMMISSIONER_ID // optional but recommended
+// Comma-separated allow-list of requester user IDs (empty = anyone in the channel).
+const ALLOWED = new Set(
+  (process.env.DISCORD_COMMISSIONER_ID ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+)
 
 const EMOJI = { claim: '👀', done: '✅', fail: '❌' }
 
@@ -53,7 +60,7 @@ async function next() {
   // fail all leave a `me: true` reaction, so any of them means "already seen").
   const pick = messages
     .filter((m) => !m.author.bot)
-    .filter((m) => !COMMISSIONER || m.author.id === COMMISSIONER)
+    .filter((m) => ALLOWED.size === 0 || ALLOWED.has(m.author.id))
     .filter((m) => (m.content ?? '').trim().length > 0)
     .filter((m) => !(m.reactions ?? []).some((r) => r.me))
     .reverse() // oldest-first, so requests are handled in the order they were posted

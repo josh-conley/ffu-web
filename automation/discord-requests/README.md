@@ -28,7 +28,8 @@ reply in Discord:  ✅ + PR link   |   ❌ + reason
 Enable Developer Mode in Discord (User Settings → Advanced), then right-click:
 - the request **channel** → Copy Channel ID → `DISCORD_CHANNEL_ID`
 - the **commissioner's** name → Copy User ID → `DISCORD_COMMISSIONER_ID`
-  (only this person's messages in that channel are treated as requests).
+  (only these users' messages in that channel are treated as requests). Accepts a **comma-separated
+  list** to allow more than one person, e.g. `commishId,yourId`.
 
 ### 3. Add to the repo (Settings → Secrets and variables → Actions)
 **Secrets:**
