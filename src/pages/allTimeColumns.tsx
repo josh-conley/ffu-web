@@ -126,11 +126,19 @@ function finishColumns(): Column<CareerStats>[] {
   ]
 }
 
+// Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
+const DEFAULT_ORDER = [
+  'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
+  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'titles', 'second', 'third', 'last',
+]
+
 export function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
-  return [
+  const all = [
     ...identityColumns(),
     ...scoringColumns(),
     ...finishColumns(),
-    { key: 'upr', header: 'Avg UPR', align: 'right', sortValue: (c) => upr.get(c.memberId) ?? 0, render: (c) => upr.get(c.memberId)?.toFixed(2) ?? dash },
+    { key: 'upr', header: 'Avg UPR', align: 'right' as const, sortValue: (c: CareerStats) => upr.get(c.memberId) ?? 0, render: (c: CareerStats) => upr.get(c.memberId)?.toFixed(2) ?? dash },
   ]
+  const byKey = new Map(all.map((c) => [c.key, c]))
+  return DEFAULT_ORDER.map((k) => byKey.get(k)).filter((c): c is Column<CareerStats> => Boolean(c))
 }
