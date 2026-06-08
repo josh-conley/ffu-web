@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { SeasonData } from '@/data'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
-import { regularSeasonStandings, seasonUpr, standingsByDivision } from '@/selectors'
+import { finalStandings, seasonUpr, standingsByDivision } from '@/selectors'
 import { segButton } from '@/components/controls'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { StandingsTable } from '@/components/StandingsTable'
@@ -12,7 +12,7 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 function StandingsContent({ season, year }: { season: SeasonData; year: string }) {
   const upr = useMemo(() => seasonUpr(season), [season])
   const divisions = useMemo(() => standingsByDivision(season), [season])
-  const flat = useMemo(() => regularSeasonStandings(season), [season])
+  const flat = useMemo(() => finalStandings(season), [season])
   const [view, setView] = useUrlState('view', 'division')
 
   if (divisions) {

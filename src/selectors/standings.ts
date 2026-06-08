@@ -45,9 +45,22 @@ function assignRanks(sorted: SeasonTeam[]): StandingRow[] {
   return rows
 }
 
-/** Whole-season standings ordered by record (tie-aware ranks). */
+/** Whole-season standings ordered by record (tie-aware ranks) — the regular-season seed. */
 export function regularSeasonStandings(season: SeasonData): StandingRow[] {
   return assignRanks([...season.teams].sort(compareForStandings))
+}
+
+/**
+ * FINAL standings for a completed season: ordered by post-playoff `finalPlacement` (which becomes
+ * the row's rank). For an unfinished (active) season — no finalPlacement yet — falls back to the
+ * regular-season seed so the table still reads sensibly mid-season.
+ */
+export function finalStandings(season: SeasonData): StandingRow[] {
+  const finished = season.teams.every((t) => t.finalPlacement !== undefined)
+  if (!finished) return regularSeasonStandings(season)
+  return [...season.teams]
+    .sort((a, b) => (a.finalPlacement ?? 0) - (b.finalPlacement ?? 0))
+    .map((team) => ({ team, rank: team.finalPlacement ?? 0, winPct: winPct(team.record) }))
 }
 
 export interface DivisionStandings {
@@ -57,13 +70,13 @@ export interface DivisionStandings {
 
 /**
  * Standings grouped by division (only seasons with divisions — 2025). Each team keeps its overall
- * record-based rank; groups are sorted within division by that rank. Null when no divisions.
+ * final-placement rank; groups are sorted within division by that rank. Null when no divisions.
  */
 export function standingsByDivision(season: SeasonData): DivisionStandings[] | null {
   if (season.divisions === undefined || season.divisions.length === 0) return null
 
   const byDivision = new Map<number, StandingRow[]>()
-  for (const row of regularSeasonStandings(season)) {
+  for (const row of finalStandings(season)) {
     const id = row.team.divisionId
     if (id === undefined) continue
     let rows = byDivision.get(id)

@@ -18,14 +18,13 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
       <table className="w-max min-w-full text-sm">
         <thead className="bg-accent">
           <tr>
-            <th scope="col" className={TH}>#</th>
+            <th scope="col" className={TH} title="Final placement after playoffs">Rank</th>
             <th scope="col" className={TH}>Team</th>
             <th scope="col" className={TH}>Record</th>
             <th scope="col" className={`${TH} text-right`} title="Points For">PF</th>
             <th scope="col" className={`${TH} text-right`} title="Points Against">PA</th>
             <th scope="col" className={`${TH} text-right`}>Win%</th>
             <th scope="col" className={`${TH} text-right`} title="Union Power Ranking">UPR</th>
-            <th scope="col" className={TH}>Finish</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -33,7 +32,7 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
             const { team } = row
             return (
               <tr key={team.memberId} className="hover:bg-surface-2">
-                <td className={`${TD} tabular-nums text-muted`}>{row.rank}</td>
+                <td className={`${TD} font-semibold tabular-nums`}>{row.rank}</td>
                 <td className={TD}>
                   <span className="flex items-center gap-2">
                     <TeamLogo ffuId={team.memberId} />
@@ -45,7 +44,6 @@ export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: 
                 <td className={`${TD} text-right tabular-nums`}>{team.points.against.toFixed(2)}</td>
                 <td className={`${TD} text-right tabular-nums`}>{(row.winPct * 100).toFixed(1)}%</td>
                 <td className={`${TD} text-right font-mono tabular-nums`}>{upr.get(team.memberId)?.toFixed(2) ?? '—'}</td>
-                <td className={`${TD} text-muted`}>{team.placementName ?? team.finalPlacement ?? '—'}</td>
               </tr>
             )
           })}
