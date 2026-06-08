@@ -31,3 +31,13 @@ export function useSeason(tier: Tier, year: string, enabled = true) {
 export function useDraft(tier: Tier, year: string, enabled = true) {
   return useAsyncData(`draft:${tier}:${year}`, () => provider.getDraft(tier, year), enabled)
 }
+
+/** A season's lineups (lazy — only fetched when `enabled`, e.g. once a lineup modal opens). */
+export function useLineups(tier: Tier, year: string, enabled = true) {
+  return useAsyncData(`lineups:${tier}:${year}`, () => provider.getLineups(tier, year), enabled)
+}
+
+/** The shared player id → name/position/team map (one fetch, cached by the provider). */
+export function usePlayers(enabled = true) {
+  return useAsyncData('players', () => provider.getPlayers(), enabled)
+}

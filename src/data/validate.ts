@@ -4,7 +4,7 @@
 // corrupt/old file. Lightweight hand-written checks (no schema-lib dependency).
 
 import { SCHEMA_VERSION } from './types'
-import type { DraftData, SeasonData, SeasonManifest } from './types'
+import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonManifest } from './types'
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
@@ -58,6 +58,19 @@ export function assertDraftData(raw: unknown, ctx: string): DraftData {
   check(isObject(raw.draftOrder), ctx, 'missing draftOrder')
   check(Array.isArray(raw.picks) && raw.picks.length > 0, ctx, 'picks not a non-empty array')
   return raw as unknown as DraftData
+}
+
+export function assertSeasonLineups(raw: unknown, ctx: string): SeasonLineups {
+  check(isObject(raw), ctx, 'not an object')
+  assertSchema(raw, ctx)
+  check(typeof raw.tier === 'string', ctx, 'missing tier')
+  check(Array.isArray(raw.weeks), ctx, 'weeks not an array')
+  return raw as unknown as SeasonLineups
+}
+
+export function assertPlayerMap(raw: unknown, ctx: string): PlayerMap {
+  check(isObject(raw), ctx, 'not an object')
+  return raw as PlayerMap
 }
 
 export function assertManifest(raw: unknown, ctx: string): SeasonManifest {

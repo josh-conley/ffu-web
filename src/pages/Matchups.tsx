@@ -1,14 +1,18 @@
-import { useMemo } from 'react'
-import type { SeasonData } from '@/data'
+import { useMemo, useState } from 'react'
+import type { Game, SeasonData } from '@/data'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { gamesByWeek } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { MatchupCard } from '@/components/MatchupCard'
+import { LineupModal } from '@/components/LineupModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
 function MatchupsContent({ season, year }: { season: SeasonData; year: string }) {
   const weeks = useMemo(() => gamesByWeek(season), [season])
+  const [open, setOpen] = useState<Game | null>(null)
+  // Lineups exist only for the Sleeper era; ESPN-era cards stay non-clickable.
+  const hasLineups = season.era === 'sleeper'
   return (
     <div className="space-y-8">
       {weeks.map(({ week, games }) => (
@@ -19,11 +23,12 @@ function MatchupsContent({ season, year }: { season: SeasonData; year: string })
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {games.map((game, i) => (
-              <MatchupCard key={`${week}-${i}`} game={game} year={year} />
+              <MatchupCard key={`${week}-${i}`} game={game} year={year} onOpen={hasLineups ? () => setOpen(game) : undefined} />
             ))}
           </div>
         </section>
       ))}
+      {open && <LineupModal tier={season.tier} year={year} game={open} onClose={() => setOpen(null)} />}
     </div>
   )
 }

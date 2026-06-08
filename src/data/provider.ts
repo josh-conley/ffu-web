@@ -1,5 +1,5 @@
 import type { Tier } from '@/config/types'
-import type { DraftData, SeasonData, SeasonSummary } from './types'
+import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary } from './types'
 
 /**
  * THE data boundary. All methods are async and domain-phrased (never file paths), so an
@@ -12,8 +12,9 @@ export interface LeagueDataProvider {
   getSeason(tier: Tier, year: string): Promise<SeasonData>
   /** Null when a tier-season has no draft (none in current data, but modelled). */
   getDraft(tier: Tier, year: string): Promise<DraftData | null>
+  /** Per-game starters + bench. Null for ESPN-era seasons (no recoverable lineups). A live
+   *  current-week source would satisfy this same method differently in-season. */
+  getLineups(tier: Tier, year: string): Promise<SeasonLineups | null>
+  /** Trimmed player id → name/position/team map (resolves the ids inside lineups). */
+  getPlayers(): Promise<PlayerMap>
 }
-
-// NOTE: a `LineupProvider` (live Sleeper starters + player points for the roster modal) is a
-// deferred, post-core enhancement. It'll be added here when that view is built — the
-// games[].lineups seam is reserved for it. Not modelled now (no consumer, no shape yet).
