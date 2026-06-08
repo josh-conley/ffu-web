@@ -4,9 +4,9 @@ import { getMember } from '@/config'
 import type { Tier } from '@/config/types'
 import type { CareerStats, SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
+import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLogo } from '@/components/TeamLogo'
-import { TrophyGlyph, MedalGlyph, LastGlyph } from '@/components/placementIcons'
 
 // Column definitions for the All-Time Leaderboard, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
@@ -94,13 +94,13 @@ function placementCol(key: string, header: string, icon: ReactNode, match: (f: S
   return {
     key,
     header,
-    align: 'right',
+    align: 'center',
     sortValue: (c) => c.finishes.filter(match).length,
     render: (c) => {
       const hits = c.finishes.filter(match).sort((a, b) => a.year.localeCompare(b.year))
       if (hits.length === 0) return dash
       return (
-        <span className="inline-flex flex-wrap items-center justify-end gap-0.5">
+        <span className="inline-flex flex-wrap items-center justify-center gap-0.5">
           {hits.map((f, i) => (
             <span key={i} className={LEAGUE_STYLES[f.tier].text} title={`${LEAGUE_STYLES[f.tier].label} ${f.year}`}>
               {icon}
@@ -117,10 +117,10 @@ const tiersSort = (c: CareerStats) => c.premierSeasons * 10_000 + c.mastersSeaso
 
 function finishColumns(): Column<CareerStats>[] {
   return [
-    placementCol('titles', 'Titles', <TrophyGlyph />, (f) => f.finalPlacement === 1),
-    placementCol('second', '2nd', <MedalGlyph />, (f) => f.finalPlacement === 2),
-    placementCol('third', '3rd', <MedalGlyph />, (f) => f.finalPlacement === 3),
-    placementCol('last', 'Last', <LastGlyph />, isLast),
+    placementCol('titles', 'Titles', <FaTrophy size={13} />, (f) => f.finalPlacement === 1),
+    placementCol('second', '2nd', <FaMedal size={13} />, (f) => f.finalPlacement === 2),
+    placementCol('third', '3rd', <FaAward size={14} />, (f) => f.finalPlacement === 3),
+    placementCol('last', 'Last', <FaToilet size={14} />, isLast),
     { key: 'tiers', header: 'Tiers', align: 'right', sortValue: tiersSort, render: renderTiers },
     numCol('avgRank', 'Avg Rank', (c) => c.averageSeasonRank ?? 99, (n) => (n < 99 ? f1(n) : dash)),
   ]

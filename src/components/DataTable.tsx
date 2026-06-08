@@ -6,8 +6,11 @@ export interface Column<T> {
   render: (row: T) => ReactNode
   /** Provide to make the column sortable (click the header). */
   sortValue?: (row: T) => number | string
-  align?: 'left' | 'right'
+  align?: 'left' | 'right' | 'center'
 }
+
+const TEXT_ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' } as const
+const JUSTIFY = { left: '', right: 'justify-end', center: 'justify-center' } as const
 
 export interface SortState {
   key: string
@@ -16,6 +19,14 @@ export interface SortState {
 
 const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider text-accent-fg'
 const TD_BASE = 'px-3 py-2'
+
+// First-column pin: opaque background so scrolled content doesn't show through, a seam border, and
+// z kept below the sticky nav (z-20) so it never paints over the header bar. The pinned header cell
+// (z-10) sits just above the pinned body cells (z-5).
+function stickyCell(enabled: boolean, i: number, header: boolean): string {
+  if (!enabled || i !== 0) return ''
+  return `sticky left-0 border-r border-border ${header ? 'z-10 bg-accent' : 'z-[5] bg-surface group-hover:bg-surface-2'}`
+}
 
 function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefined): T[] {
   const col = sort ? columns.find((c) => c.key === sort.key) : undefined
@@ -73,14 +84,7 @@ export function DataTable<T>({
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
-
-  // First-column pin: needs its own opaque background so scrolled content doesn't show through,
-  // plus a seam border. Keep z below the sticky nav (z-20) so it never paints over the header bar;
-  // the pinned header cell sits just above the pinned body cells.
-  const stickyCell = (i: number, header: boolean) =>
-    stickyFirstColumn && i === 0
-      ? `sticky left-0 border-r border-border ${header ? 'z-10 bg-accent' : 'z-[5] bg-surface group-hover:bg-surface-2'}`
-      : ''
+  const pinned = (i: number, header: boolean) => stickyCell(stickyFirstColumn, i, header)
 
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
   const pageCount = pageSize ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1
@@ -95,17 +99,18 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}`}>
-        {/* w-max so columns keep natural width and the box scrolls on narrow screens instead
-            of squishing; min-w-full still fills the container on desktop. */}
-        <table className="w-max min-w-full text-sm">
+      {/* fullBleed: frame breaks out to ~full viewport; inside, the box shrinks to the shown columns
+          (w-fit) but stays centered with a sensible min width (≈the viewport on phones, else 32rem). */}
+      <div className={fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}>
+        <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`}>
+          <table className={`w-max text-sm ${fullBleed ? '' : 'min-w-full'}`}>
           <thead className="bg-accent">
             <tr>
               {columns.map((col, i) => (
                 <th
                   key={col.key}
                   scope="col"
-                  className={`${TH_BASE} ${stickyCell(i, true)} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                  className={`${TH_BASE} ${pinned(i, true)} ${TEXT_ALIGN[col.align ?? 'left']}`}
                   aria-sort={sort?.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
                   {col.sortValue ? (
@@ -113,7 +118,7 @@ export function DataTable<T>({
                     <button
                       type="button"
                       onClick={() => toggleSort(col)}
-                      className={`flex w-full items-center gap-1 uppercase tracking-wider select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${col.align === 'right' ? 'justify-end' : ''}`}
+                      className={`flex w-full items-center gap-1 uppercase tracking-wider select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${JUSTIFY[col.align ?? 'left']}`}
                     >
                       {col.header}
                       {sort?.key === col.key && <span aria-hidden>{sort.dir === 'asc' ? '▲' : '▼'}</span>}
@@ -129,7 +134,7 @@ export function DataTable<T>({
             {pageRows.map((row, i) => (
               <tr key={getRowKey(row, i)} className="group hover:bg-surface-2">
                 {columns.map((col, ci) => (
-                  <td key={col.key} className={`${TD_BASE} ${stickyCell(ci, false)} ${col.align === 'right' ? 'text-right' : ''}`}>
+                  <td key={col.key} className={`${TD_BASE} ${pinned(ci, false)} ${col.align && col.align !== 'left' ? TEXT_ALIGN[col.align] : ''}`}>
                     {col.render(row)}
                   </td>
                 ))}
@@ -137,6 +142,7 @@ export function DataTable<T>({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       {pageSize && pageCount > 1 && <Pagination page={clamped} pageCount={pageCount} onPage={setPage} />}
     </div>
