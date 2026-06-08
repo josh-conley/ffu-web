@@ -106,6 +106,9 @@ export interface SeasonLineups {
   schemaVersion: number
   tier: Tier
   year: string
+  /** Starting roster slots in order (e.g. QB, RB, RB, WR, WR, TE, FLEX, FLEX, DEF) — bench excluded.
+   *  Each team's `starters[i]` fills `slots[i]`, so the modal aligns both teams row-by-row. */
+  slots: string[]
   weeks: WeekLineups[]
 }
 

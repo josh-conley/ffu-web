@@ -57,9 +57,13 @@ function benchOf(entry) {
 
 const sum = (arr) => Math.round(arr.reduce((t, s) => t + s.points, 0) * 100) / 100
 
-/** Build one season's WeekLineups[] from Sleeper; collect player ids; warn on score mismatches. */
+const BENCH_SLOTS = new Set(['BN', 'IR', 'TAXI'])
+
+/** Build one season's lineups from Sleeper; collect player ids; warn on score mismatches. */
 async function buildSeason(season, ffuMap, ids, warn) {
   const lid = season.platformLeagueId
+  const league = await api(`/league/${lid}`)
+  const slots = (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s))
   const rosters = await api(`/league/${lid}/rosters`)
   const ownerByRoster = new Map(rosters.map((r) => [r.roster_id, r.owner_id]))
   const exp = expectedScores(season)
@@ -82,7 +86,7 @@ async function buildSeason(season, ffuMap, ids, warn) {
     }
     out.push({ week, teams })
   }
-  return out
+  return { slots, weeks: out }
 }
 
 // ── Players map (trimmed) — fetched once over all collected ids ──
@@ -114,10 +118,10 @@ async function main() {
     const tierFile = meta.tier.toLowerCase()
     const season = readJson(join(DATA, meta.year, `${tierFile}.json`))
     process.stdout.write(`${meta.year} ${meta.tier}: league ${season.platformLeagueId} ...\n`)
-    const weeks = await buildSeason(season, ffuMap, ids, warn)
-    const lineups = { schemaVersion: SCHEMA_VERSION, tier: meta.tier, year: meta.year, weeks }
+    const { slots, weeks } = await buildSeason(season, ffuMap, ids, warn)
+    const lineups = { schemaVersion: SCHEMA_VERSION, tier: meta.tier, year: meta.year, slots, weeks }
     writeFileSync(join(DATA, meta.year, `${tierFile}.lineups.json`), JSON.stringify(lineups))
-    process.stdout.write(`  -> ${tierFile}.lineups.json (${weeks.length} weeks, ${weeks.reduce((t, w) => t + w.teams.length, 0)} team-weeks)\n`)
+    process.stdout.write(`  -> ${tierFile}.lineups.json (slots: ${slots.join('/')}; ${weeks.length} weeks)\n`)
   }
 
   process.stdout.write(warn.length ? `\n⚠ ${warn.length} score mismatches:\n${warn.slice(0, 20).join('\n')}\n` : `\n✓ all starter sums matched stored scores\n`)
