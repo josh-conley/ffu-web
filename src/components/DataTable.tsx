@@ -58,15 +58,29 @@ export function DataTable<T>({
   getRowKey,
   initialSort,
   pageSize,
+  fullBleed = false,
+  stickyFirstColumn = false,
 }: {
   columns: Column<T>[]
   rows: T[]
   getRowKey: (row: T, index: number) => string
   initialSort?: SortState
   pageSize?: number
+  /** Break out of the page's centered container to (nearly) full viewport width. */
+  fullBleed?: boolean
+  /** Pin the first column so it stays visible while the rest scrolls horizontally. */
+  stickyFirstColumn?: boolean
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
+
+  // First-column pin: needs its own opaque background so scrolled content doesn't show through,
+  // plus a seam border. Keep z below the sticky nav (z-20) so it never paints over the header bar;
+  // the pinned header cell sits just above the pinned body cells.
+  const stickyCell = (i: number, header: boolean) =>
+    stickyFirstColumn && i === 0
+      ? `sticky left-0 border-r border-border ${header ? 'z-10 bg-accent' : 'z-[5] bg-surface group-hover:bg-surface-2'}`
+      : ''
 
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
   const pageCount = pageSize ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1
@@ -81,17 +95,17 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto border border-border bg-surface shadow-sm">
+      <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}`}>
         {/* w-max so columns keep natural width and the box scrolls on narrow screens instead
             of squishing; min-w-full still fills the container on desktop. */}
         <table className="w-max min-w-full text-sm">
           <thead className="bg-accent">
             <tr>
-              {columns.map((col) => (
+              {columns.map((col, i) => (
                 <th
                   key={col.key}
                   scope="col"
-                  className={`${TH_BASE} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                  className={`${TH_BASE} ${stickyCell(i, true)} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                   aria-sort={sort?.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
                   {col.sortValue ? (
@@ -113,9 +127,9 @@ export function DataTable<T>({
           </thead>
           <tbody className="divide-y divide-border">
             {pageRows.map((row, i) => (
-              <tr key={getRowKey(row, i)} className="hover:bg-surface-2">
-                {columns.map((col) => (
-                  <td key={col.key} className={`${TD_BASE} ${col.align === 'right' ? 'text-right' : ''}`}>
+              <tr key={getRowKey(row, i)} className="group hover:bg-surface-2">
+                {columns.map((col, ci) => (
+                  <td key={col.key} className={`${TD_BASE} ${stickyCell(ci, false)} ${col.align === 'right' ? 'text-right' : ''}`}>
                     {col.render(row)}
                   </td>
                 ))}

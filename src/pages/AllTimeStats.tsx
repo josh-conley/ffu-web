@@ -61,7 +61,7 @@ export function AllTimeStats() {
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
-        <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
+        <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} fullBleed stickyFirstColumn />
       )}
       <p className="text-sm text-muted">
         Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a

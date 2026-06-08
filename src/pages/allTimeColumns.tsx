@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember } from '@/config'
 import type { Tier } from '@/config/types'
-import { championshipTitles, type CareerStats } from '@/selectors'
+import type { CareerStats, SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { LEAGUE_STYLES } from '@/components/leagues'
-import { Trophies } from '@/components/Trophies'
 import { TeamLogo } from '@/components/TeamLogo'
+import { TrophyGlyph, MedalGlyph, LastGlyph } from '@/components/placementIcons'
 
 // Column definitions for the All-Time Leaderboard, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
@@ -14,8 +14,20 @@ import { TeamLogo } from '@/components/TeamLogo'
 
 const games = (c: CareerStats) => c.wins + c.losses + c.ties
 const dash = <span className="text-muted">—</span>
-const f1 = (n: number) => n.toFixed(1)
-const count = (n: number): ReactNode => (n > 0 ? n : dash)
+const f1 = (n: number) => n.toFixed(1) // ranks (not a point value)
+const f2 = (n: number) => n.toFixed(2) // game/point values → hundredths
+
+/** Point differential, signed and color-coded (green positive, red negative). */
+function diffCell(c: CareerStats): ReactNode {
+  const d = c.pointsFor - c.pointsAgainst
+  const tone = d > 0 ? 'text-positive' : d < 0 ? 'text-negative' : 'text-muted'
+  return (
+    <span className={`font-medium ${tone}`}>
+      {d >= 0 ? '+' : ''}
+      {d.toFixed(2)}
+    </span>
+  )
+}
 
 /** A right-aligned numeric column; `fmt` formats the extracted value (also used for sorting). */
 function numCol(
@@ -49,12 +61,12 @@ function identityColumns(): Column<CareerStats>[] {
 
 function scoringColumns(): Column<CareerStats>[] {
   return [
-    numCol('pf', 'Points For', (c) => c.pointsFor, f1),
-    numCol('pa', 'Points Agst', (c) => c.pointsAgainst, f1),
-    numCol('diff', 'Point Diff', (c) => c.pointsFor - c.pointsAgainst, (n) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}`),
-    numCol('ppg', 'Avg PPG', (c) => (games(c) ? c.pointsFor / games(c) : 0), f1),
-    numCol('high', 'High Game', (c) => c.careerHighGame ?? 0, (n) => (n ? f1(n) : dash)),
-    numCol('low', 'Low Game', (c) => c.careerLowGame ?? 0, (n) => (n ? f1(n) : dash)),
+    numCol('pf', 'Points For', (c) => c.pointsFor, f2),
+    numCol('pa', 'Points Agst', (c) => c.pointsAgainst, f2),
+    { key: 'diff', header: 'Point Diff', align: 'right', sortValue: (c) => c.pointsFor - c.pointsAgainst, render: diffCell },
+    numCol('ppg', 'Avg PPG', (c) => (games(c) ? c.pointsFor / games(c) : 0), f2),
+    numCol('high', 'High Game', (c) => c.careerHighGame ?? 0, (n) => (n ? f2(n) : dash)),
+    numCol('low', 'Low Game', (c) => c.careerLowGame ?? 0, (n) => (n ? f2(n) : dash)),
   ]
 }
 
@@ -75,19 +87,41 @@ function renderTiers(c: CareerStats): ReactNode {
   )
 }
 
+const isLast = (f: SeasonFinish) => f.finalPlacement !== null && f.finalPlacement === f.seasonSize && f.seasonSize > 3
+
+/** A finish column: one tier-colored icon per qualifying season (year on hover), or a dash. */
+function placementCol(key: string, header: string, icon: ReactNode, match: (f: SeasonFinish) => boolean): Column<CareerStats> {
+  return {
+    key,
+    header,
+    align: 'right',
+    sortValue: (c) => c.finishes.filter(match).length,
+    render: (c) => {
+      const hits = c.finishes.filter(match).sort((a, b) => a.year.localeCompare(b.year))
+      if (hits.length === 0) return dash
+      return (
+        <span className="inline-flex flex-wrap items-center justify-end gap-0.5">
+          {hits.map((f, i) => (
+            <span key={i} className={LEAGUE_STYLES[f.tier].text} title={`${LEAGUE_STYLES[f.tier].label} ${f.year}`}>
+              {icon}
+            </span>
+          ))}
+        </span>
+      )
+    },
+  }
+}
+
+// Tiers sort: Premier first, then Masters, then National as tiebreakers.
+const tiersSort = (c: CareerStats) => c.premierSeasons * 10_000 + c.mastersSeasons * 100 + c.nationalSeasons
+
 function finishColumns(): Column<CareerStats>[] {
   return [
-    {
-      key: 'titles',
-      header: 'Titles',
-      align: 'right',
-      sortValue: (c) => c.championships,
-      render: (c) => (c.championships > 0 ? <span className="flex justify-end"><Trophies titles={championshipTitles(c)} /></span> : dash),
-    },
-    numCol('second', '2nd', (c) => c.runnerUps, count),
-    numCol('third', '3rd', (c) => c.thirdPlaceFinishes, count),
-    numCol('last', 'Last', (c) => c.lastPlaceFinishes, count),
-    { key: 'tiers', header: 'Tiers', align: 'right', sortValue: (c) => c.premierSeasons, render: renderTiers },
+    placementCol('titles', 'Titles', <TrophyGlyph />, (f) => f.finalPlacement === 1),
+    placementCol('second', '2nd', <MedalGlyph />, (f) => f.finalPlacement === 2),
+    placementCol('third', '3rd', <MedalGlyph />, (f) => f.finalPlacement === 3),
+    placementCol('last', 'Last', <LastGlyph />, isLast),
+    { key: 'tiers', header: 'Tiers', align: 'right', sortValue: tiersSort, render: renderTiers },
     numCol('avgRank', 'Avg Rank', (c) => c.averageSeasonRank ?? 99, (n) => (n < 99 ? f1(n) : dash)),
   ]
 }

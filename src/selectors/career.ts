@@ -24,6 +24,8 @@ export interface SeasonFinish {
   year: string
   tier: Tier
   finalPlacement: number | null
+  /** Teams in that tier-season — lets a view flag a last-place finish with its tier/year. */
+  seasonSize: number
 }
 
 export interface CareerStats {
@@ -185,7 +187,7 @@ function accumulateSeason(
     c.careerHighGame = c.careerHighGame === null ? highLow.high : Math.max(c.careerHighGame, highLow.high)
     c.careerLowGame = c.careerLowGame === null ? highLow.low : Math.min(c.careerLowGame, highLow.low)
   }
-  c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: place ?? null })
+  c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: place ?? null, seasonSize: season.teams.length })
 }
 
 /** Fill the derived fields once a member's per-season totals are accumulated. */
