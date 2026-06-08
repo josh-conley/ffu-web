@@ -75,13 +75,47 @@ export interface Game {
   bracket?: Bracket
   /** Exactly two participants; winner/margin/running-records are derived, never stored. */
   participants: GameParticipant[]
-  /**
-   * Reserved seam for starter lineups + player points. Omitted for now — absence means
-   * "fetch live via LineupProvider" (Sleeper era) or "unrecoverable" (ESPN era). A future
-   * static backfill writes this slot with zero UI changes.
-   */
-  lineups?: null
 }
+
+// ── Lineups: sibling file /public/data/{year}/{tier}.lineups.json (Sleeper era only) ──
+// Stored SEPARATELY from season results (not embedded in Game) so Standings/Matchups don't pay the
+// size — the lineup modal lazy-loads this file on demand. The same shape will serve live current-
+// week data later, so the lineup UI is source-agnostic (static file now, live feed in-season later).
+
+export interface LineupPlayer {
+  /** Sleeper player id (team-defense entries are the team abbr, e.g. "BUF"). Resolve via PlayerMap. */
+  playerId: string
+  points: number
+}
+
+export interface TeamLineup {
+  memberId: string
+  /** Starting lineup, in Sleeper roster-slot order. */
+  starters: LineupPlayer[]
+  /** Rostered but not started (didn't count). */
+  bench: LineupPlayer[]
+}
+
+export interface WeekLineups {
+  week: number
+  /** Every team's lineup that week (a game's lineups = the two teams matching its participants). */
+  teams: TeamLineup[]
+}
+
+export interface SeasonLineups {
+  schemaVersion: number
+  tier: Tier
+  year: string
+  weeks: WeekLineups[]
+}
+
+// ── Player reference: /public/data/players.json (trimmed to players who appear in any lineup) ──
+export interface PlayerRef {
+  name: string
+  position: string
+  team?: string
+}
+export type PlayerMap = Record<string, PlayerRef>
 
 export interface SeasonData {
   schemaVersion: number
