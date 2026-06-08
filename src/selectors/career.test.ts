@@ -50,6 +50,27 @@ describe('careerStats (synthetic)', () => {
     expect(championshipTitles(a)).toEqual([{ year: '2023', tier: 'PREMIER' }]) // won 2023 Premier
     expect(a.playoffTiers).toEqual(['PREMIER']) // reached the 2023 Premier championship bracket
   })
+
+  it('derives the old-site career columns (playoff record, finishes, high/low, tier counts, avg rank)', () => {
+    const a = careerStats(seasons).get('a')!
+    // Playoff W-L via the placement map: 2023 1st → 2-0, 2024 2nd → 2-1.
+    expect({ w: a.playoffWins, l: a.playoffLosses }).toEqual({ w: 4, l: 1 })
+    expect(a.thirdPlaceFinishes).toBe(0)
+    expect(a.lastPlaceFinishes).toBe(0)
+    // Only the 2023 championship game has scores for 'a' (130); 2024 had no games.
+    expect(a.careerHighGame).toBe(130)
+    expect(a.careerLowGame).toBe(130)
+    expect({ p: a.premierSeasons, m: a.mastersSeasons, n: a.nationalSeasons }).toEqual({ p: 2, m: 0, n: 0 })
+    expect(a.averageSeasonRank).toBe(1.5) // placements 1 and 2
+  })
+
+  it('credits playoff losers and a no-bracket placement correctly', () => {
+    const b = careerStats(seasons).get('b')!
+    // 2023 finalPlacement 8 → outside the top-6 bracket → no playoff record.
+    expect({ w: b.playoffWins, l: b.playoffLosses }).toEqual({ w: 0, l: 0 })
+    expect(b.careerHighGame).toBe(90) // scored 90 in the 2023 game
+    expect(b.averageSeasonRank).toBe(8)
+  })
 })
 
 describe('careerFor (real 2024 Premier)', () => {

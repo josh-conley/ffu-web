@@ -103,6 +103,22 @@ export function regularSeasonTotals(season: SeasonData): Map<string, TeamTotals>
   return totals
 }
 
+/** Per-member high/low single-game score across ALL of a season's games (incl. playoffs). */
+export function seasonHighLow(season: SeasonData): Map<string, { high: number; low: number }> {
+  const out = new Map<string, { high: number; low: number }>()
+  for (const game of season.games) {
+    for (const p of game.participants) {
+      const cur = out.get(p.memberId)
+      if (cur === undefined) out.set(p.memberId, { high: p.score, low: p.score })
+      else {
+        cur.high = Math.max(cur.high, p.score)
+        cur.low = Math.min(cur.low, p.score)
+      }
+    }
+  }
+  return out
+}
+
 export interface WeekGames {
   week: number
   games: Game[]

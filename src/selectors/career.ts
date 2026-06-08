@@ -1,7 +1,7 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
 import { winPct } from './standings'
-import { regularSeasonTotals } from './games'
+import { regularSeasonTotals, seasonHighLow } from './games'
 import { calculateUpr } from './upr'
 
 // Career aggregates per member across seasons (Members career view + All-Time Stats). Sums the
@@ -9,6 +9,16 @@ import { calculateUpr } from './upr'
 // regular-season seed is never involved here.
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
+
+// Old site's fixed placement→playoff-record map (top-6 bracket). Placements outside 1–6 → 0-0.
+const PLAYOFF_RECORD: Record<number, { wins: number; losses: number }> = {
+  1: { wins: 2, losses: 0 },
+  2: { wins: 2, losses: 1 },
+  3: { wins: 1, losses: 2 },
+  4: { wins: 1, losses: 2 },
+  5: { wins: 0, losses: 1 },
+  6: { wins: 0, losses: 1 },
+}
 
 export interface SeasonFinish {
   year: string
@@ -27,9 +37,23 @@ export interface CareerStats {
   winPct: number
   championships: number // finalPlacement === 1
   runnerUps: number // finalPlacement === 2
+  thirdPlaceFinishes: number // finalPlacement === 3
+  lastPlaceFinishes: number // finalPlacement === season size (came in last)
+  /** Playoff W-L by the old site's placement→record map (1→2-0, 2→2-1, 3/4→1-2, 5/6→0-1). */
+  playoffWins: number
+  playoffLosses: number
   playoffAppearances: number // reached the championship bracket
   /** Tier of each playoff (championship-bracket) appearance — for the by-league breakdown. */
   playoffTiers: Tier[]
+  /** Best (lowest) / worst single-game score across ALL games (incl. playoffs). */
+  careerHighGame: number | null
+  careerLowGame: number | null
+  /** Seasons played in each tier (the "Tiers" column). */
+  premierSeasons: number
+  mastersSeasons: number
+  nationalSeasons: number
+  /** Average final placement over completed seasons (lower = better). */
+  averageSeasonRank: number | null
   bestFinish: number | null
   /** First / most-recent season the member played (their true FFU debut + latest year). */
   firstYear: number | null
@@ -83,8 +107,18 @@ function emptyCareer(memberId: string): CareerStats {
     winPct: 0,
     championships: 0,
     runnerUps: 0,
+    thirdPlaceFinishes: 0,
+    lastPlaceFinishes: 0,
+    playoffWins: 0,
+    playoffLosses: 0,
     playoffAppearances: 0,
     playoffTiers: [],
+    careerHighGame: null,
+    careerLowGame: null,
+    premierSeasons: 0,
+    mastersSeasons: 0,
+    nationalSeasons: 0,
+    averageSeasonRank: null,
     bestFinish: null,
     firstYear: null,
     lastYear: null,
@@ -98,21 +132,14 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
   const career = new Map<string, CareerStats>()
 
   for (const season of seasons) {
+    const highLow = seasonHighLow(season)
     for (const t of season.teams) {
       let c = career.get(t.memberId)
       if (c === undefined) {
         c = emptyCareer(t.memberId)
         career.set(t.memberId, c)
       }
-      c.seasons += 1
-      c.wins += t.record.wins
-      c.losses += t.record.losses
-      c.ties += t.record.ties
-      c.pointsFor += t.points.for
-      c.pointsAgainst += t.points.against
-      if (t.finalPlacement === 1) c.championships += 1
-      if (t.finalPlacement === 2) c.runnerUps += 1
-      c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: t.finalPlacement ?? null })
+      accumulateSeason(c, season, t, highLow.get(t.memberId))
     }
   }
 
@@ -122,6 +149,43 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
   }
 
   return career
+}
+
+const TIER_FIELD = {
+  PREMIER: 'premierSeasons',
+  MASTERS: 'mastersSeasons',
+  NATIONAL: 'nationalSeasons',
+} as const
+
+/** Fold one team's season into its running career totals. */
+function accumulateSeason(
+  c: CareerStats,
+  season: SeasonData,
+  t: SeasonTeam,
+  highLow: { high: number; low: number } | undefined,
+): void {
+  c.seasons += 1
+  c.wins += t.record.wins
+  c.losses += t.record.losses
+  c.ties += t.record.ties
+  c.pointsFor += t.points.for
+  c.pointsAgainst += t.points.against
+  c[TIER_FIELD[season.tier]] += 1
+  const place = t.finalPlacement
+  if (place === 1) c.championships += 1
+  else if (place === 2) c.runnerUps += 1
+  else if (place === 3) c.thirdPlaceFinishes += 1
+  if (place !== undefined && place === season.teams.length) c.lastPlaceFinishes += 1
+  const playoff = place !== undefined ? PLAYOFF_RECORD[place] : undefined
+  if (playoff) {
+    c.playoffWins += playoff.wins
+    c.playoffLosses += playoff.losses
+  }
+  if (highLow) {
+    c.careerHighGame = c.careerHighGame === null ? highLow.high : Math.max(c.careerHighGame, highLow.high)
+    c.careerLowGame = c.careerLowGame === null ? highLow.low : Math.min(c.careerLowGame, highLow.low)
+  }
+  c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: place ?? null })
 }
 
 /** Fill the derived fields once a member's per-season totals are accumulated. */
@@ -139,6 +203,8 @@ function finalizeCareer(c: CareerStats, playoffSet: Set<string> | undefined, lat
   c.playoffTiers = playoffTiers
   const placements = c.finishes.map((f) => f.finalPlacement).filter((n): n is number => n !== null)
   c.bestFinish = placements.length > 0 ? Math.min(...placements) : null
+  c.averageSeasonRank =
+    placements.length > 0 ? placements.reduce((sum, p) => sum + p, 0) / placements.length : null
   const yearsPlayed = c.finishes.map((f) => Number(f.year))
   c.firstYear = yearsPlayed.length > 0 ? Math.min(...yearsPlayed) : null
   c.lastYear = yearsPlayed.length > 0 ? Math.max(...yearsPlayed) : null
