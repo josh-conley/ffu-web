@@ -8,7 +8,7 @@ import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLogo } from '@/components/TeamLogo'
 
-// Column definitions for the All-Time Leaderboard, mirroring the old site's Career Statistics
+// Column definitions for the All-Time Stats page, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
 // just composes them. Tier colors come only from LEAGUE_STYLES (DRY).
 

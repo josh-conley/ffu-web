@@ -19,9 +19,10 @@ export default function App() {
           <Route path="matchups" element={<Matchups />} />
           <Route path="records" element={<Records />} />
           <Route path="members" element={<Members />} />
-          <Route path="leaderboard" element={<AllTimeStats />} />
-          {/* Old path before the All-Time → Leaderboard rename; redirect stale bookmarks. */}
-          <Route path="all-time" element={<Navigate to="/leaderboard" replace />} />
+          <Route path="stats" element={<AllTimeStats />} />
+          {/* Earlier paths for this page; redirect stale bookmarks to the current /stats. */}
+          <Route path="leaderboard" element={<Navigate to="/stats" replace />} />
+          <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={<Drafts />} />
           <Route path="*" element={<NotFound />} />
         </Route>

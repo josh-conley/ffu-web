@@ -51,7 +51,7 @@ export function AllTimeStats() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Leaderboard</h1>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Stats</h1>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
