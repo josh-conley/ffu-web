@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { nameForYear } from '@/config'
 import type { StandingRow } from '@/selectors'
+import { DataTable, type Column } from './DataTable'
 import { TeamLogo } from './TeamLogo'
 
 function recordLabel(row: StandingRow): string {
@@ -7,48 +9,32 @@ function recordLabel(row: StandingRow): string {
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
 }
 
-const TH = 'px-3 py-2.5 text-left font-bold uppercase tracking-wider text-accent-fg'
-const TD = 'px-3 py-2 whitespace-nowrap'
+function buildColumns(upr: Map<string, number>, year: string): Column<StandingRow>[] {
+  const num = (key: string, header: string, get: (r: StandingRow) => number, fmt: (n: number) => string, title?: string): Column<StandingRow> => ({
+    key, header, align: 'right', title, sortValue: get, render: (r) => fmt(get(r)),
+  })
+  return [
+    { key: 'rank', header: 'Rank', title: 'Final placement after playoffs', sortValue: (r) => r.rank, render: (r) => <span className="font-semibold">{r.rank}</span> },
+    {
+      key: 'team',
+      header: 'Team',
+      sortValue: (r) => nameForYear(r.team.memberId, year) ?? r.team.memberId,
+      render: (r) => (
+        <span className="flex items-center gap-2">
+          <TeamLogo ffuId={r.team.memberId} />
+          <span className="font-semibold whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
+        </span>
+      ),
+    },
+    { key: 'record', header: 'Record', sortValue: (r) => r.winPct, render: (r) => recordLabel(r) },
+    num('pf', 'PF', (r) => r.team.points.for, (n) => n.toFixed(2), 'Points For'),
+    num('pa', 'PA', (r) => r.team.points.against, (n) => n.toFixed(2), 'Points Against'),
+    num('winpct', 'Win%', (r) => r.winPct, (n) => `${(n * 100).toFixed(1)}%`),
+    num('upr', 'UPR', (r) => upr.get(r.team.memberId) ?? 0, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking'),
+  ]
+}
 
 export function StandingsTable({ rows, upr, year }: { rows: StandingRow[]; upr: Map<string, number>; year: string }) {
-  return (
-    <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-      {/* w-max so columns keep their natural width and the box scrolls on narrow screens
-          instead of squishing; min-w-full still fills the container on desktop. */}
-      <table className="w-max min-w-full text-sm">
-        <thead className="bg-accent">
-          <tr>
-            <th scope="col" className={TH} title="Final placement after playoffs">Rank</th>
-            <th scope="col" className={TH}>Team</th>
-            <th scope="col" className={TH}>Record</th>
-            <th scope="col" className={`${TH} text-right`} title="Points For">PF</th>
-            <th scope="col" className={`${TH} text-right`} title="Points Against">PA</th>
-            <th scope="col" className={`${TH} text-right`}>Win%</th>
-            <th scope="col" className={`${TH} text-right`} title="Union Power Ranking">UPR</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {rows.map((row) => {
-            const { team } = row
-            return (
-              <tr key={team.memberId} className="hover:bg-surface-2">
-                <td className={`${TD} font-semibold tabular-nums`}>{row.rank}</td>
-                <td className={TD}>
-                  <span className="flex items-center gap-2">
-                    <TeamLogo ffuId={team.memberId} />
-                    <span className="font-semibold">{nameForYear(team.memberId, year) ?? team.memberId}</span>
-                  </span>
-                </td>
-                <td className={`${TD} tabular-nums`}>{recordLabel(row)}</td>
-                <td className={`${TD} text-right tabular-nums`}>{team.points.for.toFixed(2)}</td>
-                <td className={`${TD} text-right tabular-nums`}>{team.points.against.toFixed(2)}</td>
-                <td className={`${TD} text-right tabular-nums`}>{(row.winPct * 100).toFixed(1)}%</td>
-                <td className={`${TD} text-right font-mono tabular-nums`}>{upr.get(team.memberId)?.toFixed(2) ?? '—'}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
+  const columns = useMemo(() => buildColumns(upr, year), [upr, year])
+  return <DataTable columns={columns} rows={rows} getRowKey={(r) => r.team.memberId} initialSort={{ key: 'rank', dir: 'asc' }} />
 }

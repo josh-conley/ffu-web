@@ -10,6 +10,8 @@ export interface Column<T> {
   /** Provide to make the column sortable (click the header). */
   sortValue?: (row: T) => number | string
   align?: 'left' | 'right' | 'center'
+  /** Tooltip on the header (e.g. expanding an abbreviation like "PF"). */
+  title?: string
 }
 
 export interface SortState {

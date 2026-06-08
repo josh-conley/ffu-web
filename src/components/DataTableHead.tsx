@@ -44,7 +44,7 @@ function headInner<T>(col: Column<T>, sort: SortState | undefined, onToggleSort:
 
 function PlainTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; sticky: string; sort?: SortState; onToggleSort: (c: Column<T>) => void }) {
   return (
-    <th scope="col" className={`${TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']}`} aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}>
+    <th scope="col" title={col.title} className={`${TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']}`} aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}>
       {headInner(col, sort, onToggleSort)}
     </th>
   )
