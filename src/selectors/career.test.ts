@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { careerStats, careerFor, championshipTitles, membersByLeague } from './career'
+import { careerStats, careerFor, careerUpr, championshipTitles, membersByLeague } from './career'
 import premier2024 from '../../public/data/2024/premier.json'
 
 const seasons: SeasonData[] = [
@@ -70,6 +70,34 @@ describe('careerStats (synthetic)', () => {
     expect({ w: b.playoffWins, l: b.playoffLosses }).toEqual({ w: 0, l: 0 })
     expect(b.careerHighGame).toBe(90) // scored 90 in the 2023 game
     expect(b.averageSeasonRank).toBe(8)
+  })
+})
+
+describe('careerUpr (mean of per-season UPRs)', () => {
+  // Two seasons of regular-season games for 'x', each with its OWN high/low, so the average-of-
+  // seasons result is distinct from a pooled-career UPR (which would be 131.5 here).
+  const uprSeasons: SeasonData[] = [
+    {
+      schemaVersion: 1, tier: 'PREMIER', year: '2020', era: 'sleeper', platformLeagueId: 'x',
+      teams: [],
+      games: [
+        { week: 1, isPlayoff: false, participants: [{ memberId: 'x', score: 110 }, { memberId: 'y', score: 90 }] },
+        { week: 2, isPlayoff: false, participants: [{ memberId: 'x', score: 100 }, { memberId: 'y', score: 105 }] },
+      ],
+    },
+    {
+      schemaVersion: 1, tier: 'PREMIER', year: '2021', era: 'sleeper', platformLeagueId: 'x',
+      teams: [],
+      games: [
+        { week: 1, isPlayoff: false, participants: [{ memberId: 'x', score: 130 }, { memberId: 'y', score: 120 }] },
+        { week: 2, isPlayoff: false, participants: [{ memberId: 'x', score: 70 }, { memberId: 'y', score: 60 }] },
+      ],
+    },
+  ]
+
+  it('averages each season UPR rather than pooling all games', () => {
+    // 2020 UPR = (105*6 + (110+100)*2 + 0.5*400)/10 = 125; 2021 = (100*6 + (130+70)*2 + 400)/10 = 140.
+    expect(careerUpr(uprSeasons).get('x')).toBeCloseTo(132.5, 5) // mean(125, 140), not pooled 131.5
   })
 })
 

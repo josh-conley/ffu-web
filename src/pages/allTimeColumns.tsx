@@ -97,6 +97,6 @@ export function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
     ...identityColumns(),
     ...scoringColumns(),
     ...finishColumns(),
-    { key: 'upr', header: 'Career UPR', align: 'right', sortValue: (c) => upr.get(c.memberId) ?? 0, render: (c) => upr.get(c.memberId)?.toFixed(2) ?? dash },
+    { key: 'upr', header: 'Avg UPR', align: 'right', sortValue: (c) => upr.get(c.memberId) ?? 0, render: (c) => upr.get(c.memberId)?.toFixed(2) ?? dash },
   ]
 }

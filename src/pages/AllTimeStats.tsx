@@ -64,9 +64,9 @@ export function AllTimeStats() {
         <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
       )}
       <p className="text-sm text-muted">
-        Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Career UPR applies the season
-        UPR formula over each member's regular-season history. Title trophies and tier counts are colored by
-        league:{' '}
+        Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
+        member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
+        colored by league:{' '}
         <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}
         <span className="font-semibold text-national">National</span>.
       </p>

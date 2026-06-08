@@ -1,8 +1,8 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
 import { winPct } from './standings'
-import { regularSeasonTotals, seasonHighLow } from './games'
-import { calculateUpr } from './upr'
+import { seasonHighLow } from './games'
+import { seasonUpr } from './upr'
 
 // Career aggregates per member across seasons (Members career view + All-Time Stats). Sums the
 // STORED Sleeper record/points (consistent with season display) and counts placements. The
@@ -216,31 +216,25 @@ export function careerFor(seasons: SeasonData[], memberId: string): CareerStats 
 }
 
 /**
- * Career UPR per member: the UPR formula applied over ALL of a member's regular-season games
- * (career average / high / low / win%). Reuses regularSeasonTotals + calculateUpr.
+ * Career UPR per member: the MEAN of a member's per-season UPRs (each season computed over its
+ * own regular-season games — its own high/low). Matches the old site's "Avg UPR". Chosen over a
+ * single pooled-career UPR because the formula weights (high+low) for a ~14-game season; pooling a
+ * whole career turns high/low into career-long single-game extremes that distort the metric.
  */
 export function careerUpr(seasons: SeasonData[]): Map<string, number> {
-  const scores = new Map<string, number[]>()
-  const record = new Map<string, { wins: number; losses: number; ties: number }>()
+  const perSeason = new Map<string, number[]>()
   for (const season of seasons) {
-    for (const [id, t] of regularSeasonTotals(season)) {
-      const sc = scores.get(id) ?? []
-      sc.push(...t.scores)
-      scores.set(id, sc)
-      const r = record.get(id) ?? { wins: 0, losses: 0, ties: 0 }
-      r.wins += t.wins
-      r.losses += t.losses
-      r.ties += t.ties
-      record.set(id, r)
+    for (const [id, u] of seasonUpr(season)) {
+      const list = perSeason.get(id) ?? []
+      list.push(u)
+      perSeason.set(id, list)
     }
   }
 
   const upr = new Map<string, number>()
-  for (const [id, sc] of scores) {
-    const r = record.get(id) ?? { wins: 0, losses: 0, ties: 0 }
-    if (sc.length === 0) continue
-    const average = sc.reduce((sum, s) => sum + s, 0) / sc.length
-    upr.set(id, calculateUpr({ ...r, average, high: Math.max(...sc), low: Math.min(...sc) }))
+  for (const [id, list] of perSeason) {
+    if (list.length === 0) continue
+    upr.set(id, list.reduce((sum, u) => sum + u, 0) / list.length)
   }
   return upr
 }
