@@ -10,8 +10,8 @@ const POS_COLOR: Record<string, string> = {
   TE: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
   K: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
   DEF: 'bg-slate-200 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300',
-  // Lineup slots (not draft positions): FLEX is RB/WR/TE-eligible — give it its own hue.
-  FLEX: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300',
+  // Lineup slots (not draft positions): FLEX is RB/WR/TE-eligible — purple, clearly off RB's green.
+  FLEX: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
   SUPER_FLEX: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
 }
 
