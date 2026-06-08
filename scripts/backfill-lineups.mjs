@@ -23,6 +23,56 @@ const api = async (path) => {
   return res.json()
 }
 
+// ── Season-accurate NFL teams from NFLverse weekly rosters (matched by sleeper_id) ──
+const NFLVERSE = (year) => `https://github.com/nflverse/nflverse-data/releases/download/weekly_rosters/roster_weekly_${year}.csv`
+
+/** Quote-aware CSV line split (fields can contain commas inside double quotes). */
+function splitCsv(line) {
+  const out = []
+  let cur = ''
+  let q = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (q) {
+      if (ch === '"') (line[i + 1] === '"' ? ((cur += '"'), i++) : (q = false))
+      else cur += ch
+    } else if (ch === '"') q = true
+    else if (ch === ',') (out.push(cur), (cur = ''))
+    else cur += ch
+  }
+  out.push(cur)
+  return out
+}
+
+const rosterCache = new Map()
+/** year → { byWeek: Map<week, Map<sleeperId, team>>, season: Map<sleeperId, team> } */
+async function weeklyTeams(year) {
+  if (rosterCache.has(year)) return rosterCache.get(year)
+  const res = await fetch(NFLVERSE(year), { redirect: 'follow' })
+  if (!res.ok) throw new Error(`NFLverse ${year} -> ${res.status}`)
+  const lines = (await res.text()).split('\n')
+  const h = splitCsv(lines[0])
+  const ci = { team: h.indexOf('team'), week: h.indexOf('week'), sid: h.indexOf('sleeper_id') }
+  const byWeek = new Map()
+  const season = new Map()
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i]) continue
+    const c = splitCsv(lines[i])
+    const sid = c[ci.sid]
+    const team = c[ci.team]
+    if (!sid || !team) continue
+    const wk = Number(c[ci.week])
+    if (!byWeek.has(wk)) byWeek.set(wk, new Map())
+    byWeek.get(wk).set(sid, team)
+    season.set(sid, team) // last-seen fallback for weeks a player is missing
+  }
+  const result = { byWeek, season }
+  rosterCache.set(year, result)
+  return result
+}
+
+const isDefId = (id) => /^[A-Z]{2,4}$/.test(id) // Sleeper team-defense ids are the team abbr
+
 // ── sleeper owner id -> ffuId, parsed from the permanent config (merges already applied there) ──
 function sleeperToFfu() {
   const src = readFileSync(join(ROOT, 'src', 'config', 'members.ts'), 'utf8')
@@ -66,6 +116,8 @@ async function buildSeason(season, ffuMap, ids, warn) {
   const slots = (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s))
   const rosters = await api(`/league/${lid}/rosters`)
   const ownerByRoster = new Map(rosters.map((r) => [r.roster_id, r.owner_id]))
+  const roster = await weeklyTeams(Number(season.year))
+  const teamFor = (id, week) => (isDefId(id) ? id : roster.byWeek.get(week)?.get(id) ?? roster.season.get(id))
   const exp = expectedScores(season)
   const weeks = [...new Set(season.games.map((g) => g.week))].sort((a, b) => a - b)
 
@@ -78,7 +130,11 @@ async function buildSeason(season, ffuMap, ids, warn) {
       if (!memberId || exp[week]?.[memberId] === undefined) continue // not in one of our games this week
       const starters = zipStarters(e.starters ?? [], e.starters_points ?? [])
       const bench = benchOf(e)
-      for (const s of [...starters, ...bench]) ids.add(s.playerId)
+      for (const s of [...starters, ...bench]) {
+        ids.add(s.playerId)
+        const t = teamFor(s.playerId, week)
+        if (t) s.team = t
+      }
       const got = sum(starters)
       const want = exp[week][memberId]
       if (Math.abs(got - want) > 0.5) warn.push(`${season.year} ${season.tier} wk${week} ${memberId}: starters ${got} vs stored ${want}`)
@@ -98,7 +154,7 @@ async function writePlayersMap(ids) {
     const p = all[id]
     if (!p) continue
     const name = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || id
-    out[id] = { name, position: p.position ?? '?', ...(p.team ? { team: p.team } : {}) }
+    out[id] = { name, position: p.position ?? '?' } // team is per-lineup (season-accurate), not here
   }
   writeFileSync(join(DATA, 'players.json'), JSON.stringify(out))
   process.stdout.write(`Wrote players.json (${Object.keys(out).length} players)\n`)

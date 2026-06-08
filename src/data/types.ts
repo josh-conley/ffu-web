@@ -83,9 +83,11 @@ export interface Game {
 // week data later, so the lineup UI is source-agnostic (static file now, live feed in-season later).
 
 export interface LineupPlayer {
-  /** Sleeper player id (team-defense entries are the team abbr, e.g. "BUF"). Resolve via PlayerMap. */
+  /** Sleeper player id (team-defense entries are the team abbr, e.g. "BUF"). Resolve name via PlayerMap. */
   playerId: string
   points: number
+  /** NFL team that week, season-accurate (from NFLverse weekly rosters); omitted if unresolved. */
+  team?: string
 }
 
 export interface TeamLineup {

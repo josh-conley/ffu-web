@@ -13,13 +13,13 @@ const fmt = (n: number) => n.toFixed(2)
 // 5 columns: name | score | slot | score | name — scores hug the centered slot badge.
 const COLS = 'grid grid-cols-[minmax(0,1fr)_3rem_3.25rem_3rem_minmax(0,1fr)] items-center gap-x-2'
 
-function PlayerName({ id, players, align, dim }: { id?: string; players: PlayerMap; align: 'left' | 'right'; dim?: boolean }) {
-  const info = id ? players[id] : undefined
-  const team = info?.team ? <span className="shrink-0 text-[10px] text-muted">{info.team}</span> : null
+function PlayerName({ player, players, align, dim }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; dim?: boolean }) {
+  const info = player ? players[player.playerId] : undefined
+  const team = player?.team ? <span className="shrink-0 text-[10px] text-muted">{player.team}</span> : null
   return (
     <span className={`flex min-w-0 items-center gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${dim ? 'text-muted' : ''}`}>
       {align === 'right' && team}
-      <span className="truncate">{info?.name ?? id ?? ''}</span>
+      <span className="truncate">{info?.name ?? player?.playerId ?? ''}</span>
       {align === 'left' && team}
     </span>
   )
@@ -30,11 +30,11 @@ function StarterRows({ slots, a, b, players, winner }: { slots: string[]; a: Tea
     <div className={`${COLS} px-3 py-2 text-sm`}>
       {slots.map((slot, i) => (
         <Fragment key={i}>
-          <PlayerName id={a.starters[i]?.playerId} players={players} align="left" dim={winner === 'b'} />
+          <PlayerName player={a.starters[i]} players={players} align="left" dim={winner === 'b'} />
           <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{fmt(a.starters[i]?.points ?? 0)}</span>
           <span className={`justify-self-center rounded px-1 text-[10px] font-bold ${posClass(slot)}`}>{SLOT_LABEL[slot] ?? slot}</span>
           <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{fmt(b.starters[i]?.points ?? 0)}</span>
-          <PlayerName id={b.starters[i]?.playerId} players={players} align="right" dim={winner === 'a'} />
+          <PlayerName player={b.starters[i]} players={players} align="right" dim={winner === 'a'} />
         </Fragment>
       ))}
     </div>
@@ -47,7 +47,7 @@ function BenchRow({ p, players, align }: { p: LineupPlayer; players: PlayerMap; 
   return (
     <div className={`flex items-center gap-1.5 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
       <span className={`shrink-0 rounded px-1 text-[9px] font-bold ${posClass(pos)}`}>{pos}</span>
-      <span className="min-w-0 flex-1 truncate">{info?.name ?? p.playerId}</span>
+      <span className={`min-w-0 flex-1 truncate ${align === 'right' ? 'text-right' : ''}`}>{info?.name ?? p.playerId}</span>
       <span className="shrink-0 font-mono tabular-nums">{fmt(p.points)}</span>
     </div>
   )
