@@ -14,16 +14,20 @@ export function ColumnChooser({
   hidden,
   onToggle,
   onReset,
+  onHideAll,
   locked = [],
 }: {
   options: ColumnOption[]
   hidden: Set<string>
   onToggle: (key: string) => void
   onReset: () => void
+  onHideAll: (keys: string[]) => void
   locked?: string[]
 }) {
   const shown = options.filter((o) => locked.includes(o.key) || !hidden.has(o.key)).length
   const anyHidden = shown < options.length
+  const hideableKeys = options.filter((o) => !locked.includes(o.key)).map((o) => o.key)
+  const bulkBtn = 'text-xs font-medium text-muted hover:text-text hover:underline'
 
   return (
     <details className="group relative">
@@ -33,9 +37,15 @@ export function ColumnChooser({
       <div className="absolute right-0 z-30 mt-1 max-h-80 w-56 overflow-auto border border-border bg-surface p-2 shadow-lg">
         <div className="flex items-center justify-between px-1 pb-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">Show columns</span>
-          <button type="button" onClick={onReset} className="text-xs font-medium text-muted hover:text-text hover:underline">
-            Reset
-          </button>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onReset} className={bulkBtn}>
+              All
+            </button>
+            <span aria-hidden className="text-border">|</span>
+            <button type="button" onClick={() => onHideAll(hideableKeys)} className={bulkBtn}>
+              None
+            </button>
+          </div>
         </div>
         <ul className="space-y-0.5">
           {options.map((o) => {

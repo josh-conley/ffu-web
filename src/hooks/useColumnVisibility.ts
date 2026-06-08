@@ -33,6 +33,7 @@ export function useColumnVisibility(storageKey: string) {
   }, [])
 
   const reset = useCallback(() => setHidden(new Set()), [])
+  const hideAll = useCallback((keys: string[]) => setHidden(new Set(keys)), [])
 
-  return { hidden, toggle, reset }
+  return { hidden, toggle, reset, hideAll }
 }

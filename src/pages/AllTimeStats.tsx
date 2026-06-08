@@ -30,7 +30,7 @@ export function AllTimeStats() {
   const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
   const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
   const columns = useMemo(() => buildColumns(upr), [upr])
-  const { hidden, toggle, reset } = useColumnVisibility('leaderboard-columns')
+  const { hidden, toggle, reset, hideAll } = useColumnVisibility('leaderboard-columns')
   const visibleColumns = useMemo(() => columns.filter((c) => c.key === 'team' || !hidden.has(c.key)), [columns, hidden])
   const columnOptions = useMemo(() => columns.map((c) => ({ key: c.key, header: c.header })), [columns])
 
@@ -63,7 +63,7 @@ export function AllTimeStats() {
         </label>
         <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
         <div className="ml-auto">
-          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={reset} locked={['team']} />
+          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={reset} onHideAll={hideAll} locked={['team']} />
         </div>
       </div>
       {filtered.length === 0 ? (
