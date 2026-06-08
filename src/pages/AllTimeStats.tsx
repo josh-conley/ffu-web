@@ -2,12 +2,12 @@ import { useMemo } from 'react'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
-import { useColumnVisibility } from '@/hooks/useColumnVisibility'
+import { useManagedColumns } from '@/hooks/useManagedColumns'
 import { careerStats, careerUpr, type CareerStats } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
 import { ColumnChooser } from '@/components/ColumnChooser'
-import { SELECT } from '@/components/controls'
+import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -17,6 +17,10 @@ const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
+
+/** Whether anything (scope, filters, columns) has been customized from the defaults. */
+const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
+  p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
 
 export function AllTimeStats() {
   const { data: seasons, loading, error } = useAllSeasons()
@@ -30,9 +34,8 @@ export function AllTimeStats() {
   const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
   const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
   const columns = useMemo(() => buildColumns(upr), [upr])
-  const { hidden, toggle, reset, hideAll } = useColumnVisibility('leaderboard-columns')
-  const visibleColumns = useMemo(() => columns.filter((c) => c.key === 'team' || !hidden.has(c.key)), [columns, hidden])
-  const columnOptions = useMemo(() => columns.map((c) => ({ key: c.key, header: c.header })), [columns])
+  // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
+  const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
 
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
@@ -43,6 +46,10 @@ export function AllTimeStats() {
     ]
   }, [careers])
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
+
+  // One control to restore defaults: league scope, filters (active + slider), column show/hide + order.
+  const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league })
+  const resetAll = () => { setLeague('ALL'); clear(); resetVisibility(); resetOrder() }
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -61,15 +68,29 @@ export function AllTimeStats() {
             ))}
           </select>
         </label>
-        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
-        <div className="ml-auto">
-          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={reset} onHideAll={hideAll} locked={['team']} />
+        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} showClear={false} />
+        <div className="ml-auto flex items-center gap-2">
+          {dirty && (
+            <button type="button" onClick={resetAll} className={segButton(false)}>
+              Reset all
+            </button>
+          )}
+          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={resetVisibility} onHideAll={hideAll} onResetOrder={resetOrder} orderCustomized={orderCustomized} locked={['team']} />
         </div>
       </div>
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
-        <DataTable key={league + JSON.stringify(values)} columns={visibleColumns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} fullBleed stickyFirstColumn />
+        <DataTable
+          key={league + JSON.stringify(values)}
+          columns={visibleColumns}
+          rows={filtered}
+          getRowKey={(c) => c.memberId}
+          initialSort={{ key: 'upr', dir: 'desc' }}
+          fullBleed
+          stickyFirstColumn
+          reorder={{ lockedKey: 'team', onReorder }}
+        />
       )}
       <p className="text-sm text-muted">
         Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a

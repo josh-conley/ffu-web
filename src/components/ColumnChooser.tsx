@@ -15,6 +15,8 @@ export function ColumnChooser({
   onToggle,
   onReset,
   onHideAll,
+  onResetOrder,
+  orderCustomized = false,
   locked = [],
 }: {
   options: ColumnOption[]
@@ -22,6 +24,9 @@ export function ColumnChooser({
   onToggle: (key: string) => void
   onReset: () => void
   onHideAll: (keys: string[]) => void
+  /** When provided, shows a "Reset order" action if the user has dragged columns around. */
+  onResetOrder?: () => void
+  orderCustomized?: boolean
   locked?: string[]
 }) {
   const shown = options.filter((o) => locked.includes(o.key) || !hidden.has(o.key)).length
@@ -66,6 +71,13 @@ export function ColumnChooser({
             )
           })}
         </ul>
+        {onResetOrder && orderCustomized && (
+          <div className="mt-1.5 border-t border-border px-1 pt-1.5">
+            <button type="button" onClick={onResetOrder} className={`${bulkBtn} flex items-center gap-1.5`}>
+              ↺ Reset column order
+            </button>
+          </div>
+        )}
       </div>
     </details>
   )

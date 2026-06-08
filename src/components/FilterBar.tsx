@@ -54,12 +54,15 @@ export function FilterBar<T>({
   onChange,
   onClear,
   activeCount,
+  showClear = true,
 }: {
   defs: FilterDef<T>[]
   values: Record<string, string>
   onChange: (key: string, value: string) => void
   onClear: () => void
   activeCount: number
+  /** Show the inline "Clear" when filters are active. Off when the page has its own reset control. */
+  showClear?: boolean
 }) {
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
@@ -77,7 +80,7 @@ export function FilterBar<T>({
           </label>
         ),
       )}
-      {activeCount > 0 && (
+      {showClear && activeCount > 0 && (
         <button
           type="button"
           onClick={onClear}
