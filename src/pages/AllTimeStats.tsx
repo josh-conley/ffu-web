@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
+import { useColumnVisibility } from '@/hooks/useColumnVisibility'
 import { careerStats, careerUpr, type CareerStats } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
+import { ColumnChooser } from '@/components/ColumnChooser'
 import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -28,6 +30,9 @@ export function AllTimeStats() {
   const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
   const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
   const columns = useMemo(() => buildColumns(upr), [upr])
+  const { hidden, toggle, reset } = useColumnVisibility('leaderboard-columns')
+  const visibleColumns = useMemo(() => columns.filter((c) => c.key === 'team' || !hidden.has(c.key)), [columns, hidden])
+  const columnOptions = useMemo(() => columns.map((c) => ({ key: c.key, header: c.header })), [columns])
 
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
@@ -57,11 +62,14 @@ export function AllTimeStats() {
           </select>
         </label>
         <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
+        <div className="ml-auto">
+          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={reset} locked={['team']} />
+        </div>
       </div>
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
-        <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} fullBleed stickyFirstColumn />
+        <DataTable key={league + JSON.stringify(values)} columns={visibleColumns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} fullBleed stickyFirstColumn />
       )}
       <p className="text-sm text-muted">
         Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
