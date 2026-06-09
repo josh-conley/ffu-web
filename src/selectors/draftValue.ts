@@ -1,26 +1,29 @@
+import type { Era } from '@/config'
+import { isPlayoffWeek } from '@/config'
 import type { DraftData, DraftPick, SeasonLineups } from '@/data'
 
-// Draft ROI: what each pick actually returned that season. "Season points" are the points a
-// player recorded on any roster in the league (starts + bench) — the closest proxy we store
-// for his real season; weeks spent unrostered aren't captured. Value is position-relative
-// (drafted RB12, finished RB3 → +9): raw points would just rank QBs first.
+// Draft ROI: what each pick actually returned. "Rostered points" are the REGULAR-SEASON points a
+// player recorded on any roster in the league (starts + bench) — deliberately not his full NFL
+// season: weeks spent unrostered aren't captured, and playoff weeks are excluded because only
+// teams still playing have lineups then (a uniform 1..14 window keeps the ranking fair). Value is
+// position-relative (drafted RB12, finished RB3 → +9): raw points would just rank QBs first.
 
 export interface PickValue {
   pick: DraftPick
-  /** Points recorded in any lineup (started or benched) across the season. */
-  seasonPoints: number
-  /** Weeks in a starting lineup (any roster). */
+  /** Regular-season points recorded in any lineup (started or benched). */
+  rosteredPoints: number
+  /** Regular-season weeks in a starting lineup (any roster). */
   starts: number
   /** Nth player of his position taken in this draft (1-based). */
   posPicked: number
-  /** Finish at his position by season points, among drafted players (1-based). */
+  /** Finish at his position by rostered points, among drafted players (1-based). */
   posFinish: number
   /** posPicked - posFinish: positive = outplayed his draft slot, negative = bust territory. */
   value: number
 }
 
-/** playerId → season totals from the lineup files (starts + bench both count as production). */
-function playerTotals(lineups: SeasonLineups): Map<string, { points: number; starts: number }> {
+/** playerId → regular-season totals from the lineup files (starts + bench both count). */
+function playerTotals(lineups: SeasonLineups, era: Era): Map<string, { points: number; starts: number }> {
   const totals = new Map<string, { points: number; starts: number }>()
   const add = (playerId: string, points: number, started: boolean) => {
     const t = totals.get(playerId) ?? { points: 0, starts: 0 }
@@ -29,6 +32,7 @@ function playerTotals(lineups: SeasonLineups): Map<string, { points: number; sta
     totals.set(playerId, t)
   }
   for (const wk of lineups.weeks) {
+    if (isPlayoffWeek(wk.week, era)) continue
     for (const team of wk.teams) {
       for (const p of team.starters) add(p.playerId, p.points, true)
       for (const p of team.bench) add(p.playerId, p.points, false)
@@ -38,8 +42,8 @@ function playerTotals(lineups: SeasonLineups): Map<string, { points: number; sta
 }
 
 /** Every pick's return, position-ranked within this draft. Sorted by value, best first. */
-export function draftValues(draft: DraftData, lineups: SeasonLineups): PickValue[] {
-  const totals = playerTotals(lineups)
+export function draftValues(draft: DraftData, lineups: SeasonLineups, era: Era): PickValue[] {
+  const totals = playerTotals(lineups, era)
   const byPosition = new Map<string, DraftPick[]>()
   for (const pick of draft.picks) {
     const group = byPosition.get(pick.player.position) ?? []
@@ -59,7 +63,7 @@ export function draftValues(draft: DraftData, lineups: SeasonLineups): PickValue
       const posFinish = finishIndex.get(pick.overall)!
       results.push({
         pick,
-        seasonPoints: points(pick),
+        rosteredPoints: points(pick),
         starts: totals.get(pick.player.id)?.starts ?? 0,
         posPicked,
         posFinish,
@@ -67,13 +71,13 @@ export function draftValues(draft: DraftData, lineups: SeasonLineups): PickValue
       })
     })
   }
-  return results.sort((a, b) => b.value - a.value || b.seasonPoints - a.seasonPoints)
+  return results.sort((a, b) => b.value - a.value || b.rosteredPoints - a.rosteredPoints)
 }
 
 export interface MemberDraftValue {
   memberId: string
   picks: number
-  /** Combined season points of everyone this member drafted. */
+  /** Combined regular-season rostered points of everyone this member drafted. */
   points: number
   /** Mean pick value — the "who drafted best" number. */
   avgValue: number
@@ -93,7 +97,7 @@ export function memberDraftValues(values: PickValue[]): MemberDraftValue[] {
     const sum = (f: (v: PickValue) => number) => picks.reduce((acc, v) => acc + f(v), 0)
     const best = picks.reduce((a, b) => (b.value > a.value ? b : a))
     const worst = picks.reduce((a, b) => (b.value < a.value ? b : a))
-    return { memberId, picks: picks.length, points: sum((v) => v.seasonPoints), avgValue: sum((v) => v.value) / picks.length, best, worst }
+    return { memberId, picks: picks.length, points: sum((v) => v.rosteredPoints), avgValue: sum((v) => v.value) / picks.length, best, worst }
   })
   return summaries.sort((a, b) => b.avgValue - a.avgValue)
 }

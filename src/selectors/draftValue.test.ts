@@ -51,12 +51,12 @@ const LINEUPS: SeasonLineups = {
 }
 
 describe('draftValues', () => {
-  const values = draftValues(DRAFT, LINEUPS)
+  const values = draftValues(DRAFT, LINEUPS, 'sleeper')
   const byId = new Map(values.map((v) => [v.pick.player.id, v]))
 
   it('ranks position finish by points accrued on any roster, starts counted separately', () => {
     const rbA = byId.get('rbA')!
-    expect(rbA.seasonPoints).toBe(11) // 5 benched + 6 started
+    expect(rbA.rosteredPoints).toBe(11) // 5 benched + 6 started
     expect(rbA.starts).toBe(1)
     expect(rbA.posPicked).toBe(1)
     expect(rbA.posFinish).toBe(2) // rbC 52 > rbA 11 > rbB 10 > rbD 0
@@ -65,7 +65,7 @@ describe('draftValues', () => {
 
   it('rewards the late pick that finished on top', () => {
     const rbC = byId.get('rbC')!
-    expect(rbC.seasonPoints).toBe(52)
+    expect(rbC.rosteredPoints).toBe(52)
     expect(rbC.posPicked).toBe(3)
     expect(rbC.posFinish).toBe(1)
     expect(rbC.value).toBe(2)
@@ -73,7 +73,7 @@ describe('draftValues', () => {
 
   it('scores a never-rostered pick as zero points and last at his position', () => {
     const rbD = byId.get('rbD')!
-    expect(rbD.seasonPoints).toBe(0)
+    expect(rbD.rosteredPoints).toBe(0)
     expect(rbD.starts).toBe(0)
     expect(rbD.posFinish).toBe(4)
     expect(rbD.value).toBe(0) // picked RB4, finished RB4 — late flier that missed costs nothing
@@ -87,11 +87,24 @@ describe('draftValues', () => {
   it('returns best value first', () => {
     expect(values[0]!.pick.player.id).toBe('rbC')
   })
+
+  it('excludes playoff weeks (uniform regular-season window)', () => {
+    const withPlayoffs = {
+      ...LINEUPS,
+      weeks: [
+        ...LINEUPS.weeks,
+        { week: 15, teams: [{ memberId: 'm2', starters: [{ playerId: 'rbB', points: 99 }], bench: [] }] },
+      ],
+    }
+    const rbB = draftValues(DRAFT, withPlayoffs, 'sleeper').find((v) => v.pick.player.id === 'rbB')!
+    expect(rbB.rosteredPoints).toBe(10) // the 99-point week 15 doesn't count
+    expect(rbB.starts).toBe(1)
+  })
 })
 
 describe('memberDraftValues', () => {
   it('aggregates per member with best/worst picks, best drafter first', () => {
-    const summaries = memberDraftValues(draftValues(DRAFT, LINEUPS))
+    const summaries = memberDraftValues(draftValues(DRAFT, LINEUPS, 'sleeper'))
     expect(summaries.map((s) => s.memberId)).toEqual(['m1', 'm2'])
 
     const m1 = summaries[0]!

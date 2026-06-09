@@ -126,38 +126,25 @@ function finishColumns(): Column<CareerStats>[] {
   ]
 }
 
-/** Lineup-efficiency columns (Sleeper era only — members without lineup data show a dash). */
-function efficiencyColumns(eff: Map<string, CareerEfficiency>): Column<CareerStats>[] {
-  return [
-    {
-      key: 'eff',
-      header: 'Lineup Eff',
-      title: 'Started points as a % of the best possible lineup each week — Sleeper era (2021+) only',
-      align: 'right',
-      sortValue: (c) => eff.get(c.memberId)?.efficiency ?? 0,
-      render: (c) => {
-        const e = eff.get(c.memberId)
-        return e ? `${(e.efficiency * 100).toFixed(1)}%` : dash
-      },
+/** Lineup-efficiency column (Sleeper era only — members without lineup data show a dash). */
+function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStats> {
+  return {
+    key: 'eff',
+    header: 'Lineup Eff',
+    title: 'Started points as a % of the best possible lineup each week — Sleeper era (2021+) only',
+    align: 'right',
+    sortValue: (c) => eff.get(c.memberId)?.efficiency ?? 0,
+    render: (c) => {
+      const e = eff.get(c.memberId)
+      return e ? `${(e.efficiency * 100).toFixed(1)}%` : dash
     },
-    {
-      key: 'benchLost',
-      header: 'Bench Pts Lost/G',
-      title: 'Points per game left on the bench vs the best possible lineup — Sleeper era (2021+) only',
-      align: 'right',
-      sortValue: (c) => eff.get(c.memberId)?.lostPerGame ?? 0,
-      render: (c) => {
-        const e = eff.get(c.memberId)
-        return e ? <span title={`${f2(e.lost)} total over ${e.games} games`}>{f2(e.lostPerGame)}</span> : dash
-      },
-    },
-  ]
+  }
 }
 
 // Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
 const DEFAULT_ORDER = [
   'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
-  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'benchLost', 'titles', 'second', 'third', 'last',
+  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'titles', 'second', 'third', 'last',
 ]
 
 export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>): Column<CareerStats>[] {
@@ -165,7 +152,7 @@ export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEf
     ...identityColumns(),
     ...scoringColumns(),
     ...finishColumns(),
-    ...efficiencyColumns(eff),
+    efficiencyColumn(eff),
     { key: 'upr', header: 'Avg UPR', align: 'right' as const, sortValue: (c: CareerStats) => upr.get(c.memberId) ?? 0, render: (c: CareerStats) => upr.get(c.memberId)?.toFixed(2) ?? dash },
   ]
   const byKey = new Map(all.map((c) => [c.key, c]))

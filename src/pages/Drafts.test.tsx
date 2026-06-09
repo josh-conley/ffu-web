@@ -43,6 +43,7 @@ it('renders the value view with report card and pick values', async () => {
   await waitFor(() => expect(screen.getByText('Report Card')).toBeInTheDocument())
   expect(screen.getByText('Every Pick')).toBeInTheDocument()
   expect(screen.getByRole('columnheader', { name: 'Value' })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Rostered Pts' })).toBeInTheDocument()
   // 12 report-card rows render member names (sticky data check: 2024 Premier had 12 teams).
   expect(screen.getByRole('columnheader', { name: 'Avg Value' })).toBeInTheDocument()
   // Position/Team filters and the column glossary are present.

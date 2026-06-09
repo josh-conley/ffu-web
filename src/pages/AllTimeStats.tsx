@@ -23,9 +23,8 @@ const EFFICIENCY_DEFS = (
   <StatDefs
     items={[
       { term: 'Lineup Eff', def: 'Points the started lineups actually scored as a share of the best possible score from the full roster each week. 100% = fielded the optimal lineup every single week.' },
-      { term: 'Bench Pts Lost/G', def: 'Points per game left on the bench — the average gap between the lineup started and the best one available. Hover a value for the career total.' },
     ]}
-    note="Both come from weekly Sleeper lineup data, which exists only for 2021 onward — ESPN-era careers (2018–2020) show a dash."
+    note="Computed from weekly Sleeper lineup data, which exists only for 2021 onward — ESPN-era careers (2018–2020) show a dash."
   />
 )
 
