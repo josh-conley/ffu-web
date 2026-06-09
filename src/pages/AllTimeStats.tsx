@@ -6,6 +6,7 @@ import { useManagedColumns } from '@/hooks/useManagedColumns'
 import { careerEfficiency, careerStats, careerUpr, type CareerEfficiency, type CareerStats } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
+import { StatDefs } from '@/components/StatDefs'
 import { ColumnChooser } from '@/components/ColumnChooser'
 import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
@@ -17,6 +18,16 @@ const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
+
+const EFFICIENCY_DEFS = (
+  <StatDefs
+    items={[
+      { term: 'Lineup Eff', def: 'Points the started lineups actually scored as a share of the best possible score from the full roster each week. 100% = fielded the optimal lineup every single week.' },
+      { term: 'Bench Pts Lost/G', def: 'Points per game left on the bench — the average gap between the lineup started and the best one available. Hover a value for the career total.' },
+    ]}
+    note="Both come from weekly Sleeper lineup data, which exists only for 2021 onward — ESPN-era careers (2018–2020) show a dash."
+  />
+)
 
 /** Whether anything (scope, filters, columns) has been customized from the defaults. */
 const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
@@ -102,11 +113,11 @@ export function AllTimeStats() {
           reorder={{ lockedKey: 'team', onReorder }}
         />
       )}
+      {EFFICIENCY_DEFS}
       <p className="text-sm text-muted">
         Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
-        member's per-season UPRs (each over its own regular-season games). Lineup Eff compares started points
-        to each week's best possible lineup, and Bench Pts Lost is the career total left on the bench (both
-        Sleeper era, 2021 on). Title trophies and tier counts are colored by league:{' '}
+        member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
+        colored by league:{' '}
         <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}
         <span className="font-semibold text-national">National</span>.
       </p>

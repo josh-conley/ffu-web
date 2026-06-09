@@ -1,8 +1,12 @@
 import { useMemo, type ReactNode } from 'react'
 import type { DraftData, SeasonLineups } from '@/data'
 import { nameForYear } from '@/config'
-import { draftValues, memberDraftValues, type MemberDraftValue, type PickValue } from '@/selectors'
+import { draftValues, memberDraftValues, teamsBySlot, type MemberDraftValue, type PickValue } from '@/selectors'
+import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { DataTable, type Column } from './DataTable'
+import { FilterBar } from './FilterBar'
+import { StatDefs } from './StatDefs'
+import { positionOptions, teamOptions } from './draftFilters'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
 
@@ -54,27 +58,48 @@ function pickColumns(year: string): Column<PickValue>[] {
       ),
     },
     { key: 'team', header: 'Drafted By', render: (v) => teamCell(v.pick.memberId, year) },
-    { key: 'pts', header: 'Season Pts', align: 'right', sortValue: (v) => v.seasonPoints, render: (v) => f2(v.seasonPoints) },
-    { key: 'starts', header: 'Starts', align: 'right', sortValue: (v) => v.starts, render: (v) => v.starts },
-    { key: 'picked', header: 'Drafted As', align: 'right', sortValue: (v) => v.posPicked, render: (v) => posLabel(v, v.posPicked) },
-    { key: 'finish', header: 'Finished As', align: 'right', sortValue: (v) => v.posFinish, render: (v) => posLabel(v, v.posFinish) },
-    { key: 'value', header: 'Value', align: 'right', sortValue: (v) => v.value, render: (v) => signed(v.value) },
+    { key: 'pts', header: 'Season Pts', title: 'Points scored while on any FFU roster that season (started or benched)', align: 'right', sortValue: (v) => v.seasonPoints, render: (v) => f2(v.seasonPoints) },
+    { key: 'starts', header: 'Starts', title: 'Weeks in a starting lineup (any team)', align: 'right', sortValue: (v) => v.starts, render: (v) => v.starts },
+    { key: 'picked', header: 'Drafted As', title: 'Nth player at his position taken in this draft', align: 'right', sortValue: (v) => v.posPicked, render: (v) => posLabel(v, v.posPicked) },
+    { key: 'finish', header: 'Finished As', title: 'Rank at his position by season points, among drafted players', align: 'right', sortValue: (v) => v.posFinish, render: (v) => posLabel(v, v.posFinish) },
+    { key: 'value', header: 'Value', title: 'Drafted As minus Finished As — positive beat the draft slot', align: 'right', sortValue: (v) => v.value, render: (v) => signed(v.value) },
   ]
 }
 
 function memberColumns(year: string): Column<MemberDraftValue>[] {
   return [
     { key: 'team', header: 'Team', sortValue: (m) => nameForYear(m.memberId, year) ?? m.memberId, render: (m) => teamCell(m.memberId, year) },
-    { key: 'avg', header: 'Avg Value', align: 'right', sortValue: (m) => m.avgValue, render: (m) => signed(m.avgValue, 1) },
-    { key: 'pts', header: 'Drafted Pts', align: 'right', sortValue: (m) => m.points, render: (m) => f2(m.points) },
+    { key: 'avg', header: 'Avg Value', title: 'Mean Value across this member’s picks — the draft grade', align: 'right', sortValue: (m) => m.avgValue, render: (m) => signed(m.avgValue, 1) },
+    { key: 'pts', header: 'Drafted Pts', title: 'Combined season points of everyone this member drafted', align: 'right', sortValue: (m) => m.points, render: (m) => f2(m.points) },
     { key: 'best', header: 'Best Pick', align: 'right', sortValue: (m) => m.best.value, render: (m) => pickCapsule(m.best) },
     { key: 'worst', header: 'Worst Pick', align: 'right', sortValue: (m) => m.worst.value, render: (m) => pickCapsule(m.worst) },
   ]
 }
 
+const VALUE_DEFS = (
+  <StatDefs
+    items={[
+      { term: 'Season Pts', def: 'Points the player scored while on any FFU roster that season, from the weekly Sleeper lineups — started and benched weeks both count; weeks spent unrostered don’t.' },
+      { term: 'Drafted As / Finished As', def: 'Where he went in this draft at his position vs. where he finished at his position by season points (among drafted players). RB12 = the 12th running back.' },
+      { term: 'Value', def: 'Drafted As minus Finished As. Drafted RB12 but finished RB3 → +9, a steal; big negatives are the busts. Position-relative, so QBs aren’t automatically on top.' },
+      { term: 'Avg Value', def: 'The report-card grade: mean Value across all of a member’s picks.' },
+      { term: 'Drafted Pts', def: 'Combined season points of everyone the member drafted.' },
+    ]}
+  />
+)
+
 export function DraftValue({ draft, lineups, year }: { draft: DraftData; lineups: SeasonLineups | null; year: string }) {
-  const values = useMemo(() => (lineups ? draftValues(draft, lineups) : []), [draft, lineups])
-  const members = useMemo(() => memberDraftValues(values), [values])
+  const pickValues = useMemo(() => (lineups ? draftValues(draft, lineups) : []), [draft, lineups])
+  const members = useMemo(() => memberDraftValues(pickValues), [pickValues])
+  const bySlot = useMemo(() => teamsBySlot(draft), [draft])
+  const filterDefs = useMemo<FilterDef<PickValue>[]>(
+    () => [
+      { key: 'pos', label: 'Position', options: positionOptions(draft), predicate: (v, val) => v.pick.player.position === val },
+      { key: 'team', label: 'Team', options: teamOptions(bySlot, year), predicate: (v, val) => v.pick.memberId === val },
+    ],
+    [draft, bySlot, year],
+  )
+  const { rows: filtered, values: filterValues, setValue, clear, activeCount } = useFilters(filterDefs, pickValues)
 
   if (!lineups) {
     return <p className="text-muted">Draft value needs per-week lineup data, which exists only for Sleeper-era seasons (2021 on).</p>
@@ -88,14 +113,21 @@ export function DraftValue({ draft, lineups, year }: { draft: DraftData; lineups
       </section>
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Every Pick</h2>
-        <DataTable columns={pickColumns(year)} rows={values} getRowKey={(v) => String(v.pick.overall)} initialSort={{ key: 'value', dir: 'desc' }} pageSize={32} />
+        <FilterBar defs={filterDefs} values={filterValues} onChange={setValue} onClear={clear} activeCount={activeCount} />
+        {filtered.length === 0 ? (
+          <p className="text-muted">No picks match these filters.</p>
+        ) : (
+          <DataTable
+            key={JSON.stringify(filterValues)}
+            columns={pickColumns(year)}
+            rows={filtered}
+            getRowKey={(v) => String(v.pick.overall)}
+            initialSort={{ key: 'value', dir: 'desc' }}
+            pageSize={32}
+          />
+        )}
       </section>
-      <p className="text-sm text-muted">
-        Value compares where a player was drafted at his position to where he finished by points scored
-        while on an FFU roster that season (started or benched). Drafted as RB12, finished as RB3 → +9.
-        Weeks spent unrostered don&apos;t count, so a dropped pick&apos;s later production only shows up if
-        someone picked him back up.
-      </p>
+      {VALUE_DEFS}
     </div>
   )
 }

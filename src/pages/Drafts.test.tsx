@@ -45,6 +45,10 @@ it('renders the value view with report card and pick values', async () => {
   expect(screen.getByRole('columnheader', { name: 'Value' })).toBeInTheDocument()
   // 12 report-card rows render member names (sticky data check: 2024 Premier had 12 teams).
   expect(screen.getByRole('columnheader', { name: 'Avg Value' })).toBeInTheDocument()
+  // Position/Team filters and the column glossary are present.
+  expect(screen.getByLabelText('Position')).toBeInTheDocument()
+  expect(screen.getByLabelText('Team')).toBeInTheDocument()
+  expect(screen.getByText('Drafted As / Finished As')).toBeInTheDocument()
 })
 
 it('explains the value view is unavailable for ESPN-era seasons', async () => {

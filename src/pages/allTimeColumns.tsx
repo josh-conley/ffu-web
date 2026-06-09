@@ -132,6 +132,7 @@ function efficiencyColumns(eff: Map<string, CareerEfficiency>): Column<CareerSta
     {
       key: 'eff',
       header: 'Lineup Eff',
+      title: 'Started points as a % of the best possible lineup each week — Sleeper era (2021+) only',
       align: 'right',
       sortValue: (c) => eff.get(c.memberId)?.efficiency ?? 0,
       render: (c) => {
@@ -141,12 +142,13 @@ function efficiencyColumns(eff: Map<string, CareerEfficiency>): Column<CareerSta
     },
     {
       key: 'benchLost',
-      header: 'Bench Pts Lost',
+      header: 'Bench Pts Lost/G',
+      title: 'Points per game left on the bench vs the best possible lineup — Sleeper era (2021+) only',
       align: 'right',
-      sortValue: (c) => eff.get(c.memberId)?.lost ?? 0,
+      sortValue: (c) => eff.get(c.memberId)?.lostPerGame ?? 0,
       render: (c) => {
         const e = eff.get(c.memberId)
-        return e ? <span title={`${f2(e.lostPerGame)} per game over ${e.games} games`}>{f2(e.lost)}</span> : dash
+        return e ? <span title={`${f2(e.lost)} total over ${e.games} games`}>{f2(e.lostPerGame)}</span> : dash
       },
     },
   ]
