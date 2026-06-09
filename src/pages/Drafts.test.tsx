@@ -38,6 +38,20 @@ it('switches to the list view', async () => {
   expect(screen.getByText('Christian McCaffrey')).toBeInTheDocument()
 })
 
+it('renders the value view with report card and pick values', async () => {
+  renderAt('/drafts?year=2024&tier=PREMIER&view=value')
+  await waitFor(() => expect(screen.getByText('Report Card')).toBeInTheDocument())
+  expect(screen.getByText('Every Pick')).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Value' })).toBeInTheDocument()
+  // 12 report-card rows render member names (sticky data check: 2024 Premier had 12 teams).
+  expect(screen.getByRole('columnheader', { name: 'Avg Value' })).toBeInTheDocument()
+})
+
+it('explains the value view is unavailable for ESPN-era seasons', async () => {
+  renderAt('/drafts?year=2019&tier=PREMIER&view=value')
+  await waitFor(() => expect(screen.getByText(/lineup data/i)).toBeInTheDocument())
+})
+
 it('filters the list by position from the URL', async () => {
   // pos=QB should exclude the #1 RB (McCaffrey) but still render some rows.
   renderAt('/drafts?year=2024&tier=PREMIER&view=list&pos=QB')
