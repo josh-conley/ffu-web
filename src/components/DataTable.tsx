@@ -1,21 +1,8 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
+import { DataTableHead, type ReorderConfig } from './DataTableHead'
+import { TD_BASE, TEXT_ALIGN, stickyCell, type Column, type SortState } from './tableShared'
 
-export interface Column<T> {
-  key: string
-  header: string
-  render: (row: T) => ReactNode
-  /** Provide to make the column sortable (click the header). */
-  sortValue?: (row: T) => number | string
-  align?: 'left' | 'right'
-}
-
-export interface SortState {
-  key: string
-  dir: 'asc' | 'desc'
-}
-
-const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider text-accent-fg'
-const TD_BASE = 'px-3 py-2'
+export type { Column, SortState } from './tableShared'
 
 function sortRows<T>(rows: T[], columns: Column<T>[], sort: SortState | undefined): T[] {
   const col = sort ? columns.find((c) => c.key === sort.key) : undefined
@@ -50,7 +37,7 @@ function Pagination({ page, pageCount, onPage }: { page: number; pageCount: numb
 /**
  * Generic sortable + paginated table. Column `render` controls display; `sortValue` (optional)
  * enables click-to-sort. Pass a `key` from the parent to remount (reset sort/page) when the
- * dataset changes (e.g. switching record mode). Reused by Records / All-Time / Members.
+ * dataset changes (e.g. switching record mode). Reused by Records / Stats / Members.
  */
 export function DataTable<T>({
   columns,
@@ -58,15 +45,25 @@ export function DataTable<T>({
   getRowKey,
   initialSort,
   pageSize,
+  fullBleed = false,
+  stickyFirstColumn = false,
+  reorder,
 }: {
   columns: Column<T>[]
   rows: T[]
   getRowKey: (row: T, index: number) => string
   initialSort?: SortState
   pageSize?: number
+  /** Break out of the page's centered container to (nearly) full viewport width. */
+  fullBleed?: boolean
+  /** Pin the first column so it stays visible while the rest scrolls horizontally. */
+  stickyFirstColumn?: boolean
+  /** Enable drag-to-reorder on the header (keeps `lockedKey` first). */
+  reorder?: ReorderConfig
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
+  const pinned = (i: number) => stickyCell(stickyFirstColumn, i, false)
 
   const sorted = useMemo(() => sortRows(rows, columns, sort), [rows, columns, sort])
   const pageCount = pageSize ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1
@@ -81,48 +78,25 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-        {/* w-max so columns keep natural width and the box scrolls on narrow screens instead
-            of squishing; min-w-full still fills the container on desktop. */}
-        <table className="w-max min-w-full text-sm">
-          <thead className="bg-accent">
-            <tr>
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  scope="col"
-                  className={`${TH_BASE} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                  aria-sort={sort?.key === col.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
-                >
-                  {col.sortValue ? (
-                    // Button (not a click-only th) so sorting is keyboard-operable and announced.
-                    <button
-                      type="button"
-                      onClick={() => toggleSort(col)}
-                      className={`flex w-full items-center gap-1 uppercase tracking-wider select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${col.align === 'right' ? 'justify-end' : ''}`}
-                    >
-                      {col.header}
-                      {sort?.key === col.key && <span aria-hidden>{sort.dir === 'asc' ? '▲' : '▼'}</span>}
-                    </button>
-                  ) : (
-                    col.header
-                  )}
-                </th>
+      {/* fullBleed: frame breaks out to ~full viewport; inside, the box shrinks to the shown columns
+          (w-fit) but stays centered with a sensible min width (≈the viewport on phones, else 32rem). */}
+      <div className={fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}>
+        <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`}>
+          <table className={`w-max text-sm ${fullBleed ? '' : 'min-w-full'}`}>
+            <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} />
+            <tbody className="divide-y divide-border">
+              {pageRows.map((row, i) => (
+                <tr key={getRowKey(row, i)} className="group hover:bg-surface-2">
+                  {columns.map((col, ci) => (
+                    <td key={col.key} className={`${TD_BASE} ${pinned(ci)} ${col.align && col.align !== 'left' ? TEXT_ALIGN[col.align] : ''}`}>
+                      {col.render(row)}
+                    </td>
+                  ))}
+                </tr>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {pageRows.map((row, i) => (
-              <tr key={getRowKey(row, i)} className="hover:bg-surface-2">
-                {columns.map((col) => (
-                  <td key={col.key} className={`${TD_BASE} ${col.align === 'right' ? 'text-right' : ''}`}>
-                    {col.render(row)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
       {pageSize && pageCount > 1 && <Pagination page={clamped} pageCount={pageCount} onPage={setPage} />}
     </div>

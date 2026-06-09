@@ -30,7 +30,7 @@ function CareerCompare({ a, b }: { a: CareerStats; b: CareerStats }) {
         <CompareRow label="Championships" a={a.championships} b={b.championships} dir="high" />
         <CompareRow label="Best Finish" a={a.bestFinish ?? 99} b={b.bestFinish ?? 99} dir="low" fmt={(n) => (n === 99 ? '—' : String(n))} />
         <CompareRow label="Playoff Apps" a={a.playoffAppearances} b={b.playoffAppearances} dir="high" />
-        <CompareRow label="Points For" a={a.pointsFor} b={b.pointsFor} dir="high" fmt={(n) => n.toFixed(1)} />
+        <CompareRow label="Points For" a={a.pointsFor} b={b.pointsFor} dir="high" fmt={(n) => n.toFixed(2)} />
       </tbody>
     </table>
   )
@@ -47,7 +47,7 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
         <span className="font-semibold">{name(h2h.memberId)}</span>{' '}
         <span className="tabular-nums">{h2h.wins}–{h2h.losses}</span>{' '}
         <span className="font-semibold">{name(h2h.opponentId)}</span>
-        {ties} · {h2h.pointsFor.toFixed(1)}–{h2h.pointsAgainst.toFixed(1)} pts
+        {ties} · {h2h.pointsFor.toFixed(2)}–{h2h.pointsAgainst.toFixed(2)} pts
       </p>
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="w-max min-w-full text-sm">

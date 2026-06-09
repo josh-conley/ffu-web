@@ -73,8 +73,8 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
         <Stat label="Playoff Apps" value={career.playoffAppearances} />
         <Stat label="Record" value={`${career.wins}-${career.losses}${career.ties > 0 ? `-${career.ties}` : ''}`} />
         <Stat label="Win %" value={`${(career.winPct * 100).toFixed(1)}%`} />
-        <Stat label="Points For" value={career.pointsFor.toFixed(1)} />
-        <Stat label="Points Against" value={career.pointsAgainst.toFixed(1)} />
+        <Stat label="Points For" value={career.pointsFor.toFixed(2)} />
+        <Stat label="Points Against" value={career.pointsAgainst.toFixed(2)} />
       </div>
 
       <section>

@@ -143,13 +143,34 @@ jobs:
           fi
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
-      # 6a) Success → ✅ + PR link (+ live preview link if PREVIEW_URL is configured) in Discord.
+      # 5b) Build + deploy the branch to Cloudflare Pages for a live preview. We deploy EXPLICITLY
+      #     (not via Cloudflare's Git auto-detection, which proved unreliable) so it's deterministic —
+      #     failures surface here. continue-on-error: a preview hiccup must never fail the request
+      #     (the PR is already open). Only this step sees the Cloudflare creds.
+      - name: Deploy preview to Cloudflare Pages
+        if: steps.req.outputs.has_request == 'true'
+        id: deploy
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm run build
+          # Production branch = auto/requests so a custom domain (preview.ffunion.com) serves it.
+          npx wrangler@4 pages project create ffu-web-preview --production-branch auto/requests 2>/dev/null || true
+          npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true
+          # Report the STABLE per-branch alias (always the latest auto/requests), not the per-deploy hash.
+          echo "preview_url=https://auto-requests.ffu-web-preview.pages.dev" >> "$GITHUB_OUTPUT"
+
+      # 6a) Success → ✅ + PR link (+ the live preview URL when the Cloudflare deploy produced one).
       - name: Report success
         if: steps.req.outputs.has_request == 'true'
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ vars.DISCORD_CHANNEL_ID }}
-        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "${{ vars.PREVIEW_URL }}"
+        # Prefer the PREVIEW_URL variable (set it to the custom domain once it's live), else the
+        # stable .pages.dev branch alias from the deploy step.
+        run: node automation/discord-requests/discord.mjs done "${{ steps.req.outputs.message_id }}" "${{ steps.pr.outputs.pr_url }}" "${{ vars.PREVIEW_URL || steps.deploy.outputs.preview_url }}"
 
       # 6b) Failure → ❌ + reason in Discord.
       - name: Report failure

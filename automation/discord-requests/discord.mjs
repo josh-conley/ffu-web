@@ -80,7 +80,7 @@ async function next() {
 
 async function done(msgId, prUrl, previewUrl) {
   await react(msgId, EMOJI.done)
-  const preview = previewUrl ? `\n🔍 Live preview (ready in ~1 min): ${previewUrl}` : ''
+  const preview = previewUrl ? `\n🔍 Live preview: ${previewUrl}` : ''
   await reply(msgId, `✅ Done — added to the review PR:\n${prUrl}${preview}`)
 }
 

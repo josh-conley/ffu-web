@@ -21,10 +21,10 @@ describe('per-game derivations', () => {
   })
 })
 
-// Load every migrated season (drafts excluded) for a cross-check.
+// Load every migrated season (drafts + lineups excluded) for a cross-check.
 const modules = import.meta.glob('../../public/data/*/*.json', { eager: true, import: 'default' })
 const seasons: SeasonData[] = Object.entries(modules)
-  .filter(([path]) => !path.includes('.draft.'))
+  .filter(([path]) => !path.includes('.draft.') && !path.includes('.lineups.'))
   .map(([, mod]) => mod as SeasonData)
 
 describe('regularSeasonTotals cross-checks the STORED regular-season records', () => {

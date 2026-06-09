@@ -1,73 +1,26 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { getMember } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
-import { careerStats, careerUpr, championshipTitles, type CareerStats } from '@/selectors'
-import { DataTable, type Column } from '@/components/DataTable'
+import { useManagedColumns } from '@/hooks/useManagedColumns'
+import { careerStats, careerUpr, type CareerStats } from '@/selectors'
+import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
-import { SELECT } from '@/components/controls'
+import { ColumnChooser } from '@/components/ColumnChooser'
+import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
-import { TierDots, Trophies } from '@/components/Trophies'
-import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { buildColumns } from './allTimeColumns'
 
 const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
 
-function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
-  return [
-    {
-      key: 'team',
-      header: 'Team',
-      sortValue: (c) => getMember(c.memberId)?.name ?? c.memberId,
-      render: (c) => (
-        <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          <TeamLogo ffuId={c.memberId} size={22} />
-          <span className="font-medium">{getMember(c.memberId)?.name ?? c.memberId}</span>
-        </Link>
-      ),
-    },
-    { key: 'seasons', header: 'Seasons', align: 'right', sortValue: (c) => c.seasons, render: (c) => c.seasons },
-    { key: 'record', header: 'Record', align: 'right', render: (c) => `${c.wins}-${c.losses}${c.ties > 0 ? `-${c.ties}` : ''}` },
-    { key: 'winpct', header: 'Win%', align: 'right', sortValue: (c) => c.winPct, render: (c) => `${(c.winPct * 100).toFixed(1)}%` },
-    { key: 'pf', header: 'Points For', align: 'right', sortValue: (c) => c.pointsFor, render: (c) => c.pointsFor.toFixed(1) },
-    {
-      key: 'titles',
-      header: 'Titles',
-      align: 'right',
-      sortValue: (c) => c.championships,
-      render: (c) =>
-        c.championships > 0 ? (
-          <span className="flex justify-end">
-            <Trophies titles={championshipTitles(c)} />
-          </span>
-        ) : (
-          <span className="text-muted">—</span>
-        ),
-    },
-    {
-      key: 'playoffs',
-      header: 'Playoff Apps',
-      align: 'right',
-      sortValue: (c) => c.playoffAppearances,
-      render: (c) =>
-        c.playoffAppearances > 0 ? (
-          <span className="inline-flex items-center justify-end gap-1.5">
-            <span className="tabular-nums">{c.playoffAppearances}</span>
-            <TierDots tiers={c.playoffTiers} />
-          </span>
-        ) : (
-          <span className="text-muted">—</span>
-        ),
-    },
-    { key: 'upr', header: 'Career UPR', align: 'right', sortValue: (c) => upr.get(c.memberId) ?? 0, render: (c) => upr.get(c.memberId)?.toFixed(2) ?? '—' },
-  ]
-}
+/** Whether anything (scope, filters, columns) has been customized from the defaults. */
+const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
+  p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
 
 export function AllTimeStats() {
   const { data: seasons, loading, error } = useAllSeasons()
@@ -81,6 +34,8 @@ export function AllTimeStats() {
   const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
   const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
   const columns = useMemo(() => buildColumns(upr), [upr])
+  // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
+  const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
 
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
@@ -92,6 +47,10 @@ export function AllTimeStats() {
   }, [careers])
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
 
+  // One control to restore defaults: league scope, filters (active + slider), column show/hide + order.
+  const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league })
+  const resetAll = () => { setLeague('ALL'); clear(); resetVisibility(); resetOrder() }
+
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
 
@@ -99,7 +58,7 @@ export function AllTimeStats() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Leaderboard</h1>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Stats</h1>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
@@ -109,16 +68,34 @@ export function AllTimeStats() {
             ))}
           </select>
         </label>
-        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
+        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} showClear={false} />
+        <div className="ml-auto flex items-center gap-2">
+          {dirty && (
+            <button type="button" onClick={resetAll} className={segButton(false)}>
+              Reset all
+            </button>
+          )}
+          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={resetVisibility} onHideAll={hideAll} onResetOrder={resetOrder} orderCustomized={orderCustomized} locked={['team']} />
+        </div>
       </div>
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
-        <DataTable key={league + JSON.stringify(values)} columns={columns} rows={filtered} getRowKey={(c) => c.memberId} initialSort={{ key: 'upr', dir: 'desc' }} />
+        <DataTable
+          key={league + JSON.stringify(values)}
+          columns={visibleColumns}
+          rows={filtered}
+          getRowKey={(c) => c.memberId}
+          initialSort={{ key: 'upr', dir: 'desc' }}
+          fullBleed
+          stickyFirstColumn
+          reorder={{ lockedKey: 'team', onReorder }}
+        />
       )}
       <p className="text-sm text-muted">
-        Stats are {scopeLabel}. Career UPR applies the season UPR formula over each member's regular-season
-        history; trophies and dots are colored by league:{' '}
+        Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
+        member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
+        colored by league:{' '}
         <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}
         <span className="font-semibold text-national">National</span>.
       </p>

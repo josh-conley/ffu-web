@@ -55,7 +55,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -63,7 +63,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "PREMIER",
@@ -71,7 +71,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "MASTERS",
@@ -79,7 +79,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -87,7 +87,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "PREMIER",
@@ -95,7 +95,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "MASTERS",
@@ -103,7 +103,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -111,7 +111,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "PREMIER",
@@ -119,7 +119,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "MASTERS",
@@ -127,7 +127,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -135,7 +135,7 @@
       "era": "sleeper",
       "hasDivisions": false,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "PREMIER",
@@ -143,7 +143,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "MASTERS",
@@ -151,7 +151,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -159,7 +159,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     }
   ]
 }

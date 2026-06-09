@@ -23,7 +23,11 @@ it('renders the all-time leaderboard with a Career UPR column', async () => {
       <AllTimeStats />
     </MemoryRouter>,
   )
-  await waitFor(() => expect(screen.getByRole('columnheader', { name: /Career UPR/ })).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: /Avg UPR/ })).toBeInTheDocument())
+  // The expanded Career-Statistics columns ported from the old site are present.
+  for (const header of ['Playoff Rec', 'Point Diff', 'Avg PPG', 'High Game', 'Titles', '2nd', '3rd', 'Last', 'Tiers', 'Avg Rank']) {
+    expect(screen.getByRole('columnheader', { name: new RegExp(header) })).toBeInTheDocument()
+  }
   // 61 members who have played + header (ffu-035 ZBoser & ffu-048 dewdoc never appear in data).
   expect(screen.getAllByRole('row').length).toBe(62)
 })

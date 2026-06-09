@@ -18,4 +18,10 @@ export type {
   DraftPlayer,
   SeasonSummary,
   SeasonManifest,
+  SeasonLineups,
+  WeekLineups,
+  TeamLineup,
+  LineupPlayer,
+  PlayerMap,
+  PlayerRef,
 } from './types'

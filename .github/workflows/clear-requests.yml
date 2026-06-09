@@ -1,0 +1,49 @@
+name: Clear pending requests
+
+# Manual "nuke the batch" button (Actions → Clear pending requests → Run workflow). Discards whatever
+# is stacked on the rolling auto/requests branch by resetting it back to main, closes the open rolling
+# PR, and redeploys the preview so preview.ffunion.com immediately shows main again. The branch stays
+# alive (= main), so the preview URL never goes down.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # force-reset auto/requests
+  pull-requests: write # close the rolling PR
+
+jobs:
+  clear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Reset auto/requests to main (discard pending requests) + close the open rolling PR.
+      - name: Reset rolling branch + close PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git push --force origin HEAD:refs/heads/auto/requests
+          PR="$(gh pr list --head auto/requests --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$PR" ]; then
+            gh pr close "$PR" --comment "🧹 Cleared — pending requests discarded; auto/requests reset to main."
+          fi
+
+      # Redeploy the preview so preview.ffunion.com reflects main immediately (not the cleared batch).
+      # continue-on-error: a preview hiccup must never make the clear "fail".
+      - name: Redeploy preview (now = main)
+        continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm ci
+          npm run build
+          npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true

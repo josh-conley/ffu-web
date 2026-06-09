@@ -1,5 +1,5 @@
 import type { SeasonData, SeasonTeam } from '@/data'
-import { regularSeasonStandings, standingsByDivision, winPct } from './standings'
+import { finalStandings, regularSeasonStandings, standingsByDivision, winPct } from './standings'
 import premier2024 from '../../public/data/2024/premier.json'
 import premier2025 from '../../public/data/2025/premier.json'
 
@@ -39,6 +39,21 @@ describe('regularSeasonStandings (real 2024 Premier, no divisions)', () => {
     // The champion (finalPlacement 1) went 8-6, so standings order != playoff finish.
     expect(rows.some((r) => r.rank !== r.team.finalPlacement)).toBe(true)
     expect(rows[0]?.team.finalPlacement).not.toBe(1)
+  })
+})
+
+describe('finalStandings (real 2024 Premier)', () => {
+  const rows = finalStandings(premier2024 as unknown as SeasonData)
+
+  it('orders by finalPlacement, with rank = finalPlacement (the champion is on top)', () => {
+    expect(rows.map((r) => r.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    expect(rows[0]?.team.finalPlacement).toBe(1)
+    for (const r of rows) expect(r.rank).toBe(r.team.finalPlacement)
+  })
+
+  it('falls back to regular-season seeding when a season is unfinished', () => {
+    const season = { teams: [team('a', 3, 0, 300, { finalPlacement: undefined }), team('b', 1, 2, 100, { finalPlacement: undefined })], divisions: [], games: [] } as unknown as SeasonData
+    expect(finalStandings(season).map((r) => r.team.memberId)).toEqual(['a', 'b']) // by record, no finish yet
   })
 })
 
