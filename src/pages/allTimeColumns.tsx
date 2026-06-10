@@ -46,9 +46,13 @@ function identityColumns(): Column<CareerStats>[] {
       header: 'Team',
       sortValue: (c) => getMember(c.memberId)?.name ?? c.memberId,
       render: (c) => (
+        // Mobile: cap the pinned column and wrap the name at a smaller size so it doesn't eat the
+        // viewport; desktop keeps the single-line full-width name.
         <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
           <TeamLogo ffuId={c.memberId} size={22} />
-          <span className="font-medium whitespace-nowrap">{getMember(c.memberId)?.name ?? c.memberId}</span>
+          <span className="max-w-[7.5rem] text-xs leading-tight font-medium sm:max-w-none sm:text-sm sm:whitespace-nowrap">
+            {getMember(c.memberId)?.name ?? c.memberId}
+          </span>
         </Link>
       ),
     },
