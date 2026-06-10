@@ -12,12 +12,12 @@ function isTrophy(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 
   return f.finalPlacement !== null && f.finalPlacement <= 3
 }
 
-/** Top-3 finishes as tier-colored chips — icon + ordinal + year (champion → runner-up → third,
- *  then by year). Shared by the team-profile modal and the Members detail page. */
+/** Top-3 finishes as tier-colored tiles — icon + ordinal + year (champion → runner-up → third,
+ *  newest first within a placement). Shared by the team-profile modal and the Members detail page. */
 export function TrophyCase({ career }: { career: CareerStats }) {
   const trophies = career.finishes
     .filter(isTrophy)
-    .sort((a, b) => a.finalPlacement - b.finalPlacement || a.year.localeCompare(b.year))
+    .sort((a, b) => a.finalPlacement - b.finalPlacement || b.year.localeCompare(a.year))
   if (trophies.length === 0) return <p className="text-xs text-muted">None</p>
   return (
     <div className="flex flex-wrap gap-2">
