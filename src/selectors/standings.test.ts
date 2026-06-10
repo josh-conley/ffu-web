@@ -1,5 +1,6 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import { finalStandings, regularSeasonStandings, standingsByDivision, winPct } from './standings'
+import premier2020 from '../../public/data/2020/premier.json'
 import premier2024 from '../../public/data/2024/premier.json'
 import premier2025 from '../../public/data/2025/premier.json'
 
@@ -70,7 +71,8 @@ describe('standingsByDivision (real 2025 Premier, divisions)', () => {
   })
 
   it('returns null for a season without divisions', () => {
-    expect(standingsByDivision(premier2024 as unknown as SeasonData)).toBeNull()
+    // ESPN era — Sleeper years all have divisions now (backfilled).
+    expect(standingsByDivision(premier2020 as unknown as SeasonData)).toBeNull()
   })
 })
 
