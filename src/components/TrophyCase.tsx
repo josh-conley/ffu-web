@@ -1,88 +1,6 @@
-import { useState } from 'react'
 import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
 import type { CareerStats, SeasonFinish } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
-
-/** Empty-state banter — one is drawn at random each time an empty trophy case is shown. */
-const EMPTY_LINES = [
-  'No trophies. Just vibes.',
-  'Echoes in here.',
-  'Polished shelves. Nothing to put on them.',
-  'Maybe next year. (They said that last year, too.)',
-  'Zero trophies, but a great personality.',
-  'Still waiting on its first tenant.',
-  'Banner pending. Indefinitely.',
-  'This shelf has never known weight.',
-  'Dust: 1. Trophies: 0.',
-  'All case, no trophy.',
-  'Cobwebs remain undefeated.',
-  'A museum of what could have been.',
-  'Participation trophies don’t count.',
-  'The trophies are in another castle.',
-  'Future home of a trophy (citation needed).',
-  'Rings? Never heard of them.',
-  'Sponsored by moral victories.',
-  'The case stays climate-controlled for no reason at all.',
-  'Glass cleaned weekly. Optimism, annually.',
-  'Currently exhibiting: nothing.',
-  'Hardware store says the shipment is still delayed.',
-  'You miss 100% of the championships you don’t win.',
-  'Still in the original packaging.',
-  'Open concept. Very open.',
-  'Minimalist by necessity, not by choice.',
-  'The shelf is load-tested and ready whenever you are.',
-  'Somehow still undefeated at coming up short.',
-  'Trust the process. The process is taking a while.',
-  'Even the dust is embarrassed.',
-  'Great lighting. Nothing to shine it on.',
-  'This space intentionally left blank.',
-  'Award-winning? No. Award-adjacent? Also no.',
-  'Has watched every championship from the couch.',
-  'The hardware is hypothetical at this time.',
-  'Confetti budget: untouched since inception.',
-  'Their best finish is technically a finish.',
-  'A proud history of almost.',
-  'Fourth place is just first place of the losers’ bracket.',
-  'The case echoes when you close it.',
-  'No rings. Plenty of hot takes.',
-  'Statistically due any decade now.',
-  'The shelf gets dusted more than it gets used.',
-  'Carried by vibes, betrayed by lineups.',
-  'Plenty of room for activities in here.',
-  'The trophy fund accrues interest, untouched.',
-  'Draft-day champion. Regular-season participant.',
-  'Their banner is still at the printer (they never sent it).',
-  'They peaked in the group chat.',
-  'The victory speech remains in drafts.',
-  'Hall of Fame of Hanging Around.',
-  'Has never had to budget for ring sizing.',
-  'The case is a metaphor at this point.',
-  'Always a bridesmaid. Sometimes not even invited.',
-  'Mathematically eliminated, spiritually undeterred.',
-  'Big trade-deadline energy. Small trophy-case energy.',
-  'Their championship window is painted shut.',
-  'Waivers won. Titles, not so much.',
-  'The only hardware here is the shelf brackets.',
-  'Moths pay rent now.',
-  'Preseason favorite. Postseason spectator.',
-  'The trophy case identifies as decorative.',
-  'Locked, for the safety of absolutely nothing.',
-  'Their best ability is availability. For next season.',
-  'Championship DNA, pending lab results.',
-  'A cautionary tale with great uniforms.',
-  'The shelf life of hope: apparently infinite.',
-  'Still tweaking the lineup that would have won it all.',
-  'Legend has it a trophy was once nearby.',
-  'The champagne stays corked.',
-  'Trophy shelf for sale. Never used.',
-  'The engraver doesn’t know they exist.',
-  'Securely guarding a whole lot of nothing.',
-  'Every trophy case tells a story. This one’s a tragedy.',
-  'Came for the glory. Staying for the snacks.',
-  'The confetti cannon remains in its box.',
-]
-
-const randomEmptyLine = () => EMPTY_LINES[Math.floor(Math.random() * EMPTY_LINES.length)]
 
 const HARDWARE = {
   1: { icon: FaTrophy, ordinal: '1st', label: 'Champion' },
@@ -97,11 +15,10 @@ function isTrophy(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 
 /** Top-3 finishes as tier-colored chips — icon + ordinal + year (champion → runner-up → third,
  *  then by year). Shared by the team-profile modal and the Members detail page. */
 export function TrophyCase({ career }: { career: CareerStats }) {
-  const [emptyLine] = useState(randomEmptyLine)
   const trophies = career.finishes
     .filter(isTrophy)
     .sort((a, b) => a.finalPlacement - b.finalPlacement || a.year.localeCompare(b.year))
-  if (trophies.length === 0) return <p className="text-xs italic text-muted">{emptyLine}</p>
+  if (trophies.length === 0) return <p className="text-xs text-muted">None</p>
   return (
     <div className="flex flex-wrap gap-1.5">
       {trophies.map((f) => {
