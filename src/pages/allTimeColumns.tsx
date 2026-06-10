@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember } from '@/config'
 import type { Tier } from '@/config/types'
-import type { CareerStats, SeasonFinish } from '@/selectors'
+import type { CareerEfficiency, CareerStats, SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
 import { LEAGUE_STYLES } from '@/components/leagues'
@@ -126,17 +126,33 @@ function finishColumns(): Column<CareerStats>[] {
   ]
 }
 
+/** Lineup-efficiency column (Sleeper era only — members without lineup data show a dash). */
+function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStats> {
+  return {
+    key: 'eff',
+    header: 'Lineup Eff',
+    title: 'Started points as a % of the best possible lineup each week — Sleeper era (2021+) only',
+    align: 'right',
+    sortValue: (c) => eff.get(c.memberId)?.efficiency ?? 0,
+    render: (c) => {
+      const e = eff.get(c.memberId)
+      return e ? `${(e.efficiency * 100).toFixed(1)}%` : dash
+    },
+  }
+}
+
 // Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
 const DEFAULT_ORDER = [
   'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
-  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'titles', 'second', 'third', 'last',
+  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'titles', 'second', 'third', 'last',
 ]
 
-export function buildColumns(upr: Map<string, number>): Column<CareerStats>[] {
+export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>): Column<CareerStats>[] {
   const all = [
     ...identityColumns(),
     ...scoringColumns(),
     ...finishColumns(),
+    efficiencyColumn(eff),
     { key: 'upr', header: 'Avg UPR', align: 'right' as const, sortValue: (c: CareerStats) => upr.get(c.memberId) ?? 0, render: (c: CareerStats) => upr.get(c.memberId)?.toFixed(2) ?? dash },
   ]
   const byKey = new Map(all.map((c) => [c.key, c]))

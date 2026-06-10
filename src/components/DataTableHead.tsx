@@ -58,6 +58,7 @@ function SortableTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; st
       ref={setNodeRef}
       style={style}
       scope="col"
+      title={col.title}
       className={`${TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']} cursor-grab touch-none ${isDragging ? 'z-20 opacity-70' : ''}`}
       aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}
       {...attributes}

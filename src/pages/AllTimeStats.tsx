@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useAllLineups, useAllSeasons, usePlayers } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { useManagedColumns } from '@/hooks/useManagedColumns'
-import { careerStats, careerUpr, type CareerStats } from '@/selectors'
+import { careerEfficiency, careerStats, careerUpr, type CareerEfficiency, type CareerStats } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
+import { StatDefs } from '@/components/StatDefs'
 import { ColumnChooser } from '@/components/ColumnChooser'
 import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
@@ -17,6 +18,15 @@ const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
+
+const EFFICIENCY_DEFS = (
+  <StatDefs
+    items={[
+      { term: 'Lineup Eff', def: 'Points the started lineups actually scored as a share of the best possible score from the full roster each week. 100% = fielded the optimal lineup every single week.' },
+    ]}
+    note="Computed from weekly Sleeper lineup data, which exists only for 2021 onward — ESPN-era careers (2018–2020) show a dash."
+  />
+)
 
 /** Whether anything (scope, filters, columns) has been customized from the defaults. */
 const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
@@ -33,7 +43,15 @@ export function AllTimeStats() {
   )
   const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
   const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
-  const columns = useMemo(() => buildColumns(upr), [upr])
+  // Lineup efficiency comes from the (Sleeper-era) lineup files, scoped by the same league filter.
+  const lineups = useAllLineups()
+  const players = usePlayers()
+  const eff = useMemo(() => {
+    if (!lineups.data || !players.data) return new Map<string, CareerEfficiency>()
+    const scopedLineups = league === 'ALL' ? lineups.data : lineups.data.filter((l) => l.tier === league)
+    return careerEfficiency(scopedLineups, players.data)
+  }, [lineups.data, players.data, league])
+  const columns = useMemo(() => buildColumns(upr, eff), [upr, eff])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
 
@@ -51,7 +69,9 @@ export function AllTimeStats() {
   const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league })
   const resetAll = () => { setLeague('ALL'); clear(); resetVisibility(); resetOrder() }
 
-  if (loading) return <LoadingSpinner />
+  // Lineups/players gate the spinner (no dash→value flash) but not errors: if they fail, the
+  // efficiency columns degrade to dashes and the core career table still renders.
+  if (loading || lineups.loading || players.loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
 
   const scopeLabel = league === 'ALL' ? 'all-time, across every league' : `within ${LEAGUE_STYLES[league as keyof typeof LEAGUE_STYLES]?.label ?? league} only`
@@ -92,6 +112,7 @@ export function AllTimeStats() {
           reorder={{ lockedKey: 'team', onReorder }}
         />
       )}
+      {EFFICIENCY_DEFS}
       <p className="text-sm text-muted">
         Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
         member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
