@@ -17,6 +17,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
   const TH = 'px-3 py-2.5 text-left font-bold uppercase tracking-wider text-accent-fg'
   const TD = 'px-3 py-2 tabular-nums'
+  const newestFirst = [...rows].sort((a, b) => Number(b.year) - Number(a.year))
   return (
     <div className="overflow-x-auto border border-border bg-surface shadow-sm">
       <table className="w-max min-w-full text-sm">
@@ -31,7 +32,7 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {rows.map(({ year, tier, team }) => (
+          {newestFirst.map(({ year, tier, team }) => (
             <tr key={`${year}-${tier}`} className="hover:bg-surface-2">
               <td className={TD}>{year}</td>
               <td className="px-3 py-2"><LeagueBadge tier={tier} /></td>
