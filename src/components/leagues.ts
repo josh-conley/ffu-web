@@ -15,6 +15,9 @@ export interface LeagueStyle {
   text: string
 }
 
+/** Tiers in prestige order (top flight first) — for views that rank accomplishments across tiers. */
+export const TIER_PRESTIGE: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
+
 export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
   PREMIER: {
     label: 'Premier',

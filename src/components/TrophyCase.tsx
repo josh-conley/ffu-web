@@ -1,6 +1,6 @@
 import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
 import type { CareerStats, SeasonFinish } from '@/selectors'
-import { LEAGUE_STYLES } from './leagues'
+import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 
 const HARDWARE = {
   1: { icon: FaTrophy, ordinal: '1st', label: 'Champion' },
@@ -12,12 +12,17 @@ function isTrophy(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 
   return f.finalPlacement !== null && f.finalPlacement <= 3
 }
 
-/** Top-3 finishes as tier-colored tiles — icon + ordinal + year (champion → runner-up → third,
- *  newest first within a placement). Shared by the team-profile modal and the Members detail page. */
+/** Top-3 finishes as tier-colored tiles — by placement, then tier prestige (a Premier title
+ *  outranks a newer Masters one), then newest year. Shared by the modal and Members detail. */
 export function TrophyCase({ career }: { career: CareerStats }) {
   const trophies = career.finishes
     .filter(isTrophy)
-    .sort((a, b) => a.finalPlacement - b.finalPlacement || b.year.localeCompare(a.year))
+    .sort(
+      (a, b) =>
+        a.finalPlacement - b.finalPlacement ||
+        TIER_PRESTIGE.indexOf(a.tier) - TIER_PRESTIGE.indexOf(b.tier) ||
+        b.year.localeCompare(a.year),
+    )
   if (trophies.length === 0) return <p className="text-xs text-muted">None</p>
   return (
     <div className="flex flex-wrap gap-2">
