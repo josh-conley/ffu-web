@@ -3,7 +3,9 @@ import { getMember } from '@/config'
 
 // Logos live at /team-logos/{ffuId}.png (carried over from the old app). Members without a logo
 // (and on load error) fall back to the abbreviation in a neutral circle — same as the old site.
-export function TeamLogo({ ffuId, size = 28 }: { ffuId: string; size?: number }) {
+// `object-cover` on a white disc (not `object-contain`): the source images aren't all square, and
+// contain letterboxes them so they render undersized with corners clipped by the circular mask.
+export function TeamLogo({ ffuId, size = 32 }: { ffuId: string; size?: number }) {
   const [failed, setFailed] = useState(false)
   const member = getMember(ffuId)
   const dimension = { width: size, height: size }
@@ -25,7 +27,7 @@ export function TeamLogo({ ffuId, size = 28 }: { ffuId: string; size?: number })
       src={`/team-logos/${ffuId}.png`}
       alt={`${member.name} logo`}
       style={dimension}
-      className="shrink-0 rounded-full object-contain"
+      className="shrink-0 rounded-full bg-surface object-cover ring-1 ring-border"
       onError={() => setFailed(true)}
       loading="lazy"
     />
