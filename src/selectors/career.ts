@@ -217,6 +217,12 @@ export function careerFor(seasons: SeasonData[], memberId: string): CareerStats 
   return careerStats(seasons).get(memberId)
 }
 
+/** The league an active member is in this (latest) season — undefined for past members. */
+export function currentLeague(c: CareerStats): Tier | undefined {
+  if (!c.isActive || c.lastYear === null) return undefined
+  return c.finishes.find((f) => Number(f.year) === c.lastYear)?.tier
+}
+
 /**
  * Career UPR per member: the MEAN of a member's per-season UPRs (each season computed over its
  * own regular-season games — its own high/low). Matches the old site's "Avg UPR". Chosen over a
@@ -275,11 +281,10 @@ export interface MembersByLeague {
  */
 export function membersByLeague(seasons: SeasonData[]): MembersByLeague {
   const careers = careerStats(seasons)
-  const latestYear = seasons.reduce((max, s) => (s.year > max ? s.year : max), '')
   const byTier = new Map<Tier, CareerStats[]>()
   const past: CareerStats[] = []
   for (const c of careers.values()) {
-    const currentTier = c.isActive ? c.finishes.find((f) => f.year === latestYear)?.tier : undefined
+    const currentTier = currentLeague(c)
     if (currentTier) {
       const bucket = byTier.get(currentTier) ?? []
       bucket.push(c)

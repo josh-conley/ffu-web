@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { getMember } from '@/config'
 import type { Tier } from '@/config/types'
 import type { CareerEfficiency, CareerStats, SeasonFinish } from '@/selectors'
@@ -48,12 +47,13 @@ function identityColumns(): Column<CareerStats>[] {
       render: (c) => {
         const member = getMember(c.memberId)
         return (
-          // Mobile: logo + abbreviation so the pinned column stays narrow; desktop shows the full name.
-          <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          // Mobile: logo + abbreviation so the pinned column stays narrow; desktop shows the full
+          // name. The logo (not the name) opens the team profile — names aren't links anywhere.
+          <span className="flex items-center gap-2">
             <TeamLogo ffuId={c.memberId} size={22} />
             <span className="font-medium sm:hidden">{member?.abbreviation ?? '?'}</span>
             <span className="hidden font-medium whitespace-nowrap sm:inline">{member?.name ?? c.memberId}</span>
-          </Link>
+          </span>
         )
       },
     },

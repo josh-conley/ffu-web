@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { careerStats, careerFor, careerUpr, championshipTitles, membersByLeague } from './career'
+import { careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague } from './career'
 import premier2024 from '../../public/data/2024/premier.json'
 
 const seasons: SeasonData[] = [
@@ -43,6 +43,11 @@ describe('careerStats (synthetic)', () => {
     const b = careerStats(seasons).get('b')!
     expect(b.lastYear).toBe(2023)
     expect(b.isActive).toBe(false) // last played 2023; latest season is 2024
+  })
+
+  it('derives the current league for active members only', () => {
+    expect(currentLeague(career.get('a')!)).toBe('PREMIER')
+    expect(currentLeague(career.get('b')!)).toBeUndefined() // inactive → no current league
   })
 
   it('exposes championship titles + playoff tiers by league', () => {
