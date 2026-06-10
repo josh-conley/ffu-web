@@ -5,9 +5,10 @@ import premier2024 from '../../public/data/2024/premier.json'
 const seasons: SeasonData[] = [
   {
     schemaVersion: 1, tier: 'PREMIER', year: '2023', era: 'sleeper', platformLeagueId: 'x',
+    divisions: [{ id: 1, name: 'East' }],
     teams: [
-      { memberId: 'a', record: { wins: 10, losses: 4, ties: 0 }, points: { for: 1500, against: 1300 }, finalPlacement: 1, promoted: false, relegated: false },
-      { memberId: 'b', record: { wins: 4, losses: 10, ties: 0 }, points: { for: 1200, against: 1450 }, finalPlacement: 8, promoted: false, relegated: false },
+      { memberId: 'a', record: { wins: 10, losses: 4, ties: 0 }, points: { for: 1500, against: 1300 }, finalPlacement: 1, promoted: false, relegated: false, divisionId: 1 },
+      { memberId: 'b', record: { wins: 4, losses: 10, ties: 0 }, points: { for: 1200, against: 1450 }, finalPlacement: 8, promoted: false, relegated: false, divisionId: 1 },
     ],
     games: [
       { week: 16, isPlayoff: true, round: 'Championship', bracket: 'championship', participants: [{ memberId: 'a', score: 130 }, { memberId: 'b', score: 90 }] },
@@ -48,6 +49,13 @@ describe('careerStats (synthetic)', () => {
   it('derives the current league for active members only', () => {
     expect(currentLeague(career.get('a')!)).toBe('PREMIER')
     expect(currentLeague(career.get('b')!)).toBeUndefined() // inactive → no current league
+  })
+
+  it('flags division winners (pennants) per finish', () => {
+    const a = career.get('a')!
+    expect(a.finishes.find((f) => f.year === '2023')?.wonDivision).toBe(true) // best record in the division
+    expect(a.finishes.find((f) => f.year === '2024')?.wonDivision).toBe(false) // season has no divisions
+    expect(career.get('b')!.finishes.find((f) => f.year === '2023')?.wonDivision).toBe(false)
   })
 
   it('exposes championship titles + playoff tiers by league', () => {

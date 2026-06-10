@@ -1,4 +1,6 @@
+import { Fragment, type ReactNode } from 'react'
 import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
+import { TbPennantFilled } from 'react-icons/tb'
 import type { CareerStats, SeasonFinish } from '@/selectors'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 
@@ -8,37 +10,82 @@ const HARDWARE = {
   3: { icon: FaAward, ordinal: '3rd', label: 'Third place' },
 } as const
 
-function isTrophy(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 | 3 } {
-  return f.finalPlacement !== null && f.finalPlacement <= 3
+/** Tier prestige (Premier hardware leads), then newest year. */
+const byPrestige = (a: SeasonFinish, b: SeasonFinish) =>
+  TIER_PRESTIGE.indexOf(a.tier) - TIER_PRESTIGE.indexOf(b.tier) || b.year.localeCompare(a.year)
+
+interface TileProps {
+  icon: ReactNode
+  /** Bold inline lead-in on the year line ("1st", "Div"). */
+  primary: string
+  year: string
+  tier: SeasonFinish['tier']
+  tooltip: string
 }
 
-/** Top-3 finishes as tier-colored tiles — by placement, then tier prestige (a Premier title
- *  outranks a newer Masters one), then newest year. Shared by the modal and Members detail. */
-export function TrophyCase({ career }: { career: CareerStats }) {
-  const trophies = career.finishes
-    .filter(isTrophy)
-    .sort(
-      (a, b) =>
-        a.finalPlacement - b.finalPlacement ||
-        TIER_PRESTIGE.indexOf(a.tier) - TIER_PRESTIGE.indexOf(b.tier) ||
-        b.year.localeCompare(a.year),
-    )
-  if (trophies.length === 0) return <p className="text-xs text-muted">None</p>
+function Tile({ icon, primary, year, tier, tooltip }: TileProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {trophies.map((f) => {
-        const { icon: Icon, ordinal, label } = HARDWARE[f.finalPlacement]
+    <span title={tooltip} className="flex aspect-square w-16 flex-col items-center justify-center gap-1 bg-surface-2 ring-1 ring-border">
+      {icon}
+      <span className="text-xs leading-none">
+        <span className={`font-bold ${LEAGUE_STYLES[tier].text}`}>{primary} </span>
+        <span className="tabular-nums text-muted">{year}</span>
+      </span>
+      <span className="text-[10px] leading-none text-muted">{LEAGUE_STYLES[tier].label}</span>
+    </span>
+  )
+}
+
+/** Placement (1st/2nd/3rd) tile groups, best first, then a pennant group for division winners. */
+function tileGroups(career: CareerStats): ReactNode[][] {
+  const groups = ([1, 2, 3] as const).map((place) =>
+    career.finishes
+      .filter((f) => f.finalPlacement === place)
+      .sort(byPrestige)
+      .map((f) => {
+        const { icon: Icon, ordinal, label } = HARDWARE[place]
         return (
-          <span key={`${f.year}-${f.tier}-${f.finalPlacement}`} title={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`} className="flex aspect-square w-16 flex-col items-center justify-center gap-1 bg-surface-2 ring-1 ring-border">
-            <Icon size={22} className={LEAGUE_STYLES[f.tier].text} aria-hidden />
-            <span className="text-xs leading-none">
-              <span className={`font-bold ${LEAGUE_STYLES[f.tier].text}`}>{ordinal}</span>{' '}
-              <span className="tabular-nums text-muted">{f.year}</span>
-            </span>
-            <span className="text-[10px] leading-none text-muted">{LEAGUE_STYLES[f.tier].label}</span>
-          </span>
+          <Tile
+            key={`${place}-${f.tier}-${f.year}`}
+            icon={<Icon size={22} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
+            primary={ordinal}
+            year={f.year}
+            tier={f.tier}
+            tooltip={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`}
+          />
         )
-      })}
+      }),
+  )
+  const pennants = career.finishes
+    .filter((f) => f.wonDivision)
+    .sort(byPrestige)
+    .map((f) => (
+      <Tile
+        key={`pennant-${f.tier}-${f.year}`}
+        icon={<TbPennantFilled size={24} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
+        primary="Div"
+        year={f.year}
+        tier={f.tier}
+        tooltip={`${LEAGUE_STYLES[f.tier].label} Division Winner · ${f.year}`}
+      />
+    ))
+  return [...groups, pennants].filter((g) => g.length > 0)
+}
+
+/** Career hardware as tier-colored square tiles: champion → runner-up → third → pennants
+ *  (division winners), each group separated by a subtle vertical rule. Shared by the
+ *  team-profile modal and the Members detail page. */
+export function TrophyCase({ career }: { career: CareerStats }) {
+  const groups = tileGroups(career)
+  if (groups.length === 0) return <p className="text-xs text-muted">None</p>
+  return (
+    <div className="flex flex-wrap items-stretch gap-2">
+      {groups.map((tiles, i) => (
+        <Fragment key={i}>
+          {i > 0 && <span className="w-px self-stretch bg-border" aria-hidden />}
+          {tiles}
+        </Fragment>
+      ))}
     </div>
   )
 }

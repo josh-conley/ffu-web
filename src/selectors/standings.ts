@@ -63,6 +63,29 @@ export function finalStandings(season: SeasonData): StandingRow[] {
     .map((team) => ({ team, rank: team.finalPlacement ?? 0, winPct: winPct(team.record) }))
 }
 
+/**
+ * Regular-season division champions — "pennant" winners: best record in each division by the
+ * standings comparator (winPct → pointsFor; an exact tie shares the pennant). Empty set when the
+ * season has no divisions (ESPN era).
+ */
+export function divisionWinnerIds(season: SeasonData): Set<string> {
+  const winners = new Set<string>()
+  if (season.divisions === undefined || season.divisions.length === 0) return winners
+  const byDivision = new Map<number, SeasonTeam[]>()
+  for (const team of season.teams) {
+    if (team.divisionId === undefined) continue
+    const group = byDivision.get(team.divisionId) ?? []
+    group.push(team)
+    byDivision.set(team.divisionId, group)
+  }
+  for (const group of byDivision.values()) {
+    for (const row of assignRanks([...group].sort(compareForStandings))) {
+      if (row.rank === 1) winners.add(row.team.memberId)
+    }
+  }
+  return winners
+}
+
 export interface DivisionStandings {
   division: Division
   rows: StandingRow[]

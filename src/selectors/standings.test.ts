@@ -1,5 +1,5 @@
 import type { SeasonData, SeasonTeam } from '@/data'
-import { finalStandings, regularSeasonStandings, standingsByDivision, winPct } from './standings'
+import { divisionWinnerIds, finalStandings, regularSeasonStandings, standingsByDivision, winPct } from './standings'
 import premier2020 from '../../public/data/2020/premier.json'
 import premier2024 from '../../public/data/2024/premier.json'
 import premier2025 from '../../public/data/2025/premier.json'
@@ -73,6 +73,39 @@ describe('standingsByDivision (real 2025 Premier, divisions)', () => {
   it('returns null for a season without divisions', () => {
     // ESPN era — Sleeper years all have divisions now (backfilled).
     expect(standingsByDivision(premier2020 as unknown as SeasonData)).toBeNull()
+  })
+})
+
+describe('divisionWinnerIds (pennants)', () => {
+  it('picks the best regular-season record in each division', () => {
+    const season = {
+      divisions: [{ id: 1, name: 'A' }, { id: 2, name: 'B' }],
+      teams: [
+        team('a', 10, 4, 1500, { divisionId: 1 }),
+        team('b', 8, 6, 1400, { divisionId: 1 }),
+        team('c', 4, 10, 1200, { divisionId: 2 }),
+        team('d', 6, 8, 1300, { divisionId: 2 }),
+      ],
+      games: [],
+    } as unknown as SeasonData
+    expect(divisionWinnerIds(season)).toEqual(new Set(['a', 'd']))
+  })
+
+  it('breaks record ties by points, and shares the pennant on exact ties', () => {
+    const season = {
+      divisions: [{ id: 1, name: 'A' }],
+      teams: [team('a', 8, 6, 1400, { divisionId: 1 }), team('b', 8, 6, 1400, { divisionId: 1 }), team('c', 8, 6, 1300, { divisionId: 1 })],
+      games: [],
+    } as unknown as SeasonData
+    expect(divisionWinnerIds(season)).toEqual(new Set(['a', 'b']))
+  })
+
+  it('is empty for ESPN-era seasons (no divisions)', () => {
+    expect(divisionWinnerIds(premier2020 as unknown as SeasonData).size).toBe(0)
+  })
+
+  it('finds one winner per division in real (backfilled) 2024 Premier', () => {
+    expect(divisionWinnerIds(premier2024 as unknown as SeasonData).size).toBe(3)
   })
 })
 

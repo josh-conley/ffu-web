@@ -4,6 +4,7 @@ import type { Tier } from '@/config/types'
 import type { CareerEfficiency, CareerStats, SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
+import { TbPennantFilled } from 'react-icons/tb'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLogo } from '@/components/TeamLogo'
 
@@ -95,10 +96,11 @@ function renderTiers(c: CareerStats): ReactNode {
 const isLast = (f: SeasonFinish) => f.finalPlacement !== null && f.finalPlacement === f.seasonSize && f.seasonSize > 3
 
 /** A finish column: one tier-colored icon per qualifying season (year on hover), or a dash. */
-function placementCol(key: string, header: string, icon: ReactNode, match: (f: SeasonFinish) => boolean): Column<CareerStats> {
+function placementCol(key: string, header: string, icon: ReactNode, match: (f: SeasonFinish) => boolean, title?: string): Column<CareerStats> {
   return {
     key,
     header,
+    title,
     align: 'center',
     sortValue: (c) => c.finishes.filter(match).length,
     render: (c) => {
@@ -122,9 +124,10 @@ const tiersSort = (c: CareerStats) => c.premierSeasons * 10_000 + c.mastersSeaso
 
 function finishColumns(): Column<CareerStats>[] {
   return [
-    placementCol('titles', 'Titles', <FaTrophy size={13} />, (f) => f.finalPlacement === 1),
+    placementCol('titles', '1st', <FaTrophy size={13} />, (f) => f.finalPlacement === 1, 'League champion'),
     placementCol('second', '2nd', <FaMedal size={13} />, (f) => f.finalPlacement === 2),
     placementCol('third', '3rd', <FaAward size={14} />, (f) => f.finalPlacement === 3),
+    placementCol('pennants', 'Div', <TbPennantFilled size={15} />, (f) => f.wonDivision, 'Division winner (best regular-season record in their division) — divisions exist in Sleeper seasons (2021+) only'),
     placementCol('last', 'Last', <FaToilet size={14} />, isLast),
     { key: 'tiers', header: 'Tiers', align: 'right', sortValue: tiersSort, render: renderTiers },
     numCol('avgRank', 'Avg Rank', (c) => c.averageSeasonRank ?? 99, (n) => (n < 99 ? f1(n) : dash)),
@@ -149,7 +152,7 @@ function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStat
 // Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
 const DEFAULT_ORDER = [
   'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
-  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'titles', 'second', 'third', 'last',
+  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'titles', 'second', 'third', 'pennants', 'last',
 ]
 
 export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>): Column<CareerStats>[] {

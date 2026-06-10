@@ -1,6 +1,6 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
-import { winPct } from './standings'
+import { divisionWinnerIds, winPct } from './standings'
 import { seasonHighLow } from './games'
 import { seasonUpr } from './upr'
 
@@ -26,6 +26,8 @@ export interface SeasonFinish {
   finalPlacement: number | null
   /** Teams in that tier-season — lets a view flag a last-place finish with its tier/year. */
   seasonSize: number
+  /** Won their division that season (regular-season record) — a "pennant". */
+  wonDivision: boolean
 }
 
 export interface CareerStats {
@@ -135,13 +137,14 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
 
   for (const season of seasons) {
     const highLow = seasonHighLow(season)
+    const pennants = divisionWinnerIds(season)
     for (const t of season.teams) {
       let c = career.get(t.memberId)
       if (c === undefined) {
         c = emptyCareer(t.memberId)
         career.set(t.memberId, c)
       }
-      accumulateSeason(c, season, t, highLow.get(t.memberId))
+      accumulateSeason(c, season, t, highLow.get(t.memberId), pennants.has(t.memberId))
     }
   }
 
@@ -165,6 +168,7 @@ function accumulateSeason(
   season: SeasonData,
   t: SeasonTeam,
   highLow: { high: number; low: number } | undefined,
+  wonDivision: boolean,
 ): void {
   c.seasons += 1
   c.wins += t.record.wins
@@ -187,7 +191,7 @@ function accumulateSeason(
     c.careerHighGame = c.careerHighGame === null ? highLow.high : Math.max(c.careerHighGame, highLow.high)
     c.careerLowGame = c.careerLowGame === null ? highLow.low : Math.min(c.careerLowGame, highLow.low)
   }
-  c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: place ?? null, seasonSize: season.teams.length })
+  c.finishes.push({ year: season.year, tier: season.tier, finalPlacement: place ?? null, seasonSize: season.teams.length, wonDivision })
 }
 
 /** Fill the derived fields once a member's per-season totals are accumulated. */
