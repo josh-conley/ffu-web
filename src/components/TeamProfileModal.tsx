@@ -1,51 +1,19 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
 import { getMember, ownerNames } from '@/config'
-import { careerFor, currentLeague, type CareerStats, type SeasonFinish } from '@/selectors'
+import { careerFor, currentLeague, type CareerStats } from '@/selectors'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
 import { LoadingSpinner } from './LoadingSpinner'
 import { TierTimeline } from './TierTimeline'
-import { LEAGUE_STYLES } from './leagues'
+import { TrophyCase } from './TrophyCase'
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="border-t-[3px] border-t-accent bg-surface-2 p-2.5">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</div>
       <div className="mt-0.5 font-mono text-base font-bold tabular-nums text-text">{value}</div>
-    </div>
-  )
-}
-
-const PODIUM = {
-  1: { icon: FaTrophy, label: 'Champion' },
-  2: { icon: FaMedal, label: 'Runner-up' },
-  3: { icon: FaAward, label: 'Third place' },
-} as const
-
-function isPodium(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 | 3 } {
-  return f.finalPlacement !== null && f.finalPlacement <= 3
-}
-
-/** Podium finishes as tier-colored chips (champion → runner-up → third, then by year). */
-function PodiumChips({ career }: { career: CareerStats }) {
-  const podiums = career.finishes
-    .filter(isPodium)
-    .sort((a, b) => a.finalPlacement - b.finalPlacement || a.year.localeCompare(b.year))
-  if (podiums.length === 0) return <p className="text-xs text-muted">No podium finishes — yet.</p>
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {podiums.map((f) => {
-        const { icon: Icon, label } = PODIUM[f.finalPlacement]
-        return (
-          <span key={`${f.year}-${f.tier}-${f.finalPlacement}`} title={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`} className="inline-flex items-center gap-1.5 bg-surface-2 px-2 py-1 text-xs font-medium tabular-nums ring-1 ring-border">
-            <Icon size={12} className={LEAGUE_STYLES[f.tier].text} aria-label={`${LEAGUE_STYLES[f.tier].label} ${label}`} />
-            {f.year}
-          </span>
-        )
-      })}
     </div>
   )
 }
@@ -86,8 +54,8 @@ function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undef
             <Stat label="Win %" value={`${(career.winPct * 100).toFixed(1)}%`} />
           </div>
           <div>
-            <SectionLabel>Podium Finishes</SectionLabel>
-            <PodiumChips career={career} />
+            <SectionLabel>Trophy Case</SectionLabel>
+            <TrophyCase career={career} />
           </div>
           <div>
             <SectionLabel>League Progression</SectionLabel>

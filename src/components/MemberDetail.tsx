@@ -3,6 +3,7 @@ import type { CareerStats, MemberSeason } from '@/selectors'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
 import { TierTimeline } from './TierTimeline'
+import { TrophyCase } from './TrophyCase'
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -67,16 +68,23 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
         </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Championships" value={career.championships} />
-        <Stat label="Runner-ups" value={career.runnerUps} />
-        <Stat label="Best Finish" value={career.bestFinish ?? '—'} />
-        <Stat label="Playoff Apps" value={career.playoffAppearances} />
+      {/* Championships / Runner-ups / Best Finish became the Trophy Case below. */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat label="Record" value={`${career.wins}-${career.losses}${career.ties > 0 ? `-${career.ties}` : ''}`} />
         <Stat label="Win %" value={`${(career.winPct * 100).toFixed(1)}%`} />
+        <Stat label="Playoff Apps" value={career.playoffAppearances} />
+        <Stat label="Avg Finish" value={career.averageSeasonRank?.toFixed(1) ?? '—'} />
         <Stat label="Points For" value={career.pointsFor.toFixed(2)} />
         <Stat label="Points Against" value={career.pointsAgainst.toFixed(2)} />
       </div>
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+          <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
+          Trophy Case
+        </h2>
+        <TrophyCase career={career} />
+      </section>
 
       <section>
         <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
