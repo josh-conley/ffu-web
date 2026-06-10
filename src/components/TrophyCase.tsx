@@ -35,6 +35,7 @@ export function TrophyCase({ career }: { career: CareerStats }) {
               <span className={`font-bold ${LEAGUE_STYLES[f.tier].text}`}>{ordinal}</span>{' '}
               <span className="tabular-nums text-muted">{f.year}</span>
             </span>
+            <span className="text-[10px] leading-none text-muted">{LEAGUE_STYLES[f.tier].label}</span>
           </span>
         )
       })}
