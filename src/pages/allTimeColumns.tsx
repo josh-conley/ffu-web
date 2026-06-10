@@ -45,16 +45,17 @@ function identityColumns(): Column<CareerStats>[] {
       key: 'team',
       header: 'Team',
       sortValue: (c) => getMember(c.memberId)?.name ?? c.memberId,
-      render: (c) => (
-        // Mobile: cap the pinned column and wrap the name at a smaller size so it doesn't eat the
-        // viewport; desktop keeps the single-line full-width name.
-        <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          <TeamLogo ffuId={c.memberId} size={22} />
-          <span className="max-w-[7.5rem] text-xs leading-tight font-medium sm:max-w-none sm:text-sm sm:whitespace-nowrap">
-            {getMember(c.memberId)?.name ?? c.memberId}
-          </span>
-        </Link>
-      ),
+      render: (c) => {
+        const member = getMember(c.memberId)
+        return (
+          // Mobile: logo + abbreviation so the pinned column stays narrow; desktop shows the full name.
+          <Link to={`/members?member=${c.memberId}`} className="flex items-center gap-2 rounded hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <TeamLogo ffuId={c.memberId} size={22} />
+            <span className="font-medium sm:hidden">{member?.abbreviation ?? '?'}</span>
+            <span className="hidden font-medium whitespace-nowrap sm:inline">{member?.name ?? c.memberId}</span>
+          </Link>
+        )
+      },
     },
     numCol('seasons', 'Seasons', (c) => c.seasons),
     { key: 'record', header: 'Record', align: 'right', sortValue: (c) => c.wins, render: (c) => `${c.wins}-${c.losses}${c.ties > 0 ? `-${c.ties}` : ''}` },
