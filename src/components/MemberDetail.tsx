@@ -2,6 +2,7 @@ import { getMember, ownerNames } from '@/config'
 import type { CareerStats, MemberSeason } from '@/selectors'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
+import { TierTimeline } from './TierTimeline'
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -76,6 +77,16 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
         <Stat label="Points For" value={career.pointsFor.toFixed(2)} />
         <Stat label="Points Against" value={career.pointsAgainst.toFixed(2)} />
       </div>
+
+      <section>
+        <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">
+          <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
+          League Progression
+        </h2>
+        <div className="border border-border bg-surface p-3 shadow-sm">
+          <TierTimeline seasons={history} />
+        </div>
+      </section>
 
       <section>
         <h2 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-text">

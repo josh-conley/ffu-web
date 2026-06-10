@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
 import { getMember, ownerNames } from '@/config'
-import { careerFor, currentLeague, type CareerStats } from '@/selectors'
+import { careerFor, currentLeague, type CareerStats, type SeasonFinish } from '@/selectors'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
 import { LoadingSpinner } from './LoadingSpinner'
+import { TierTimeline } from './TierTimeline'
+import { LEAGUE_STYLES } from './leagues'
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -14,6 +17,41 @@ function Stat({ label, value }: { label: string; value: string | number }) {
       <div className="mt-0.5 font-mono text-base font-bold tabular-nums text-text">{value}</div>
     </div>
   )
+}
+
+const PODIUM = {
+  1: { icon: FaTrophy, label: 'Champion' },
+  2: { icon: FaMedal, label: 'Runner-up' },
+  3: { icon: FaAward, label: 'Third place' },
+} as const
+
+function isPodium(f: SeasonFinish): f is SeasonFinish & { finalPlacement: 1 | 2 | 3 } {
+  return f.finalPlacement !== null && f.finalPlacement <= 3
+}
+
+/** Podium finishes as tier-colored chips (champion → runner-up → third, then by year). */
+function PodiumChips({ career }: { career: CareerStats }) {
+  const podiums = career.finishes
+    .filter(isPodium)
+    .sort((a, b) => a.finalPlacement - b.finalPlacement || a.year.localeCompare(b.year))
+  if (podiums.length === 0) return <p className="text-xs text-muted">No podium finishes — yet.</p>
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {podiums.map((f) => {
+        const { icon: Icon, label } = PODIUM[f.finalPlacement]
+        return (
+          <span key={`${f.year}-${f.tier}-${f.finalPlacement}`} title={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`} className="inline-flex items-center gap-1.5 bg-surface-2 px-2 py-1 text-xs font-medium tabular-nums ring-1 ring-border">
+            <Icon size={12} className={LEAGUE_STYLES[f.tier].text} aria-label={`${LEAGUE_STYLES[f.tier].label} ${label}`} />
+            {f.year}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">{children}</div>
 }
 
 /** "Josh · 2021–2024 · 4 seasons" — owners (or a TBD) plus tenure when the member has played. */
@@ -42,12 +80,20 @@ function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undef
         </div>
       </div>
       {career ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Stat label="Record" value={`${career.wins}-${career.losses}${career.ties > 0 ? `-${career.ties}` : ''}`} />
-          <Stat label="Win %" value={`${(career.winPct * 100).toFixed(1)}%`} />
-          <Stat label="Titles" value={career.championships} />
-          <Stat label="Best Finish" value={career.bestFinish ?? '—'} />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Record" value={`${career.wins}-${career.losses}${career.ties > 0 ? `-${career.ties}` : ''}`} />
+            <Stat label="Win %" value={`${(career.winPct * 100).toFixed(1)}%`} />
+          </div>
+          <div>
+            <SectionLabel>Podium Finishes</SectionLabel>
+            <PodiumChips career={career} />
+          </div>
+          <div>
+            <SectionLabel>League Progression</SectionLabel>
+            <TierTimeline seasons={career.finishes} />
+          </div>
+        </>
       ) : (
         <p className="text-sm text-muted">No seasons played yet.</p>
       )}
@@ -70,7 +116,7 @@ export function TeamProfileModal({ ffuId, onClose }: { ffuId: string; onClose: (
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Team profile" onClick={onClose} className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
-      <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-md overflow-auto border border-border bg-surface shadow-xl">
+      <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-lg overflow-auto border border-border bg-surface shadow-xl">
         <header className="flex items-center justify-between border-b border-border bg-accent px-4 py-2.5 text-accent-fg">
           <span className="text-sm font-bold uppercase tracking-wide">Team Profile</span>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded px-2 text-lg leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text">✕</button>
