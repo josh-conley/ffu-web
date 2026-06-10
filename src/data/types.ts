@@ -28,7 +28,7 @@ export interface TeamPoints {
 
 export interface SeasonTeam {
   memberId: string
-  /** Omitted in no-division eras (divisions exist only from 2025). */
+  /** Omitted in no-division eras (all Sleeper years have divisions — backfilled — ESPN has none). */
   divisionId?: number
   /**
    * Regular-season totals as reported by the UPSTREAM provider (Sleeper roster

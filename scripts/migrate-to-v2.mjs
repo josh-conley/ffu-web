@@ -143,6 +143,31 @@ function buildDivisions(legacy) {
     .sort((a, b) => a.id - b.id)
 }
 
+// Divisions for Sleeper seasons the legacy snapshot missed (it only captured 2025), fetched once
+// from the Sleeper API by scripts/backfill-divisions.mjs and checked in so migration stays offline.
+let DIVISIONS_SUPPLEMENT = {}
+try {
+  DIVISIONS_SUPPLEMENT = JSON.parse(readFileSync(join(LEGACY, 'data', 'divisions-supplement.json'), 'utf8'))
+} catch {
+  /* supplement not generated yet — seasons fall back to legacy-only division data */
+}
+
+/** Apply supplement divisions (names + per-team divisionId) when legacy carried none. */
+function applyDivisionsSupplement(season) {
+  const extra = DIVISIONS_SUPPLEMENT[`${season.year}/${season.tier}`]
+  if (!extra || season.divisions) return
+  const byMember = new Map(Object.entries(extra.byUser).map(([sleeperId, d]) => [resolveId(sleeperId), d]))
+  season.teams = season.teams.map((team) => {
+    const divisionId = byMember.get(team.memberId)
+    if (!divisionId) throw new Error(`Supplement missing division for ${team.memberId} (${season.year} ${season.tier})`)
+    const { placementName, ...rest } = team
+    return placementName !== undefined ? { ...rest, divisionId, placementName } : { ...rest, divisionId }
+  })
+  season.divisions = Object.entries(extra.names)
+    .map(([id, name]) => ({ id: Number(id), name }))
+    .sort((a, b) => a.id - b.id)
+}
+
 function buildSeason(legacy) {
   const season = {
     schemaVersion: SCHEMA_VERSION,
@@ -155,6 +180,7 @@ function buildSeason(legacy) {
   }
   const divisions = buildDivisions(legacy)
   if (divisions) season.divisions = divisions
+  applyDivisionsSupplement(season)
   return season
 }
 
@@ -229,13 +255,22 @@ function run() {
         draftCount++
       }
 
+      // Lineups are produced by scripts/backfill-lineups.mjs, not migration — detect the files so
+      // re-running migration doesn't clobber the manifest flags.
+      let hasLineups = true
+      try {
+        readFileSync(join(OUT, year, `${tier.toLowerCase()}.lineups.json`))
+      } catch {
+        hasLineups = false
+      }
+
       manifest.seasons.push({
         tier,
         year,
         era: season.era,
         hasDivisions: Boolean(season.divisions),
         hasDraft: Boolean(draft),
-        hasLineups: false,
+        hasLineups,
       })
     }
   }

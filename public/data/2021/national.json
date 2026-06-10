@@ -19,6 +19,7 @@
       "finalPlacement": 1,
       "promoted": true,
       "relegated": false,
+      "divisionId": 3,
       "placementName": "1st"
     },
     {
@@ -35,6 +36,7 @@
       "finalPlacement": 2,
       "promoted": true,
       "relegated": false,
+      "divisionId": 1,
       "placementName": "2nd"
     },
     {
@@ -51,6 +53,7 @@
       "finalPlacement": 3,
       "promoted": false,
       "relegated": false,
+      "divisionId": 3,
       "placementName": "3rd"
     },
     {
@@ -67,6 +70,7 @@
       "finalPlacement": 4,
       "promoted": false,
       "relegated": false,
+      "divisionId": 3,
       "placementName": "4th"
     },
     {
@@ -83,6 +87,7 @@
       "finalPlacement": 5,
       "promoted": false,
       "relegated": false,
+      "divisionId": 2,
       "placementName": "5th"
     },
     {
@@ -99,6 +104,7 @@
       "finalPlacement": 6,
       "promoted": false,
       "relegated": false,
+      "divisionId": 1,
       "placementName": "6th"
     },
     {
@@ -115,6 +121,7 @@
       "finalPlacement": 7,
       "promoted": false,
       "relegated": false,
+      "divisionId": 1,
       "placementName": "7th"
     },
     {
@@ -131,6 +138,7 @@
       "finalPlacement": 8,
       "promoted": false,
       "relegated": false,
+      "divisionId": 3,
       "placementName": "8th"
     },
     {
@@ -147,6 +155,7 @@
       "finalPlacement": 9,
       "promoted": false,
       "relegated": false,
+      "divisionId": 2,
       "placementName": "9th"
     },
     {
@@ -163,6 +172,7 @@
       "finalPlacement": 10,
       "promoted": false,
       "relegated": false,
+      "divisionId": 1,
       "placementName": "10th"
     },
     {
@@ -179,6 +189,7 @@
       "finalPlacement": 11,
       "promoted": false,
       "relegated": false,
+      "divisionId": 2,
       "placementName": "11th"
     },
     {
@@ -195,6 +206,7 @@
       "finalPlacement": 12,
       "promoted": false,
       "relegated": false,
+      "divisionId": 2,
       "placementName": "12th"
     }
   ],
@@ -1598,6 +1610,20 @@
       ],
       "round": "9th Place",
       "bracket": "placement"
+    }
+  ],
+  "divisions": [
+    {
+      "id": 1,
+      "name": "Copper"
+    },
+    {
+      "id": 2,
+      "name": "Brass"
+    },
+    {
+      "id": 3,
+      "name": "Nickel"
     }
   ]
 }

@@ -53,7 +53,7 @@
       "tier": "PREMIER",
       "year": "2021",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -61,7 +61,7 @@
       "tier": "NATIONAL",
       "year": "2021",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -69,7 +69,7 @@
       "tier": "PREMIER",
       "year": "2022",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -77,7 +77,7 @@
       "tier": "MASTERS",
       "year": "2022",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -85,7 +85,7 @@
       "tier": "NATIONAL",
       "year": "2022",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -93,7 +93,7 @@
       "tier": "PREMIER",
       "year": "2023",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -101,7 +101,7 @@
       "tier": "MASTERS",
       "year": "2023",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -109,7 +109,7 @@
       "tier": "NATIONAL",
       "year": "2023",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -117,7 +117,7 @@
       "tier": "PREMIER",
       "year": "2024",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -125,7 +125,7 @@
       "tier": "MASTERS",
       "year": "2024",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },
@@ -133,7 +133,7 @@
       "tier": "NATIONAL",
       "year": "2024",
       "era": "sleeper",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
     },

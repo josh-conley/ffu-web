@@ -45,7 +45,8 @@ describe('season registry', () => {
     expect(getSeasonMeta('PREMIER', '2019')?.era).toBe('espn')
     expect(getSeasonMeta('PREMIER', '2024')?.era).toBe('sleeper')
     expect(getSeasonMeta('PREMIER', '2025')?.hasDivisions).toBe(true)
-    expect(getSeasonMeta('PREMIER', '2024')?.hasDivisions).toBe(false)
+    expect(getSeasonMeta('PREMIER', '2024')?.hasDivisions).toBe(true) // backfilled from Sleeper
+    expect(getSeasonMeta('PREMIER', '2020')?.hasDivisions).toBe(false) // ESPN era: none
   })
 
   it('lists tiers per year in hierarchy order', () => {
