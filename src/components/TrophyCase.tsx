@@ -28,7 +28,7 @@ function Tile({ icon, primary, year, tier, tooltip }: TileProps) {
     <span title={tooltip} className="flex aspect-square w-16 flex-col items-center justify-center gap-1 bg-surface-2 ring-1 ring-border">
       {icon}
       <span className="text-xs font-bold leading-none">
-        {primary} <span className="tabular-nums text-muted">{year}</span>
+        {primary} <span className="tabular-nums">{year}</span>
       </span>
       <span className="text-[10px] leading-none text-muted">{LEAGUE_STYLES[tier].label}</span>
     </span>
