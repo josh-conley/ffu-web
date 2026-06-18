@@ -1,6 +1,6 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import { divisionWinnerIds, finalStandings, regularSeasonStandings, standingsByDivision, winPct } from './standings'
-import premier2020 from '../../public/data/2020/premier.json'
+import national2020 from '../../public/data/2020/national.json'
 import premier2024 from '../../public/data/2024/premier.json'
 import premier2025 from '../../public/data/2025/premier.json'
 
@@ -71,8 +71,8 @@ describe('standingsByDivision (real 2025 Premier, divisions)', () => {
   })
 
   it('returns null for a season without divisions', () => {
-    // ESPN era — Sleeper years all have divisions now (backfilled).
-    expect(standingsByDivision(premier2020 as unknown as SeasonData)).toBeNull()
+    // ESPN-era National — Sleeper years and ESPN Premier (backfilled) all have divisions now.
+    expect(standingsByDivision(national2020 as unknown as SeasonData)).toBeNull()
   })
 })
 
@@ -101,7 +101,7 @@ describe('divisionWinnerIds (pennants)', () => {
   })
 
   it('is empty for ESPN-era seasons (no divisions)', () => {
-    expect(divisionWinnerIds(premier2020 as unknown as SeasonData).size).toBe(0)
+    expect(divisionWinnerIds(national2020 as unknown as SeasonData).size).toBe(0)
   })
 
   it('finds one winner per division in real (backfilled) 2024 Premier', () => {
