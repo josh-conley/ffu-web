@@ -1,6 +1,6 @@
-// Single source of position presentation (Charter DRY) — used by the draft board (badge + whole-
-// cell tint) and the draft list (badge). Deliberate semantic colors, kept through the styling
-// overhaul.
+// Single source of position presentation (Charter DRY) — the soft badge (`posClass`, used by the
+// draft list, box score, and board legend) and the saturated chyron bar (`posBar`, the draft board's
+// pick nameplates). Deliberate semantic colors, kept through the styling overhaul.
 
 /** Filled badge pill for a position label. */
 const POS_COLOR: Record<string, string> = {
@@ -15,27 +15,8 @@ const POS_COLOR: Record<string, string> = {
   SUPER_FLEX: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
 }
 
-/** Subtle whole-cell tint by position (lighter than the badge so the two layers read as one pick). */
-const POS_BG: Record<string, string> = {
-  QB: 'bg-red-50 dark:bg-red-500/10',
-  RB: 'bg-emerald-50 dark:bg-emerald-500/10',
-  WR: 'bg-sky-50 dark:bg-sky-500/10',
-  TE: 'bg-amber-50 dark:bg-amber-500/10',
-  K: 'bg-purple-50 dark:bg-purple-500/10',
-  DEF: 'bg-surface-2',
-}
-
-/** Solid saturated position color (background only) — for color spines, dots, and bars. */
-const POS_SOLID: Record<string, string> = {
-  QB: 'bg-red-500',
-  RB: 'bg-emerald-500',
-  WR: 'bg-sky-500',
-  TE: 'bg-amber-400',
-  K: 'bg-purple-500',
-  DEF: 'bg-slate-400',
-}
-
-/** Solid position color used as a filled bar/chyron, paired with a readable foreground. */
+/** Solid position color used as a filled bar/chyron (the draft board), paired with a readable
+ *  foreground. Saturated by design — the draft board's color identity is its picks. */
 const POS_BAR: Record<string, string> = {
   QB: 'bg-red-500 text-white',
   RB: 'bg-emerald-600 text-white',
@@ -46,6 +27,4 @@ const POS_BAR: Record<string, string> = {
 }
 
 export const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
-export const posBg = (p: string) => POS_BG[p] ?? 'bg-surface-2'
-export const posSolid = (p: string) => POS_SOLID[p] ?? 'bg-muted'
 export const posBar = (p: string) => POS_BAR[p] ?? 'bg-surface-2 text-text'

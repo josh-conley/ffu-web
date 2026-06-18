@@ -1,6 +1,6 @@
 import type { DraftData, DraftPlayer } from '@/data'
 
-// Presentation helpers shared by every redesigned draft-board variant (Charter DRY). Pure — no JSX.
+// Pure presentation helpers for the draft board (Charter DRY). No JSX — unit-tested in format.test.ts.
 
 /** Compact player label so cells fit without horizontal scroll: skill players become "F. Last";
  *  defenses (no personal name) become their team abbreviation. */
@@ -23,16 +23,12 @@ export function presentPositions(draft: DraftData): string[] {
   })
 }
 
-/** Spotlight state for one cell, given which drafter (if any) is currently highlighted. */
-export function cellState(highlighted: string | null, memberId: string) {
-  const isHighlight = highlighted === memberId
-  return { isHighlight, dimmed: highlighted !== null && !isHighlight }
-}
-
-/** Tailwind classes for the button wrapping a pick, by spotlight state (shared across variants). */
+/**
+ * Tailwind classes for the button wrapping a pick, by spotlight state: the selected drafter's picks
+ * lift (ring + decal offset shadow), every other pick dims, and nothing is selected by default.
+ */
 export function cellStateClass(highlighted: string | null, memberId: string): string {
-  const { isHighlight, dimmed } = cellState(highlighted, memberId)
-  if (isHighlight) return 'relative z-10 decal ring-1 ring-accent'
-  if (dimmed) return 'opacity-30'
+  if (highlighted === memberId) return 'relative z-10 decal ring-1 ring-accent'
+  if (highlighted !== null) return 'opacity-30'
   return 'hover:ring-1 hover:ring-muted/40'
 }
