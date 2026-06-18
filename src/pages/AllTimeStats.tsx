@@ -3,7 +3,9 @@ import { useAllLineups, useAllSeasons, usePlayers } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { useManagedColumns } from '@/hooks/useManagedColumns'
-import { careerEfficiency, careerStats, careerUpr, type CareerEfficiency, type CareerStats } from '@/selectors'
+import { careerEfficiency, careerStats, careerUpr, careerWinnings, type CareerEfficiency, type CareerStats } from '@/selectors'
+import type { Tier } from '@/config'
+import type { SeasonData } from '@/data'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
 import { StatDefs } from '@/components/StatDefs'
@@ -28,6 +30,17 @@ const EFFICIENCY_DEFS = (
   />
 )
 
+// Winnings are computed over the FULL season set (cross-union/cross-league prizes compare across
+// every tier), then scoped: 'ALL' shows the career total, a league shows only that tier's share.
+function useScopedWinnings(seasons: SeasonData[] | undefined, league: string): Map<string, number> {
+  const all = useMemo(() => careerWinnings(seasons ?? []), [seasons])
+  return useMemo(() => {
+    const scoped = new Map<string, number>()
+    for (const [id, w] of all) scoped.set(id, league === 'ALL' ? w.total : (w.byTier[league as Tier] ?? 0))
+    return scoped
+  }, [all, league])
+}
+
 /** Whether anything (scope, filters, columns) has been customized from the defaults. */
 const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
   p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
@@ -51,7 +64,8 @@ export function AllTimeStats() {
     const scopedLineups = league === 'ALL' ? lineups.data : lineups.data.filter((l) => l.tier === league)
     return careerEfficiency(scopedLineups, players.data)
   }, [lineups.data, players.data, league])
-  const columns = useMemo(() => buildColumns(upr, eff), [upr, eff])
+  const winnings = useScopedWinnings(seasons, league)
+  const columns = useMemo(() => buildColumns(upr, eff, winnings), [upr, eff, winnings])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
 

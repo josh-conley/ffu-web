@@ -134,6 +134,21 @@ function finishColumns(): Column<CareerStats>[] {
   ]
 }
 
+/** Career prize winnings (Sleeper era 2021+ — ESPN years had no tracked prizes). */
+function winningsColumn(winnings: Map<string, number>): Column<CareerStats> {
+  return {
+    key: 'winnings',
+    header: 'Winnings',
+    title: 'Total prize money won: league placements, division titles, most points, weekly high scores, plus cross-union/cross-league prizes. Tracked from 2021 on (ESPN era had no prizes).',
+    align: 'right',
+    sortValue: (c) => winnings.get(c.memberId) ?? 0,
+    render: (c) => {
+      const w = winnings.get(c.memberId) ?? 0
+      return w > 0 ? `$${w.toLocaleString('en-US')}` : dash
+    },
+  }
+}
+
 /** Lineup-efficiency column (Sleeper era only — members without lineup data show a dash). */
 function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStats> {
   return {
@@ -152,15 +167,16 @@ function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStat
 // Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
 const DEFAULT_ORDER = [
   'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
-  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'titles', 'second', 'third', 'pennants', 'last',
+  'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'winnings', 'titles', 'second', 'third', 'pennants', 'last',
 ]
 
-export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>): Column<CareerStats>[] {
+export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>, winnings: Map<string, number>): Column<CareerStats>[] {
   const all = [
     ...identityColumns(),
     ...scoringColumns(),
     ...finishColumns(),
     efficiencyColumn(eff),
+    winningsColumn(winnings),
     { key: 'upr', header: 'Avg UPR', align: 'right' as const, sortValue: (c: CareerStats) => upr.get(c.memberId) ?? 0, render: (c: CareerStats) => upr.get(c.memberId)?.toFixed(2) ?? dash },
   ]
   const byKey = new Map(all.map((c) => [c.key, c]))
