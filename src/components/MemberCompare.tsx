@@ -19,8 +19,9 @@ function CompareRow({ label, a, b, dir, fmt }: { label: string; a: number; b: nu
   )
 }
 
-function CareerCompare({ a, b }: { a: CareerStats; b: CareerStats }) {
+function CareerCompare({ a, b, aWinnings, bWinnings }: { a: CareerStats; b: CareerStats; aWinnings: number; bWinnings: number }) {
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`
+  const usd = (n: number) => `$${n.toLocaleString('en-US')}`
   return (
     <table className="min-w-full text-sm">
       <tbody>
@@ -31,6 +32,7 @@ function CareerCompare({ a, b }: { a: CareerStats; b: CareerStats }) {
         <CompareRow label="Best Finish" a={a.bestFinish ?? 99} b={b.bestFinish ?? 99} dir="low" fmt={(n) => (n === 99 ? '—' : String(n))} />
         <CompareRow label="Playoff Apps" a={a.playoffAppearances} b={b.playoffAppearances} dir="high" />
         <CompareRow label="Points For" a={a.pointsFor} b={b.pointsFor} dir="high" fmt={(n) => n.toFixed(2)} />
+        <CompareRow label="Winnings" a={aWinnings} b={bWinnings} dir="high" fmt={usd} />
       </tbody>
     </table>
   )
@@ -77,7 +79,7 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
   )
 }
 
-export function MemberCompare({ a, b, h2h }: { a: CareerStats; b: CareerStats; h2h: H2HRecord }) {
+export function MemberCompare({ a, b, h2h, aWinnings, bWinnings }: { a: CareerStats; b: CareerStats; h2h: H2HRecord; aWinnings: number; bWinnings: number }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 items-center gap-4">
@@ -92,7 +94,7 @@ export function MemberCompare({ a, b, h2h }: { a: CareerStats; b: CareerStats; h
       </div>
 
       <div className="border border-border bg-surface shadow-sm">
-        <CareerCompare a={a} b={b} />
+        <CareerCompare a={a} b={b} aWinnings={aWinnings} bWinnings={bWinnings} />
       </div>
 
       <section>

@@ -30,7 +30,8 @@ function SelectedMember({
 }) {
   // Computed here (not in Members) to keep that function under the complexity cap. Career total
   // across every league — the All-Time figure; cross-tier prizes are already summed in.
-  const winnings = useMemo(() => careerWinnings(seasons).get(selected.memberId)?.total ?? 0, [seasons, selected.memberId])
+  const winnings = useMemo(() => careerWinnings(seasons), [seasons])
+  const totalFor = (id: string) => winnings.get(id)?.total ?? 0
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -44,9 +45,15 @@ function SelectedMember({
         <MemberSelect memberIds={memberIds} value={vs} excludeId={selected.memberId} placeholder="Compare with…" onChange={onVs} />
       </div>
       {opponent ? (
-        <MemberCompare a={selected} b={opponent} h2h={headToHead(seasons, selected.memberId, opponent.memberId)} />
+        <MemberCompare
+          a={selected}
+          b={opponent}
+          h2h={headToHead(seasons, selected.memberId, opponent.memberId)}
+          aWinnings={totalFor(selected.memberId)}
+          bWinnings={totalFor(opponent.memberId)}
+        />
       ) : (
-        <MemberDetail career={selected} history={memberSeasons(seasons, selected.memberId)} winnings={winnings} />
+        <MemberDetail career={selected} history={memberSeasons(seasons, selected.memberId)} winnings={totalFor(selected.memberId)} />
       )}
     </div>
   )
