@@ -24,4 +24,8 @@ export type {
   LineupPlayer,
   PlayerMap,
   PlayerRef,
+  Tournament,
+  TournamentRound,
+  TournamentMatchup,
+  TournamentParticipant,
 } from './types'

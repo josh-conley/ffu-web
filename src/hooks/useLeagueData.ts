@@ -61,3 +61,8 @@ export function useLineups(tier: Tier, year: string, enabled = true) {
 export function usePlayers(enabled = true) {
   return useAsyncData('players', () => provider.getPlayers(), enabled)
 }
+
+/** A year's cross-tier tournament (null when none is defined for that year). */
+export function useTournament(year: string, enabled = true) {
+  return useAsyncData(`tournament:${year}`, () => provider.getTournament(year), enabled)
+}

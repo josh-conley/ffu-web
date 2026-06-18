@@ -1,5 +1,5 @@
 import type { Tier } from '@/config/types'
-import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary } from './types'
+import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary, Tournament } from './types'
 
 /**
  * THE data boundary. All methods are async and domain-phrased (never file paths), so an
@@ -17,4 +17,6 @@ export interface LeagueDataProvider {
   getLineups(tier: Tier, year: string): Promise<SeasonLineups | null>
   /** Trimmed player id → name/position/team map (resolves the ids inside lineups). */
   getPlayers(): Promise<PlayerMap>
+  /** The cross-tier knockout tournament for a year, or null when none is defined. */
+  getTournament(year: string): Promise<Tournament | null>
 }

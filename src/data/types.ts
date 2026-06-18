@@ -169,6 +169,55 @@ export interface DraftData {
   picks: DraftPick[]
 }
 
+// ── Tournament: /public/data/{year}/tournament.json (a cross-tier knockout overlay) ──
+// An FFU-administered, mid-season bracket that pairs teams ACROSS the three tiers. Teams keep
+// playing their normal weekly lineups; the tournament just matches them up and eliminates by that
+// week's score. So we store only FACTS here — the field of participants and the authored pairings —
+// and DERIVE scores/winners/advancement in selectors from each team's home-tier data (Charter:
+// "store facts, derive opinions"). Score for a round = the team's score in its tier's game that
+// week; box score = that tier's lineups.json for that week.
+
+export interface TournamentParticipant {
+  ffuId: string
+  /** Home tier — where this team's weekly score + lineup are sourced from. */
+  tier: Tier
+}
+
+/** One pairing (two ffuIds). Winner/scores are derived, never stored. */
+export interface TournamentMatchup {
+  a: string
+  b: string
+}
+
+export interface TournamentRound {
+  /** Stable id, e.g. 'r36' | 'r18' | 'r8' | 'r4' | 'final'. */
+  key: string
+  label: string
+  /** NFL week this round is scored on. */
+  week: number
+  /**
+   * When true, the single lowest-scoring winner of the PREVIOUS round is eliminated before this
+   * round's pairings are formed (the tournament's one bracket irregularity, e.g. 9 → 8 before the
+   * Round of 8). Kept in data so the rule is declared, not hardcoded in the engine.
+   */
+  dropLowestWinner?: boolean
+  /**
+   * Authored pairings. The opening round is always authored; later rounds normally OMIT this and
+   * are computed by the advancement engine (selectors/tournament). Present here only to OVERRIDE
+   * the computed pairing when the commissioner sets one explicitly (e.g. a bespoke post-drop seed).
+   */
+  matchups?: TournamentMatchup[]
+}
+
+export interface Tournament {
+  schemaVersion: number
+  /** Official name is TBD — placeholder until decided. */
+  name: string
+  year: string
+  participants: TournamentParticipant[]
+  rounds: TournamentRound[]
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

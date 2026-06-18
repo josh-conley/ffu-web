@@ -4,7 +4,7 @@
 // corrupt/old file. Lightweight hand-written checks (no schema-lib dependency).
 
 import { SCHEMA_VERSION } from './types'
-import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonManifest } from './types'
+import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonManifest, Tournament } from './types'
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
@@ -66,6 +66,32 @@ export function assertSeasonLineups(raw: unknown, ctx: string): SeasonLineups {
   check(typeof raw.tier === 'string', ctx, 'missing tier')
   check(Array.isArray(raw.weeks), ctx, 'weeks not an array')
   return raw as unknown as SeasonLineups
+}
+
+function assertTournamentRound(r: unknown, ctx: string): void {
+  check(isObject(r), ctx, 'round is not an object')
+  check(typeof r.key === 'string', ctx, 'round missing key')
+  check(typeof r.week === 'number', ctx, `round ${String(r.key)} missing week`)
+  check(r.dropLowestWinner === undefined || typeof r.dropLowestWinner === 'boolean', ctx, `round ${String(r.key)} bad dropLowestWinner`)
+  if (r.matchups !== undefined) {
+    check(Array.isArray(r.matchups), ctx, `round ${String(r.key)} matchups not an array`)
+    for (const m of r.matchups) {
+      check(isObject(m) && typeof m.a === 'string' && typeof m.b === 'string', ctx, `round ${String(r.key)} bad matchup`)
+    }
+  }
+}
+
+export function assertTournament(raw: unknown, ctx: string): Tournament {
+  check(isObject(raw), ctx, 'not an object')
+  assertSchema(raw, ctx)
+  check(typeof raw.year === 'string', ctx, 'missing year')
+  check(Array.isArray(raw.participants) && raw.participants.length > 0, ctx, 'participants not a non-empty array')
+  for (const p of raw.participants) {
+    check(isObject(p) && typeof p.ffuId === 'string' && typeof p.tier === 'string', ctx, 'bad participant')
+  }
+  check(Array.isArray(raw.rounds) && raw.rounds.length > 0, ctx, 'rounds not a non-empty array')
+  for (const r of raw.rounds) assertTournamentRound(r, ctx)
+  return raw as unknown as Tournament
 }
 
 export function assertPlayerMap(raw: unknown, ctx: string): PlayerMap {
