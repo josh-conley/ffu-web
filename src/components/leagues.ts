@@ -13,6 +13,8 @@ export interface LeagueStyle {
   solidHeader: string
   /** Tier color as text / icon foreground (e.g. a championship trophy). */
   text: string
+  /** Tier color as a border (e.g. the draft board's header rule). */
+  border: string
 }
 
 /** Tiers in prestige order (top flight first) — for views that rank accomplishments across tiers. */
@@ -25,6 +27,7 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     dot: 'bg-premier',
     solidHeader: 'bg-premier text-black',
     text: 'text-premier',
+    border: 'border-premier',
   },
   MASTERS: {
     label: 'Masters',
@@ -32,6 +35,7 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     dot: 'bg-masters',
     solidHeader: 'bg-masters text-white',
     text: 'text-masters',
+    border: 'border-masters',
   },
   NATIONAL: {
     label: 'National',
@@ -39,5 +43,6 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     dot: 'bg-national',
     solidHeader: 'bg-national text-white',
     text: 'text-national',
+    border: 'border-national',
   },
 }

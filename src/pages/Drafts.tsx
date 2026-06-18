@@ -3,7 +3,7 @@ import { useSeasonPicker } from '@/hooks/useSeasonView'
 import { useDraft } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
-import { DraftBoard } from '@/components/DraftBoard'
+import { DraftBoard } from '@/components/draft/DraftBoard'
 import { DraftList } from '@/components/DraftList'
 import { segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -38,13 +38,7 @@ export function Drafts() {
 
       <div className="flex gap-1">
         {VIEWS.map((v) => (
-          <button
-            key={v.key}
-            type="button"
-            onClick={() => setView(v.key)}
-            aria-pressed={v.key === view}
-            className={segButton(v.key === view)}
-          >
+          <button key={v.key} type="button" onClick={() => setView(v.key)} aria-pressed={v.key === view} className={segButton(v.key === view)}>
             {v.label}
           </button>
         ))}
