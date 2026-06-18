@@ -8,6 +8,7 @@ import { Members } from '@/pages/Members'
 import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
 import { Tournament } from '@/pages/Tournament'
+import { RecordBook } from '@/pages/RecordBook'
 import { NotFound } from '@/components/NotFound'
 
 export default function App() {
@@ -26,8 +27,9 @@ export default function App() {
           <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={<Drafts />} />
           {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL while the
-              cross-tier tournament is being built out. */}
+              cross-tier tournament + record book are being built out. */}
           <Route path="tournament" element={<Tournament />} />
+          <Route path="record-book" element={<RecordBook />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
