@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "name": "TBD Cross-Tier Tournament",
+  "year": "2025",
+  "participants": [
+    {
+      "ffuId": "ffu-044",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-023",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-029",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-008",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-001",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-043",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-009",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-041",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-030",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-028",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-006",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-027",
+      "tier": "PREMIER"
+    },
+    {
+      "ffuId": "ffu-020",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-026",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-037",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-002",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-021",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-033",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-039",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-038",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-040",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-042",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-012",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-024",
+      "tier": "MASTERS"
+    },
+    {
+      "ffuId": "ffu-053",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-013",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-036",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-007",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-004",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-055",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-056",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-019",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-017",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-054",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-052",
+      "tier": "NATIONAL"
+    },
+    {
+      "ffuId": "ffu-025",
+      "tier": "NATIONAL"
+    }
+  ],
+  "rounds": [
+    {
+      "key": "r36",
+      "label": "Round of 36",
+      "week": 6,
+      "matchups": [
+        {
+          "a": "ffu-055",
+          "b": "ffu-036"
+        },
+        {
+          "a": "ffu-019",
+          "b": "ffu-027"
+        },
+        {
+          "a": "ffu-028",
+          "b": "ffu-044"
+        },
+        {
+          "a": "ffu-013",
+          "b": "ffu-017"
+        },
+        {
+          "a": "ffu-053",
+          "b": "ffu-012"
+        },
+        {
+          "a": "ffu-008",
+          "b": "ffu-033"
+        },
+        {
+          "a": "ffu-007",
+          "b": "ffu-052"
+        },
+        {
+          "a": "ffu-041",
+          "b": "ffu-001"
+        },
+        {
+          "a": "ffu-020",
+          "b": "ffu-023"
+        },
+        {
+          "a": "ffu-037",
+          "b": "ffu-026"
+        },
+        {
+          "a": "ffu-040",
+          "b": "ffu-002"
+        },
+        {
+          "a": "ffu-056",
+          "b": "ffu-004"
+        },
+        {
+          "a": "ffu-054",
+          "b": "ffu-021"
+        },
+        {
+          "a": "ffu-025",
+          "b": "ffu-029"
+        },
+        {
+          "a": "ffu-043",
+          "b": "ffu-038"
+        },
+        {
+          "a": "ffu-039",
+          "b": "ffu-009"
+        },
+        {
+          "a": "ffu-042",
+          "b": "ffu-006"
+        },
+        {
+          "a": "ffu-024",
+          "b": "ffu-030"
+        }
+      ]
+    },
+    {
+      "key": "r18",
+      "label": "Round of 18",
+      "week": 7
+    },
+    {
+      "key": "r8",
+      "label": "Round of 8",
+      "week": 8,
+      "dropLowestWinner": true
+    },
+    {
+      "key": "r4",
+      "label": "Round of 4",
+      "week": 10
+    },
+    {
+      "key": "final",
+      "label": "Championship",
+      "week": 12
+    }
+  ]
+}
