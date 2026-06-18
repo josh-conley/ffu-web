@@ -3,7 +3,7 @@ import type { DraftData, DraftPick } from '@/data'
 import { teamsBySlot } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
 import { BroadcastCell, EditorialCell, SpineCell, type BoardVariant, type CellProps } from './cells'
-import { DraftMeta, PositionLegend, RoundLabel, TeamHeader } from './parts'
+import { PositionLegend, RoundLabel, TeamHeader } from './parts'
 
 /** The redesigned cell renderers, keyed by variant ('current' uses the legacy DraftBoard instead). */
 const CELLS: Record<Exclude<BoardVariant, 'current'>, FC<CellProps>> = {
@@ -24,7 +24,7 @@ function HeaderRow({ slots, teamBySlot, year, highlighted, onToggle }: {
 }) {
   return (
     <tr>
-      <th className="sticky left-0 z-20 border-b-2 border-r border-border bg-surface-2 p-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted">
+      <th className="sticky left-0 z-20 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1">
         Rd
       </th>
       {slots.map((slot) => (
@@ -86,17 +86,14 @@ export function DraftBoardV2({ draft, variant }: { draft: DraftData; variant: Ex
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <PositionLegend draft={draft} />
-        <DraftMeta draft={draft} numTeams={slots.length} />
-      </div>
+      <PositionLegend draft={draft} />
       {/* Near-full-bleed broadcast tile: tier color top rule + angular cutout + hard offset shadow. */}
       <div className="angular decal mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
         <div className={`h-1.5 ${tier.dot}`} />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">
             <colgroup>
-              <col className="w-10" />
+              <col className="w-7 sm:w-10" />
               {slots.map((slot) => <col key={slot} />)}
             </colgroup>
             <thead>

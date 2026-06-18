@@ -1,5 +1,4 @@
 import type { DraftData, DraftPlayer } from '@/data'
-import { isTraded, teamsBySlot } from '@/selectors'
 
 // Presentation helpers shared by every redesigned draft-board variant (Charter DRY). Pure — no JSX.
 
@@ -11,12 +10,6 @@ export function shortName(player: DraftPlayer): string {
   const first = parts[0]
   if (parts.length < 2 || !first) return player.name
   return `${first[0]}. ${parts.slice(1).join(' ')}`
-}
-
-/** How many picks in the draft changed hands (sat in a slot owned by another team). */
-export function tradeCount(draft: DraftData): number {
-  const bySlot = teamsBySlot(draft)
-  return draft.picks.reduce((n, p) => (isTraded(p, bySlot) ? n + 1 : n), 0)
 }
 
 /** Positions present in this draft, in canonical order (QB→DEF) then any extras alphabetically. */

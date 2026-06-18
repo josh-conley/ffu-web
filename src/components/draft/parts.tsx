@@ -4,7 +4,7 @@ import { pickLabel } from '@/selectors'
 import type { LeagueStyle } from '../leagues'
 import { posClass, posSolid } from '../positions'
 import { TeamLogo } from '../TeamLogo'
-import { presentPositions, tradeCount } from './format'
+import { presentPositions } from './format'
 
 /** A team's column header: logo hero + name + abbreviation. Click to spotlight that team's picks. */
 export function TeamHeader({ slot, ownerId, year, highlighted, onToggle }: {
@@ -40,7 +40,7 @@ export function TeamHeader({ slot, ownerId, year, highlighted, onToggle }: {
 /** Sticky-left round rail cell: round number (tier-tinted) + the round's snake direction. */
 export function RoundLabel({ round, tier }: { round: number; tier: LeagueStyle }) {
   return (
-    <th scope="row" className="sticky left-0 z-10 border-b border-r border-border bg-surface-2 p-1 text-center align-middle">
+    <th scope="row" className="sticky left-0 z-10 border-b border-r border-border bg-surface-2 px-0.5 py-1 text-center align-middle sm:px-1">
       <div className={`font-mono text-xs font-black tabular-nums ${tier.text}`}>{round}</div>
       <div aria-hidden className="text-[9px] leading-none text-muted">{round % 2 === 1 ? '→' : '←'}</div>
     </th>
@@ -56,19 +56,6 @@ export function PositionLegend({ draft }: { draft: DraftData }) {
       ))}
     </div>
   )
-}
-
-/** Draft-at-a-glance: team / round / type / pick / trade counts. */
-export function DraftMeta({ draft, numTeams }: { draft: DraftData; numTeams: number }) {
-  const trades = tradeCount(draft)
-  const bits = [
-    `${numTeams} teams`,
-    `${draft.rounds} rounds`,
-    draft.type !== 'unknown' ? draft.type : null,
-    `${draft.picks.length} picks`,
-    trades > 0 ? `${trades} traded` : null,
-  ].filter(Boolean)
-  return <div className="font-mono text-[11px] uppercase tracking-wider text-muted">{bits.join(' · ')}</div>
 }
 
 /** Top-right "dog-ear" that flags a traded pick (the broadcast storyline cue). */
