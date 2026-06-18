@@ -13,10 +13,14 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 // the 2025 season as a working backfill; the year is the one knob to change when it moves forward.
 const YEAR = '2025'
 
+// Tournament theme color — one-off accent for this event (not a tier color, so it stays local here
+// rather than in leagues.ts).
+const TOURNAMENT_ACCENT = '#3686ff'
+
 function ChampionBanner({ ffuId, year }: { ffuId: string; year: string }) {
   return (
-    <div className="flex items-center gap-3 border border-accent bg-surface-2 px-4 py-3">
-      <FaTrophy className="text-accent" size={22} aria-hidden />
+    <div className="flex items-center gap-3 border bg-surface-2 px-4 py-3" style={{ borderColor: TOURNAMENT_ACCENT }}>
+      <FaTrophy size={22} aria-hidden style={{ color: TOURNAMENT_ACCENT }} />
       <TeamLogo ffuId={ffuId} size={32} />
       <div>
         <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Champion</div>
