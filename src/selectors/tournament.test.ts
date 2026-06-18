@@ -146,6 +146,13 @@ describe('the seeded 2025 tournament resolves to a full bracket', () => {
     expect(round('final').matchups).toHaveLength(1)
   })
 
+  it('opens with no intra-tier matchup (every Round-of-36 game is cross-tier)', () => {
+    const tierOf = new Map((realTournament as Tournament).participants.map((p) => [p.ffuId, p.tier]))
+    for (const m of round('r36').matchups) {
+      expect(tierOf.get(m.a.ffuId), `${m.a.ffuId} vs ${m.b.ffuId}`).not.toBe(tierOf.get(m.b.ffuId))
+    }
+  })
+
   it('decides every matchup (data exists for all weeks) and crowns a champion', () => {
     for (const r of real.rounds) {
       for (const m of r.matchups) expect(m.winner, `${r.key} matchup`).toBeDefined()
