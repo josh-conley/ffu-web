@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
-import { careerStats, headToHead, membersByLeague, memberSeasons, type CareerStats } from '@/selectors'
+import { careerStats, careerWinnings, headToHead, membersByLeague, memberSeasons, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
 import { MemberCompare } from '@/components/MemberCompare'
@@ -28,6 +28,9 @@ function SelectedMember({
   onBack: () => void
   onVs: (id: string) => void
 }) {
+  // Computed here (not in Members) to keep that function under the complexity cap. Career total
+  // across every league — the All-Time figure; cross-tier prizes are already summed in.
+  const winnings = useMemo(() => careerWinnings(seasons).get(selected.memberId)?.total ?? 0, [seasons, selected.memberId])
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -43,7 +46,7 @@ function SelectedMember({
       {opponent ? (
         <MemberCompare a={selected} b={opponent} h2h={headToHead(seasons, selected.memberId, opponent.memberId)} />
       ) : (
-        <MemberDetail career={selected} history={memberSeasons(seasons, selected.memberId)} />
+        <MemberDetail career={selected} history={memberSeasons(seasons, selected.memberId)} winnings={winnings} />
       )}
     </div>
   )

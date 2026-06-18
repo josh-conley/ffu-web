@@ -48,7 +48,7 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
   )
 }
 
-export function MemberDetail({ career, history }: { career: CareerStats; history: MemberSeason[] }) {
+export function MemberDetail({ career, history, winnings }: { career: CareerStats; history: MemberSeason[]; winnings: number }) {
   const member = getMember(career.memberId)
   const owners = ownerNames(career.memberId)
   const tenure = career.firstYear === null ? '' : `${career.firstYear}–${career.lastYear} · ${career.seasons} seasons`
@@ -77,6 +77,7 @@ export function MemberDetail({ career, history }: { career: CareerStats; history
         <Stat label="Avg Finish" value={career.averageSeasonRank?.toFixed(1) ?? '—'} />
         <Stat label="Points For" value={career.pointsFor.toFixed(2)} />
         <Stat label="Points Against" value={career.pointsAgainst.toFixed(2)} />
+        <Stat label="Winnings" value={`$${winnings.toLocaleString('en-US')}`} />
       </div>
 
       <section>
