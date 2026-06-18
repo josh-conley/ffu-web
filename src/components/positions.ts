@@ -25,5 +25,27 @@ const POS_BG: Record<string, string> = {
   DEF: 'bg-surface-2',
 }
 
+/** Solid saturated position color (background only) — for color spines, dots, and bars. */
+const POS_SOLID: Record<string, string> = {
+  QB: 'bg-red-500',
+  RB: 'bg-emerald-500',
+  WR: 'bg-sky-500',
+  TE: 'bg-amber-400',
+  K: 'bg-purple-500',
+  DEF: 'bg-slate-400',
+}
+
+/** Solid position color used as a filled bar/chyron, paired with a readable foreground. */
+const POS_BAR: Record<string, string> = {
+  QB: 'bg-red-500 text-white',
+  RB: 'bg-emerald-600 text-white',
+  WR: 'bg-sky-600 text-white',
+  TE: 'bg-amber-400 text-black',
+  K: 'bg-purple-600 text-white',
+  DEF: 'bg-slate-500 text-white',
+}
+
 export const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
 export const posBg = (p: string) => POS_BG[p] ?? 'bg-surface-2'
+export const posSolid = (p: string) => POS_SOLID[p] ?? 'bg-muted'
+export const posBar = (p: string) => POS_BAR[p] ?? 'bg-surface-2 text-text'
