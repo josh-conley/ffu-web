@@ -5,7 +5,7 @@ import { LEAGUE_STYLES, type LeagueStyle } from '../leagues'
 import { PickCell } from './PickCell'
 import { PositionLegend, RoundLabel, TeamHeader } from './parts'
 
-/** Team nameplates across the top, frozen on scroll, with a sticky-both-axes "Rd" corner. */
+/** Team nameplates across the top, with a "Rd" corner pinned left on horizontal scroll. */
 function HeaderRow({ slots, teamBySlot, year, tier, highlighted, onToggle }: {
   slots: number[]
   teamBySlot: Map<number, string>
@@ -16,7 +16,7 @@ function HeaderRow({ slots, teamBySlot, year, tier, highlighted, onToggle }: {
 }) {
   return (
     <tr>
-      <th className={`sticky left-0 top-0 z-30 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1 ${tier.border}`}>
+      <th className={`sticky left-0 z-20 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1 ${tier.border}`}>
         Rd
       </th>
       {slots.map((slot) => (
@@ -26,7 +26,7 @@ function HeaderRow({ slots, teamBySlot, year, tier, highlighted, onToggle }: {
   )
 }
 
-/** One row per round: the tier-tinted round-rail label (frozen left), then a pick nameplate per slot. */
+/** One row per round: the tier-tinted round-rail label (pinned left), then a pick nameplate per slot. */
 function BodyRows({ rounds, slots, byCell, teamBySlot, numTeams, tier, highlighted, onToggle }: {
   rounds: number[]
   slots: number[]
@@ -60,9 +60,9 @@ function BodyRows({ rounds, slots, byCell, teamBySlot, numTeams, tier, highlight
 
 /**
  * The draft board: a tier-themed broadcast tile (angular cutout + offset decal shadow, tier color top
- * rule) whose grid scrolls inside itself — freezing the team nameplates (top) and round rail (left)
- * like a live draft tracker. Each pick is a position-colored nameplate; click any team or pick to
- * spotlight every selection that drafter made.
+ * rule). On desktop the grid fits; on narrow screens it scrolls horizontally with the round rail
+ * pinned left, while the page scrolls vertically as normal. Each pick is a position-colored nameplate;
+ * click any team or pick to spotlight every selection that drafter made.
  */
 export function DraftBoard({ draft }: { draft: DraftData }) {
   const teamBySlot = teamsBySlot(draft)
@@ -80,7 +80,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
       <PositionLegend draft={draft} />
       <div className="angular decal mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
         <div className={`h-1.5 ${tier.dot}`} />
-        <div className="max-h-[78vh] overflow-auto">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">
             <colgroup>
               <col className="w-7 sm:w-10" />

@@ -5,8 +5,8 @@ import { posClass } from '../positions'
 import { TeamLogo } from '../TeamLogo'
 import { presentPositions } from './format'
 
-/** A team's column nameplate: logo + name + abbreviation, frozen at the top on scroll. The tier-color
- *  rule under the header row reads as the league's identity; click to spotlight that team's picks. */
+/** A team's column nameplate: logo + name + abbreviation. The tier-color rule under the header row
+ *  reads as the league's identity; click to spotlight that team's picks. */
 export function TeamHeader({ slot, ownerId, year, tier, highlighted, onToggle }: {
   slot: number
   ownerId: string | undefined
@@ -17,7 +17,7 @@ export function TeamHeader({ slot, ownerId, year, tier, highlighted, onToggle }:
 }) {
   const dim = highlighted !== null && ownerId !== highlighted
   return (
-    <th scope="col" className={`sticky top-0 z-20 border-b-2 bg-surface-2 p-0 ${tier.border}`}>
+    <th scope="col" className={`border-b-2 bg-surface-2 p-0 ${tier.border}`}>
       <button
         type="button"
         onClick={() => ownerId && onToggle(ownerId)}
@@ -38,7 +38,7 @@ export function TeamHeader({ slot, ownerId, year, tier, highlighted, onToggle }:
   )
 }
 
-/** Frozen-left round rail: round number (tier-tinted) + the round's snake direction. */
+/** Round rail (pinned left on horizontal scroll): round number (tier-tinted) + snake direction. */
 export function RoundLabel({ round, tier }: { round: number; tier: LeagueStyle }) {
   return (
     <th scope="row" className="sticky left-0 z-20 border-b border-r border-border bg-surface-2 px-0.5 py-1 text-center align-middle sm:px-1">
