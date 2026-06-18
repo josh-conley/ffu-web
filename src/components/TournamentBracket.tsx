@@ -50,13 +50,16 @@ function RoundColumn({ round, year, onOpen }: { round: ResolvedRound; year: stri
  *  earlier ones — the classic bracket read. */
 export function TournamentBracket({ tournament, year, onOpen }: { tournament: ResolvedTournament; year: string; onOpen: (m: OpenMatchup) => void }) {
   return (
-    // Full-bleed: break out of the page's centered max-width so the wide bracket has room (same
-    // viewport-breakout trick as DraftBoard / the Stats table).
-    <div className="mx-[calc(50%-50vw+1rem)] overflow-x-auto pb-4">
-      <div className="flex min-w-max items-stretch gap-4 px-1">
-        {tournament.rounds.map((round) => (
-          <RoundColumn key={round.key} round={round} year={year} onOpen={onOpen} />
-        ))}
+    // Full-bleed: break out of the page's centered max-width so the wide bracket has room. The inner
+    // box is `w-fit` + `mx-auto`, so it stays centered when it fits and only scrolls once it can't
+    // (same viewport-breakout + center trick as the Stats table).
+    <div className="mx-[calc(50%-50vw+1rem)]">
+      <div className="mx-auto w-fit max-w-full overflow-x-auto pb-4">
+        <div className="flex min-w-max items-stretch gap-4 px-1">
+          {tournament.rounds.map((round) => (
+            <RoundColumn key={round.key} round={round} year={year} onOpen={onOpen} />
+          ))}
+        </div>
       </div>
     </div>
   )
