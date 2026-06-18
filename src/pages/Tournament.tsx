@@ -15,7 +15,7 @@ const YEAR = '2025'
 
 // Tournament theme color — one-off accent for this event (not a tier color, so it stays local here
 // rather than in leagues.ts).
-const TOURNAMENT_ACCENT = '#3686ff'
+const TOURNAMENT_ACCENT = '#2596be'
 
 function ChampionBanner({ ffuId, year }: { ffuId: string; year: string }) {
   return (
