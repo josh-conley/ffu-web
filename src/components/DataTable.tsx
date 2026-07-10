@@ -48,6 +48,7 @@ export function DataTable<T>({
   fullBleed = false,
   stickyFirstColumn = false,
   reorder,
+  headerClassName,
 }: {
   columns: Column<T>[]
   rows: T[]
@@ -60,6 +61,8 @@ export function DataTable<T>({
   stickyFirstColumn?: boolean
   /** Enable drag-to-reorder on the header (keeps `lockedKey` first). */
   reorder?: ReorderConfig
+  /** Overrides the header's default accent color (e.g. a tier's solidHeader pairing). */
+  headerClassName?: string
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
@@ -83,7 +86,7 @@ export function DataTable<T>({
       <div className={fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}>
         <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`}>
           <table className={`w-max text-sm ${fullBleed ? '' : 'min-w-full'}`}>
-            <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} />
+            <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} headerClassName={headerClassName} />
             <tbody className="divide-y divide-border">
               {pageRows.map((row, i) => (
                 <tr key={getRowKey(row, i)} className="group hover:bg-surface-2">

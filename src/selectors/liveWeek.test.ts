@@ -14,6 +14,7 @@ const game = (week: number, aId: string, aScore: number, bId: string, bScore: nu
 const data: LiveSeasonData = {
   tier: 'PREMIER',
   year: '2025',
+  leagueId: 'lg1',
   currentWeek: 5,
   memberIds: ['a', 'b', 'c'],
   games: [

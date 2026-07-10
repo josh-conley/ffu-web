@@ -21,6 +21,8 @@ interface HeadProps<T> {
   onToggleSort: (col: Column<T>) => void
   stickyFirstColumn: boolean
   reorder?: ReorderConfig
+  /** Overrides the default `bg-accent text-accent-fg` (e.g. a tier's solidHeader pairing). */
+  headerClassName?: string
 }
 
 const ariaSort = (active: boolean, dir?: 'asc' | 'desc') => (active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined)
@@ -103,9 +105,9 @@ function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder
 }
 
 export function DataTableHead<T>(props: HeadProps<T>) {
-  const { columns, sort, onToggleSort, stickyFirstColumn, reorder } = props
+  const { columns, sort, onToggleSort, stickyFirstColumn, reorder, headerClassName } = props
   return (
-    <thead className="bg-accent">
+    <thead className={headerClassName ?? 'bg-accent text-accent-fg'}>
       {reorder ? (
         <ReorderRow {...props} reorder={reorder} />
       ) : (

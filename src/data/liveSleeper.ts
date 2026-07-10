@@ -1,6 +1,6 @@
 import type { Tier } from '@/config/types'
 import { memberBySleeperId } from '@/config'
-import type { Game, GameParticipant, LiveSeasonData } from './types'
+import type { Game, GameParticipant, LineupPlayer, LiveSeasonData, PlayerMap, TeamLineup } from './types'
 import { assertGame } from './validate'
 
 // Live client-side reads of Sleeper's public API for the season currently in progress. Deliberately
@@ -106,8 +106,88 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
   return {
     tier,
     year,
+    leagueId,
     currentWeek,
     memberIds: [...new Set(rosterMap.values())],
     games: gamesByWeek.flat(),
   }
+}
+
+// ── Live box score (fetched lazily, only when a matchup card is clicked) ───────────────────────
+// Mirrors scripts/backfill-lineups.mjs's starters/bench zipping, at request time instead of offline.
+// Player NAME resolution intentionally skips the season-accurate NFLverse team lookup that script
+// does (extra CSV fetch, only meaningful for historical box scores) — `team` is left unresolved,
+// which BoxScore already renders fine without.
+
+const BENCH_SLOTS = new Set(['BN', 'IR', 'TAXI'])
+
+interface SleeperFullMatchupEntry {
+  roster_id: number
+  starters?: string[]
+  starters_points?: number[]
+  players?: string[]
+  players_points?: Record<string, number>
+}
+
+function zipStarters(ids: string[], points: number[]): LineupPlayer[] {
+  return ids.map((playerId, i) => ({ playerId, points: points[i] ?? 0 })).filter((s) => s.playerId && s.playerId !== '0')
+}
+
+function benchOf(entry: SleeperFullMatchupEntry): LineupPlayer[] {
+  const starting = new Set(entry.starters ?? [])
+  return (entry.players ?? [])
+    .filter((id) => id && id !== '0' && !starting.has(id))
+    .map((id) => ({ playerId: id, points: entry.players_points?.[id] ?? 0 }))
+}
+
+function lineupFor(memberId: string, rosterId: number | undefined, entries: SleeperFullMatchupEntry[]): TeamLineup {
+  const entry = entries.find((e) => e.roster_id === rosterId)
+  if (!entry) return { memberId, starters: [], bench: [] }
+  return { memberId, starters: zipStarters(entry.starters ?? [], entry.starters_points ?? []), bench: benchOf(entry) }
+}
+
+export interface LiveLineups {
+  slots: string[]
+  teams: [TeamLineup, TeamLineup]
+}
+
+/** Starters + bench for one game (the two named members), for the live box-score modal. */
+export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string]): Promise<LiveLineups> {
+  const [rosterMap, league, entries] = await Promise.all([
+    fetchRosterMap(leagueId),
+    sleeperGet<{ roster_positions?: string[] }>(`/league/${leagueId}`),
+    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
+  ])
+  if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
+  const slots = (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s))
+  const rosterIdFor = (memberId: string) => [...rosterMap.entries()].find(([, id]) => id === memberId)?.[0]
+  const [m0, m1] = memberIds
+  return { slots, teams: [lineupFor(m0, rosterIdFor(m0), entries), lineupFor(m1, rosterIdFor(m1), entries)] }
+}
+
+interface RawSleeperPlayer {
+  full_name?: string
+  first_name?: string
+  last_name?: string
+  position?: string
+}
+
+// Sleeper's full player map is a several-MB single payload — fetch it at most once per session,
+// and only when a live box score actually needs a player our static players.json doesn't have yet
+// (new-this-season players; everyone else resolves from the existing static file for free).
+let allPlayersPromise: Promise<Record<string, RawSleeperPlayer>> | undefined
+
+/** Resolves ids missing from `known` (the static players map) via Sleeper's live player directory. */
+export async function fetchMissingPlayers(ids: string[], known: PlayerMap): Promise<PlayerMap> {
+  const missing = ids.filter((id) => !(id in known))
+  if (missing.length === 0) return {}
+  if (!allPlayersPromise) allPlayersPromise = sleeperGet<Record<string, RawSleeperPlayer>>('/players/nfl')
+  const all = await allPlayersPromise
+  const out: PlayerMap = {}
+  for (const id of missing) {
+    const p = all[id]
+    if (!p) continue
+    out[id] = { name: p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || id, position: p.position ?? '?' }
+  }
+  return out
 }

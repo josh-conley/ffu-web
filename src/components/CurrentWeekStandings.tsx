@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
+import type { Tier } from '@/config'
 import { nameForYear } from '@/config'
-import type { LiveStandingRow } from '@/selectors'
+import type { LiveSeasonData } from '@/data'
+import { standingsThroughPreviousWeek, type LiveStandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
+import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
 
 function recordLabel(row: LiveStandingRow): string {
@@ -35,8 +38,20 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
   ]
 }
 
-/** Compact standings-through-last-completed-week table for the home page's This Week section. */
-export function CurrentWeekStandings({ rows, year }: { rows: LiveStandingRow[]; year: string }) {
-  const columns = useMemo(() => buildColumns(year), [year])
-  return <DataTable columns={columns} rows={rows} getRowKey={(r) => r.totals.memberId} initialSort={{ key: 'rank', dir: 'asc' }} />
+/** One tier's standings-through-last-completed-week — the table's own header row is tier-colored,
+ *  so no separate label bar is needed above it. */
+export function CurrentWeekStandings({ tier, data }: { tier: Tier; data: LiveSeasonData }) {
+  const columns = useMemo(() => buildColumns(data.year), [data.year])
+
+  if (data.currentWeek <= 1) return <p className="text-sm text-muted">Standings will appear once Week 1 concludes.</p>
+
+  return (
+    <DataTable
+      columns={columns}
+      rows={standingsThroughPreviousWeek(data)}
+      getRowKey={(r) => r.totals.memberId}
+      initialSort={{ key: 'rank', dir: 'asc' }}
+      headerClassName={LEAGUE_STYLES[tier].solidHeader}
+    />
+  )
 }

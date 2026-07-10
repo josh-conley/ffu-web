@@ -227,6 +227,8 @@ export interface Tournament {
 export interface LiveSeasonData {
   tier: Tier
   year: string
+  /** Carried alongside so a box-score click can fetch that game's lineups without reaching into config. */
+  leagueId: string
   /** The week to show as "this week" (from Sleeper's live NFL state; may be in progress). */
   currentWeek: number
   /** Every franchise fielding a team this season (for a standings table with zero games yet). */

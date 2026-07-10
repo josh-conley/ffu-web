@@ -19,7 +19,9 @@ export interface SortState {
   dir: 'asc' | 'desc'
 }
 
-export const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider text-accent-fg'
+// Text color intentionally lives on <thead> (DataTableHead), not here, so a caller can recolor the
+// whole header (bg + text) in one place and every <th> just inherits it.
+export const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider'
 export const TD_BASE = 'px-3 py-2'
 export const TEXT_ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' } as const
 export const JUSTIFY = { left: '', right: 'justify-end', center: 'justify-center' } as const

@@ -30,5 +30,5 @@ export type {
   TournamentParticipant,
   LiveSeasonData,
 } from './types'
-export { fetchNflState, fetchLiveSeason } from './liveSleeper'
-export type { NflState } from './liveSleeper'
+export { fetchNflState, fetchLiveSeason, fetchLiveLineups, fetchMissingPlayers } from './liveSleeper'
+export type { NflState, LiveLineups } from './liveSleeper'
