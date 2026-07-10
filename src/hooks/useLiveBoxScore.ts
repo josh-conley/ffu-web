@@ -25,10 +25,11 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
   const players = usePlayers(enabled)
   const lineups = useAsyncData(`live-lineups:${leagueId}:${week}:${memberIds.join(',')}`, () => fetchLiveLineups(leagueId, week, memberIds), enabled)
 
-  const missingIds = useMemo(() => (lineups.data ? allPlayerIds(lineups.data) : []), [lineups.data])
+  // Every id in the lineup — fetchMissingPlayers filters down to the ones the static map lacks.
+  const candidateIds = useMemo(() => (lineups.data ? allPlayerIds(lineups.data) : []), [lineups.data])
   const extra = useAsyncData(
-    `live-players-extra:${missingIds.join(',')}`,
-    () => fetchMissingPlayers(missingIds, players.data ?? {}),
+    `live-players-extra:${candidateIds.join(',')}`,
+    () => fetchMissingPlayers(candidateIds, players.data ?? {}),
     enabled && lineups.data !== undefined && players.data !== undefined,
   )
 

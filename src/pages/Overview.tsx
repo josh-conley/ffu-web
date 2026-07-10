@@ -51,7 +51,10 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
-      {liveWeek.inScope && (
+      {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
+          resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
+          keeps the section headings from rendering over an empty (or permanently failed) grid. */}
+      {liveTiers.length > 0 && (
         <>
           <section className="space-y-3">
             <h2 className="text-sm font-bold uppercase tracking-widest text-muted">

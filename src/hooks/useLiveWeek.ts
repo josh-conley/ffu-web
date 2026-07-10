@@ -14,6 +14,10 @@ export interface LiveWeek {
 
 const MAX_REGULAR_WEEK = regularSeasonWeeks('sleeper').length // 14 — playoffs are out of scope here
 
+// With no live league ids configured at all (the offseason state), no fetch can ever be in scope —
+// skip even the nfl-state call so the feature is zero-cost until ids are added.
+const CONFIGURED = Object.keys(LIVE_LEAGUE_IDS).length > 0
+
 function tiersInScope(state: NflState | undefined): { tiers: Tier[]; leagueIds?: Record<Tier, string> } {
   const leagueIds = state ? LIVE_LEAGUE_IDS[state.year] : undefined
   if (!leagueIds || state?.seasonType !== 'regular' || state.week > MAX_REGULAR_WEEK) return { tiers: [] }
@@ -34,7 +38,7 @@ async function fetchAllTiers(tiers: Tier[], leagueIds: Record<Tier, string>, yea
  * whatever year Sleeper currently reports, which is the case until real 2026 league ids are added.
  */
 export function useLiveWeek(): LiveWeek {
-  const state = useAsyncData('nfl-state', fetchNflState)
+  const state = useAsyncData('nfl-state', fetchNflState, CONFIGURED)
   const { tiers, leagueIds } = tiersInScope(state.data)
   const inScope = tiers.length > 0
   const { year, week } = state.data ?? {}
@@ -48,7 +52,8 @@ export function useLiveWeek(): LiveWeek {
   return {
     inScope,
     byTier: seasons.data ?? {},
-    loading: state.loading || (inScope && seasons.loading),
+    // useAsyncData reports loading=true while disabled, so gate on CONFIGURED too.
+    loading: CONFIGURED && (state.loading || (inScope && seasons.loading)),
     error: state.error ?? seasons.error,
   }
 }

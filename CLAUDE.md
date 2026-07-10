@@ -88,6 +88,12 @@ Standings, Matchups, Drafts, Records, Members (directory/detail/compare), and **
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
 reorder, full-bleed/sticky Team column, FA icons). All gates green.
 
+**Live season (built, dormant):** the home page has a "This Week" section (matchups + standings +
+box scores, fetched client-side from Sleeper via `src/data/liveSleeper.ts` — deliberately a separate
+path from `LeagueDataProvider`, see its header comment). It activates itself once
+`src/config/liveSeason.ts` `LIVE_LEAGUE_IDS` has entries for the year Sleeper reports; empty = zero
+cost, section hidden. Regular season only (wks 1–14); playoffs deferred.
+
 **Conventions (enforced):** ESLint caps `max-lines` 300 / `max-lines-per-function` 80 / `complexity` 12 +
 `no-explicit-any`. Gates before any commit: `npm run typecheck && npm run lint && npm test`. **Commit AND
 push after every green change** without being asked. Dev server is the **user's** on `:5173` — never
@@ -104,8 +110,8 @@ Phase 5 (cutover + `old.ffunion.com`) is mostly pre-wired.
 
 **Next / open:** Phase 5 cutover; optional UPR-progression line chart (All-Time horserace + Members view);
 confirm ffu-035/ffu-048 (in the registry but never appear in data) belong; a couple owner first-names
-(ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live active-week,
-static lineup backfill.
+(ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
+weeks (15–17), static lineup backfill. 2026-readiness checklist lives in `ai-docs/TODO.md`.
 
 ## ai-docs/
 Ops/planning docs that aren't app source live here (kept out of the repo root to cut clutter):

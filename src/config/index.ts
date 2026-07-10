@@ -1,6 +1,7 @@
 // Public API of the config layer. Identity + season-registry lookups over the (regenerable)
 // MEMBERS/SEASONS data. Platform IDs stay inside this layer: `memberBySleeperId` is the only
-// place that translates a platform account, and it exists for the provider/migration alone.
+// place that translates a platform account, and it exists for the data layer (static provider,
+// live Sleeper fetch) and migration alone.
 
 import type { Member, Owner, SeasonMeta, Tier } from './types'
 import { MEMBERS } from './members'
@@ -26,7 +27,8 @@ export function nameForYear(ffuId: string, year: string): string | undefined {
   return member?.historicalNames?.[year] ?? member?.name
 }
 
-/** Provider/migration use only — resolve a Sleeper account id to its franchise. */
+/** Data-layer/migration use only (static provider + data/liveSleeper) — resolve a Sleeper account
+ *  id to its franchise. Components/selectors never see platform ids. */
 export function memberBySleeperId(sleeperId: string): Member | undefined {
   return bySleeper.get(sleeperId)
 }

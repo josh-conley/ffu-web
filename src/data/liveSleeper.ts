@@ -181,7 +181,11 @@ let allPlayersPromise: Promise<Record<string, RawSleeperPlayer>> | undefined
 export async function fetchMissingPlayers(ids: string[], known: PlayerMap): Promise<PlayerMap> {
   const missing = ids.filter((id) => !(id in known))
   if (missing.length === 0) return {}
-  if (!allPlayersPromise) allPlayersPromise = sleeperGet<Record<string, RawSleeperPlayer>>('/players/nfl')
+  if (!allPlayersPromise) {
+    allPlayersPromise = sleeperGet<Record<string, RawSleeperPlayer>>('/players/nfl')
+    // Don't cache a failure — clear so the next box-score open retries instead of failing all session.
+    allPlayersPromise.catch(() => (allPlayersPromise = undefined))
+  }
   const all = await allPlayersPromise
   const out: PlayerMap = {}
   for (const id of missing) {
