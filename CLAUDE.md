@@ -99,10 +99,16 @@ and trust well-tested libraries rather than proving each one visually.
 
 **Deploy:** staging at `new.ffunion.com` (GitHub Pages, auto-deploys on push to `main`); a Cloudflare
 preview at `preview.ffunion.com` serves the `auto/requests` branch (autonomous Discord-request pipeline).
-Apex `ffunion.com` still serves the **old** `ffu-app` site. Setup + apex cutover checklist in `DEPLOY.md`;
+Apex `ffunion.com` still serves the **old** `ffu-app` site. Setup + apex cutover checklist in `ai-docs/DEPLOY.md`;
 Phase 5 (cutover + `old.ffunion.com`) is mostly pre-wired.
 
 **Next / open:** Phase 5 cutover; optional UPR-progression line chart (All-Time horserace + Members view);
 confirm ffu-035/ffu-048 (in the registry but never appear in data) belong; a couple owner first-names
 (ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live active-week,
 static lineup backfill.
+
+## ai-docs/
+Ops/planning docs that aren't app source live here (kept out of the repo root to cut clutter):
+`ai-docs/DEPLOY.md` (deploy + apex cutover checklist), `ai-docs/PREVIEW-ENVIRONMENT.md` (Cloudflare
+preview setup), `ai-docs/TODO.md` (**living task list — check it, and keep it current as work
+happens**, e.g. what's left for 2026 season readiness).
