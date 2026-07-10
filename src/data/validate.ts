@@ -23,7 +23,8 @@ function assertTeam(t: unknown, ctx: string): void {
   check(isObject(t.points) && typeof t.points.for === 'number', ctx, `team ${String(t.memberId)} bad points`)
 }
 
-function assertGame(g: unknown, ctx: string): void {
+/** Exported for reuse at the live-season boundary (src/data/liveSleeper.ts) — same shape, same guard. */
+export function assertGame(g: unknown, ctx: string): void {
   check(isObject(g), ctx, 'game is not an object')
   check(typeof g.week === 'number', ctx, 'game missing week')
   check(typeof g.isPlayoff === 'boolean', ctx, `wk${String(g.week)} missing isPlayoff`)

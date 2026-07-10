@@ -3,8 +3,11 @@ import type { SeasonData } from '@/data'
 import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
+import { CurrentWeekPanel } from '@/components/CurrentWeekPanel'
+import { TIER_PRESTIGE } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -12,6 +15,7 @@ const championOf = (season: SeasonData) => season.teams.find((t) => t.finalPlace
 
 export function Overview() {
   const { data: seasons, loading, error } = useAllSeasons()
+  const liveWeek = useLiveWeek()
   const { years, champions } = useMemo(() => {
     const champions = new Map<string, string>() // `${year}|${tier}` -> memberId
     const yearSet = new Set<string>()
@@ -38,6 +42,17 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
+      {liveWeek.inScope && (
+        <section className="space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-muted">This Week</h2>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {TIER_PRESTIGE.flatMap((tier) => {
+              const data = liveWeek.byTier[tier]
+              return data ? [<CurrentWeekPanel key={tier} tier={tier} data={data} />] : []
+            })}
+          </div>
+        </section>
+      )}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>

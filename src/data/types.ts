@@ -218,6 +218,23 @@ export interface Tournament {
   rounds: TournamentRound[]
 }
 
+// ── Live season: in-memory only, never persisted (src/data/liveSleeper.ts) ─────────────────────
+// The season currently in progress, fetched client-side from Sleeper at request time. Deliberately
+// NOT a `SeasonData`/`getSeason` result: that contract (+ its validator) assumes a mostly-complete
+// season, which every other page/selector relies on. This is an additive, narrower shape used only
+// by the home page's "current week" section.
+
+export interface LiveSeasonData {
+  tier: Tier
+  year: string
+  /** The week to show as "this week" (from Sleeper's live NFL state; may be in progress). */
+  currentWeek: number
+  /** Every franchise fielding a team this season (for a standings table with zero games yet). */
+  memberIds: string[]
+  /** Weeks 1..currentWeek. The current week's games may carry partial/live scores. */
+  games: Game[]
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

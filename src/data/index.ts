@@ -28,4 +28,7 @@ export type {
   TournamentRound,
   TournamentMatchup,
   TournamentParticipant,
+  LiveSeasonData,
 } from './types'
+export { fetchNflState, fetchLiveSeason } from './liveSleeper'
+export type { NflState } from './liveSleeper'

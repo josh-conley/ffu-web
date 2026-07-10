@@ -44,7 +44,9 @@ export interface TeamTotals {
   winPct: number
 }
 
-function emptyTotals(memberId: string): TeamTotals {
+/** Exported for callers that need a placeholder row for a member with zero games so far this season
+ *  (e.g. live standings on week 1 — see selectors/liveWeek.ts). */
+export function emptyTotals(memberId: string): TeamTotals {
   return {
     memberId,
     wins: 0,
@@ -79,8 +81,9 @@ function finalize(totals: TeamTotals): void {
   totals.winPct = games > 0 ? (totals.wins + totals.ties * 0.5) / games : 0
 }
 
-/** Per-member totals over the regular season (excludes playoff games). */
-export function regularSeasonTotals(season: SeasonData): Map<string, TeamTotals> {
+/** Per-member totals over the regular season (excludes playoff games). Only reads `.games`, so a
+ *  live in-progress season's partial data satisfies this too (see selectors/liveWeek.ts). */
+export function regularSeasonTotals(season: Pick<SeasonData, 'games'>): Map<string, TeamTotals> {
   const totals = new Map<string, TeamTotals>()
   const ensure = (id: string): TeamTotals => {
     let t = totals.get(id)
