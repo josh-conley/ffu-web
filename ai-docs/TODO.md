@@ -12,6 +12,8 @@ don't let it go stale.
 - [ ] Add any new members to `src/config/members.ts` (ffuId + `platformIds.sleeper`)
 - [ ] Add any new owners to `src/config/owners.ts`
 - [ ] Confirm returning members' `platformIds.sleeper` still match (no swapped Sleeper accounts)
+      — as of 2026-07-18: all 23 users joined so far resolve to existing registry members; leagues
+      not full yet (Premier 9, Masters 8, National 8), re-check once rosters are complete
 - [ ] Add a 2026 entry to `src/config/prizes.ts` once the commissioner posts `prizes.txt` for 2026
 - [ ] Prepare a home page draft announcement section (new — see below)
 - [ ] Spot-check the live "This Week" section once real ids are in, early in Week 1
