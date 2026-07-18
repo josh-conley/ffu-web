@@ -7,4 +7,10 @@ import type { Tier } from './types'
  * Empty until the year's Sleeper leagues exist and ids are known. Once a season finishes and is
  * backfilled the normal way (scripts/backfill-*.mjs), remove its entry here and add it to SEASONS.
  */
-export const LIVE_LEAGUE_IDS: Partial<Record<string, Record<Tier, string>>> = {}
+export const LIVE_LEAGUE_IDS: Partial<Record<string, Record<Tier, string>>> = {
+  '2026': {
+    PREMIER: '1384254952158814208',
+    MASTERS: '1384255128558665728',
+    NATIONAL: '1384255395987488768',
+  },
+}

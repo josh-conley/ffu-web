@@ -6,9 +6,9 @@ don't let it go stale.
 
 ## 2026 season — ready for Week 1
 
-- [ ] Get 2026 Sleeper league IDs (Premier/Masters/National) from the commissioner/Sleeper app
-- [ ] Add those ids to `src/config/liveSeason.ts`'s `LIVE_LEAGUE_IDS['2026']` (all 3 tiers) — this
-      is what turns on the live "This Week" home page section
+- [x] Get 2026 Sleeper league IDs (Premier/Masters/National) from the commissioner/Sleeper app
+- [x] Add those ids to `src/config/liveSeason.ts`'s `LIVE_LEAGUE_IDS['2026']` (all 3 tiers) — this
+      is what turns on the live "This Week" home page section (added 2026-07-18; leagues pre_draft)
 - [ ] Add any new members to `src/config/members.ts` (ffuId + `platformIds.sleeper`)
 - [ ] Add any new owners to `src/config/owners.ts`
 - [ ] Confirm returning members' `platformIds.sleeper` still match (no swapped Sleeper accounts)
