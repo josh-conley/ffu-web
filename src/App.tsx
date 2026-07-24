@@ -7,6 +7,7 @@ import { Records } from '@/pages/Records'
 import { Members } from '@/pages/Members'
 import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
+import { DraftAnalysis } from '@/pages/DraftAnalysis'
 import { Tournament } from '@/pages/Tournament'
 import { NotFound } from '@/components/NotFound'
 
@@ -25,6 +26,8 @@ export default function App() {
           <Route path="leaderboard" element={<Navigate to="/stats" replace />} />
           <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={<Drafts />} />
+          {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL. */}
+          <Route path="draft-analysis" element={<DraftAnalysis />} />
           {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL while the
               cross-tier tournament is being built out. */}
           <Route path="tournament" element={<Tournament />} />
