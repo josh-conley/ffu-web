@@ -52,7 +52,12 @@ function edgeCell(edge: number): ReactNode {
   )
 }
 
-export function buildColumns(baselinePct: number, openKey?: string): Column<BuildStat>[] {
+/** A small count cell — muted when zero so real counts stand out. */
+function countCell(n: number, tone = ''): ReactNode {
+  return <span className={`tabular-nums ${n === 0 ? 'text-muted' : tone}`}>{n}</span>
+}
+
+export function buildColumns(baselinePct: number, cutoff: number, openKey?: string): Column<BuildStat>[] {
   return [
     { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
     {
@@ -64,19 +69,36 @@ export function buildColumns(baselinePct: number, openKey?: string): Column<Buil
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
     {
-      key: 'playoffTeams',
-      header: 'Playoffs',
+      key: 'successTeams',
+      header: `Top ${cutoff}`,
       align: 'right',
-      title: 'How many of those reached the championship bracket',
-      sortValue: (b) => b.playoffTeams,
-      render: (b) => <span className="tabular-nums">{b.playoffTeams}</span>,
+      title: `How many finished in the top ${cutoff}`,
+      sortValue: (b) => b.successTeams,
+      render: (b) => countCell(b.successTeams),
     },
     {
-      key: 'playoffPct',
-      header: 'Playoff Rate',
+      key: 'successPct',
+      header: 'Rate',
       align: 'right',
-      sortValue: (b) => b.playoffPct,
-      render: (b) => rateBar(b.playoffPct, baselinePct),
+      title: `Share finishing in the top ${cutoff}`,
+      sortValue: (b) => b.successPct,
+      render: (b) => rateBar(b.successPct, baselinePct),
+    },
+    {
+      key: 'firsts',
+      header: '1st',
+      align: 'right',
+      title: 'Times this build produced a champion (1st place)',
+      sortValue: (b) => b.firsts,
+      render: (b) => countCell(b.firsts, 'font-semibold text-amber-500'),
+    },
+    {
+      key: 'lasts',
+      header: 'Last',
+      align: 'right',
+      title: 'Times this build finished dead last',
+      sortValue: (b) => b.lasts,
+      render: (b) => countCell(b.lasts, 'font-semibold text-negative'),
     },
     {
       key: 'edge',

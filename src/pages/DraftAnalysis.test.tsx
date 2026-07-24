@@ -26,12 +26,22 @@ function renderAt(path: string) {
   )
 }
 
-it('renders the build table with playoff-rate and edge columns', async () => {
+it('renders the build table with finish-rate, 1st/last, and edge columns', async () => {
   renderAt('/draft-analysis?rounds=3&min=1')
-  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Rate' })).toBeInTheDocument())
   expect(screen.getByRole('columnheader', { name: 'Edge' })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: '1st' })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Last' })).toBeInTheDocument()
+  // Default top-6 cutoff → the count column is headed "Top 6".
+  expect(screen.getByRole('columnheader', { name: 'Top 6' })).toBeInTheDocument()
   // 240 team-seasons across every completed tier-season.
   expect(screen.getByText('Team-seasons').nextSibling).toHaveTextContent('240')
+})
+
+it('the cutoff slider changes the finish-rate column header', async () => {
+  renderAt('/draft-analysis?rounds=3&min=1&cutoff=3')
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Top 3' })).toBeInTheDocument())
+  expect(screen.getAllByText(/finished in the top 3/i).length).toBeGreaterThan(0)
 })
 
 it('reflects the round threshold from the URL in the description', async () => {
@@ -41,7 +51,7 @@ it('reflects the round threshold from the URL in the description', async () => {
 
 it('unchecking positions merges buckets (RB-only collapses to a single "2 RB" build)', async () => {
   renderAt('/draft-analysis?rounds=3&min=1&pos=RB')
-  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Rate' })).toBeInTheDocument())
   // With only RB counted, distinct builds are just the RB counts (0..3 RB) — far fewer than the
   // full skill-position mix. A "2 RB" build cell (colored count-pill) should be present.
   const table = screen.getByRole('table')
@@ -50,7 +60,7 @@ it('unchecking positions merges buckets (RB-only collapses to a single "2 RB" bu
 
 it('clicking a build row opens the drill-down with team-seasons', async () => {
   renderAt('/draft-analysis?rounds=1&min=1&pos=QB,RB,WR,TE')
-  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Rate' })).toBeInTheDocument())
   const rows = screen.getAllByRole('button').filter((el) => el.tagName === 'TR')
   fireEvent.click(rows[0]!)
   // The detail panel is a labelled region listing the teams behind the build.

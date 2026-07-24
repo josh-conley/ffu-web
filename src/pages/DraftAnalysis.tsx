@@ -5,7 +5,7 @@ import { getMember } from '@/config'
 import { analyzeBuilds, FILTER_POSITIONS, type BuildAnalysis, type BuildStat } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
-import { SELECT, segButton } from '@/components/controls'
+import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -17,9 +17,6 @@ const LEAGUE_OPTIONS = [
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
 
-// First-N-round thresholds. Capped at 8: beyond that nearly every team has drafted all four skill
-// positions, so builds stop discriminating. The two the user reasons about (3, 4) sit in the middle.
-const THRESHOLDS = [1, 2, 3, 4, 5, 6, 7, 8] as const
 const MIN_OPTIONS = [1, 2, 3, 5, 10]
 
 const emptyMessage = (team: string) =>
@@ -32,6 +29,19 @@ function Tile({ label, value }: { label: string; value: string }) {
     <div className="border border-border bg-surface px-4 py-3">
       <div className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</div>
       <div className="text-2xl font-extrabold tabular-nums">{value}</div>
+    </div>
+  )
+}
+
+/** Labeled range slider (sharp accent thumb) — shares the control aesthetic with the selects. */
+function RangeSlider({ label, value, min, max, valueLabel, onChange }: { label: string; value: number; min: number; max: number; valueLabel: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</span>
+      <div className="flex h-11 items-center gap-3 md:h-auto">
+        <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} className="w-32 accent-accent sm:w-40" />
+        <span className="w-14 shrink-0 text-sm font-bold tabular-nums">{valueLabel}</span>
+      </div>
     </div>
   )
 }
@@ -76,6 +86,8 @@ interface ControlsProps {
   teamOptions: Option[]
   threshold: number
   onThreshold: (v: string) => void
+  cutoff: number
+  onCutoff: (v: string) => void
   minParam: string
   onMin: (v: string) => void
   showMin: boolean
@@ -84,7 +96,7 @@ interface ControlsProps {
 }
 
 function Controls(props: ControlsProps) {
-  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos } = props
+  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, cutoff, onCutoff, minParam, onMin, showMin, selected, onTogglePos } = props
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
       <label className="flex flex-col gap-1">
@@ -106,16 +118,9 @@ function Controls(props: ControlsProps) {
         </select>
       </label>
 
-      <div className="flex flex-col gap-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">First N rounds</span>
-        <div className="flex flex-wrap gap-1">
-          {THRESHOLDS.map((n) => (
-            <button key={n} type="button" onClick={() => onThreshold(String(n))} aria-pressed={n === threshold} className={segButton(n === threshold)}>
-              {n}
-            </button>
-          ))}
-        </div>
-      </div>
+      <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
+
+      <RangeSlider label="Success = finish" value={cutoff} min={1} max={11} valueLabel={`Top ${cutoff}`} onChange={onCutoff} />
 
       <PositionCheckboxes selected={selected} onToggle={onTogglePos} />
 
@@ -133,16 +138,16 @@ function Controls(props: ControlsProps) {
   )
 }
 
-function Intro({ threshold }: { threshold: number }) {
+function Intro({ threshold, cutoff }: { threshold: number; cutoff: number }) {
   return (
     <div>
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">Draft Analysis</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Every team's <strong className="text-text">first {threshold} {threshold === 1 ? 'round' : 'rounds'}</strong> of
         picks form a <strong className="text-text">build</strong> — its mix of the checked positions. Rows show how often
-        each build reached the championship bracket (top 6 of 12 — a ~50% baseline), pooled across every completed draft.
-        Unchecking a position ignores it (merging buckets); a traded pick counts for whoever made it.
-        <strong className="text-text"> Click any build</strong> to see the teams, years, and rosters behind it.
+        each build <strong className="text-text">finished in the top {cutoff}</strong> (of 12 — a ~{Math.round((cutoff / 12) * 100)}% baseline),
+        pooled across every completed draft. Unchecking a position ignores it (merging buckets); a traded pick counts for
+        whoever made it. <strong className="text-text">Click any build</strong> to see the teams, years, and rosters behind it.
       </p>
     </div>
   )
@@ -182,9 +187,11 @@ export function DraftAnalysis() {
   const [league, setLeague] = useUrlState('league', 'ALL')
   const [team, setTeam] = useUrlState('team', '')
   const [roundsParam, setRounds] = useUrlState('rounds', '3')
+  const [cutoffParam, setCutoff] = useUrlState('cutoff', '6')
   const [minParam, setMin] = useUrlState('min', '3')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
   const threshold = Number(roundsParam)
+  const cutoff = Number(cutoffParam)
   const minTeams = Number(minParam)
   const { selected, togglePos } = useSelectedPositions(posParam, setPos)
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
@@ -198,14 +205,14 @@ export function DraftAnalysis() {
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [drafts])
 
-  // League scopes BOTH inputs (drafts for builds, seasons for playoff outcomes) to that tier only;
-  // Team narrows the whole sample (and its baseline) to one franchise.
+  // League scopes BOTH inputs (drafts for builds, seasons for finish outcomes) to that tier only;
+  // Team narrows the whole sample (and its baseline) to one franchise; cutoff sets the top-N line.
   const analysis = useMemo(() => {
     if (!drafts || !seasons) return undefined
     const d = league === 'ALL' ? drafts : drafts.filter((x) => x.tier === league)
     const s = league === 'ALL' ? seasons : seasons.filter((x) => x.tier === league)
-    return analyzeBuilds(d, s, threshold, selected, team ? [team] : undefined)
-  }, [drafts, seasons, league, threshold, selected, team])
+    return analyzeBuilds(d, s, threshold, selected, team ? [team] : undefined, cutoff)
+  }, [drafts, seasons, league, threshold, selected, team, cutoff])
 
   const rows = useMemo(() => {
     if (!analysis) return []
@@ -213,7 +220,7 @@ export function DraftAnalysis() {
     const min = team ? 1 : minTeams
     return analysis.builds.filter((b) => b.teams >= min)
   }, [analysis, team, minTeams])
-  const columns = useMemo(() => buildColumns(analysis?.baselinePct ?? 0.5, openKey), [analysis?.baselinePct, openKey])
+  const columns = useMemo(() => buildColumns(analysis?.baselinePct ?? 0.5, cutoff, openKey), [analysis?.baselinePct, cutoff, openKey])
   const toggleOpen = (b: BuildStat) => setOpenKey((k) => (k === b.key ? undefined : b.key))
 
   const loadError = draftsError ?? seasonsError
@@ -224,15 +231,15 @@ export function DraftAnalysis() {
 
   return (
     <div className="space-y-6">
-      <Intro threshold={threshold} />
-      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} />
+      <Intro threshold={threshold} cutoff={cutoff} />
+      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} cutoff={cutoff} onCutoff={setCutoff} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} />
       <SummaryTiles analysis={analysis} shown={rows.length} />
 
       {rows.length === 0 ? (
         <p className="text-muted">{emptyMessage(team)}</p>
       ) : (
         <DataTable
-          key={`${league}-${team}-${threshold}-${minTeams}-${posParam}`}
+          key={`${league}-${team}-${threshold}-${cutoff}-${minTeams}-${posParam}`}
           columns={columns}
           rows={rows}
           getRowKey={(b) => b.key}
@@ -243,11 +250,11 @@ export function DraftAnalysis() {
         />
       )}
 
-      {openBuild && <DraftBuildDetail build={openBuild} threshold={threshold} onClose={() => setOpenKey(undefined)} />}
+      {openBuild && <DraftBuildDetail build={openBuild} threshold={threshold} cutoff={cutoff} onClose={() => setOpenKey(undefined)} />}
 
       <p className="text-sm text-muted">
-        “Edge” is a build's playoff rate minus the sample baseline, in percentage points — a positive edge means that
-        build reached the playoffs more often than an average team, negative means less. Unfinished seasons are excluded.
+        “Edge” is a build's top-{cutoff} rate minus the sample baseline, in percentage points — a positive edge means that
+        build finished in the top {cutoff} more often than an average team, negative means less. Unfinished seasons are excluded.
       </p>
     </div>
   )

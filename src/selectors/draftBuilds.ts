@@ -88,16 +88,20 @@ export function teamBuilds(
   return builds
 }
 
-/** `${year}|${tier}` → members who reached the championship bracket that season. */
-function playoffBySeason(seasons: SeasonData[]): Map<string, Set<string>> {
-  const map = new Map<string, Set<string>>()
+/** Default success cutoff — a top-6 finish in a 12-team league (the old "made the playoffs" line). */
+export const DEFAULT_CUTOFF = 6
+
+/**
+ * `${year}|${tier}` → each member's final placement. Only FINISHED seasons are included (a season
+ * with no recorded placements is still in progress and must not count teams as failures). "Success"
+ * is then a placement at or below the caller's cutoff — top-6 by default, adjustable to top-3, etc.
+ */
+function placementBySeason(seasons: SeasonData[]): Map<string, Map<string, number>> {
+  const map = new Map<string, Map<string, number>>()
   for (const s of seasons) {
-    const set = new Set<string>()
-    for (const g of s.games) {
-      if (g.bracket !== 'championship') continue
-      for (const p of g.participants) set.add(p.memberId)
-    }
-    map.set(`${s.year}|${s.tier}`, set)
+    const placements = new Map<string, number>()
+    for (const t of s.teams) if (t.finalPlacement !== undefined) placements.set(t.memberId, t.finalPlacement)
+    if (placements.size > 0) map.set(`${s.year}|${s.tier}`, placements)
   }
   return map
 }
@@ -107,7 +111,10 @@ export interface BuildInstance {
   year: string
   tier: Tier
   memberId: string
-  madePlayoffs: boolean
+  /** Final placement (1 = champion, seasonSize = last). Always set — unfinished seasons are excluded. */
+  finalPlacement: number
+  /** Teams in that tier-season (so "last place" = finalPlacement === seasonSize). */
+  seasonSize: number
   /** The team's picks in rounds 1..threshold, in draft order (all positions — the actual roster). */
   picks: DraftPick[]
 }
@@ -121,10 +128,14 @@ export interface BuildStat {
   size: number
   /** Team-seasons that drafted this build. */
   teams: number
-  /** Of those, how many reached the championship bracket. */
-  playoffTeams: number
-  /** playoffTeams / teams (0..1). */
-  playoffPct: number
+  /** Of those, how many finished at or above the success cutoff (e.g. top 6). */
+  successTeams: number
+  /** successTeams / teams (0..1). */
+  successPct: number
+  /** Team-seasons with this build that finished 1st (champions). */
+  firsts: number
+  /** Team-seasons with this build that finished dead last. */
+  lasts: number
   /** Percentage points above/below the sample baseline (signed) — the build's "edge". */
   edge: number
   /** The individual team-seasons in this bucket (year desc, then tier order). */
@@ -133,21 +144,28 @@ export interface BuildStat {
 
 export interface BuildAnalysis {
   threshold: number
+  /** Placement at or below which a finish counts as "success" (e.g. 6 = top-6). */
+  cutoff: number
   /** Total team-seasons in the sample (completed seasons only). */
   totalTeams: number
-  playoffTeams: number
-  /** Overall playoff rate across the sample (~0.5 with 6-of-12) — the anchor each build is read against. */
+  successTeams: number
+  /** Overall success rate across the sample (≈ cutoff/12) — the anchor each build is read against. */
   baselinePct: number
   builds: BuildStat[]
 }
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
-/** Finalize one aggregated bucket into a BuildStat (rates, edge, sorted instances). */
-function toBuildStat(key: string, counts: Record<string, number>, instances: BuildInstance[], baselinePct: number, selected: readonly string[]): BuildStat {
+/** True when this finish counts as a success at the given cutoff (top-N by final placement). */
+function isSuccess(inst: BuildInstance, cutoff: number): boolean {
+  return inst.finalPlacement <= cutoff
+}
+
+/** Finalize one aggregated bucket into a BuildStat (rates, edge, champs/last counts, sorted instances). */
+function toBuildStat(key: string, counts: Record<string, number>, instances: BuildInstance[], baselinePct: number, selected: readonly string[], cutoff: number): BuildStat {
   const teams = instances.length
-  const playoffTeams = instances.filter((i) => i.madePlayoffs).length
-  const playoffPct = teams > 0 ? playoffTeams / teams : 0
+  const successTeams = instances.filter((i) => isSuccess(i, cutoff)).length
+  const successPct = teams > 0 ? successTeams / teams : 0
   instances.sort((a, b) => Number(b.year) - Number(a.year) || TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   return {
     key,
@@ -155,66 +173,75 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     label: buildLabel(counts) || emptyLabel(selected),
     size: Object.values(counts).reduce((a, b) => a + b, 0),
     teams,
-    playoffTeams,
-    playoffPct,
-    edge: (playoffPct - baselinePct) * 100,
+    successTeams,
+    successPct,
+    firsts: instances.filter((i) => i.finalPlacement === 1).length,
+    lasts: instances.filter((i) => i.finalPlacement === i.seasonSize).length,
+    edge: (successPct - baselinePct) * 100,
     instances,
   }
 }
 
-/**
- * Aggregate first-N-round builds across every draft and report playoff rates. `selected` restricts
- * which positions count toward a build (default: all skill positions); `memberIds`, when non-empty,
- * restricts the whole sample (and its baseline) to those franchises. Unfinished seasons (no
- * championship bracket recorded yet) are excluded so a live/incomplete season never dilutes the
- * rates. `seasons` supplies the playoff outcomes; `drafts` the picks — both should already be scoped
- * (e.g. to a single tier) by the caller.
- */
 type BuildBucket = { counts: Record<string, number>; instances: BuildInstance[] }
 
-/** Fold every (completed-season) team's build into buckets; returns the aggregate + sample totals. */
+/** Fold every (completed-season) team's build into buckets; returns the aggregate + team total. */
 function accumulateBuilds(
   drafts: DraftData[],
-  playoffs: Map<string, Set<string>>,
+  placements: Map<string, Map<string, number>>,
+  seasonSizes: Map<string, number>,
   threshold: number,
   positions: Set<string>,
   memberFilter: Set<string> | undefined,
-): { agg: Map<string, BuildBucket>; totalTeams: number; totalPlayoff: number } {
+): { agg: Map<string, BuildBucket>; totalTeams: number } {
   const agg = new Map<string, BuildBucket>()
   let totalTeams = 0
-  let totalPlayoff = 0
   for (const draft of drafts) {
-    const made = playoffs.get(`${draft.year}|${draft.tier}`)
-    if (!made || made.size === 0) continue // no playoffs recorded → unfinished season, skip
+    const key = `${draft.year}|${draft.tier}`
+    const finish = placements.get(key)
+    if (finish === undefined) continue // no placements recorded → unfinished season, skip
+    const seasonSize = seasonSizes.get(key) ?? finish.size
     for (const [memberId, picks] of firstNPicksByTeam(draft, threshold)) {
-      if (memberFilter && !memberFilter.has(memberId)) continue
+      const place = finish.get(memberId)
+      if (place === undefined || (memberFilter && !memberFilter.has(memberId))) continue
       const counts = countsFor(picks, positions)
-      const key = buildKey(counts) || EMPTY_KEY
-      let entry = agg.get(key)
+      const bucketKey = buildKey(counts) || EMPTY_KEY
+      let entry = agg.get(bucketKey)
       if (entry === undefined) {
         entry = { counts, instances: [] }
-        agg.set(key, entry)
+        agg.set(bucketKey, entry)
       }
-      const madePlayoffs = made.has(memberId)
-      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, madePlayoffs, picks })
+      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, finalPlacement: place, seasonSize, picks })
       totalTeams += 1
-      if (madePlayoffs) totalPlayoff += 1
     }
   }
-  return { agg, totalTeams, totalPlayoff }
+  return { agg, totalTeams }
 }
 
+/**
+ * Aggregate first-N-round builds across every draft and report finish rates. `selected` restricts
+ * which positions count toward a build (default: all skill positions); `memberIds`, when non-empty,
+ * restricts the whole sample (and its baseline) to those franchises; `cutoff` sets the placement at
+ * or below which a finish counts as "success" (default top-6). Unfinished seasons (no recorded
+ * placements) are excluded so a live/incomplete season never dilutes the rates. Both `drafts` and
+ * `seasons` should already be scoped (e.g. to a single tier) by the caller.
+ */
 export function analyzeBuilds(
   drafts: DraftData[],
   seasons: SeasonData[],
   threshold: number,
   selected: readonly string[] = FILTER_POSITIONS,
   memberIds?: readonly string[],
+  cutoff: number = DEFAULT_CUTOFF,
 ): BuildAnalysis {
   const positions = new Set(selected)
   const memberFilter = memberIds && memberIds.length > 0 ? new Set(memberIds) : undefined
-  const { agg, totalTeams, totalPlayoff } = accumulateBuilds(drafts, playoffBySeason(seasons), threshold, positions, memberFilter)
-  const baselinePct = totalTeams > 0 ? totalPlayoff / totalTeams : 0
-  const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, baselinePct, selected))
-  return { threshold, totalTeams, playoffTeams: totalPlayoff, baselinePct, builds }
+  const placements = placementBySeason(seasons)
+  const seasonSizes = new Map(seasons.map((s) => [`${s.year}|${s.tier}`, s.teams.length]))
+  const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, threshold, positions, memberFilter)
+
+  let totalSuccess = 0
+  for (const e of agg.values()) for (const i of e.instances) if (isSuccess(i, cutoff)) totalSuccess += 1
+  const baselinePct = totalTeams > 0 ? totalSuccess / totalTeams : 0
+  const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, baselinePct, selected, cutoff))
+  return { threshold, cutoff, totalTeams, successTeams: totalSuccess, baselinePct, builds }
 }
