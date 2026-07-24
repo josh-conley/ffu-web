@@ -47,6 +47,13 @@ it('the year range restricts the sample (fewer team-seasons)', async () => {
   await waitFor(() => expect(screen.getByText(/72 team-seasons/i)).toBeInTheDocument())
 })
 
+it('reset restores the full sample (clears all filters)', async () => {
+  renderAt('/draft-analysis?league=PREMIER&from=2023&to=2024')
+  await waitFor(() => expect(screen.getByText(/24 team-seasons/i)).toBeInTheDocument()) // 2 yrs × 12
+  fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
+  await waitFor(() => expect(screen.getByText(/240 team-seasons/i)).toBeInTheDocument())
+})
+
 it('reflects the round threshold from the URL in the description', async () => {
   renderAt('/draft-analysis?rounds=4&min=1')
   await waitFor(() => expect(screen.getByText(/first 4 rounds/i)).toBeInTheDocument())

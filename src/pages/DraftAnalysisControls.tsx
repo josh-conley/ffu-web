@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { FILTER_POSITIONS } from '@/selectors'
-import { SELECT } from '@/components/controls'
+import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
 
@@ -157,10 +157,11 @@ export interface ControlsProps {
   selectedSlots: Set<number>
   onToggleSlot: (n: number) => void
   onAllSlots: () => void
+  onReset: () => void
 }
 
 export function Controls(props: ControlsProps) {
-  const { league, onLeague, team, onTeam, teamOptions, years, fromYear, toYear, onFrom, onTo, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, onAllPos, allSlots, selectedSlots, onToggleSlot, onAllSlots } = props
+  const { league, onLeague, team, onTeam, teamOptions, years, fromYear, toYear, onFrom, onTo, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, onAllPos, allSlots, selectedSlots, onToggleSlot, onAllSlots, onReset } = props
   const row = 'flex flex-wrap items-end gap-x-4 gap-y-3'
   return (
     <div className="space-y-3 border border-border bg-surface p-3">
@@ -178,6 +179,7 @@ export function Controls(props: ControlsProps) {
           </select>
         </Field>
         <YearRange years={years} fromYear={fromYear} toYear={toYear} onFrom={onFrom} onTo={onTo} />
+        <button type="button" onClick={onReset} className={`${segButton(false)} ml-auto self-end`}>Reset</button>
       </div>
       {/* Row 2 — sizing sliders: how deep a build reads, and the min-sample cutoff. */}
       <div className={`${row} border-t border-border pt-3`}>

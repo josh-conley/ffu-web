@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAllDrafts, useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { getMember } from '@/config'
@@ -45,7 +46,7 @@ export function DraftAnalysis() {
   const [league, setLeague] = useUrlState('league', 'ALL')
   const [team, setTeam] = useUrlState('team', '')
   const [roundsParam, setRounds] = useUrlState('rounds', '3')
-  const [minParam, setMin] = useUrlState('min', '3')
+  const [minParam, setMin] = useUrlState('min', '10')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
   const [slotsParam, setSlots] = useUrlState('slots', '')
   const [fromParam, setFrom] = useUrlState('from', '')
@@ -53,6 +54,7 @@ export function DraftAnalysis() {
   const threshold = Number(roundsParam)
   const minTeams = Number(minParam)
   const { selected, togglePos, selectAll: selectAllPos } = useSelectedPositions(posParam, setPos)
+  const [, setSearchParams] = useSearchParams()
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
 
   // Every franchise that has ever drafted, by name — the Team dropdown's options.
@@ -101,6 +103,7 @@ export function DraftAnalysis() {
         years={years} fromYear={fromYear} toYear={toYear} onFrom={setFrom} onTo={setTo}
         threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team}
         selected={selected} onTogglePos={togglePos} onAllPos={selectAllPos} allSlots={allSlots} selectedSlots={selectedSlots} onToggleSlot={toggleSlot} onAllSlots={selectAllSlots}
+        onReset={() => setSearchParams(new URLSearchParams(), { replace: true })}
       />
 
       {rows.length === 0 ? (
