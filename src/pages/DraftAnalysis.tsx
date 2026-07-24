@@ -145,9 +145,9 @@ function Intro({ threshold, cutoff }: { threshold: number; cutoff: number }) {
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Every team's <strong className="text-text">first {threshold} {threshold === 1 ? 'round' : 'rounds'}</strong> of
         picks form a <strong className="text-text">build</strong> — its mix of the checked positions. Rows show how often
-        each build <strong className="text-text">finished in the top {cutoff}</strong> (of 12 — a ~{Math.round((cutoff / 12) * 100)}% baseline),
-        pooled across every completed draft. Unchecking a position ignores it (merging buckets); a traded pick counts for
-        whoever made it. <strong className="text-text">Click any build</strong> to see the teams, years, and rosters behind it.
+        each build <strong className="text-text">finished in the top {cutoff}</strong>, pooled across every completed draft.
+        Unchecking a position ignores it (merging buckets); a traded pick counts for whoever made it.{' '}
+        <strong className="text-text">Click any build</strong> to see the teams, years, and rosters behind it.
       </p>
     </div>
   )
