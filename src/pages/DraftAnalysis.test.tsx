@@ -31,8 +31,8 @@ it('renders the build table with the finish-bracket columns and their baselines'
   // Headers carry the structural baseline (top 6 = 50%, top 3 = 25%, etc.).
   await waitFor(() => expect(screen.getByRole('columnheader', { name: /Top 6 · 50%/ })).toBeInTheDocument())
   expect(screen.getByRole('columnheader', { name: /Top 3 · 25%/ })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: /Top 9 · 75%/ })).toBeInTheDocument()
   expect(screen.getByRole('columnheader', { name: /1st · 8%/ })).toBeInTheDocument()
-  expect(screen.getByRole('columnheader', { name: /Bottom 3 · 25%/ })).toBeInTheDocument()
   // 240 team-seasons across every completed tier-season, stated in the intro.
   expect(screen.getByText(/240 team-seasons/i)).toBeInTheDocument()
 })

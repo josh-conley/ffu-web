@@ -1,6 +1,5 @@
 import type { DraftPick } from '@/data'
 import type { BuildInstance, BuildStat } from '@/selectors'
-import { isBottom3 } from '@/selectors'
 import { nameForYear } from '@/config'
 import { FaToilet, FaTrophy } from 'react-icons/fa6'
 import { LEAGUE_STYLES } from './leagues'
@@ -18,13 +17,12 @@ function ordinal(n: number): string {
   return `${n}${SUFFIX[(v - 20) % 10] ?? SUFFIX[v] ?? SUFFIX[0]}`
 }
 
-/** Leading finish tag: trophy for a title, toilet for dead last, else the ordinal (green top-6, red bottom-3). */
+/** Leading finish tag: trophy for a title, toilet for dead last, else the ordinal (green within top-6). */
 function FinishTag({ inst }: { inst: BuildInstance }) {
   const { finalPlacement: p, seasonSize } = inst
   if (p === 1) return <span className="inline-flex items-center gap-1 font-bold text-amber-500"><FaTrophy size={11} />1st</span>
   if (p === seasonSize) return <span className="inline-flex items-center gap-1 font-bold text-negative"><FaToilet size={11} />Last</span>
-  const tone = p <= 6 ? 'text-positive' : isBottom3(inst) ? 'text-negative' : 'text-muted'
-  return <span className={`tabular-nums ${tone}`}>{ordinal(p)}</span>
+  return <span className={`tabular-nums ${p <= 6 ? 'text-positive' : 'text-muted'}`}>{ordinal(p)}</span>
 }
 
 /** One drafted player as a colored position pill + name. */
@@ -63,7 +61,7 @@ export function DraftBuildDetail({ build, threshold, onClose }: { build: BuildSt
           <span className="font-bold">{build.label}</span>
           <span className="text-muted">
             {' '}· {build.teams} {build.teams === 1 ? 'team' : 'teams'} · {build.first.count} 🏆 · {build.top6.count} top 6 ·{' '}
-            {build.bottom3.count} bottom 3 · first {threshold} {threshold === 1 ? 'round' : 'rounds'}
+            {build.top9.count} top 9 · first {threshold} {threshold === 1 ? 'round' : 'rounds'}
           </span>
         </div>
         <button type="button" onClick={onClose} className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">

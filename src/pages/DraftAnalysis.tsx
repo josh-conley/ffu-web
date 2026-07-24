@@ -19,7 +19,7 @@ const LEAGUE_OPTIONS = [
 
 const MIN_OPTIONS = [1, 2, 3, 5, 10]
 
-const EMPTY_BASELINES = { first: 0, top3: 0, top6: 0, bottom3: 0 }
+const EMPTY_BASELINES = { first: 0, top3: 0, top6: 0, top9: 0 }
 
 const emptyMessage = (team: string) =>
   team
@@ -135,7 +135,7 @@ function Intro({ threshold, totalTeams }: { threshold: number; totalTeams: numbe
         Every team's <strong className="text-text">first {threshold} {threshold === 1 ? 'round' : 'rounds'}</strong> of
         picks form a <strong className="text-text">build</strong> — its mix of the checked positions. Each column is a{' '}
         <strong className="text-text">finish bracket</strong> — how often that build ended up 1st, top 3, top 6, or
-        bottom 3 — pooled across <strong className="text-text">{totalTeams} team-seasons</strong>.{' '}
+        top 9 — pooled across <strong className="text-text">{totalTeams} team-seasons</strong>.{' '}
         <strong className="text-text">Click any build</strong> to see the teams, years, and rosters behind it.
       </p>
     </div>
@@ -231,8 +231,8 @@ export function DraftAnalysis() {
       <p className="text-sm text-muted">
         Each bracket shows the share of that build's team-seasons landing in it (raw count beside it). The{' '}
         <strong className="text-text">baseline</strong> in each header is the rate you'd expect by chance —{' '}
-        <span className="text-positive">green</span> beats it, <span className="text-negative">red</span> trails it (for
-        Bottom 3, fewer is better). A build can appear in several brackets (top 3 ⊂ top 6). Unfinished seasons are excluded.
+        <span className="text-positive">green</span> beats it, <span className="text-negative">red</span> trails it. A build
+        can appear in several brackets (top 3 ⊂ top 6 ⊂ top 9). Unfinished seasons are excluded.
       </p>
     </div>
   )

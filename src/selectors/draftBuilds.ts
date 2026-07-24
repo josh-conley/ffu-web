@@ -137,8 +137,8 @@ export interface BuildStat {
   top3: Bracket
   /** Finished in the top 6 (by final placement). */
   top6: Bracket
-  /** Finished in the bottom 3 (last three placements). */
-  bottom3: Bracket
+  /** Finished in the top 9 (by final placement). */
+  top9: Bracket
   /** The individual team-seasons in this bucket (year desc, then tier order). */
   instances: BuildInstance[]
 }
@@ -148,7 +148,7 @@ export interface BuildBaselines {
   first: number
   top3: number
   top6: number
-  bottom3: number
+  top9: number
 }
 
 export interface BuildAnalysis {
@@ -161,11 +161,6 @@ export interface BuildAnalysis {
 }
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
-
-/** A team is in the "bottom 3" when its placement is within the last three of its season. */
-export function isBottom3(inst: BuildInstance): boolean {
-  return inst.finalPlacement >= inst.seasonSize - 2
-}
 
 /** Finalize one aggregated bucket into a BuildStat (finish brackets + sorted instances). */
 function toBuildStat(key: string, counts: Record<string, number>, instances: BuildInstance[], selected: readonly string[]): BuildStat {
@@ -184,7 +179,7 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     first: bracket((i) => i.finalPlacement === 1),
     top3: bracket((i) => i.finalPlacement <= 3),
     top6: bracket((i) => i.finalPlacement <= 6),
-    bottom3: bracket(isBottom3),
+    top9: bracket((i) => i.finalPlacement <= 9),
     instances,
   }
 }
@@ -254,12 +249,12 @@ function bracketBaselines(builds: BuildStat[], totalTeams: number): BuildBaselin
   let first = 0
   let top3 = 0
   let top6 = 0
-  let bottom3 = 0
+  let top9 = 0
   for (const b of builds) {
     first += b.first.count
     top3 += b.top3.count
     top6 += b.top6.count
-    bottom3 += b.bottom3.count
+    top9 += b.top9.count
   }
-  return { first: share(first), top3: share(top3), top6: share(top6), bottom3: share(bottom3) }
+  return { first: share(first), top3: share(top3), top6: share(top6), top9: share(top9) }
 }

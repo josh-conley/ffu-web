@@ -87,21 +87,21 @@ describe('analyzeBuilds', () => {
     expect(res.builds.some((b) => b.key === 'QB2')).toBe(false)
   })
 
-  it('derives 1st / top-3 / top-6 / bottom-3 brackets from placements', () => {
-    // Four teams share RB3; placements 1, 3, 7, 12 (of 12) → 1st, top3, top6, bottom3 all distinct.
+  it('derives 1st / top-3 / top-6 / top-9 brackets from placements', () => {
+    // Four teams share RB3; placements 1, 3, 7, 10 (of 12) → 1st, top3, top6, top9 all distinct.
     const rbDraft = draft('PREMIER', '2021', [
       pick(1, 1, 'p', 'RB'), pick(2, 1, 'q', 'RB'), pick(3, 1, 'r', 'RB'), pick(4, 1, 's', 'RB'),
       pick(5, 2, 'p', 'RB'), pick(6, 2, 'q', 'RB'), pick(7, 2, 'r', 'RB'), pick(8, 2, 's', 'RB'),
       pick(9, 3, 'p', 'RB'), pick(10, 3, 'q', 'RB'), pick(11, 3, 'r', 'RB'), pick(12, 3, 's', 'RB'),
     ])
-    const twelve = { p: 1, q: 3, r: 7, s: 12, a: 2, b: 4, c: 5, d: 6, e: 8, f: 9, g: 10, h: 11 }
+    const twelve = { p: 1, q: 3, r: 7, s: 10, a: 2, b: 4, c: 5, d: 6, e: 8, f: 9, g: 11, h: 12 }
     const res = analyzeBuilds([rbDraft], [season('PREMIER', '2021', twelve)], 3)
     const rb3 = res.builds.find((b) => b.key === 'RB3')!
     expect(rb3.teams).toBe(4)
     expect(rb3.first).toEqual({ count: 1, pct: 0.25 }) // 'p'
     expect(rb3.top3).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q'
     expect(rb3.top6).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q' (7th is out)
-    expect(rb3.bottom3).toEqual({ count: 1, pct: 0.25 }) // 's' (12th of 12)
+    expect(rb3.top9).toEqual({ count: 3, pct: 0.75 }) // 'p', 'q', 'r' (10th is out)
   })
 
   it('carries the team-season instances (with rosters + placement) behind each build', () => {

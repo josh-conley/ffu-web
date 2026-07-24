@@ -31,12 +31,11 @@ const EPSILON = 0.005
 
 /**
  * A finish-bracket cell: share (%) tinted vs the sample baseline — green when the build beats the
- * "expected by chance" rate, red when worse (for Bottom 3, fewer is better, so the direction flips).
- * The raw count sits muted beside it.
+ * "expected by chance" rate for that bracket, red when worse. The raw count sits muted beside it.
  */
-function bracketCell(b: Bracket, baseline: number, higherIsBetter: boolean): ReactNode {
-  const good = (higherIsBetter ? b.pct - baseline : baseline - b.pct)
-  const tone = b.count === 0 || Math.abs(good) < EPSILON ? 'text-muted' : good > 0 ? 'text-positive' : 'text-negative'
+function bracketCell(b: Bracket, baseline: number): ReactNode {
+  const diff = b.pct - baseline
+  const tone = b.count === 0 || Math.abs(diff) < EPSILON ? 'text-muted' : diff > 0 ? 'text-positive' : 'text-negative'
   return (
     <span className="flex items-baseline justify-end gap-1.5 tabular-nums">
       <span className={`font-bold ${tone}`}>{Math.round(b.pct * 100)}%</span>
@@ -46,14 +45,14 @@ function bracketCell(b: Bracket, baseline: number, higherIsBetter: boolean): Rea
 }
 
 /** A finish-bracket column: header shows the baseline; cells are tinted against it; sorted by share. */
-function bracketColumn(key: string, header: string, get: (b: BuildStat) => Bracket, baseline: number, higherIsBetter: boolean): Column<BuildStat> {
+function bracketColumn(key: string, header: string, get: (b: BuildStat) => Bracket, baseline: number): Column<BuildStat> {
   return {
     key,
     header: `${header} · ${Math.round(baseline * 100)}%`,
     align: 'right',
     title: `Share (and count) finishing in the ${header.toLowerCase()} — baseline ${Math.round(baseline * 100)}%`,
     sortValue: (b) => get(b).pct * 1000 + get(b).count,
-    render: (b) => bracketCell(get(b), baseline, higherIsBetter),
+    render: (b) => bracketCell(get(b), baseline),
   }
 }
 
@@ -68,10 +67,10 @@ export function buildColumns(baselines: BuildBaselines, openKey?: string): Colum
       sortValue: (b) => b.teams,
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
-    bracketColumn('first', '1st', (b) => b.first, baselines.first, true),
-    bracketColumn('top3', 'Top 3', (b) => b.top3, baselines.top3, true),
-    bracketColumn('top6', 'Top 6', (b) => b.top6, baselines.top6, true),
-    bracketColumn('bottom3', 'Bottom 3', (b) => b.bottom3, baselines.bottom3, false),
+    bracketColumn('first', '1st', (b) => b.first, baselines.first),
+    bracketColumn('top3', 'Top 3', (b) => b.top3, baselines.top3),
+    bracketColumn('top6', 'Top 6', (b) => b.top6, baselines.top6),
+    bracketColumn('top9', 'Top 9', (b) => b.top9, baselines.top9),
     {
       key: 'open',
       header: '',
