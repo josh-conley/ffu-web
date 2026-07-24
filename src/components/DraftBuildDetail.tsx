@@ -1,5 +1,6 @@
 import type { DraftPick } from '@/data'
 import type { BuildInstance, BuildStat } from '@/selectors'
+import { isBottom3 } from '@/selectors'
 import { nameForYear } from '@/config'
 import { FaToilet, FaTrophy } from 'react-icons/fa6'
 import { LEAGUE_STYLES } from './leagues'
@@ -17,12 +18,13 @@ function ordinal(n: number): string {
   return `${n}${SUFFIX[(v - 20) % 10] ?? SUFFIX[v] ?? SUFFIX[0]}`
 }
 
-/** Leading finish tag: trophy for a title, toilet for dead last, else the ordinal (green within cutoff). */
-function FinishTag({ inst, cutoff }: { inst: BuildInstance; cutoff: number }) {
+/** Leading finish tag: trophy for a title, toilet for dead last, else the ordinal (green top-6, red bottom-3). */
+function FinishTag({ inst }: { inst: BuildInstance }) {
   const { finalPlacement: p, seasonSize } = inst
   if (p === 1) return <span className="inline-flex items-center gap-1 font-bold text-amber-500"><FaTrophy size={11} />1st</span>
   if (p === seasonSize) return <span className="inline-flex items-center gap-1 font-bold text-negative"><FaToilet size={11} />Last</span>
-  return <span className={`tabular-nums ${p <= cutoff ? 'text-positive' : 'text-muted'}`}>{ordinal(p)}</span>
+  const tone = p <= 6 ? 'text-positive' : isBottom3(inst) ? 'text-negative' : 'text-muted'
+  return <span className={`tabular-nums ${tone}`}>{ordinal(p)}</span>
 }
 
 /** One drafted player as a colored position pill + name. */
@@ -35,12 +37,12 @@ function pickPill(pick: DraftPick) {
   )
 }
 
-function InstanceRow({ inst, cutoff }: { inst: BuildInstance; cutoff: number }) {
+function InstanceRow({ inst }: { inst: BuildInstance }) {
   const tier = LEAGUE_STYLES[inst.tier]
   return (
     <div className="flex flex-col gap-1.5 border-b border-border py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:gap-3">
       <div className="flex items-center gap-2.5 sm:min-w-72 sm:shrink-0">
-        <span className="w-12 shrink-0 text-sm"><FinishTag inst={inst} cutoff={cutoff} /></span>
+        <span className="w-12 shrink-0 text-sm"><FinishTag inst={inst} /></span>
         <span className="flex flex-col items-start gap-0.5">
           <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${tier.badge}`}>{tier.label}</span>
           <span className="text-xs tabular-nums text-muted">{inst.year}</span>
@@ -53,16 +55,15 @@ function InstanceRow({ inst, cutoff }: { inst: BuildInstance; cutoff: number }) 
   )
 }
 
-export function DraftBuildDetail({ build, threshold, cutoff, onClose }: { build: BuildStat; threshold: number; cutoff: number; onClose: () => void }) {
+export function DraftBuildDetail({ build, threshold, onClose }: { build: BuildStat; threshold: number; onClose: () => void }) {
   return (
     <section className="border border-border bg-surface" aria-label={`Teams that drafted ${build.label}`}>
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
         <div className="text-sm">
           <span className="font-bold">{build.label}</span>
           <span className="text-muted">
-            {' '}· {build.teams} {build.teams === 1 ? 'team' : 'teams'} · {build.successTeams} top {cutoff} (
-            {Math.round(build.successPct * 100)}%) · {build.firsts} 🏆 · {build.lasts} 💩 · first {threshold}{' '}
-            {threshold === 1 ? 'round' : 'rounds'}
+            {' '}· {build.teams} {build.teams === 1 ? 'team' : 'teams'} · {build.first.count} 🏆 · {build.top6.count} top 6 ·{' '}
+            {build.bottom3.count} bottom 3 · first {threshold} {threshold === 1 ? 'round' : 'rounds'}
           </span>
         </div>
         <button type="button" onClick={onClose} className="text-sm font-semibold text-muted hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
@@ -71,7 +72,7 @@ export function DraftBuildDetail({ build, threshold, cutoff, onClose }: { build:
       </header>
       <div className="max-h-96 overflow-y-auto px-4">
         {build.instances.map((inst) => (
-          <InstanceRow key={`${inst.year}-${inst.tier}-${inst.memberId}`} inst={inst} cutoff={cutoff} />
+          <InstanceRow key={`${inst.year}-${inst.tier}-${inst.memberId}`} inst={inst} />
         ))}
       </div>
     </section>

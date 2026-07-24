@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 import { FaChevronRight } from 'react-icons/fa6'
-import type { BuildStat } from '@/selectors'
+import type { Bracket, BuildStat } from '@/selectors'
 import { orderedPositions } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { posClass } from '@/components/positions'
 
 // Column defs for the Draft Analysis table (kept out of the page to respect the line caps). The
 // build cell renders the position composition as colored pills (positions.ts is the single source
-// of position color); the rate cell draws a proportion bar with the sample baseline marked. Render
+// of position color); each finish bracket shows its share (%) with the raw count beside it. Render
 // helpers are lowercase (repo convention, see allTimeColumns) so the file only exports the builder.
 
 /** The build's position composition as colored count-pills, e.g. [2 RB] [1 WR]. The "none of the
@@ -27,37 +27,29 @@ function buildBadges(counts: Record<string, number>, label: string): ReactNode {
   )
 }
 
-/** Playoff rate as a green/red bar (filled to the rate) with a tick at the sample baseline. */
-function rateBar(pct: number, baseline: number): ReactNode {
-  const above = pct >= baseline
+/** A finish bracket: the share (%) in the bracket's tone, with the raw count muted beside it. */
+function bracketCell(b: Bracket, tone: string): ReactNode {
   return (
-    <span className="flex items-center justify-end gap-2">
-      <span className={`w-9 text-right font-bold tabular-nums ${above ? 'text-positive' : 'text-negative'}`}>{Math.round(pct * 100)}%</span>
-      <span className="relative hidden h-2.5 w-24 bg-surface-2 sm:block" aria-hidden>
-        <span className={`absolute inset-y-0 left-0 ${above ? 'bg-positive/70' : 'bg-negative/70'}`} style={{ width: `${pct * 100}%` }} />
-        <span className="absolute inset-y-0 w-px bg-text/40" style={{ left: `${baseline * 100}%` }} title="Baseline" />
-      </span>
+    <span className="flex items-baseline justify-end gap-1.5 tabular-nums">
+      <span className={`font-bold ${b.count === 0 ? 'text-muted' : tone}`}>{Math.round(b.pct * 100)}%</span>
+      <span className="text-xs text-muted">{b.count}</span>
     </span>
   )
 }
 
-/** Signed percentage-point edge vs the baseline (green above, red below). */
-function edgeCell(edge: number): ReactNode {
-  const tone = edge > 0.5 ? 'text-positive' : edge < -0.5 ? 'text-negative' : 'text-muted'
-  return (
-    <span className={`font-semibold tabular-nums ${tone}`}>
-      {edge >= 0 ? '+' : ''}
-      {edge.toFixed(0)}
-    </span>
-  )
+/** A finish-bracket column: header, tooltip, sorted by its share (then count as a tiebreak). */
+function bracketColumn(key: string, header: string, title: string, get: (b: BuildStat) => Bracket, tone: string): Column<BuildStat> {
+  return {
+    key,
+    header,
+    align: 'right',
+    title,
+    sortValue: (b) => get(b).pct * 1000 + get(b).count,
+    render: (b) => bracketCell(get(b), tone),
+  }
 }
 
-/** A small count cell — muted when zero so real counts stand out. */
-function countCell(n: number, tone = ''): ReactNode {
-  return <span className={`tabular-nums ${n === 0 ? 'text-muted' : tone}`}>{n}</span>
-}
-
-export function buildColumns(baselinePct: number, cutoff: number, openKey?: string): Column<BuildStat>[] {
+export function buildColumns(openKey?: string): Column<BuildStat>[] {
   return [
     { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
     {
@@ -68,46 +60,10 @@ export function buildColumns(baselinePct: number, cutoff: number, openKey?: stri
       sortValue: (b) => b.teams,
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
-    {
-      key: 'successTeams',
-      header: `Top ${cutoff}`,
-      align: 'right',
-      title: `How many finished in the top ${cutoff}`,
-      sortValue: (b) => b.successTeams,
-      render: (b) => countCell(b.successTeams),
-    },
-    {
-      key: 'successPct',
-      header: 'Rate',
-      align: 'right',
-      title: `Share finishing in the top ${cutoff}`,
-      sortValue: (b) => b.successPct,
-      render: (b) => rateBar(b.successPct, baselinePct),
-    },
-    {
-      key: 'firsts',
-      header: '1st',
-      align: 'right',
-      title: 'Times this build produced a champion (1st place)',
-      sortValue: (b) => b.firsts,
-      render: (b) => countCell(b.firsts, 'font-semibold text-amber-500'),
-    },
-    {
-      key: 'lasts',
-      header: 'Last',
-      align: 'right',
-      title: 'Times this build finished dead last',
-      sortValue: (b) => b.lasts,
-      render: (b) => countCell(b.lasts, 'font-semibold text-negative'),
-    },
-    {
-      key: 'edge',
-      header: 'Edge',
-      align: 'right',
-      title: 'Percentage points above/below the sample baseline',
-      sortValue: (b) => b.edge,
-      render: (b) => edgeCell(b.edge),
-    },
+    bracketColumn('first', '1st', 'Share (and count) that won the title', (b) => b.first, 'text-amber-500'),
+    bracketColumn('top3', 'Top 3', 'Share (and count) that finished in the top 3', (b) => b.top3, 'text-positive'),
+    bracketColumn('top6', 'Top 6', 'Share (and count) that finished in the top 6', (b) => b.top6, 'text-positive'),
+    bracketColumn('bottom3', 'Bottom 3', 'Share (and count) that finished in the bottom 3', (b) => b.bottom3, 'text-negative'),
     {
       key: 'open',
       header: '',

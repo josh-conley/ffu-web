@@ -68,25 +68,15 @@ describe('analyzeBuilds', () => {
   // w & z finish top-6 (place 3); x & y finish out of it (place 8).
   const seasons = [season('PREMIER', '2022', { w: 3, x: 8 }), season('PREMIER', '2023', { y: 8, z: 3 })]
 
-  it('aggregates identical builds and computes finish rates + a baseline', () => {
+  it('aggregates identical builds and computes finish brackets', () => {
     const res = analyzeBuilds(drafts, seasons, 2)
     expect(res.totalTeams).toBe(4)
-    expect(res.successTeams).toBe(2)
-    expect(res.baselinePct).toBe(0.5)
 
-    const rb = res.builds.find((b) => b.key === 'RB2')
-    expect(rb).toMatchObject({ teams: 2, successTeams: 1, successPct: 0.5 })
-    const wr = res.builds.find((b) => b.key === 'WR2')
-    expect(wr).toMatchObject({ teams: 2, successTeams: 1, successPct: 0.5 })
-    expect(rb?.edge).toBe(0)
-  })
-
-  it('respects a tighter cutoff (top-3 excludes the place-8 finishers only, but here changes nothing)', () => {
-    // Lower the cutoff to 2 → nobody at place 3 qualifies, so every build drops to 0%.
-    const res = analyzeBuilds(drafts, seasons, 2, undefined, undefined, 2)
-    expect(res.successTeams).toBe(0)
-    expect(res.baselinePct).toBe(0)
-    expect(res.builds.every((b) => b.successPct === 0)).toBe(true)
+    const rb = res.builds.find((b) => b.key === 'RB2')!
+    expect(rb.teams).toBe(2)
+    expect(rb.top6).toEqual({ count: 1, pct: 0.5 }) // 'w' (place 3) in, 'y' (place 8) out
+    const wr = res.builds.find((b) => b.key === 'WR2')!
+    expect(wr.top6).toEqual({ count: 1, pct: 0.5 }) // 'z' in, 'x' out
   })
 
   it('excludes seasons with no placements recorded (unfinished)', () => {
@@ -97,12 +87,21 @@ describe('analyzeBuilds', () => {
     expect(res.builds.some((b) => b.key === 'QB2')).toBe(false)
   })
 
-  it('counts 1st-place and last-place finishers per build', () => {
-    // Both teams drafted RB3; p wins the title, q comes dead last (of 2).
-    const rbDraft = draft('PREMIER', '2021', [pick(1, 1, 'p', 'RB'), pick(2, 1, 'q', 'RB'), pick(3, 2, 'p', 'RB'), pick(4, 2, 'q', 'RB'), pick(5, 3, 'p', 'RB'), pick(6, 3, 'q', 'RB')])
-    const res = analyzeBuilds([rbDraft], [season('PREMIER', '2021', { p: 1, q: 2 })], 3)
+  it('derives 1st / top-3 / top-6 / bottom-3 brackets from placements', () => {
+    // Four teams share RB3; placements 1, 3, 7, 12 (of 12) → 1st, top3, top6, bottom3 all distinct.
+    const rbDraft = draft('PREMIER', '2021', [
+      pick(1, 1, 'p', 'RB'), pick(2, 1, 'q', 'RB'), pick(3, 1, 'r', 'RB'), pick(4, 1, 's', 'RB'),
+      pick(5, 2, 'p', 'RB'), pick(6, 2, 'q', 'RB'), pick(7, 2, 'r', 'RB'), pick(8, 2, 's', 'RB'),
+      pick(9, 3, 'p', 'RB'), pick(10, 3, 'q', 'RB'), pick(11, 3, 'r', 'RB'), pick(12, 3, 's', 'RB'),
+    ])
+    const twelve = { p: 1, q: 3, r: 7, s: 12, a: 2, b: 4, c: 5, d: 6, e: 8, f: 9, g: 10, h: 11 }
+    const res = analyzeBuilds([rbDraft], [season('PREMIER', '2021', twelve)], 3)
     const rb3 = res.builds.find((b) => b.key === 'RB3')!
-    expect(rb3).toMatchObject({ teams: 2, firsts: 1, lasts: 1 })
+    expect(rb3.teams).toBe(4)
+    expect(rb3.first).toEqual({ count: 1, pct: 0.25 }) // 'p'
+    expect(rb3.top3).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q'
+    expect(rb3.top6).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q' (7th is out)
+    expect(rb3.bottom3).toEqual({ count: 1, pct: 0.25 }) // 's' (12th of 12)
   })
 
   it('carries the team-season instances (with rosters + placement) behind each build', () => {
@@ -139,7 +138,7 @@ describe('analyzeBuilds — position filter', () => {
     expect(rb.key).toBe('RB2')
     expect(rb.label).toBe('2 RB')
     expect(rb.teams).toBe(2)
-    expect(rb.successTeams).toBe(1) // only 'a' finished top-6
+    expect(rb.top6.count).toBe(1) // only 'a' finished top-6
     // the roster still shows every pick, not just the counted position
     expect(rb.instances[0]!.picks).toHaveLength(3)
   })
@@ -150,12 +149,12 @@ describe('analyzeBuilds — position filter', () => {
     expect(res.builds[0]!.label).toBe('0 QB') // neither team drafted a QB early
   })
 
-  it('restricts the whole sample (and baseline) to the given members', () => {
-    // Only team 'a' (made playoffs) → sample of one, baseline 100%.
+  it('restricts the whole sample to the given members', () => {
+    // Only team 'a' (champion) → sample of one.
     const res = analyzeBuilds([d], s, 3, ['QB', 'RB', 'WR', 'TE'], ['a'])
     expect(res.totalTeams).toBe(1)
-    expect(res.baselinePct).toBe(1)
     expect(res.builds).toHaveLength(1)
+    expect(res.builds[0]!.first).toEqual({ count: 1, pct: 1 })
     expect(res.builds[0]!.instances.every((i) => i.memberId === 'a')).toBe(true)
   })
 
