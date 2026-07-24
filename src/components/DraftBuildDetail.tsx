@@ -24,16 +24,18 @@ function InstanceRow({ inst }: { inst: BuildStat['instances'][number] }) {
   const tier = LEAGUE_STYLES[inst.tier]
   return (
     <div className="flex flex-col gap-1.5 border-b border-border py-2.5 last:border-b-0 sm:flex-row sm:items-center sm:gap-3">
-      <div className="flex min-w-0 items-center gap-2 sm:w-56 sm:shrink-0">
+      <div className="flex items-center gap-2.5 sm:min-w-64 sm:shrink-0">
         {inst.madePlayoffs ? (
           <FaCheck className="shrink-0 text-positive" title="Made playoffs" aria-label="Made playoffs" />
         ) : (
           <FaXmark className="shrink-0 text-muted" title="Missed playoffs" aria-label="Missed playoffs" />
         )}
-        <span className="tabular-nums text-muted">{inst.year}</span>
-        <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${tier.badge}`}>{tier.label}</span>
+        <span className="flex flex-col items-start gap-0.5">
+          <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${tier.badge}`}>{tier.label}</span>
+          <span className="text-xs tabular-nums text-muted">{inst.year}</span>
+        </span>
         <TeamLogo ffuId={inst.memberId} size={18} />
-        <span className="truncate font-medium">{nameForYear(inst.memberId, inst.year) ?? inst.memberId}</span>
+        <span className="font-medium">{nameForYear(inst.memberId, inst.year) ?? inst.memberId}</span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">{inst.picks.map(pickPill)}</div>
     </div>

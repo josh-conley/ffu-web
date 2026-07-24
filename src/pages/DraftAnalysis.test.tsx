@@ -51,7 +51,7 @@ it('clicking a build row opens the drill-down with team-seasons', async () => {
   renderAt('/draft-analysis?rounds=1&min=1&pos=QB,RB,WR,TE')
   await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
   const rows = screen.getAllByRole('button').filter((el) => el.tagName === 'TR')
-  fireEvent.click(rows[0])
+  fireEvent.click(rows[0]!)
   // The detail panel is a labelled region listing the teams behind the build.
   await waitFor(() => expect(screen.getByRole('region', { name: /Teams that drafted/i })).toBeInTheDocument())
 })

@@ -114,18 +114,18 @@ describe('analyzeBuilds — position filter', () => {
   it('restricting to RB merges them into a single "2 RB" bucket', () => {
     const res = analyzeBuilds([d], s, 3, ['RB'])
     expect(res.builds).toHaveLength(1)
-    const rb = res.builds[0]
+    const rb = res.builds[0]!
     expect(rb.key).toBe('RB2')
     expect(rb.label).toBe('2 RB')
     expect(rb.teams).toBe(2)
     expect(rb.playoffTeams).toBe(1) // only 'a' made playoffs
     // the roster still shows every pick, not just the counted position
-    expect(rb.instances[0].picks).toHaveLength(3)
+    expect(rb.instances[0]!.picks).toHaveLength(3)
   })
 
   it('labels the "none of the selected positions" bucket explicitly', () => {
     const res = analyzeBuilds([d], s, 3, ['QB'])
     expect(res.builds).toHaveLength(1)
-    expect(res.builds[0].label).toBe('0 QB') // neither team drafted a QB early
+    expect(res.builds[0]!.label).toBe('0 QB') // neither team drafted a QB early
   })
 })
