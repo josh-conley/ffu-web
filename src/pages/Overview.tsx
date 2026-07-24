@@ -79,7 +79,7 @@ export function Overview() {
           </section>
         </>
       )}
-      <UpcomingDrafts />
+      <UpcomingDrafts year={latest ? String(Number(latest) + 1) : undefined} />
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
