@@ -39,11 +39,28 @@ function RangeSlider({ label, value, min, max, valueLabel, onChange }: { label: 
   )
 }
 
+/** A small "All" link that resets a checkbox group to everything selected (disabled when already so). */
+function AllButton({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="text-[11px] font-semibold uppercase tracking-wide text-accent hover:underline disabled:text-muted disabled:no-underline"
+    >
+      All
+    </button>
+  )
+}
+
 /** Position filter — a build only counts the checked positions, so unchecking merges buckets. */
-function PositionCheckboxes({ selected, onToggle }: { selected: string[]; onToggle: (p: string) => void }) {
+function PositionCheckboxes({ selected, onToggle, onAll }: { selected: string[]; onToggle: (p: string) => void; onAll: () => void }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted">Positions counted</span>
+      <span className="flex items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Positions counted</span>
+        <AllButton onClick={onAll} disabled={selected.length === FILTER_POSITIONS.length} />
+      </span>
       <div className="flex flex-wrap gap-1">
         {FILTER_POSITIONS.map((p) => {
           const on = selected.includes(p)
@@ -67,10 +84,13 @@ function PositionCheckboxes({ selected, onToggle }: { selected: string[]; onTogg
 }
 
 /** Draft-slot filter — keep only teams that picked from the checked draft-order positions. */
-function SlotCheckboxes({ allSlots, selected, onToggle }: { allSlots: number[]; selected: Set<number>; onToggle: (n: number) => void }) {
+function SlotCheckboxes({ allSlots, selected, onToggle, onAll }: { allSlots: number[]; selected: Set<number>; onToggle: (n: number) => void; onAll: () => void }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted">Draft slot</span>
+      <span className="flex items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Draft slot</span>
+        <AllButton onClick={onAll} disabled={selected.size === allSlots.length} />
+      </span>
       <div className="flex flex-wrap gap-1">
         {allSlots.map((n) => {
           const on = selected.has(n)
@@ -111,13 +131,15 @@ interface ControlsProps {
   showMin: boolean
   selected: string[]
   onTogglePos: (p: string) => void
+  onAllPos: () => void
   allSlots: number[]
   selectedSlots: Set<number>
   onToggleSlot: (n: number) => void
+  onAllSlots: () => void
 }
 
 function Controls(props: ControlsProps) {
-  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, allSlots, selectedSlots, onToggleSlot } = props
+  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, onAllPos, allSlots, selectedSlots, onToggleSlot, onAllSlots } = props
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
       <label className="flex flex-col gap-1">
@@ -141,9 +163,9 @@ function Controls(props: ControlsProps) {
 
       <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
 
-      <PositionCheckboxes selected={selected} onToggle={onTogglePos} />
+      <PositionCheckboxes selected={selected} onToggle={onTogglePos} onAll={onAllPos} />
 
-      <SlotCheckboxes allSlots={allSlots} selected={selectedSlots} onToggle={onToggleSlot} />
+      <SlotCheckboxes allSlots={allSlots} selected={selectedSlots} onToggle={onToggleSlot} onAll={onAllSlots} />
 
       {showMin && (
         <label className="flex flex-col gap-1">
@@ -188,7 +210,8 @@ function useSelectedPositions(posParam: string, setPos: (v: string) => void) {
     if (next.size === 0) return // always keep at least one position selected
     setPos(FILTER_POSITIONS.filter((q) => next.has(q)).join(','))
   }
-  return { selected, togglePos }
+  const selectAll = () => setPos(FILTER_POSITIONS.join(','))
+  return { selected, togglePos, selectAll }
 }
 
 /** Draft-slot selection from the `slots` URL param — empty/all means "no filter" (all slots checked). */
@@ -208,7 +231,8 @@ function useSelectedSlots(slotsParam: string, setSlots: (v: string) => void, max
   // `slots` for the selector: undefined when everything is selected (no filtering needed). Memoized
   // so the analysis memo isn't invalidated every render by a fresh array.
   const slotFilter = useMemo(() => (selected.size === maxSlot ? undefined : [...selected]), [selected, maxSlot])
-  return { allSlots, selected, toggleSlot, slotFilter }
+  const selectAll = () => setSlots('')
+  return { allSlots, selected, toggleSlot, slotFilter, selectAll }
 }
 
 export function DraftAnalysis() {
@@ -223,7 +247,7 @@ export function DraftAnalysis() {
   const [slotsParam, setSlots] = useUrlState('slots', '')
   const threshold = Number(roundsParam)
   const minTeams = Number(minParam)
-  const { selected, togglePos } = useSelectedPositions(posParam, setPos)
+  const { selected, togglePos, selectAll: selectAllPos } = useSelectedPositions(posParam, setPos)
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
 
   // Every franchise that has ever drafted, by name — the Team dropdown's options.
@@ -236,7 +260,7 @@ export function DraftAnalysis() {
   }, [drafts])
 
   const maxSlot = useMemo(() => Math.max(12, ...(drafts ?? []).flatMap((d) => d.picks.map((p) => p.slot))), [drafts])
-  const { allSlots, selected: selectedSlots, toggleSlot, slotFilter } = useSelectedSlots(slotsParam, setSlots, maxSlot)
+  const { allSlots, selected: selectedSlots, toggleSlot, slotFilter, selectAll: selectAllSlots } = useSelectedSlots(slotsParam, setSlots, maxSlot)
 
   // League scopes BOTH inputs (drafts for builds, seasons for finish outcomes) to that tier only;
   // Team narrows the whole sample to one franchise; Draft slot keeps only those draft-order positions.
@@ -265,7 +289,7 @@ export function DraftAnalysis() {
   return (
     <div className="space-y-6">
       <Intro threshold={threshold} totalTeams={analysis.totalTeams} />
-      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} allSlots={allSlots} selectedSlots={selectedSlots} onToggleSlot={toggleSlot} />
+      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} onAllPos={selectAllPos} allSlots={allSlots} selectedSlots={selectedSlots} onToggleSlot={toggleSlot} onAllSlots={selectAllSlots} />
 
       {rows.length === 0 ? (
         <p className="text-muted">{emptyMessage(team)}</p>
