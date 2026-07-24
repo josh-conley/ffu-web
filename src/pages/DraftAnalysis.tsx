@@ -120,7 +120,7 @@ function Controls(props: ControlsProps) {
 
       <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
 
-      <RangeSlider label="Success = finish" value={cutoff} min={1} max={11} valueLabel={`Top ${cutoff}`} onChange={onCutoff} />
+      <RangeSlider label="Success cutoff" value={cutoff} min={1} max={11} valueLabel={`Top ${cutoff}`} onChange={onCutoff} />
 
       <PositionCheckboxes selected={selected} onToggle={onTogglePos} />
 
