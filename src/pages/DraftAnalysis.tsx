@@ -19,6 +19,8 @@ const LEAGUE_OPTIONS = [
 
 const MIN_OPTIONS = [1, 2, 3, 5, 10]
 
+const EMPTY_BASELINES = { first: 0, top3: 0, top6: 0, bottom3: 0 }
+
 const emptyMessage = (team: string) =>
   team
     ? 'No completed drafts for this team in the current scope.'
@@ -195,7 +197,7 @@ export function DraftAnalysis() {
     const min = team ? 1 : minTeams
     return analysis.builds.filter((b) => b.teams >= min)
   }, [analysis, team, minTeams])
-  const columns = useMemo(() => buildColumns(openKey), [openKey])
+  const columns = useMemo(() => buildColumns(analysis?.baselines ?? EMPTY_BASELINES, openKey), [analysis?.baselines, openKey])
   const toggleOpen = (b: BuildStat) => setOpenKey((k) => (k === b.key ? undefined : b.key))
 
   const loadError = draftsError ?? seasonsError
@@ -227,8 +229,10 @@ export function DraftAnalysis() {
       {openBuild && <DraftBuildDetail build={openBuild} threshold={threshold} onClose={() => setOpenKey(undefined)} />}
 
       <p className="text-sm text-muted">
-        Each bracket shows the share of that build's team-seasons landing in it, with the raw count beside it. A build can
-        appear in several brackets (top 3 ⊂ top 6). Unfinished seasons are excluded.
+        Each bracket shows the share of that build's team-seasons landing in it (raw count beside it). The{' '}
+        <strong className="text-text">baseline</strong> in each header is the rate you'd expect by chance —{' '}
+        <span className="text-positive">green</span> beats it, <span className="text-negative">red</span> trails it (for
+        Bottom 3, fewer is better). A build can appear in several brackets (top 3 ⊂ top 6). Unfinished seasons are excluded.
       </p>
     </div>
   )

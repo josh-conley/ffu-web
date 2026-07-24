@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { FaChevronRight } from 'react-icons/fa6'
-import type { Bracket, BuildStat } from '@/selectors'
+import type { Bracket, BuildBaselines, BuildStat } from '@/selectors'
 import { orderedPositions } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { posClass } from '@/components/positions'
@@ -27,29 +27,37 @@ function buildBadges(counts: Record<string, number>, label: string): ReactNode {
   )
 }
 
-/** A finish bracket: the share (%) in the bracket's tone, with the raw count muted beside it. */
-function bracketCell(b: Bracket, tone: string): ReactNode {
+const EPSILON = 0.005
+
+/**
+ * A finish-bracket cell: share (%) tinted vs the sample baseline — green when the build beats the
+ * "expected by chance" rate, red when worse (for Bottom 3, fewer is better, so the direction flips).
+ * The raw count sits muted beside it.
+ */
+function bracketCell(b: Bracket, baseline: number, higherIsBetter: boolean): ReactNode {
+  const good = (higherIsBetter ? b.pct - baseline : baseline - b.pct)
+  const tone = b.count === 0 || Math.abs(good) < EPSILON ? 'text-muted' : good > 0 ? 'text-positive' : 'text-negative'
   return (
     <span className="flex items-baseline justify-end gap-1.5 tabular-nums">
-      <span className={`font-bold ${b.count === 0 ? 'text-muted' : tone}`}>{Math.round(b.pct * 100)}%</span>
+      <span className={`font-bold ${tone}`}>{Math.round(b.pct * 100)}%</span>
       <span className="text-xs text-muted">{b.count}</span>
     </span>
   )
 }
 
-/** A finish-bracket column: header, tooltip, sorted by its share (then count as a tiebreak). */
-function bracketColumn(key: string, header: string, title: string, get: (b: BuildStat) => Bracket, tone: string): Column<BuildStat> {
+/** A finish-bracket column: header shows the baseline; cells are tinted against it; sorted by share. */
+function bracketColumn(key: string, header: string, get: (b: BuildStat) => Bracket, baseline: number, higherIsBetter: boolean): Column<BuildStat> {
   return {
     key,
-    header,
+    header: `${header} · ${Math.round(baseline * 100)}%`,
     align: 'right',
-    title,
+    title: `Share (and count) finishing in the ${header.toLowerCase()} — baseline ${Math.round(baseline * 100)}%`,
     sortValue: (b) => get(b).pct * 1000 + get(b).count,
-    render: (b) => bracketCell(get(b), tone),
+    render: (b) => bracketCell(get(b), baseline, higherIsBetter),
   }
 }
 
-export function buildColumns(openKey?: string): Column<BuildStat>[] {
+export function buildColumns(baselines: BuildBaselines, openKey?: string): Column<BuildStat>[] {
   return [
     { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
     {
@@ -60,10 +68,10 @@ export function buildColumns(openKey?: string): Column<BuildStat>[] {
       sortValue: (b) => b.teams,
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
-    bracketColumn('first', '1st', 'Share (and count) that won the title', (b) => b.first, 'text-amber-500'),
-    bracketColumn('top3', 'Top 3', 'Share (and count) that finished in the top 3', (b) => b.top3, 'text-positive'),
-    bracketColumn('top6', 'Top 6', 'Share (and count) that finished in the top 6', (b) => b.top6, 'text-positive'),
-    bracketColumn('bottom3', 'Bottom 3', 'Share (and count) that finished in the bottom 3', (b) => b.bottom3, 'text-negative'),
+    bracketColumn('first', '1st', (b) => b.first, baselines.first, true),
+    bracketColumn('top3', 'Top 3', (b) => b.top3, baselines.top3, true),
+    bracketColumn('top6', 'Top 6', (b) => b.top6, baselines.top6, true),
+    bracketColumn('bottom3', 'Bottom 3', (b) => b.bottom3, baselines.bottom3, false),
     {
       key: 'open',
       header: '',

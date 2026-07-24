@@ -143,10 +143,20 @@ export interface BuildStat {
   instances: BuildInstance[]
 }
 
+/** Sample-wide share landing in each bracket — the "expected by chance" line (≈ 1/12, 3/12, 6/12, 3/12). */
+export interface BuildBaselines {
+  first: number
+  top3: number
+  top6: number
+  bottom3: number
+}
+
 export interface BuildAnalysis {
   threshold: number
   /** Total team-seasons in the sample (completed seasons only). */
   totalTeams: number
+  /** Overall bracket rates across the whole sample — each build is read against these. */
+  baselines: BuildBaselines
   builds: BuildStat[]
 }
 
@@ -235,5 +245,21 @@ export function analyzeBuilds(
   const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, threshold, positions, memberFilter)
 
   const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, selected))
-  return { threshold, totalTeams, builds }
+  return { threshold, totalTeams, baselines: bracketBaselines(builds, totalTeams), builds }
+}
+
+/** Pooled bracket rates across every build — the baseline each build's cell is colored against. */
+function bracketBaselines(builds: BuildStat[], totalTeams: number): BuildBaselines {
+  const share = (n: number) => (totalTeams > 0 ? n / totalTeams : 0)
+  let first = 0
+  let top3 = 0
+  let top6 = 0
+  let bottom3 = 0
+  for (const b of builds) {
+    first += b.first.count
+    top3 += b.top3.count
+    top6 += b.top6.count
+    bottom3 += b.bottom3.count
+  }
+  return { first: share(first), top3: share(top3), top6: share(top6), bottom3: share(bottom3) }
 }
