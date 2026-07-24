@@ -1,5 +1,6 @@
 import type { DraftData, DraftPick, SeasonData } from '@/data'
 import type { Tier } from '@/config/types'
+import { teamsBySlot } from './draft'
 
 // Roster-construction analysis (the /draft-analysis page). A team's "build" is the position
 // composition of the picks it MADE in rounds 1..threshold (traded picks belong to whoever made
@@ -186,6 +187,27 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
 
 type BuildBucket = { counts: Record<string, number>; instances: BuildInstance[] }
 
+interface Filters {
+  members: Set<string> | undefined
+  /** Draft slots (1..N) to keep; undefined = all. */
+  slots: Set<number> | undefined
+}
+
+/** memberId → the draft slot (draft-order position) that team picked from. */
+function slotByMember(draft: DraftData): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const [slot, memberId] of teamsBySlot(draft)) out.set(memberId, slot)
+  return out
+}
+
+/** Whether a team-season passes the member + draft-slot filters and has a recorded finish. */
+function keepTeam(place: number | undefined, memberId: string, slot: number | undefined, f: Filters): boolean {
+  if (place === undefined) return false
+  if (f.members && !f.members.has(memberId)) return false
+  if (f.slots && (slot === undefined || !f.slots.has(slot))) return false
+  return true
+}
+
 /** Fold every (completed-season) team's build into buckets; returns the aggregate + team total. */
 function accumulateBuilds(
   drafts: DraftData[],
@@ -193,7 +215,7 @@ function accumulateBuilds(
   seasonSizes: Map<string, number>,
   threshold: number,
   positions: Set<string>,
-  memberFilter: Set<string> | undefined,
+  filters: Filters,
 ): { agg: Map<string, BuildBucket>; totalTeams: number } {
   const agg = new Map<string, BuildBucket>()
   let totalTeams = 0
@@ -202,9 +224,10 @@ function accumulateBuilds(
     const finish = placements.get(key)
     if (finish === undefined) continue // no placements recorded → unfinished season, skip
     const seasonSize = seasonSizes.get(key) ?? finish.size
+    const slotOf = slotByMember(draft)
     for (const [memberId, picks] of firstNPicksByTeam(draft, threshold)) {
       const place = finish.get(memberId)
-      if (place === undefined || (memberFilter && !memberFilter.has(memberId))) continue
+      if (!keepTeam(place, memberId, slotOf.get(memberId), filters)) continue
       const counts = countsFor(picks, positions)
       const bucketKey = buildKey(counts) || EMPTY_KEY
       let entry = agg.get(bucketKey)
@@ -212,19 +235,22 @@ function accumulateBuilds(
         entry = { counts, instances: [] }
         agg.set(bucketKey, entry)
       }
-      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, finalPlacement: place, seasonSize, picks })
+      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, finalPlacement: place!, seasonSize, picks })
       totalTeams += 1
     }
   }
   return { agg, totalTeams }
 }
 
+const toSet = <T>(xs: readonly T[] | undefined): Set<T> | undefined => (xs && xs.length > 0 ? new Set(xs) : undefined)
+
 /**
  * Aggregate first-N-round builds across every draft and report their finish brackets (1st / top-3 /
- * top-6 / bottom-3). `selected` restricts which positions count toward a build (default: all skill
- * positions); `memberIds`, when non-empty, restricts the whole sample to those franchises. Unfinished
- * seasons (no recorded placements) are excluded so a live/incomplete season never dilutes the rates.
- * Both `drafts` and `seasons` should already be scoped (e.g. to a single tier) by the caller.
+ * top-6 / top-9). `selected` restricts which positions count toward a build (default: all skill
+ * positions); `memberIds`, when non-empty, restricts the whole sample to those franchises; `slots`,
+ * when non-empty, keeps only teams that drafted from those draft-order positions. Unfinished seasons
+ * (no recorded placements) are excluded so a live/incomplete season never dilutes the rates. Both
+ * `drafts` and `seasons` should already be scoped (e.g. to a single tier) by the caller.
  */
 export function analyzeBuilds(
   drafts: DraftData[],
@@ -232,12 +258,13 @@ export function analyzeBuilds(
   threshold: number,
   selected: readonly string[] = FILTER_POSITIONS,
   memberIds?: readonly string[],
+  slots?: readonly number[],
 ): BuildAnalysis {
   const positions = new Set(selected)
-  const memberFilter = memberIds && memberIds.length > 0 ? new Set(memberIds) : undefined
+  const filters: Filters = { members: toSet(memberIds), slots: toSet(slots) }
   const placements = placementBySeason(seasons)
   const seasonSizes = new Map(seasons.map((s) => [`${s.year}|${s.tier}`, s.teams.length]))
-  const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, threshold, positions, memberFilter)
+  const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, threshold, positions, filters)
 
   const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, selected))
   return { threshold, totalTeams, baselines: bracketBaselines(builds, totalTeams), builds }

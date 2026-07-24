@@ -162,4 +162,19 @@ describe('analyzeBuilds — position filter', () => {
     const res = analyzeBuilds([d], s, 3, ['QB', 'RB', 'WR', 'TE'], [])
     expect(res.totalTeams).toBe(2)
   })
+
+  it('filters by draft slot (draft-order position)', () => {
+    // 'a' drafts from slot 1, 'b' from slot 2 (their round-1 pick slots).
+    const bySlot = draft('PREMIER', '2023', [
+      pick(1, 1, 'a', 'RB'), pick(2, 1, 'b', 'RB'), // slots 1 and 2
+      pick(3, 2, 'a', 'RB'), pick(4, 2, 'b', 'RB'),
+      pick(5, 3, 'a', 'RB'), pick(6, 3, 'b', 'RB'),
+    ])
+    const only1 = analyzeBuilds([bySlot], s, 3, undefined, undefined, [1])
+    expect(only1.totalTeams).toBe(1)
+    expect(only1.builds[0]!.instances[0]!.memberId).toBe('a')
+
+    const both = analyzeBuilds([bySlot], s, 3, undefined, undefined, [1, 2])
+    expect(both.totalTeams).toBe(2)
+  })
 })

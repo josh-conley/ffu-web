@@ -66,6 +66,33 @@ function PositionCheckboxes({ selected, onToggle }: { selected: string[]; onTogg
   )
 }
 
+/** Draft-slot filter — keep only teams that picked from the checked draft-order positions. */
+function SlotCheckboxes({ allSlots, selected, onToggle }: { allSlots: number[]; selected: Set<number>; onToggle: (n: number) => void }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted">Draft slot</span>
+      <div className="flex flex-wrap gap-1">
+        {allSlots.map((n) => {
+          const on = selected.has(n)
+          return (
+            <button
+              key={n}
+              type="button"
+              role="checkbox"
+              aria-checked={on}
+              aria-label={`Draft slot ${n}`}
+              onClick={() => onToggle(n)}
+              className={`inline-flex h-9 w-9 items-center justify-center border text-sm font-bold tabular-nums ${on ? 'border-accent bg-accent text-accent-fg' : 'border-border bg-surface text-muted hover:bg-surface-2 hover:text-text'}`}
+            >
+              {n}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 interface Option {
   value: string
   label: string
@@ -84,10 +111,13 @@ interface ControlsProps {
   showMin: boolean
   selected: string[]
   onTogglePos: (p: string) => void
+  allSlots: number[]
+  selectedSlots: Set<number>
+  onToggleSlot: (n: number) => void
 }
 
 function Controls(props: ControlsProps) {
-  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos } = props
+  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, allSlots, selectedSlots, onToggleSlot } = props
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
       <label className="flex flex-col gap-1">
@@ -112,6 +142,8 @@ function Controls(props: ControlsProps) {
       <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
 
       <PositionCheckboxes selected={selected} onToggle={onTogglePos} />
+
+      <SlotCheckboxes allSlots={allSlots} selected={selectedSlots} onToggle={onToggleSlot} />
 
       {showMin && (
         <label className="flex flex-col gap-1">
@@ -159,6 +191,26 @@ function useSelectedPositions(posParam: string, setPos: (v: string) => void) {
   return { selected, togglePos }
 }
 
+/** Draft-slot selection from the `slots` URL param — empty/all means "no filter" (all slots checked). */
+function useSelectedSlots(slotsParam: string, setSlots: (v: string) => void, maxSlot: number) {
+  const allSlots = useMemo(() => Array.from({ length: maxSlot }, (_, i) => i + 1), [maxSlot])
+  const selected = useMemo(() => {
+    const parsed = slotsParam.split(',').map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= maxSlot)
+    return parsed.length > 0 ? new Set(parsed) : new Set(allSlots)
+  }, [slotsParam, maxSlot, allSlots])
+  const toggleSlot = (n: number) => {
+    const next = new Set(selected)
+    if (next.has(n)) next.delete(n)
+    else next.add(n)
+    if (next.size === 0) return // keep at least one slot selected
+    setSlots(next.size === maxSlot ? '' : [...next].sort((a, b) => a - b).join(','))
+  }
+  // `slots` for the selector: undefined when everything is selected (no filtering needed). Memoized
+  // so the analysis memo isn't invalidated every render by a fresh array.
+  const slotFilter = useMemo(() => (selected.size === maxSlot ? undefined : [...selected]), [selected, maxSlot])
+  return { allSlots, selected, toggleSlot, slotFilter }
+}
+
 export function DraftAnalysis() {
   const { data: drafts, loading: draftsLoading, error: draftsError } = useAllDrafts()
   const { data: seasons, loading: seasonsLoading, error: seasonsError } = useAllSeasons()
@@ -168,6 +220,7 @@ export function DraftAnalysis() {
   const [roundsParam, setRounds] = useUrlState('rounds', '3')
   const [minParam, setMin] = useUrlState('min', '3')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
+  const [slotsParam, setSlots] = useUrlState('slots', '')
   const threshold = Number(roundsParam)
   const minTeams = Number(minParam)
   const { selected, togglePos } = useSelectedPositions(posParam, setPos)
@@ -182,14 +235,17 @@ export function DraftAnalysis() {
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [drafts])
 
+  const maxSlot = useMemo(() => Math.max(12, ...(drafts ?? []).flatMap((d) => d.picks.map((p) => p.slot))), [drafts])
+  const { allSlots, selected: selectedSlots, toggleSlot, slotFilter } = useSelectedSlots(slotsParam, setSlots, maxSlot)
+
   // League scopes BOTH inputs (drafts for builds, seasons for finish outcomes) to that tier only;
-  // Team narrows the whole sample to one franchise.
+  // Team narrows the whole sample to one franchise; Draft slot keeps only those draft-order positions.
   const analysis = useMemo(() => {
     if (!drafts || !seasons) return undefined
     const d = league === 'ALL' ? drafts : drafts.filter((x) => x.tier === league)
     const s = league === 'ALL' ? seasons : seasons.filter((x) => x.tier === league)
-    return analyzeBuilds(d, s, threshold, selected, team ? [team] : undefined)
-  }, [drafts, seasons, league, threshold, selected, team])
+    return analyzeBuilds(d, s, threshold, selected, team ? [team] : undefined, slotFilter)
+  }, [drafts, seasons, league, threshold, selected, team, slotFilter])
 
   const rows = useMemo(() => {
     if (!analysis) return []
@@ -209,13 +265,13 @@ export function DraftAnalysis() {
   return (
     <div className="space-y-6">
       <Intro threshold={threshold} totalTeams={analysis.totalTeams} />
-      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} />
+      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} allSlots={allSlots} selectedSlots={selectedSlots} onToggleSlot={toggleSlot} />
 
       {rows.length === 0 ? (
         <p className="text-muted">{emptyMessage(team)}</p>
       ) : (
         <DataTable
-          key={`${league}-${team}-${threshold}-${minTeams}-${posParam}`}
+          key={`${league}-${team}-${threshold}-${minTeams}-${posParam}-${slotsParam}`}
           columns={columns}
           rows={rows}
           getRowKey={(b) => b.key}
