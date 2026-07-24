@@ -34,8 +34,8 @@ it('renders the build table with finish-rate, 1st/last, and edge columns', async
   expect(screen.getByRole('columnheader', { name: 'Last' })).toBeInTheDocument()
   // Default top-6 cutoff → the count column is headed "Top 6".
   expect(screen.getByRole('columnheader', { name: 'Top 6' })).toBeInTheDocument()
-  // 240 team-seasons across every completed tier-season.
-  expect(screen.getByText('Team-seasons').nextSibling).toHaveTextContent('240')
+  // 240 team-seasons across every completed tier-season, stated in the intro.
+  expect(screen.getByText(/240 team-seasons/i)).toBeInTheDocument()
 })
 
 it('the cutoff slider changes the finish-rate column header', async () => {

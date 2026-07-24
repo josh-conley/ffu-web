@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAllDrafts, useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { getMember } from '@/config'
-import { analyzeBuilds, FILTER_POSITIONS, type BuildAnalysis, type BuildStat } from '@/selectors'
+import { analyzeBuilds, FILTER_POSITIONS, type BuildStat } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
 import { SELECT } from '@/components/controls'
@@ -23,15 +23,6 @@ const emptyMessage = (team: string) =>
   team
     ? 'No completed drafts for this team in the current scope.'
     : 'No builds meet the minimum team-season count. Lower “Min teams”.'
-
-function Tile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border border-border bg-surface px-4 py-3">
-      <div className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</div>
-      <div className="text-2xl font-extrabold tabular-nums">{value}</div>
-    </div>
-  )
-}
 
 /** Labeled range slider (sharp accent thumb) — shares the control aesthetic with the selects. */
 function RangeSlider({ label, value, min, max, valueLabel, onChange }: { label: string; value: number; min: number; max: number; valueLabel: string; onChange: (v: string) => void }) {
@@ -138,26 +129,17 @@ function Controls(props: ControlsProps) {
   )
 }
 
-function Intro({ threshold, cutoff }: { threshold: number; cutoff: number }) {
+function Intro({ threshold, cutoff, totalTeams }: { threshold: number; cutoff: number; totalTeams: number }) {
   return (
     <div>
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">Draft Analysis</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Every team's <strong className="text-text">first {threshold} {threshold === 1 ? 'round' : 'rounds'}</strong> of
         picks form a <strong className="text-text">build</strong> — its mix of the checked positions. Rows show how often
-        each build <strong className="text-text">finished in the top {cutoff}</strong>, pooled across every completed draft.{' '}
-        <strong className="text-text">Click any build</strong> to see the teams, years, and rosters behind it.
+        each build <strong className="text-text">finished in the top {cutoff}</strong>, pooled across{' '}
+        <strong className="text-text">{totalTeams} team-seasons</strong>. <strong className="text-text">Click any build</strong>{' '}
+        to see the teams, years, and rosters behind it.
       </p>
-    </div>
-  )
-}
-
-function SummaryTiles({ analysis, shown }: { analysis: BuildAnalysis; shown: number }) {
-  return (
-    <div className="grid grid-cols-3 gap-3">
-      <Tile label="Team-seasons" value={String(analysis.totalTeams)} />
-      <Tile label="Distinct builds" value={String(analysis.builds.length)} />
-      <Tile label="Shown" value={String(shown)} />
     </div>
   )
 }
@@ -230,9 +212,8 @@ export function DraftAnalysis() {
 
   return (
     <div className="space-y-6">
-      <Intro threshold={threshold} cutoff={cutoff} />
+      <Intro threshold={threshold} cutoff={cutoff} totalTeams={analysis.totalTeams} />
       <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} cutoff={cutoff} onCutoff={setCutoff} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} />
-      <SummaryTiles analysis={analysis} shown={rows.length} />
 
       {rows.length === 0 ? (
         <p className="text-muted">{emptyMessage(team)}</p>
