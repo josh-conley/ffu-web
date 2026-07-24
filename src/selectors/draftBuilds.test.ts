@@ -83,4 +83,49 @@ describe('analyzeBuilds', () => {
     expect(res.totalTeams).toBe(4) // the 2024 QB team is not counted
     expect(res.builds.some((b) => b.key === 'QB2')).toBe(false)
   })
+
+  it('carries the team-season instances (with rosters) behind each build', () => {
+    const res = analyzeBuilds(drafts, seasons, 2)
+    const rb = res.builds.find((b) => b.key === 'RB2')!
+    expect(rb.instances).toHaveLength(2)
+    const inst2023 = rb.instances.find((i) => i.year === '2023')!
+    expect(inst2023.memberId).toBe('y')
+    expect(inst2023.madePlayoffs).toBe(false) // only 'z' made it in 2023
+    expect(inst2023.picks.map((p) => p.player.position)).toEqual(['RB', 'RB'])
+    // instances are sorted newest-first
+    expect(rb.instances.map((i) => i.year)).toEqual(['2023', '2022'])
+  })
+})
+
+describe('analyzeBuilds — position filter', () => {
+  // Two teams share 2 RB but differ in the third pick (WR vs TE). Restricting to RB merges them.
+  const d = draft('PREMIER', '2023', [
+    pick(1, 1, 'a', 'RB'), pick(2, 1, 'b', 'RB'),
+    pick(3, 2, 'a', 'RB'), pick(4, 2, 'b', 'RB'),
+    pick(5, 3, 'a', 'WR'), pick(6, 3, 'b', 'TE'),
+  ])
+  const s = [season('PREMIER', '2023', [champGame('a', 'q')])]
+
+  it('with all positions, "2 RB 1 WR" and "2 RB 1 TE" are distinct builds', () => {
+    const res = analyzeBuilds([d], s, 3, ['QB', 'RB', 'WR', 'TE'])
+    expect(res.builds.map((b) => b.key).sort()).toEqual(['RB2-TE1', 'RB2-WR1'])
+  })
+
+  it('restricting to RB merges them into a single "2 RB" bucket', () => {
+    const res = analyzeBuilds([d], s, 3, ['RB'])
+    expect(res.builds).toHaveLength(1)
+    const rb = res.builds[0]
+    expect(rb.key).toBe('RB2')
+    expect(rb.label).toBe('2 RB')
+    expect(rb.teams).toBe(2)
+    expect(rb.playoffTeams).toBe(1) // only 'a' made playoffs
+    // the roster still shows every pick, not just the counted position
+    expect(rb.instances[0].picks).toHaveLength(3)
+  })
+
+  it('labels the "none of the selected positions" bucket explicitly', () => {
+    const res = analyzeBuilds([d], s, 3, ['QB'])
+    expect(res.builds).toHaveLength(1)
+    expect(res.builds[0].label).toBe('0 QB') // neither team drafted a QB early
+  })
 })

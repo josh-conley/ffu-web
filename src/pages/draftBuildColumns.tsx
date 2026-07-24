@@ -9,11 +9,14 @@ import { posClass } from '@/components/positions'
 // of position color); the rate cell draws a proportion bar with the sample baseline marked. Render
 // helpers are lowercase (repo convention, see allTimeColumns) so the file only exports the builder.
 
-/** The build's position composition as colored count-pills, e.g. [2 RB] [1 WR]. */
-function buildBadges(counts: Record<string, number>): ReactNode {
+/** The build's position composition as colored count-pills, e.g. [2 RB] [1 WR]. The "none of the
+ *  selected positions" bucket has no counts, so it falls back to its label ("0 RB · 0 WR"). */
+function buildBadges(counts: Record<string, number>, label: string): ReactNode {
+  const positions = orderedPositions(counts)
+  if (positions.length === 0) return <span className="text-sm font-medium text-muted">{label}</span>
   return (
     <span className="flex flex-wrap items-center gap-1">
-      {orderedPositions(counts).map((p) => (
+      {positions.map((p) => (
         <span key={p} className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-bold ${posClass(p)}`}>
           <span className="tabular-nums">{counts[p]}</span>
           {p}
@@ -50,7 +53,7 @@ function edgeCell(edge: number): ReactNode {
 
 export function buildColumns(baselinePct: number): Column<BuildStat>[] {
   return [
-    { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts) },
+    { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
     {
       key: 'teams',
       header: 'Teams',

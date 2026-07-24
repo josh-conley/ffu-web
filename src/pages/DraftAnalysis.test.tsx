@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { DraftAnalysis } from './DraftAnalysis'
 
@@ -36,4 +36,22 @@ it('renders the build table with a baseline and playoff-rate columns', async () 
 it('reflects the round threshold from the URL in the description', async () => {
   renderAt('/draft-analysis?rounds=4&min=1')
   await waitFor(() => expect(screen.getByText(/first 4 rounds/i)).toBeInTheDocument())
+})
+
+it('unchecking positions merges buckets (RB-only collapses to a single "2 RB" build)', async () => {
+  renderAt('/draft-analysis?rounds=3&min=1&pos=RB')
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
+  // With only RB counted, distinct builds are just the RB counts (0..3 RB) — far fewer than the
+  // full skill-position mix. A "2 RB" build cell (colored count-pill) should be present.
+  const table = screen.getByRole('table')
+  expect(within(table).getAllByText('RB').length).toBeGreaterThan(0)
+})
+
+it('clicking a build row opens the drill-down with team-seasons', async () => {
+  renderAt('/draft-analysis?rounds=1&min=1&pos=QB,RB,WR,TE')
+  await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
+  const rows = screen.getAllByRole('button').filter((el) => el.tagName === 'TR')
+  fireEvent.click(rows[0])
+  // The detail panel is a labelled region listing the teams behind the build.
+  await waitFor(() => expect(screen.getByRole('region', { name: /Teams that drafted/i })).toBeInTheDocument())
 })

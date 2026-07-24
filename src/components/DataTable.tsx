@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type KeyboardEvent } from 'react'
 import { DataTableHead, type ReorderConfig } from './DataTableHead'
 import { TD_BASE, TEXT_ALIGN, stickyCell, type Column, type SortState } from './tableShared'
 
@@ -34,6 +34,45 @@ function Pagination({ page, pageCount, onPage }: { page: number; pageCount: numb
   )
 }
 
+/** One table row — extracted so click/keyboard row semantics don't bloat DataTable's body. */
+function DataRow<T>({
+  row,
+  columns,
+  pinned,
+  selected,
+  onRowClick,
+}: {
+  row: T
+  columns: Column<T>[]
+  pinned: (i: number) => string
+  selected: boolean
+  onRowClick?: (row: T) => void
+}) {
+  const interactive = onRowClick
+    ? {
+        role: 'button',
+        tabIndex: 0,
+        'aria-pressed': selected,
+        onClick: () => onRowClick(row),
+        onKeyDown: (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onRowClick(row)
+          }
+        },
+      }
+    : {}
+  return (
+    <tr className={`group hover:bg-surface-2 ${onRowClick ? 'cursor-pointer' : ''} ${selected ? 'bg-surface-2' : ''}`} {...interactive}>
+      {columns.map((col, ci) => (
+        <td key={col.key} className={`${TD_BASE} ${pinned(ci)} ${col.align && col.align !== 'left' ? TEXT_ALIGN[col.align] : ''}`}>
+          {col.render(row)}
+        </td>
+      ))}
+    </tr>
+  )
+}
+
 /**
  * Generic sortable + paginated table. Column `render` controls display; `sortValue` (optional)
  * enables click-to-sort. Pass a `key` from the parent to remount (reset sort/page) when the
@@ -49,6 +88,8 @@ export function DataTable<T>({
   stickyFirstColumn = false,
   reorder,
   headerClassName,
+  onRowClick,
+  selectedRowKey,
 }: {
   columns: Column<T>[]
   rows: T[]
@@ -63,6 +104,10 @@ export function DataTable<T>({
   reorder?: ReorderConfig
   /** Overrides the header's default accent color (e.g. a tier's solidHeader pairing). */
   headerClassName?: string
+  /** Makes rows clickable (button semantics + keyboard) — e.g. to drill into a row's detail. */
+  onRowClick?: (row: T) => void
+  /** Key of the currently selected row (highlighted); pair with `onRowClick`. */
+  selectedRowKey?: string
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
@@ -89,13 +134,14 @@ export function DataTable<T>({
             <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} headerClassName={headerClassName} />
             <tbody className="divide-y divide-border">
               {pageRows.map((row, i) => (
-                <tr key={getRowKey(row, i)} className="group hover:bg-surface-2">
-                  {columns.map((col, ci) => (
-                    <td key={col.key} className={`${TD_BASE} ${pinned(ci)} ${col.align && col.align !== 'left' ? TEXT_ALIGN[col.align] : ''}`}>
-                      {col.render(row)}
-                    </td>
-                  ))}
-                </tr>
+                <DataRow
+                  key={getRowKey(row, i)}
+                  row={row}
+                  columns={columns}
+                  pinned={pinned}
+                  selected={selectedRowKey !== undefined && getRowKey(row, i) === selectedRowKey}
+                  onRowClick={onRowClick}
+                />
               ))}
             </tbody>
           </table>
