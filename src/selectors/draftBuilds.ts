@@ -176,6 +176,9 @@ export interface BuildAnalysis {
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
+/** Placement cutoff for each finish bracket (≤ cutoff). Shared by the per-build counts + baselines. */
+const BRACKET_CUTOFF = { first: 1, top3: 3, top6: 6, top9: 9 } as const
+
 const mean = (xs: number[]): number => (xs.length > 0 ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 
 /** Median of an already-ascending list (0 when empty). */
@@ -205,10 +208,10 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     avgFinish: mean(placements),
     medianFinish: median(placements),
     avgUpr: uprs.length > 0 ? mean(uprs) : null,
-    first: bracket((i) => i.finalPlacement === 1),
-    top3: bracket((i) => i.finalPlacement <= 3),
-    top6: bracket((i) => i.finalPlacement <= 6),
-    top9: bracket((i) => i.finalPlacement <= 9),
+    first: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.first),
+    top3: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.top3),
+    top6: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.top6),
+    top9: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.top9),
     instances,
   }
 }
@@ -301,24 +304,31 @@ export function analyzeBuilds(
   return { threshold, totalTeams, baselines: computeBaselines(builds, totalTeams), builds }
 }
 
-/** Pooled anchors across every build — the baselines each build's cell is colored against. */
+/**
+ * The anchors each build's cell is colored against. The finish brackets + average finish use the
+ * STRUCTURAL rate — the share expected by chance from the season structure (top-K = K/size; average
+ * finish = (size+1)/2). Deliberately NOT the sample average, so a Team or Draft-slot filter (which
+ * selects for stronger/weaker teams) doesn't drag the "by chance" line off 25/50/75/8%. UPR has no
+ * structural anchor, so it stays the pooled mean of the current scope.
+ */
 function computeBaselines(builds: BuildStat[], totalTeams: number): BuildBaselines {
-  const share = (n: number) => (totalTeams > 0 ? n / totalTeams : 0)
-  let first = 0
-  let top3 = 0
-  let top6 = 0
-  let top9 = 0
-  const placements: number[] = []
+  let invSize = 0 // Σ 1/seasonSize → structural top-K = K · mean(1/size)
+  let finish = 0 // Σ (size+1)/2 → structural average finish
   const uprs: number[] = []
   for (const b of builds) {
-    first += b.first.count
-    top3 += b.top3.count
-    top6 += b.top6.count
-    top9 += b.top9.count
     for (const i of b.instances) {
-      placements.push(i.finalPlacement)
+      invSize += 1 / i.seasonSize
+      finish += (i.seasonSize + 1) / 2
       if (i.upr !== null) uprs.push(i.upr)
     }
   }
-  return { first: share(first), top3: share(top3), top6: share(top6), top9: share(top9), finish: mean(placements), upr: mean(uprs) }
+  const perTeam = totalTeams > 0 ? invSize / totalTeams : 0
+  return {
+    first: BRACKET_CUTOFF.first * perTeam,
+    top3: BRACKET_CUTOFF.top3 * perTeam,
+    top6: BRACKET_CUTOFF.top6 * perTeam,
+    top9: BRACKET_CUTOFF.top9 * perTeam,
+    finish: totalTeams > 0 ? finish / totalTeams : 0,
+    upr: mean(uprs),
+  }
 }

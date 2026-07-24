@@ -105,6 +105,14 @@ describe('analyzeBuilds', () => {
     expect(rb3.avgFinish).toBeCloseTo((1 + 3 + 7 + 10) / 4) // 5.25
     expect(rb3.medianFinish).toBe(5) // (3 + 7) / 2
     expect(rb3.avgUpr).toBeNull() // fixtures have no games → no UPR
+
+    // Baselines are STRUCTURAL (K / seasonSize of 12), not the sample average of these 4 teams
+    // (whose top-3 rate is 50%). This keeps the "by chance" line fixed under Team/slot filters.
+    expect(res.baselines.top3).toBeCloseTo(0.25)
+    expect(res.baselines.top6).toBeCloseTo(0.5)
+    expect(res.baselines.top9).toBeCloseTo(0.75)
+    expect(res.baselines.first).toBeCloseTo(1 / 12)
+    expect(res.baselines.finish).toBeCloseTo(6.5)
   })
 
   it('carries the team-season instances (with rosters + placement) behind each build', () => {
