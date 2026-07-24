@@ -6,7 +6,7 @@ export function DraftAnalysisBanner() {
   return (
     <Link
       to="/draft-analysis"
-      className="group angular flex items-center gap-4 border border-accent/40 bg-accent/10 p-4 transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="group flex items-center gap-4 border border-accent/40 bg-accent/10 p-4 transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <FaChartColumn className="shrink-0 text-2xl text-accent" aria-hidden />
       <div className="min-w-0">
