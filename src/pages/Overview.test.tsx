@@ -26,4 +26,8 @@ it('renders champions grouped by league', async () => {
   await waitFor(() => expect(screen.getByText('Champions by Season')).toBeInTheDocument())
   // 2024 Premier champion (ffu-009) shows its current name.
   expect(screen.getAllByText('Fort Wayne Banana Bread').length).toBeGreaterThan(0)
+  // Draft Analysis banner links to the tool; Upcoming Drafts section is present (TBD placeholders).
+  expect(screen.getByRole('link', { name: /Draft Analysis/i })).toHaveAttribute('href', '/draft-analysis')
+  expect(screen.getByText('Upcoming Drafts')).toBeInTheDocument()
+  expect(screen.getAllByText('TBD').length).toBe(3)
 })

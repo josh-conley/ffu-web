@@ -9,6 +9,8 @@ import { LatestChampions, type LatestChampion } from '@/components/LatestChampio
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
 import { CurrentWeekStandings } from '@/components/CurrentWeekStandings'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
+import { DraftAnalysisBanner } from '@/components/DraftAnalysisBanner'
+import { UpcomingDrafts } from '@/components/UpcomingDrafts'
 import { TIER_PRESTIGE } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -51,6 +53,7 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
+      <DraftAnalysisBanner />
       {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
           resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
           keeps the section headings from rendering over an empty (or permanently failed) grid. */}
@@ -76,6 +79,7 @@ export function Overview() {
           </section>
         </>
       )}
+      <UpcomingDrafts />
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
