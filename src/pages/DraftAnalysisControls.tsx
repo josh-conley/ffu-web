@@ -178,13 +178,14 @@ export function Controls(props: ControlsProps) {
           </select>
         </Field>
         <YearRange years={years} fromYear={fromYear} toYear={toYear} onFrom={onFrom} onTo={onTo} />
-        {showMin && (
-          <RangeSlider label="Min teams" value={Number(minParam)} min={1} max={20} valueLabel={`≥ ${minParam}`} onChange={onMin} />
-        )}
       </div>
-      {/* Row 2 — build definition: how a team's picks become a build. */}
+      {/* Row 2 — sizing sliders: how deep a build reads, and the min-sample cutoff. */}
       <div className={`${row} border-t border-border pt-3`}>
         <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
+        {showMin && <RangeSlider label="Min teams" value={Number(minParam)} min={1} max={20} valueLabel={`≥ ${minParam}`} onChange={onMin} />}
+      </div>
+      {/* Row 3 — build filters: which positions count, and which draft slots qualify. */}
+      <div className={row}>
         <PositionCheckboxes selected={selected} onToggle={onTogglePos} onAll={onAllPos} />
         <SlotCheckboxes allSlots={allSlots} selected={selectedSlots} onToggle={onToggleSlot} onAll={onAllSlots} />
       </div>
