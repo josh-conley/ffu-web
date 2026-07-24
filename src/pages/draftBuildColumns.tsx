@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { FaChevronRight } from 'react-icons/fa6'
 import type { BuildStat } from '@/selectors'
 import { orderedPositions } from '@/selectors'
 import type { Column } from '@/components/DataTable'
@@ -51,7 +52,7 @@ function edgeCell(edge: number): ReactNode {
   )
 }
 
-export function buildColumns(baselinePct: number): Column<BuildStat>[] {
+export function buildColumns(baselinePct: number, openKey?: string): Column<BuildStat>[] {
   return [
     { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
     {
@@ -84,6 +85,18 @@ export function buildColumns(baselinePct: number): Column<BuildStat>[] {
       title: 'Percentage points above/below the sample baseline',
       sortValue: (b) => b.edge,
       render: (b) => edgeCell(b.edge),
+    },
+    {
+      key: 'open',
+      header: '',
+      align: 'center',
+      title: 'Click a row to view the teams',
+      render: (b) => (
+        <span className="flex items-center justify-center gap-1 whitespace-nowrap text-muted group-hover:text-accent">
+          <span className="hidden text-[11px] font-semibold uppercase tracking-wide lg:inline">Teams</span>
+          <FaChevronRight size={11} className={`transition-transform ${b.key === openKey ? 'rotate-90 text-accent' : ''}`} />
+        </span>
+      ),
     },
   ]
 }

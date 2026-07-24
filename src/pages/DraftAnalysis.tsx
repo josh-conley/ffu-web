@@ -123,9 +123,8 @@ function Intro({ threshold }: { threshold: number }) {
 
 function SummaryTiles({ analysis, shown }: { analysis: BuildAnalysis; shown: number }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-3 gap-3">
       <Tile label="Team-seasons" value={String(analysis.totalTeams)} />
-      <Tile label="Baseline rate" value={`${Math.round(analysis.baselinePct * 100)}%`} />
       <Tile label="Distinct builds" value={String(analysis.builds.length)} />
       <Tile label="Shown" value={String(shown)} />
     </div>
@@ -171,7 +170,7 @@ export function DraftAnalysis() {
   }, [drafts, seasons, league, threshold, selected])
 
   const rows = useMemo(() => (analysis ? analysis.builds.filter((b) => b.teams >= minTeams) : []), [analysis, minTeams])
-  const columns = useMemo(() => buildColumns(analysis?.baselinePct ?? 0.5), [analysis?.baselinePct])
+  const columns = useMemo(() => buildColumns(analysis?.baselinePct ?? 0.5, openKey), [analysis?.baselinePct, openKey])
   const openBuild = analysis?.builds.find((b) => b.key === openKey)
   const toggleOpen = (b: BuildStat) => setOpenKey((k) => (k === b.key ? undefined : b.key))
 

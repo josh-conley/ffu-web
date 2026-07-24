@@ -26,11 +26,12 @@ function renderAt(path: string) {
   )
 }
 
-it('renders the build table with a baseline and playoff-rate columns', async () => {
+it('renders the build table with playoff-rate and edge columns', async () => {
   renderAt('/draft-analysis?rounds=3&min=1')
   await waitFor(() => expect(screen.getByRole('columnheader', { name: 'Playoff Rate' })).toBeInTheDocument())
-  // 6-of-12 make the playoffs every season → the pooled baseline is exactly 50%.
-  expect(screen.getByText('Baseline rate').nextSibling).toHaveTextContent('50%')
+  expect(screen.getByRole('columnheader', { name: 'Edge' })).toBeInTheDocument()
+  // 240 team-seasons across every completed tier-season.
+  expect(screen.getByText('Team-seasons').nextSibling).toHaveTextContent('240')
 })
 
 it('reflects the round threshold from the URL in the description', async () => {
