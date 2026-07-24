@@ -128,4 +128,18 @@ describe('analyzeBuilds — position filter', () => {
     expect(res.builds).toHaveLength(1)
     expect(res.builds[0]!.label).toBe('0 QB') // neither team drafted a QB early
   })
+
+  it('restricts the whole sample (and baseline) to the given members', () => {
+    // Only team 'a' (made playoffs) → sample of one, baseline 100%.
+    const res = analyzeBuilds([d], s, 3, ['QB', 'RB', 'WR', 'TE'], ['a'])
+    expect(res.totalTeams).toBe(1)
+    expect(res.baselinePct).toBe(1)
+    expect(res.builds).toHaveLength(1)
+    expect(res.builds[0]!.instances.every((i) => i.memberId === 'a')).toBe(true)
+  })
+
+  it('an empty member list means no restriction', () => {
+    const res = analyzeBuilds([d], s, 3, ['QB', 'RB', 'WR', 'TE'], [])
+    expect(res.totalTeams).toBe(2)
+  })
 })

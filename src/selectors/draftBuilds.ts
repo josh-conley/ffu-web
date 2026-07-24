@@ -164,28 +164,31 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
 
 /**
  * Aggregate first-N-round builds across every draft and report playoff rates. `selected` restricts
- * which positions count toward a build (default: all skill positions). Unfinished seasons (no
+ * which positions count toward a build (default: all skill positions); `memberIds`, when non-empty,
+ * restricts the whole sample (and its baseline) to those franchises. Unfinished seasons (no
  * championship bracket recorded yet) are excluded so a live/incomplete season never dilutes the
  * rates. `seasons` supplies the playoff outcomes; `drafts` the picks — both should already be scoped
  * (e.g. to a single tier) by the caller.
  */
-export function analyzeBuilds(
+type BuildBucket = { counts: Record<string, number>; instances: BuildInstance[] }
+
+/** Fold every (completed-season) team's build into buckets; returns the aggregate + sample totals. */
+function accumulateBuilds(
   drafts: DraftData[],
-  seasons: SeasonData[],
+  playoffs: Map<string, Set<string>>,
   threshold: number,
-  selected: readonly string[] = FILTER_POSITIONS,
-): BuildAnalysis {
-  const set = new Set(selected)
-  const playoffs = playoffBySeason(seasons)
-  const agg = new Map<string, { counts: Record<string, number>; instances: BuildInstance[] }>()
+  positions: Set<string>,
+  memberFilter: Set<string> | undefined,
+): { agg: Map<string, BuildBucket>; totalTeams: number; totalPlayoff: number } {
+  const agg = new Map<string, BuildBucket>()
   let totalTeams = 0
   let totalPlayoff = 0
-
   for (const draft of drafts) {
     const made = playoffs.get(`${draft.year}|${draft.tier}`)
     if (!made || made.size === 0) continue // no playoffs recorded → unfinished season, skip
     for (const [memberId, picks] of firstNPicksByTeam(draft, threshold)) {
-      const counts = countsFor(picks, set)
+      if (memberFilter && !memberFilter.has(memberId)) continue
+      const counts = countsFor(picks, positions)
       const key = buildKey(counts) || EMPTY_KEY
       let entry = agg.get(key)
       if (entry === undefined) {
@@ -198,7 +201,19 @@ export function analyzeBuilds(
       if (madePlayoffs) totalPlayoff += 1
     }
   }
+  return { agg, totalTeams, totalPlayoff }
+}
 
+export function analyzeBuilds(
+  drafts: DraftData[],
+  seasons: SeasonData[],
+  threshold: number,
+  selected: readonly string[] = FILTER_POSITIONS,
+  memberIds?: readonly string[],
+): BuildAnalysis {
+  const positions = new Set(selected)
+  const memberFilter = memberIds && memberIds.length > 0 ? new Set(memberIds) : undefined
+  const { agg, totalTeams, totalPlayoff } = accumulateBuilds(drafts, playoffBySeason(seasons), threshold, positions, memberFilter)
   const baselinePct = totalTeams > 0 ? totalPlayoff / totalTeams : 0
   const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, baselinePct, selected))
   return { threshold, totalTeams, playoffTeams: totalPlayoff, baselinePct, builds }

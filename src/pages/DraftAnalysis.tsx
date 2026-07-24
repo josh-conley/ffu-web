@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useAllDrafts, useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
+import { getMember } from '@/config'
 import { analyzeBuilds, FILTER_POSITIONS, type BuildAnalysis, type BuildStat } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
@@ -20,6 +21,11 @@ const LEAGUE_OPTIONS = [
 // positions, so builds stop discriminating. The two the user reasons about (3, 4) sit in the middle.
 const THRESHOLDS = [1, 2, 3, 4, 5, 6, 7, 8] as const
 const MIN_OPTIONS = [1, 2, 3, 5, 10]
+
+const emptyMessage = (team: string) =>
+  team
+    ? 'No completed drafts for this team in the current scope.'
+    : 'No builds meet the minimum team-season count. Lower “Min teams”.'
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
@@ -57,25 +63,44 @@ function PositionCheckboxes({ selected, onToggle }: { selected: string[]; onTogg
   )
 }
 
+interface Option {
+  value: string
+  label: string
+}
+
 interface ControlsProps {
   league: string
   onLeague: (v: string) => void
+  team: string
+  onTeam: (v: string) => void
+  teamOptions: Option[]
   threshold: number
   onThreshold: (v: string) => void
   minParam: string
   onMin: (v: string) => void
+  showMin: boolean
   selected: string[]
   onTogglePos: (p: string) => void
 }
 
 function Controls(props: ControlsProps) {
-  const { league, onLeague, threshold, onThreshold, minParam, onMin, selected, onTogglePos } = props
+  const { league, onLeague, team, onTeam, teamOptions, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos } = props
   return (
     <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
       <label className="flex flex-col gap-1">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
         <select className={`${SELECT} w-full sm:w-44`} value={league} onChange={(e) => onLeague(e.target.value)} aria-label="League">
           {LEAGUE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Team</span>
+        <select className={`${SELECT} w-full sm:w-52`} value={team} onChange={(e) => onTeam(e.target.value)} aria-label="Team">
+          <option value="">All Teams</option>
+          {teamOptions.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
@@ -94,14 +119,16 @@ function Controls(props: ControlsProps) {
 
       <PositionCheckboxes selected={selected} onToggle={onTogglePos} />
 
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">Min teams</span>
-        <select className={`${SELECT} w-full sm:w-28`} value={minParam} onChange={(e) => onMin(e.target.value)} aria-label="Minimum team-seasons">
-          {MIN_OPTIONS.map((n) => (
-            <option key={n} value={n}>{`≥ ${n}`}</option>
-          ))}
-        </select>
-      </label>
+      {showMin && (
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">Min teams</span>
+          <select className={`${SELECT} w-full sm:w-28`} value={minParam} onChange={(e) => onMin(e.target.value)} aria-label="Minimum team-seasons">
+            {MIN_OPTIONS.map((n) => (
+              <option key={n} value={n}>{`≥ ${n}`}</option>
+            ))}
+          </select>
+        </label>
+      )}
     </div>
   )
 }
@@ -153,6 +180,7 @@ export function DraftAnalysis() {
   const { data: seasons, loading: seasonsLoading, error: seasonsError } = useAllSeasons()
 
   const [league, setLeague] = useUrlState('league', 'ALL')
+  const [team, setTeam] = useUrlState('team', '')
   const [roundsParam, setRounds] = useUrlState('rounds', '3')
   const [minParam, setMin] = useUrlState('min', '3')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
@@ -161,33 +189,50 @@ export function DraftAnalysis() {
   const { selected, togglePos } = useSelectedPositions(posParam, setPos)
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
 
-  // League scopes BOTH inputs (drafts for builds, seasons for playoff outcomes) to that tier only.
+  // Every franchise that has ever drafted, by name — the Team dropdown's options.
+  const teamOptions = useMemo(() => {
+    const ids = new Set<string>()
+    for (const d of drafts ?? []) for (const p of d.picks) ids.add(p.memberId)
+    return [...ids]
+      .map((id) => ({ value: id, label: getMember(id)?.name ?? id }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [drafts])
+
+  // League scopes BOTH inputs (drafts for builds, seasons for playoff outcomes) to that tier only;
+  // Team narrows the whole sample (and its baseline) to one franchise.
   const analysis = useMemo(() => {
     if (!drafts || !seasons) return undefined
     const d = league === 'ALL' ? drafts : drafts.filter((x) => x.tier === league)
     const s = league === 'ALL' ? seasons : seasons.filter((x) => x.tier === league)
-    return analyzeBuilds(d, s, threshold, selected)
-  }, [drafts, seasons, league, threshold, selected])
+    return analyzeBuilds(d, s, threshold, selected, team ? [team] : undefined)
+  }, [drafts, seasons, league, threshold, selected, team])
 
-  const rows = useMemo(() => (analysis ? analysis.builds.filter((b) => b.teams >= minTeams) : []), [analysis, minTeams])
+  const rows = useMemo(() => {
+    if (!analysis) return []
+    // A single-franchise sample is tiny, so the min-teams noise filter (and its control) drops to 1.
+    const min = team ? 1 : minTeams
+    return analysis.builds.filter((b) => b.teams >= min)
+  }, [analysis, team, minTeams])
   const columns = useMemo(() => buildColumns(analysis?.baselinePct ?? 0.5, openKey), [analysis?.baselinePct, openKey])
-  const openBuild = analysis?.builds.find((b) => b.key === openKey)
   const toggleOpen = (b: BuildStat) => setOpenKey((k) => (k === b.key ? undefined : b.key))
 
+  const loadError = draftsError ?? seasonsError
   if (draftsLoading || seasonsLoading) return <LoadingSpinner />
-  if (draftsError || seasonsError || !analysis) return <ErrorMessage error={draftsError ?? seasonsError ?? 'No data'} />
+  if (loadError || !analysis) return <ErrorMessage error={loadError ?? 'No data'} />
+
+  const openBuild = analysis.builds.find((b) => b.key === openKey)
 
   return (
     <div className="space-y-6">
       <Intro threshold={threshold} />
-      <Controls league={league} onLeague={setLeague} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} selected={selected} onTogglePos={togglePos} />
+      <Controls league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions} threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team} selected={selected} onTogglePos={togglePos} />
       <SummaryTiles analysis={analysis} shown={rows.length} />
 
       {rows.length === 0 ? (
-        <p className="text-muted">No builds meet the minimum team-season count. Lower “Min teams”.</p>
+        <p className="text-muted">{emptyMessage(team)}</p>
       ) : (
         <DataTable
-          key={`${league}-${threshold}-${minTeams}-${posParam}`}
+          key={`${league}-${team}-${threshold}-${minTeams}-${posParam}`}
           columns={columns}
           rows={rows}
           getRowKey={(b) => b.key}
