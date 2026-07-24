@@ -94,3 +94,31 @@ body {
 @utility decal {
   filter: drop-shadow(4px 4px 0 var(--decal-shadow));
 }
+
+/* Two-knob range slider (Draft Analysis year range). Both inputs are stacked on one track and made
+   pointer-transparent except their thumbs, so each knob stays independently draggable. */
+.range-dual {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.range-dual::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  border: 2px solid var(--color-surface);
+  cursor: pointer;
+}
+.range-dual::-moz-range-thumb {
+  pointer-events: auto;
+  height: 16px;
+  width: 16px;
+  border: 2px solid var(--color-surface);
+  border-radius: 9999px;
+  background: var(--color-accent);
+  cursor: pointer;
+}

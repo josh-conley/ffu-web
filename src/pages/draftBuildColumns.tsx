@@ -56,6 +56,29 @@ function bracketColumn(key: string, header: string, get: (b: BuildStat) => Brack
   }
 }
 
+/** A scalar metric tinted vs its baseline (green better, red worse); `higherIsBetter` sets direction. */
+function metricCell(value: number | null, baseline: number, higherIsBetter: boolean, epsilon: number, fmt: (n: number) => string): ReactNode {
+  if (value === null) return <span className="text-muted">—</span>
+  const good = higherIsBetter ? value - baseline : baseline - value
+  const tone = Math.abs(good) < epsilon ? 'text-muted' : good > 0 ? 'text-positive' : 'text-negative'
+  return <span className={`font-semibold tabular-nums ${tone}`}>{fmt(value)}</span>
+}
+
+function metricColumn(key: string, header: string, title: string, get: (b: BuildStat) => number | null, baseline: number, higherIsBetter: boolean, epsilon: number, fmt: (n: number) => string): Column<BuildStat> {
+  // Nulls sort to the bottom regardless of direction.
+  const sortMiss = higherIsBetter ? -Infinity : Infinity
+  return {
+    key,
+    header,
+    align: 'right',
+    title,
+    sortValue: (b) => get(b) ?? sortMiss,
+    render: (b) => metricCell(get(b), baseline, higherIsBetter, epsilon, fmt),
+  }
+}
+
+const f1 = (n: number) => n.toFixed(1)
+
 export function buildColumns(baselines: BuildBaselines, openKey?: string): Column<BuildStat>[] {
   return [
     { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
@@ -67,6 +90,9 @@ export function buildColumns(baselines: BuildBaselines, openKey?: string): Colum
       sortValue: (b) => b.teams,
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
+    metricColumn('avgFinish', 'Avg', `Average final placement — baseline ${baselines.finish.toFixed(1)} (lower is better)`, (b) => b.avgFinish, baselines.finish, false, 0.05, f1),
+    metricColumn('medianFinish', 'Med', 'Median final placement (lower is better)', (b) => b.medianFinish, baselines.finish, false, 0.05, f1),
+    metricColumn('avgUpr', 'UPR', `Average Unified Power Rating — baseline ${baselines.upr.toFixed(1)} (higher is better)`, (b) => b.avgUpr, baselines.upr, true, 0.5, f1),
     bracketColumn('first', '1st', (b) => b.first, baselines.first),
     bracketColumn('top3', 'Top 3', (b) => b.top3, baselines.top3),
     bracketColumn('top6', 'Top 6', (b) => b.top6, baselines.top6),

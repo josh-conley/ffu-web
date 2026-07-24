@@ -102,6 +102,9 @@ describe('analyzeBuilds', () => {
     expect(rb3.top3).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q'
     expect(rb3.top6).toEqual({ count: 2, pct: 0.5 }) // 'p', 'q' (7th is out)
     expect(rb3.top9).toEqual({ count: 3, pct: 0.75 }) // 'p', 'q', 'r' (10th is out)
+    expect(rb3.avgFinish).toBeCloseTo((1 + 3 + 7 + 10) / 4) // 5.25
+    expect(rb3.medianFinish).toBe(5) // (3 + 7) / 2
+    expect(rb3.avgUpr).toBeNull() // fixtures have no games → no UPR
   })
 
   it('carries the team-season instances (with rosters + placement) behind each build', () => {

@@ -1,6 +1,7 @@
 import type { DraftData, DraftPick, SeasonData } from '@/data'
 import type { Tier } from '@/config/types'
 import { teamsBySlot } from './draft'
+import { seasonUpr } from './upr'
 
 // Roster-construction analysis (the /draft-analysis page). A team's "build" is the position
 // composition of the picks it MADE in rounds 1..threshold (traded picks belong to whoever made
@@ -113,6 +114,8 @@ export interface BuildInstance {
   finalPlacement: number
   /** Teams in that tier-season (so "last place" = finalPlacement === seasonSize). */
   seasonSize: number
+  /** Unified Power Rating for that team-season (regular-season strength); null if unavailable. */
+  upr: number | null
   /** The team's picks in rounds 1..threshold, in draft order (all positions — the actual roster). */
   picks: DraftPick[]
 }
@@ -132,6 +135,12 @@ export interface BuildStat {
   size: number
   /** Team-seasons that drafted this build. */
   teams: number
+  /** Mean final placement (lower is better). */
+  avgFinish: number
+  /** Median final placement (lower is better). */
+  medianFinish: number
+  /** Mean Unified Power Rating across the build's team-seasons; null if none have a UPR. */
+  avgUpr: number | null
   /** Finished 1st (champions). */
   first: Bracket
   /** Finished in the top 3 (by final placement). */
@@ -144,12 +153,16 @@ export interface BuildStat {
   instances: BuildInstance[]
 }
 
-/** Sample-wide share landing in each bracket — the "expected by chance" line (≈ 1/12, 3/12, 6/12, 3/12). */
+/** Sample-wide anchors each build is read against: bracket shares + average finish + average UPR. */
 export interface BuildBaselines {
   first: number
   top3: number
   top6: number
   top9: number
+  /** Pooled mean final placement (≈ 6.5 in a 12-team league). */
+  finish: number
+  /** Pooled mean UPR across the sample. */
+  upr: number
 }
 
 export interface BuildAnalysis {
@@ -163,13 +176,25 @@ export interface BuildAnalysis {
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
-/** Finalize one aggregated bucket into a BuildStat (finish brackets + sorted instances). */
+const mean = (xs: number[]): number => (xs.length > 0 ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
+
+/** Median of an already-ascending list (0 when empty). */
+function median(sorted: number[]): number {
+  const n = sorted.length
+  if (n === 0) return 0
+  const mid = n >> 1
+  return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+}
+
+/** Finalize one aggregated bucket into a BuildStat (finish stats, UPR, brackets, sorted instances). */
 function toBuildStat(key: string, counts: Record<string, number>, instances: BuildInstance[], selected: readonly string[]): BuildStat {
   const teams = instances.length
   const bracket = (pred: (i: BuildInstance) => boolean): Bracket => {
     const count = instances.filter(pred).length
     return { count, pct: teams > 0 ? count / teams : 0 }
   }
+  const placements = instances.map((i) => i.finalPlacement).sort((a, b) => a - b)
+  const uprs = instances.map((i) => i.upr).filter((u): u is number => u !== null)
   instances.sort((a, b) => Number(b.year) - Number(a.year) || TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   return {
     key,
@@ -177,6 +202,9 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     label: buildLabel(counts) || emptyLabel(selected),
     size: Object.values(counts).reduce((a, b) => a + b, 0),
     teams,
+    avgFinish: mean(placements),
+    medianFinish: median(placements),
+    avgUpr: uprs.length > 0 ? mean(uprs) : null,
     first: bracket((i) => i.finalPlacement === 1),
     top3: bracket((i) => i.finalPlacement <= 3),
     top6: bracket((i) => i.finalPlacement <= 6),
@@ -213,6 +241,7 @@ function accumulateBuilds(
   drafts: DraftData[],
   placements: Map<string, Map<string, number>>,
   seasonSizes: Map<string, number>,
+  uprBySeason: Map<string, Map<string, number>>,
   threshold: number,
   positions: Set<string>,
   filters: Filters,
@@ -225,6 +254,7 @@ function accumulateBuilds(
     if (finish === undefined) continue // no placements recorded → unfinished season, skip
     const seasonSize = seasonSizes.get(key) ?? finish.size
     const slotOf = slotByMember(draft)
+    const uprOf = uprBySeason.get(key)
     for (const [memberId, picks] of firstNPicksByTeam(draft, threshold)) {
       const place = finish.get(memberId)
       if (!keepTeam(place, memberId, slotOf.get(memberId), filters)) continue
@@ -235,7 +265,7 @@ function accumulateBuilds(
         entry = { counts, instances: [] }
         agg.set(bucketKey, entry)
       }
-      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, finalPlacement: place!, seasonSize, picks })
+      entry.instances.push({ year: draft.year, tier: draft.tier, memberId, finalPlacement: place!, seasonSize, upr: uprOf?.get(memberId) ?? null, picks })
       totalTeams += 1
     }
   }
@@ -264,24 +294,31 @@ export function analyzeBuilds(
   const filters: Filters = { members: toSet(memberIds), slots: toSet(slots) }
   const placements = placementBySeason(seasons)
   const seasonSizes = new Map(seasons.map((s) => [`${s.year}|${s.tier}`, s.teams.length]))
-  const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, threshold, positions, filters)
+  const uprBySeason = new Map(seasons.map((s) => [`${s.year}|${s.tier}`, seasonUpr(s)] as const))
+  const { agg, totalTeams } = accumulateBuilds(drafts, placements, seasonSizes, uprBySeason, threshold, positions, filters)
 
   const builds = [...agg.entries()].map(([key, e]) => toBuildStat(key, e.counts, e.instances, selected))
-  return { threshold, totalTeams, baselines: bracketBaselines(builds, totalTeams), builds }
+  return { threshold, totalTeams, baselines: computeBaselines(builds, totalTeams), builds }
 }
 
-/** Pooled bracket rates across every build — the baseline each build's cell is colored against. */
-function bracketBaselines(builds: BuildStat[], totalTeams: number): BuildBaselines {
+/** Pooled anchors across every build — the baselines each build's cell is colored against. */
+function computeBaselines(builds: BuildStat[], totalTeams: number): BuildBaselines {
   const share = (n: number) => (totalTeams > 0 ? n / totalTeams : 0)
   let first = 0
   let top3 = 0
   let top6 = 0
   let top9 = 0
+  const placements: number[] = []
+  const uprs: number[] = []
   for (const b of builds) {
     first += b.first.count
     top3 += b.top3.count
     top6 += b.top6.count
     top9 += b.top9.count
+    for (const i of b.instances) {
+      placements.push(i.finalPlacement)
+      if (i.upr !== null) uprs.push(i.upr)
+    }
   }
-  return { first: share(first), top3: share(top3), top6: share(top6), top9: share(top9) }
+  return { first: share(first), top3: share(top3), top6: share(top6), top9: share(top9), finish: mean(placements), upr: mean(uprs) }
 }
