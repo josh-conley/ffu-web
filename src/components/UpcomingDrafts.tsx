@@ -19,7 +19,8 @@ export function UpcomingDrafts({ year }: { year?: string }) {
               {year ? `${year} ` : ''}Draft Season Is Coming
             </h3>
             <p className="mt-1 text-sm text-muted">
-              Dates to be announced for all three leagues — clear your calendars and check back soon.
+              Be on the lookout for the availability poll — the commissioner will have everyone pick the dates and times
+              they can make before locking in each league's draft.
             </p>
           </div>
           <ul className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-8">
