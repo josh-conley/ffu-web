@@ -82,6 +82,12 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Sticky-nav height, measured at runtime by Header and consumed as a sticky `top` offset elsewhere
+   (e.g. the draft board's sticky header row). The value here is a sensible pre-measure fallback. */
+:root {
+  --nav-h: 4.375rem;
+}
+
 /* FFU "cutout decal" motif — a single clipped bottom-right corner (athletic, broadcast-
    graphics feel) used as a deliberate accent on cards/tiles/chips. Pair with `.decal` for a
    hard offset drop-shadow; drop-shadow (not box-shadow) follows the clipped shape. */
