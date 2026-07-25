@@ -57,11 +57,11 @@ export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: Cel
       </div>
       <div className="flex flex-col gap-0.5 px-2 py-1.5">
         <span className="truncate text-xs font-bold leading-tight tracking-tight">{shortName(player)}</span>
-        <span className="grid grid-cols-3 items-center gap-1 font-mono text-[11px] uppercase tracking-wide text-muted">
+        <span className="grid grid-cols-3 items-center gap-1 font-mono text-[9px] uppercase tracking-wide text-muted sm:text-[11px]">
           <span className="truncate">{player.position !== 'DEF' && player.nflTeam ? player.nflTeam : ''}</span>
           {traded ? (
             <span className="flex items-center justify-center gap-1 font-bold text-accent" title={`Traded to ${acquirer(pick)}`}>
-              <FaArrowRightArrowLeft className="text-[9px]" aria-label="Traded pick" />
+              <FaArrowRightArrowLeft className="text-[8px] sm:text-[9px]" aria-label="Traded pick" />
               {acquirer(pick)}
             </span>
           ) : (
