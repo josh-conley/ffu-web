@@ -31,6 +31,8 @@ function MatchupsContent({ season, year, member }: { season: SeasonData; year: s
 
   const subtitleFor = (game: Game, memberId: string): string | undefined => {
     if (game.isPlayoff) {
+      // ESPN-era (2018–2020) has no reliable playoff seed captured — show nothing there.
+      if (season.era !== 'sleeper') return undefined
       const seed = seeds.get(memberId)
       return seed ? `#${seed}` : undefined
     }

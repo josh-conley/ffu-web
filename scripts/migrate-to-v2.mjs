@@ -168,6 +168,23 @@ function applyDivisionsSupplement(season) {
     .sort((a, b) => a.id - b.id)
 }
 
+/**
+ * ESPN-era (2018–2020) fix: the top-6 bracket has the two Championship-QF losers play a 5th-place
+ * matchup (again in wk16 as "5th Place"), but the legacy export labels its first leg "Championship
+ * Semifinal" — the same as the two REAL semis, so the board shows three semifinals. Relabel that one
+ * game (the "Championship Semifinal" whose participants both finished 5th/6th) to "5th Place". Only
+ * the round text changes; the bracket stays 'championship', so playoff-appearance counts are intact.
+ * (The bottom-6 "Toilet Bowl" is a genuine no-bye 6-team round — three real semis — left untouched.)
+ */
+function relabelFifthPlace(season) {
+  const place = new Map(season.teams.map((t) => [t.memberId, t.finalPlacement]))
+  for (const g of season.games) {
+    if (g.round === 'Championship Semifinal' && g.participants.every((p) => (place.get(p.memberId) ?? 0) >= 5)) {
+      g.round = '5th Place'
+    }
+  }
+}
+
 function buildSeason(legacy) {
   const season = {
     schemaVersion: SCHEMA_VERSION,
@@ -181,6 +198,7 @@ function buildSeason(legacy) {
   const divisions = buildDivisions(legacy)
   if (divisions) season.divisions = divisions
   applyDivisionsSupplement(season)
+  relabelFifthPlace(season)
   return season
 }
 
