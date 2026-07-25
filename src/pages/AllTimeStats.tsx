@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { FaArrowsLeftRight } from 'react-icons/fa6'
 import { useAllLineups, useAllSeasons, usePlayers } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
@@ -20,6 +21,13 @@ const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
+
+const REORDER_HINT = (
+  <p className="flex items-center gap-1.5 text-xs text-muted">
+    <FaArrowsLeftRight className="shrink-0 text-accent" aria-hidden />
+    Drag the column headers to reorder them, and use the <strong className="text-text">Columns</strong> button to show or hide any column.
+  </p>
+)
 
 const EFFICIENCY_DEFS = (
   <StatDefs
@@ -112,6 +120,7 @@ export function AllTimeStats() {
           <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={resetVisibility} onHideAll={hideAll} onResetOrder={resetOrder} orderCustomized={orderCustomized} locked={['team']} />
         </div>
       </div>
+      {REORDER_HINT}
       {filtered.length === 0 ? (
         <p className="text-muted">No members match these filters.</p>
       ) : (
