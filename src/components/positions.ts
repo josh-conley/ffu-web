@@ -9,24 +9,24 @@ const POS_COLOR: Record<string, string> = {
   WR: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
   TE: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
   K: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
-  DEF: 'bg-amber-200 text-amber-900 dark:bg-amber-700/25 dark:text-amber-400',
+  DEF: 'bg-[#e8d6bd] text-[#5b4636] dark:bg-[#5b4636]/40 dark:text-[#d4b48c]',
   // Lineup slots (not draft positions): FLEX is RB/WR/TE-eligible — purple, clearly off RB's green.
   FLEX: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
   SUPER_FLEX: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
 }
 
-/** Position "chyron" bar for the draft board's pick nameplates (bg + text, per position). The skill
- *  positions use a soft pastel with near-black text in light mode and a deeper fill with white text
- *  in dark mode. DEF is the exception: a genuine brown only reads as brown when it's dark, so it
- *  stays a deep brown (white text) in BOTH modes — which also keeps it clearly apart from QB (red)
- *  and TE (yellow), the warm neighbors it used to blur into. */
+/** Position "chyron" bar for the draft board's pick nameplates (bg + text, per position): a soft
+ *  pastel with near-black text in light mode, a deeper fill with white text in dark mode. DEF is a
+ *  warm brown — a light tan in light mode, deep coffee in dark — to sit apart from QB (red) and TE
+ *  (yellow), the warm neighbors it used to blur into. Tailwind has no good tan (amber reads gold and
+ *  clashes with yellow, stone reads gray), so DEF uses bespoke brown hexes. */
 const POS_BAR: Record<string, string> = {
   QB: 'bg-red-300 text-slate-900 dark:bg-red-700 dark:text-white',
   RB: 'bg-emerald-300 text-slate-900 dark:bg-emerald-700 dark:text-white',
   WR: 'bg-sky-300 text-slate-900 dark:bg-sky-700 dark:text-white',
   TE: 'bg-yellow-300 text-slate-900 dark:bg-yellow-700 dark:text-white',
   K: 'bg-purple-300 text-slate-900 dark:bg-purple-700 dark:text-white',
-  DEF: 'bg-amber-800 text-white dark:bg-amber-900 dark:text-white',
+  DEF: 'bg-[#d4b48c] text-slate-900 dark:bg-[#5b4636] dark:text-white',
 }
 
 /** Pale background-only tint (no text color) for filling a whole surface, e.g. the draft-board pick
@@ -37,7 +37,7 @@ const POS_TINT: Record<string, string> = {
   WR: 'bg-sky-50 dark:bg-sky-500/10',
   TE: 'bg-yellow-50 dark:bg-yellow-500/10',
   K: 'bg-purple-50 dark:bg-purple-500/10',
-  DEF: 'bg-amber-100/70 dark:bg-amber-800/15',
+  DEF: 'bg-[#f2e9db] dark:bg-[#5b4636]/20',
 }
 
 export const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
