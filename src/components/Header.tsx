@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef } from 'react'
+import { Fragment } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavHref } from '@/hooks/useNavHref'
 import { ThemeToggle } from './ThemeToggle'
@@ -10,21 +10,8 @@ import { NAV } from './nav'
 // and the active nav tab.
 export function Header() {
   const hrefFor = useNavHref()
-  // Publish the live nav height as `--nav-h` so sticky content elsewhere (the draft board's header
-  // row) can pin itself right below the bar regardless of breakpoint/logo-size changes.
-  const ref = useRef<HTMLElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const update = () => document.documentElement.style.setProperty('--nav-h', `${el.offsetHeight}px`)
-    update()
-    if (typeof ResizeObserver === 'undefined') return // jsdom / older envs: one-time measure only
-    const observer = new ResizeObserver(update)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
   return (
-    <header ref={ref} className="sticky top-0 z-20 border-b-2 border-accent bg-[#0a0a0b]">
+    <header className="sticky top-0 z-20 border-b-2 border-accent bg-[#0a0a0b]">
       {/* Full-width (no max-w cap): the brand subtext + 7-item nav need the whole width on desktop,
           otherwise they collide inside a 1024px container and the subtext truncates. */}
       <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">

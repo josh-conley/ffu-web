@@ -15,7 +15,7 @@ function HeaderRow({ slots, teamBySlot, year, highlighted, onToggle }: {
 }) {
   return (
     <tr>
-      <th className="sticky left-0 top-[var(--nav-h)] z-[12] border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1">
+      <th className="sticky left-0 z-10 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1">
         Rd
       </th>
       {slots.map((slot) => (
@@ -58,9 +58,8 @@ function BodyRows({ rounds, slots, byCell, teamBySlot, numTeams, tier, highlight
 }
 
 /**
- * The draft board: a tier-themed bordered tile (tier color top rule). On desktop the grid fits and
- * its header row sticks under the site nav as the page scrolls; on narrow screens it scrolls
- * horizontally with the round rail
+ * The draft board: a tier-themed bordered tile (tier color top rule). On desktop the grid fits; on
+ * narrow screens it scrolls horizontally with the round rail
  * pinned left, while the page scrolls vertically as normal. Each pick is a position-colored nameplate;
  * click any team or pick to spotlight every selection that drafter made.
  */
@@ -80,10 +79,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
       <PositionLegend draft={draft} />
       <div className="mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
         <div className={`h-1.5 ${tier.dot}`} />
-        {/* Horizontal scroll only where the grid can't fit (narrow screens). At >=1100px it fits, so
-            we switch to overflow-visible — which stops the scroll container from trapping the sticky
-            header row, letting it pin under the site nav as the PAGE scrolls (no nested scrollbar). */}
-        <div className="overflow-x-auto min-[1100px]:overflow-visible">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">
             <colgroup>
               <col className="w-7 sm:w-10" />

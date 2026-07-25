@@ -15,7 +15,7 @@ export function TeamHeader({ slot, ownerId, year, highlighted, onToggle }: {
 }) {
   const dim = highlighted !== null && ownerId !== highlighted
   return (
-    <th scope="col" className="sticky top-[var(--nav-h)] z-[11] bg-surface-2 p-0">
+    <th scope="col" className="bg-surface-2 p-0">
       <button
         type="button"
         onClick={() => ownerId && onToggle(ownerId)}
