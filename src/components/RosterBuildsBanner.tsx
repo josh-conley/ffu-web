@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { FaArrowRightLong, FaChartColumn } from 'react-icons/fa6'
 
-/** Front-door promo linking to the new Draft Analysis tool. Whole banner is the link. */
-export function DraftAnalysisBanner() {
+/** Front-door promo linking to the new Roster Build Stats tool. Whole banner is the link. */
+export function RosterBuildsBanner() {
   return (
     <Link
       to="/builds"

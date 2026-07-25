@@ -7,7 +7,7 @@ import { Records } from '@/pages/Records'
 import { Members } from '@/pages/Members'
 import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
-import { DraftAnalysis } from '@/pages/DraftAnalysis'
+import { RosterBuildStats } from '@/pages/RosterBuildStats'
 import { Tournament } from '@/pages/Tournament'
 import { NotFound } from '@/components/NotFound'
 
@@ -26,7 +26,7 @@ export default function App() {
           <Route path="leaderboard" element={<Navigate to="/stats" replace />} />
           <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={<Drafts />} />
-          <Route path="builds" element={<DraftAnalysis />} />
+          <Route path="builds" element={<RosterBuildStats />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL while the

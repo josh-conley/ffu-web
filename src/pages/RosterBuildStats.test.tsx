@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { DraftAnalysis } from './DraftAnalysis'
+import { RosterBuildStats } from './RosterBuildStats'
 
 const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
 const FILES: Record<string, unknown> = {}
@@ -20,7 +20,7 @@ function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="builds" element={<DraftAnalysis />} />
+        <Route path="builds" element={<RosterBuildStats />} />
       </Routes>
     </MemoryRouter>,
   )

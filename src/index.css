@@ -95,7 +95,7 @@ body {
   filter: drop-shadow(4px 4px 0 var(--decal-shadow));
 }
 
-/* Two-knob range slider (Draft Analysis year range). Both inputs are stacked on one track and made
+/* Two-knob range slider (Roster Build Stats year range). Both inputs are stacked on one track and made
    pointer-transparent except their thumbs, so each knob stays independently draggable. */
 .range-dual {
   -webkit-appearance: none;

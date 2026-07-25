@@ -5,7 +5,7 @@ import { orderedPositions } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { posClass } from '@/components/positions'
 
-// Column defs for the Draft Analysis table (kept out of the page to respect the line caps). The
+// Column defs for the Roster Build Stats table (kept out of the page to respect the line caps). The
 // build cell renders the position composition as colored pills (positions.ts is the single source
 // of position color); each finish bracket shows its share (%) with the raw count beside it. Render
 // helpers are lowercase (repo convention, see allTimeColumns) so the file only exports the builder.

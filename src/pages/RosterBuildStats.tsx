@@ -8,8 +8,8 @@ import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
-import { Controls } from './DraftAnalysisControls'
-import { useSelectedPositions, useSelectedSlots } from './draftAnalysisFilters'
+import { Controls } from './RosterBuildControls'
+import { useSelectedPositions, useSelectedSlots } from './rosterBuildFilters'
 import { buildColumns } from './draftBuildColumns'
 
 const EMPTY_BASELINES = { first: 0, top3: 0, top6: 0, top9: 0, finish: 0, upr: 0 }
@@ -39,7 +39,7 @@ function Intro({ threshold, totalTeams }: { threshold: number; totalTeams: numbe
   )
 }
 
-export function DraftAnalysis() {
+export function RosterBuildStats() {
   const { data: drafts, loading: draftsLoading, error: draftsError } = useAllDrafts()
   const { data: seasons, loading: seasonsLoading, error: seasonsError } = useAllSeasons()
 

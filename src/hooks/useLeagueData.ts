@@ -33,7 +33,7 @@ export function useDraft(tier: Tier, year: string, enabled = true) {
   return useAsyncData(`draft:${tier}:${year}`, () => provider.getDraft(tier, year), enabled)
 }
 
-/** Every draft the manifest advertises (for the cross-season Draft Analysis view). */
+/** Every draft the manifest advertises (for the cross-season Roster Build Stats view). */
 export function useAllDrafts() {
   const { data: manifest, loading, error } = useSeasons()
   const all = useAsyncData(

@@ -4,9 +4,9 @@ import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
 
-// All of the Draft Analysis control UI, split out of the page to keep it under the file/complexity
+// All of the Roster Build Stats control UI, split out of the page to keep it under the file/complexity
 // caps. Row 1 = scope (which seasons/teams enter the sample), Row 2 = build definition (how a
-// team's picks become a build). URL-backed selection state lives in ./draftAnalysisFilters.
+// team's picks become a build). URL-backed selection state lives in ./rosterBuildFilters.
 
 const LEAGUE_OPTIONS = [
   { value: 'ALL', label: 'All Leagues' },

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { FILTER_POSITIONS } from '@/selectors'
 
-// URL-backed selection state for the Draft Analysis filters. Kept in a .ts module (no components)
+// URL-backed selection state for the Roster Build Stats filters. Kept in a .ts module (no components)
 // so both the page and its controls can import without tripping the fast-refresh export rule.
 
 /** Position selection from the `pos` URL param (validated, canonically ordered, never empty). */
