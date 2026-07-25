@@ -1,5 +1,5 @@
 import type { Game, SeasonData } from '@/data'
-import { isTie, winnerOf, marginOf, scoreFor, regularSeasonTotals } from './games'
+import { isTie, winnerOf, marginOf, scoreFor, regularSeasonTotals, runningRecords } from './games'
 
 const game = (aId: string, aScore: number, bId: string, bScore: number, isPlayoff = false): Game => ({
   week: 1,
@@ -52,5 +52,30 @@ describe('regularSeasonTotals cross-checks the STORED regular-season records', (
         expect(Math.abs(t.pointsAgainst - team.points.against), `${where} pa`).toBeLessThan(10)
       }
     }
+  })
+})
+
+describe('runningRecords', () => {
+  const wk = (week: number, aId: string, aScore: number, bId: string, bScore: number, isPlayoff = false): Game => ({
+    week,
+    isPlayoff,
+    participants: [{ memberId: aId, score: aScore }, { memberId: bId, score: bScore }],
+  })
+
+  it('accumulates each member’s regular-season record inclusive of the week, excluding playoffs', () => {
+    const season = {
+      games: [
+        wk(1, 'a', 120, 'b', 100), // a 1-0
+        wk(2, 'a', 90, 'b', 100), // a 1-1
+        wk(3, 'a', 100, 'b', 100), // tie → a 1-1-1
+        wk(15, 'a', 130, 'b', 90, true), // playoff — excluded
+      ],
+    } satisfies Pick<SeasonData, 'games'>
+    const rr = runningRecords(season)
+    expect(rr.get('a')!.get(1)).toEqual({ wins: 1, losses: 0, ties: 0 })
+    expect(rr.get('a')!.get(2)).toEqual({ wins: 1, losses: 1, ties: 0 })
+    expect(rr.get('a')!.get(3)).toEqual({ wins: 1, losses: 1, ties: 1 })
+    expect(rr.get('b')!.get(3)).toEqual({ wins: 1, losses: 1, ties: 1 })
+    expect(rr.get('a')!.get(15)).toBeUndefined() // playoff week not recorded
   })
 })

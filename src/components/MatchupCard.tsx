@@ -3,7 +3,7 @@ import { nameForYear } from '@/config'
 import { winnerOf } from '@/selectors'
 import { TeamLogo } from './TeamLogo'
 
-function ParticipantRow({ memberId, score, year, isWinner }: { memberId: string; score: number; year: string; isWinner: boolean }) {
+function ParticipantRow({ memberId, score, year, isWinner, subtitle }: { memberId: string; score: number; year: string; isWinner: boolean; subtitle?: string }) {
   return (
     <div
       className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${
@@ -13,20 +13,22 @@ function ParticipantRow({ memberId, score, year, isWinner }: { memberId: string;
       <span className="flex items-center gap-2 truncate">
         <TeamLogo ffuId={memberId} size={24} />
         <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
+        {subtitle && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle}</span>}
       </span>
       <span className="font-mono tabular-nums">{score.toFixed(2)}</span>
     </div>
   )
 }
 
-export function MatchupCard({ game, year, onOpen }: { game: Game; year: string; onOpen?: () => void }) {
+/** `subtitle`: small tag beside each team — its running record (regular season) or seed (playoffs). */
+export function MatchupCard({ game, year, onOpen, subtitle }: { game: Game; year: string; onOpen?: () => void; subtitle?: (memberId: string) => string | undefined }) {
   const winner = winnerOf(game)
   const body = (
     <>
       {game.round && <div className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{game.round}</div>}
       <div className="space-y-1">
         {game.participants.map((p) => (
-          <ParticipantRow key={p.memberId} memberId={p.memberId} score={p.score} year={year} isWinner={p.memberId === winner} />
+          <ParticipantRow key={p.memberId} memberId={p.memberId} score={p.score} year={year} isWinner={p.memberId === winner} subtitle={subtitle?.(p.memberId)} />
         ))}
       </div>
     </>

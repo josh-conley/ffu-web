@@ -106,6 +106,54 @@ export function regularSeasonTotals(season: Pick<SeasonData, 'games'>): Map<stri
   return totals
 }
 
+export interface WeekRecord {
+  wins: number
+  losses: number
+  ties: number
+}
+
+/**
+ * Each member's cumulative REGULAR-SEASON record THROUGH each week (inclusive of that week's result),
+ * keyed memberId → week → record. Playoff games are excluded — their standing is the seed, not a
+ * W-L. Reads only `.games`, so a partial/live season works too.
+ */
+export function runningRecords(season: Pick<SeasonData, 'games'>): Map<string, Map<number, WeekRecord>> {
+  const byWeek = new Map<number, Game[]>()
+  for (const g of season.games) {
+    if (g.isPlayoff) continue
+    const arr = byWeek.get(g.week) ?? []
+    arr.push(g)
+    byWeek.set(g.week, arr)
+  }
+  const result = new Map<string, Map<number, WeekRecord>>()
+  const running = new Map<string, WeekRecord>()
+  const ensure = (id: string): WeekRecord => {
+    let r = running.get(id)
+    if (r === undefined) {
+      r = { wins: 0, losses: 0, ties: 0 }
+      running.set(id, r)
+    }
+    return r
+  }
+  for (const week of [...byWeek.keys()].sort((a, b) => a - b)) {
+    for (const g of byWeek.get(week)!) {
+      const winner = winnerOf(g)
+      for (const p of g.participants) {
+        const r = ensure(p.memberId)
+        if (winner === null) r.ties += 1
+        else if (p.memberId === winner) r.wins += 1
+        else r.losses += 1
+      }
+    }
+    for (const [id, r] of running) {
+      const perWeek = result.get(id) ?? new Map<number, WeekRecord>()
+      perWeek.set(week, { ...r })
+      result.set(id, perWeek)
+    }
+  }
+  return result
+}
+
 /** Per-member high/low single-game score across ALL of a season's games (incl. playoffs). */
 export function seasonHighLow(season: SeasonData): Map<string, { high: number; low: number }> {
   const out = new Map<string, { high: number; low: number }>()

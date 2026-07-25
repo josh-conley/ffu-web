@@ -3,7 +3,7 @@ import type { Game, SeasonData } from '@/data'
 import { nameForYear } from '@/config'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
-import { gamesByWeek } from '@/selectors'
+import { gamesByWeek, regularSeasonStandings, runningRecords } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { MatchupCard } from '@/components/MatchupCard'
 import { LineupModal } from '@/components/LineupModal'
@@ -22,9 +22,23 @@ function weeksFor(weeks: ReturnType<typeof gamesByWeek>, member: string) {
 function MatchupsContent({ season, year, member }: { season: SeasonData; year: string; member: string }) {
   const weeks = useMemo(() => gamesByWeek(season), [season])
   const shown = useMemo(() => weeksFor(weeks, member), [weeks, member])
+  // Running record through each regular-season week + the regular-season seed for playoff cards.
+  const records = useMemo(() => runningRecords(season), [season])
+  const seeds = useMemo(() => new Map(regularSeasonStandings(season).map((r) => [r.team.memberId, r.rank])), [season])
   const [open, setOpen] = useState<Game | null>(null)
   // Lineups exist only for the Sleeper era; ESPN-era cards stay non-clickable.
   const hasLineups = season.era === 'sleeper'
+
+  const subtitleFor = (game: Game, memberId: string): string | undefined => {
+    if (game.isPlayoff) {
+      const seed = seeds.get(memberId)
+      return seed ? `#${seed}` : undefined
+    }
+    const r = records.get(memberId)?.get(game.week)
+    if (!r) return undefined
+    return r.ties > 0 ? `${r.wins}-${r.losses}-${r.ties}` : `${r.wins}-${r.losses}`
+  }
+
   if (shown.length === 0) return <p className="text-muted">No matchups for this member.</p>
   return (
     <div className="space-y-8">
@@ -36,7 +50,7 @@ function MatchupsContent({ season, year, member }: { season: SeasonData; year: s
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {games.map((game, i) => (
-              <MatchupCard key={`${week}-${i}`} game={game} year={year} onOpen={hasLineups ? () => setOpen(game) : undefined} />
+              <MatchupCard key={`${week}-${i}`} game={game} year={year} onOpen={hasLineups ? () => setOpen(game) : undefined} subtitle={(mid) => subtitleFor(game, mid)} />
             ))}
           </div>
         </section>
