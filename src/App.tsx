@@ -26,7 +26,9 @@ export default function App() {
           <Route path="leaderboard" element={<Navigate to="/stats" replace />} />
           <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={<Drafts />} />
-          <Route path="draft-analysis" element={<DraftAnalysis />} />
+          <Route path="builds" element={<DraftAnalysis />} />
+          {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
+          <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL while the
               cross-tier tournament is being built out. */}
           <Route path="tournament" element={<Tournament />} />

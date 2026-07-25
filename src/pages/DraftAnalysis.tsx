@@ -27,7 +27,7 @@ const emptyMessage = (team: string) =>
 function Intro({ threshold, totalTeams }: { threshold: number; totalTeams: number }) {
   return (
     <div>
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight">Draft Analysis</h1>
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">Roster Build Stats</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Every team's <strong className="text-text">first {threshold} {threshold === 1 ? 'round' : 'rounds'}</strong> of
         picks form a <strong className="text-text">build</strong> — its mix of the checked positions. Each column is a{' '}

@@ -5,13 +5,13 @@ import { FaArrowRightLong, FaChartColumn } from 'react-icons/fa6'
 export function DraftAnalysisBanner() {
   return (
     <Link
-      to="/draft-analysis"
+      to="/builds"
       className="group flex items-center gap-4 border border-accent/40 bg-accent/10 p-4 transition-colors hover:bg-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <FaChartColumn className="shrink-0 text-2xl text-accent" aria-hidden />
       <div className="min-w-0">
         <div className="font-extrabold uppercase tracking-tight">
-          New — Draft Analysis
+          New — Roster Build Stats
         </div>
         <div className="text-sm text-muted">
           Which draft builds actually win? Roster construction vs. finish, across every draft.
