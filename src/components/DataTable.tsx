@@ -135,7 +135,9 @@ export function DataTable<T>({
       {/* fullBleed: frame breaks out to ~full viewport; inside, the box shrinks to the shown columns
           (w-fit) but stays centered with a sensible min width (≈the viewport on phones, else 32rem). */}
       <div className={fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : ''}>
-        <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`}>
+        {/* container-type so an expanded row can size to the VISIBLE width (100cqw) and wrap, rather
+            than riding the table's (possibly wider, horizontally-scrolled) width. */}
+        <div className={`overflow-x-auto border border-border bg-surface shadow-sm ${renderExpanded ? '[container-type:inline-size]' : ''} ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`}>
           <table className={`w-max text-sm ${fullBleed ? '' : 'min-w-full'}`}>
             <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} headerClassName={headerClassName} />
             <tbody className="divide-y divide-border">
@@ -147,8 +149,12 @@ export function DataTable<T>({
                     <DataRow row={row} columns={columns} pinned={pinned} selected={selectedRowKey !== undefined && key === selectedRowKey} onRowClick={onRowClick} />
                     {expanded && (
                       <tr>
-                        <td colSpan={columns.length} className="bg-surface-2 p-2">
-                          {renderExpanded(row)}
+                        <td colSpan={columns.length} className="p-0">
+                          {/* Sticky-left + container-width so the detail stays in view and wraps to the
+                              visible area even while the columns scroll horizontally. */}
+                          <div className="sticky left-0 box-border w-[100cqw] bg-surface-2 p-2">
+                            {renderExpanded(row)}
+                          </div>
                         </td>
                       </tr>
                     )}
