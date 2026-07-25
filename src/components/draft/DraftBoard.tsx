@@ -59,8 +59,8 @@ function BodyRows({ rounds, slots, byCell, teamBySlot, numTeams, tier, highlight
 }
 
 /**
- * The draft board: a tier-themed broadcast tile (angular cutout + offset decal shadow, tier color top
- * rule). On desktop the grid fits; on narrow screens it scrolls horizontally with the round rail
+ * The draft board: a tier-themed bordered tile (tier color top rule). On desktop the grid fits; on
+ * narrow screens it scrolls horizontally with the round rail
  * pinned left, while the page scrolls vertically as normal. Each pick is a position-colored nameplate;
  * click any team or pick to spotlight every selection that drafter made.
  */
@@ -78,7 +78,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
   return (
     <div className="space-y-3">
       <PositionLegend draft={draft} />
-      <div className="angular decal mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
+      <div className="mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
         <div className={`h-1.5 ${tier.dot}`} />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">

@@ -25,10 +25,10 @@ export function presentPositions(draft: DraftData): string[] {
 
 /**
  * Tailwind classes for the button wrapping a pick, by spotlight state: the selected drafter's picks
- * lift (ring + decal offset shadow), every other pick dims, and nothing is selected by default.
+ * lift (ring + soft shadow), every other pick dims, and nothing is selected by default.
  */
 export function cellStateClass(highlighted: string | null, memberId: string): string {
-  if (highlighted === memberId) return 'relative z-10 decal ring-1 ring-accent'
+  if (highlighted === memberId) return 'relative z-10 shadow-md ring-1 ring-accent'
   if (highlighted !== null) return 'opacity-30'
   return 'hover:ring-1 hover:ring-muted/40'
 }
