@@ -82,7 +82,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">
             <colgroup>
-              <col className="w-7 sm:w-10" />
+              <col className="w-6 sm:w-10" />
               {slots.map((slot) => <col key={slot} />)}
             </colgroup>
             <thead>
