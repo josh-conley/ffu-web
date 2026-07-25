@@ -42,9 +42,9 @@ function CellButton({ pick, tone, highlighted, onToggle, children }: {
 
 /**
  * A draft pick as a broadcast nameplate: the whole card is tinted its position color, with a
- * saturated chyron (pick coordinate + position) above the player's name. The footer carries the NFL
- * team and either the overall pick number or, for a traded pick, a swap icon + the acquiring team
- * (on the pale body, so it reads clearly on every position). Click to spotlight that drafter's picks.
+ * saturated chyron (pick coordinate + position) above the player's name. The footer is a 3-column
+ * row — NFL team (left), a centered swap icon + acquiring team when the pick was traded, and the
+ * overall pick number (always, right). Click to spotlight that drafter's picks.
  */
 export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: CellProps) {
   const traded = isTraded(pick, ownerId)
@@ -57,16 +57,17 @@ export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: Cel
       </div>
       <div className="flex flex-col gap-0.5 px-2 py-1.5">
         <span className="truncate text-xs font-bold leading-tight tracking-tight">{shortName(player)}</span>
-        <span className="flex items-center justify-between gap-1 font-mono text-[9px] uppercase tracking-wide text-muted">
+        <span className="grid grid-cols-3 items-center gap-1 font-mono text-[11px] uppercase tracking-wide text-muted">
           <span className="truncate">{player.position !== 'DEF' && player.nflTeam ? player.nflTeam : ''}</span>
           {traded ? (
-            <span className="flex shrink-0 items-center gap-1 font-bold text-accent" title={`Traded to ${acquirer(pick)}`}>
-              <FaArrowRightArrowLeft className="text-[8px]" aria-label="Traded pick" />
+            <span className="flex items-center justify-center gap-1 font-bold text-accent" title={`Traded to ${acquirer(pick)}`}>
+              <FaArrowRightArrowLeft className="text-[9px]" aria-label="Traded pick" />
               {acquirer(pick)}
             </span>
           ) : (
-            <span className="shrink-0 tabular-nums">#{pick.overall}</span>
+            <span aria-hidden />
           )}
+          <span className="justify-self-end tabular-nums">#{pick.overall}</span>
         </span>
       </div>
     </CellButton>
