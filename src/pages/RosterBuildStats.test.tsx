@@ -35,7 +35,6 @@ it('renders the build table with the finish-bracket columns and their baselines'
   expect(screen.getByRole('columnheader', { name: /1st · 8%/ })).toBeInTheDocument()
   // Summary metric columns.
   expect(screen.getByRole('columnheader', { name: 'Avg' })).toBeInTheDocument()
-  expect(screen.getByRole('columnheader', { name: 'Med' })).toBeInTheDocument()
   expect(screen.getByRole('columnheader', { name: 'UPR' })).toBeInTheDocument()
   // 240 team-seasons across every completed tier-season, stated in the intro.
   expect(screen.getByText(/240 team-seasons/i)).toBeInTheDocument()

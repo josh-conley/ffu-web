@@ -91,7 +91,6 @@ export function buildColumns(baselines: BuildBaselines, openKey?: string): Colum
       render: (b) => <span className="tabular-nums">{b.teams}</span>,
     },
     metricColumn('avgFinish', 'Avg', `Average final placement — baseline ${baselines.finish.toFixed(1)} (lower is better)`, (b) => b.avgFinish, baselines.finish, false, 0.05, f1),
-    metricColumn('medianFinish', 'Med', 'Median final placement (lower is better)', (b) => b.medianFinish, baselines.finish, false, 0.05, f1),
     metricColumn('avgUpr', 'UPR', `Average Unified Power Rating — baseline ${baselines.upr.toFixed(1)} (higher is better)`, (b) => b.avgUpr, baselines.upr, true, 0.5, f1),
     bracketColumn('first', '1st', (b) => b.first, baselines.first),
     bracketColumn('top3', 'Top 3', (b) => b.top3, baselines.top3),

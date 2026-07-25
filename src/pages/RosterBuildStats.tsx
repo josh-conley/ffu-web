@@ -115,7 +115,6 @@ export function RosterBuildStats() {
           rows={rows}
           getRowKey={(b) => b.key}
           initialSort={{ key: 'teams', dir: 'desc' }}
-          fullBleed
           stickyFirstColumn
           onRowClick={toggleOpen}
           selectedRowKey={openKey}
@@ -125,8 +124,8 @@ export function RosterBuildStats() {
       {openBuild && <DraftBuildDetail build={openBuild} threshold={threshold} onClose={() => setOpenKey(undefined)} />}
 
       <p className="text-sm text-muted">
-        <strong className="text-text">Avg</strong>/<strong className="text-text">Med</strong> are the mean/median finish (lower
-        is better); <strong className="text-text">UPR</strong> is average power rating (higher is better); each bracket is the
+        <strong className="text-text">Avg</strong> is the mean finish (lower is better);{' '}
+        <strong className="text-text">UPR</strong> is average power rating (higher is better); each bracket is the
         share (and count) landing in it. Every cell is tinted vs the sample baseline —{' '}
         <span className="text-positive">green</span> beats it, <span className="text-negative">red</span> trails it. Brackets
         nest (top 3 ⊂ top 6 ⊂ top 9). Unfinished seasons are excluded.

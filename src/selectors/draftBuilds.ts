@@ -137,8 +137,6 @@ export interface BuildStat {
   teams: number
   /** Mean final placement (lower is better). */
   avgFinish: number
-  /** Median final placement (lower is better). */
-  medianFinish: number
   /** Mean Unified Power Rating across the build's team-seasons; null if none have a UPR. */
   avgUpr: number | null
   /** Finished 1st (champions). */
@@ -181,14 +179,6 @@ const BRACKET_CUTOFF = { first: 1, top3: 3, top6: 6, top9: 9 } as const
 
 const mean = (xs: number[]): number => (xs.length > 0 ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 
-/** Median of an already-ascending list (0 when empty). */
-function median(sorted: number[]): number {
-  const n = sorted.length
-  if (n === 0) return 0
-  const mid = n >> 1
-  return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
-}
-
 /** Finalize one aggregated bucket into a BuildStat (finish stats, UPR, brackets, sorted instances). */
 function toBuildStat(key: string, counts: Record<string, number>, instances: BuildInstance[], selected: readonly string[]): BuildStat {
   const teams = instances.length
@@ -196,7 +186,7 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     const count = instances.filter(pred).length
     return { count, pct: teams > 0 ? count / teams : 0 }
   }
-  const placements = instances.map((i) => i.finalPlacement).sort((a, b) => a - b)
+  const placements = instances.map((i) => i.finalPlacement)
   const uprs = instances.map((i) => i.upr).filter((u): u is number => u !== null)
   instances.sort((a, b) => Number(b.year) - Number(a.year) || TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier))
   return {
@@ -206,7 +196,6 @@ function toBuildStat(key: string, counts: Record<string, number>, instances: Bui
     size: Object.values(counts).reduce((a, b) => a + b, 0),
     teams,
     avgFinish: mean(placements),
-    medianFinish: median(placements),
     avgUpr: uprs.length > 0 ? mean(uprs) : null,
     first: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.first),
     top3: bracket((i) => i.finalPlacement <= BRACKET_CUTOFF.top3),
