@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { getMember } from '@/config'
 import type { DraftPick } from '@/data'
 import { pickLabel } from '@/selectors'
-import { posBar, posClass } from '../positions'
+import { posBar, posTint } from '../positions'
 import { cellStateClass, shortName } from './format'
 import { TradeFold } from './parts'
 
@@ -22,7 +22,7 @@ const acquirer = (p: DraftPick) => getMember(p.memberId)?.abbreviation ?? '?'
 function CellButton({ pick, traded, tone, highlighted, onToggle, children }: {
   pick: DraftPick
   traded: boolean
-  /** Soft position tint applied to the whole card (bg + readable text color). */
+  /** Pale position tint (background only) applied to the whole card; text stays the default color. */
   tone: string
   highlighted: string | null
   onToggle: (id: string) => void
@@ -52,7 +52,7 @@ export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: Cel
   const traded = isTraded(pick, ownerId)
   const { player } = pick
   return (
-    <CellButton pick={pick} traded={traded} tone={posClass(player.position)} highlighted={highlighted} onToggle={onToggle}>
+    <CellButton pick={pick} traded={traded} tone={posTint(player.position)} highlighted={highlighted} onToggle={onToggle}>
       <div className={`flex items-center justify-between gap-1 px-1.5 py-0.5 ${posBar(player.position)}`}>
         <span className="font-mono text-[10px] font-bold tabular-nums">{pickLabel(pick, numTeams)}</span>
         <span className="text-[10px] font-extrabold uppercase tracking-wide">{player.position}</span>

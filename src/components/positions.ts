@@ -26,5 +26,17 @@ const POS_BAR: Record<string, string> = {
   DEF: 'bg-slate-500 text-white',
 }
 
+/** Pale background-only tint (no text color) for filling a whole surface, e.g. the draft-board pick
+ *  card body — soft enough to keep default text readable in light + dark. */
+const POS_TINT: Record<string, string> = {
+  QB: 'bg-red-50 dark:bg-red-500/10',
+  RB: 'bg-emerald-50 dark:bg-emerald-500/10',
+  WR: 'bg-sky-50 dark:bg-sky-500/10',
+  TE: 'bg-amber-50 dark:bg-amber-500/10',
+  K: 'bg-purple-50 dark:bg-purple-500/10',
+  DEF: 'bg-slate-100 dark:bg-slate-500/10',
+}
+
 export const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
 export const posBar = (p: string) => POS_BAR[p] ?? 'bg-surface-2 text-text'
+export const posTint = (p: string) => POS_TINT[p] ?? 'bg-surface'
