@@ -41,7 +41,7 @@ export function TeamHeader({ slot, ownerId, year, tier, highlighted, onToggle }:
 /** Round rail (pinned left on horizontal scroll): round number (tier-tinted) + snake direction. */
 export function RoundLabel({ round, tier }: { round: number; tier: LeagueStyle }) {
   return (
-    <th scope="row" className="sticky left-0 z-20 border-b border-r border-border bg-surface-2 px-0.5 py-1 text-center align-middle sm:px-1">
+    <th scope="row" className="sticky left-0 z-10 border-b border-r border-border bg-surface-2 px-0.5 py-1 text-center align-middle sm:px-1">
       <div className={`font-mono text-xs font-black tabular-nums ${tier.text}`}>{round}</div>
       <div aria-hidden className="text-[9px] leading-none text-muted">{round % 2 === 1 ? '→' : '←'}</div>
     </th>

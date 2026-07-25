@@ -16,7 +16,7 @@ function HeaderRow({ slots, teamBySlot, year, tier, highlighted, onToggle }: {
 }) {
   return (
     <tr>
-      <th className={`sticky left-0 z-20 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1 ${tier.border}`}>
+      <th className={`sticky left-0 z-10 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1 ${tier.border}`}>
         Rd
       </th>
       {slots.map((slot) => (
