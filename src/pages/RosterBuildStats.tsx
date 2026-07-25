@@ -93,8 +93,6 @@ export function RosterBuildStats() {
   if (draftsLoading || seasonsLoading) return <LoadingSpinner />
   if (loadError || !analysis) return <ErrorMessage error={loadError ?? 'No data'} />
 
-  const openBuild = analysis.builds.find((b) => b.key === openKey)
-
   return (
     <div className="space-y-6">
       <Intro threshold={threshold} totalTeams={analysis.totalTeams} />
@@ -118,10 +116,10 @@ export function RosterBuildStats() {
           stickyFirstColumn
           onRowClick={toggleOpen}
           selectedRowKey={openKey}
+          expandedRowKey={openKey}
+          renderExpanded={(b) => <DraftBuildDetail build={b} threshold={threshold} onClose={() => setOpenKey(undefined)} />}
         />
       )}
-
-      {openBuild && <DraftBuildDetail build={openBuild} threshold={threshold} onClose={() => setOpenKey(undefined)} />}
 
       <p className="text-sm text-muted">
         <strong className="text-text">Avg</strong> is the mean finish (lower is better);{' '}

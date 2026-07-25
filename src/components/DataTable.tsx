@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from 'react'
+import { Fragment, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { DataTableHead, type ReorderConfig } from './DataTableHead'
 import { TD_BASE, TEXT_ALIGN, stickyCell, type Column, type SortState } from './tableShared'
 
@@ -90,6 +90,8 @@ export function DataTable<T>({
   headerClassName,
   onRowClick,
   selectedRowKey,
+  expandedRowKey,
+  renderExpanded,
 }: {
   columns: Column<T>[]
   rows: T[]
@@ -108,6 +110,10 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void
   /** Key of the currently selected row (highlighted); pair with `onRowClick`. */
   selectedRowKey?: string
+  /** Key of the row whose expanded detail is open (accordion). */
+  expandedRowKey?: string
+  /** Renders the expanded detail as a full-width row directly under `expandedRowKey`'s row. */
+  renderExpanded?: (row: T) => ReactNode
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
@@ -133,16 +139,22 @@ export function DataTable<T>({
           <table className={`w-max text-sm ${fullBleed ? '' : 'min-w-full'}`}>
             <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn} reorder={reorder} headerClassName={headerClassName} />
             <tbody className="divide-y divide-border">
-              {pageRows.map((row, i) => (
-                <DataRow
-                  key={getRowKey(row, i)}
-                  row={row}
-                  columns={columns}
-                  pinned={pinned}
-                  selected={selectedRowKey !== undefined && getRowKey(row, i) === selectedRowKey}
-                  onRowClick={onRowClick}
-                />
-              ))}
+              {pageRows.map((row, i) => {
+                const key = getRowKey(row, i)
+                const expanded = renderExpanded !== undefined && key === expandedRowKey
+                return (
+                  <Fragment key={key}>
+                    <DataRow row={row} columns={columns} pinned={pinned} selected={selectedRowKey !== undefined && key === selectedRowKey} onRowClick={onRowClick} />
+                    {expanded && (
+                      <tr>
+                        <td colSpan={columns.length} className="bg-surface-2 p-2">
+                          {renderExpanded(row)}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                )
+              })}
             </tbody>
           </table>
         </div>
