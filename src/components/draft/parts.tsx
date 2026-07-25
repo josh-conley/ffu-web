@@ -5,19 +5,17 @@ import { posClass } from '../positions'
 import { TeamLogo } from '../TeamLogo'
 import { presentPositions } from './format'
 
-/** A team's column nameplate: logo + name + abbreviation. The tier-color rule under the header row
- *  reads as the league's identity; click to spotlight that team's picks. */
-export function TeamHeader({ slot, ownerId, year, tier, highlighted, onToggle }: {
+/** A team's column nameplate: logo + name + abbreviation. Click to spotlight that team's picks. */
+export function TeamHeader({ slot, ownerId, year, highlighted, onToggle }: {
   slot: number
   ownerId: string | undefined
   year: string
-  tier: LeagueStyle
   highlighted: string | null
   onToggle: (id: string) => void
 }) {
   const dim = highlighted !== null && ownerId !== highlighted
   return (
-    <th scope="col" className={`border-b-2 bg-surface-2 p-0 ${tier.border}`}>
+    <th scope="col" className="bg-surface-2 p-0">
       <button
         type="button"
         onClick={() => ownerId && onToggle(ownerId)}

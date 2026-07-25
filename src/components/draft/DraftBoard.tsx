@@ -6,21 +6,20 @@ import { PickCell } from './PickCell'
 import { PositionLegend, RoundLabel, TeamHeader } from './parts'
 
 /** Team nameplates across the top, with a "Rd" corner pinned left on horizontal scroll. */
-function HeaderRow({ slots, teamBySlot, year, tier, highlighted, onToggle }: {
+function HeaderRow({ slots, teamBySlot, year, highlighted, onToggle }: {
   slots: number[]
   teamBySlot: Map<number, string>
   year: string
-  tier: LeagueStyle
   highlighted: string | null
   onToggle: (id: string) => void
 }) {
   return (
     <tr>
-      <th className={`sticky left-0 z-10 border-b-2 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1 ${tier.border}`}>
+      <th className="sticky left-0 z-10 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1">
         Rd
       </th>
       {slots.map((slot) => (
-        <TeamHeader key={slot} slot={slot} ownerId={teamBySlot.get(slot)} year={year} tier={tier} highlighted={highlighted} onToggle={onToggle} />
+        <TeamHeader key={slot} slot={slot} ownerId={teamBySlot.get(slot)} year={year} highlighted={highlighted} onToggle={onToggle} />
       ))}
     </tr>
   )
@@ -87,7 +86,7 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
               {slots.map((slot) => <col key={slot} />)}
             </colgroup>
             <thead>
-              <HeaderRow slots={slots} teamBySlot={teamBySlot} year={draft.year} tier={tier} highlighted={highlighted} onToggle={toggle} />
+              <HeaderRow slots={slots} teamBySlot={teamBySlot} year={draft.year} highlighted={highlighted} onToggle={toggle} />
             </thead>
             <tbody>
               <BodyRows rounds={rounds} slots={slots} byCell={byCell} teamBySlot={teamBySlot} numTeams={slots.length} tier={tier} highlighted={highlighted} onToggle={toggle} />
