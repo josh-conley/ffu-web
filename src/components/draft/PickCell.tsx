@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
+import { FaArrowRightArrowLeft } from 'react-icons/fa6'
 import { getMember } from '@/config'
 import type { DraftPick } from '@/data'
 import { pickLabel } from '@/selectors'
 import { posBar, posTint } from '../positions'
 import { cellStateClass, shortName } from './format'
-import { TradeFold } from './parts'
 
 export interface CellProps {
   pick: DraftPick
@@ -18,10 +18,9 @@ export interface CellProps {
 const isTraded = (p: DraftPick, ownerId: string | undefined) => ownerId !== undefined && p.memberId !== ownerId
 const acquirer = (p: DraftPick) => getMember(p.memberId)?.abbreviation ?? '?'
 
-/** Shared pick button: spotlight state, focus ring, trade dog-ear, click-to-highlight-drafter. */
-function CellButton({ pick, traded, tone, highlighted, onToggle, children }: {
+/** Shared pick button: spotlight state, focus ring, click-to-highlight-drafter. */
+function CellButton({ pick, tone, highlighted, onToggle, children }: {
   pick: DraftPick
-  traded: boolean
   /** Pale position tint (background only) applied to the whole card; text stays the default color. */
   tone: string
   highlighted: string | null
@@ -37,7 +36,6 @@ function CellButton({ pick, traded, tone, highlighted, onToggle, children }: {
       className={`relative flex w-full flex-col overflow-hidden text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${tone} ${cellStateClass(highlighted, pick.memberId)}`}
     >
       {children}
-      {traded && <TradeFold />}
     </button>
   )
 }
@@ -45,14 +43,14 @@ function CellButton({ pick, traded, tone, highlighted, onToggle, children }: {
 /**
  * A draft pick as a broadcast nameplate: the whole card is tinted its position color, with a
  * saturated chyron (pick coordinate + position) above the player's name. The footer carries the NFL
- * team and either the overall pick number or, for a traded pick, the acquiring team. Click to
- * spotlight every pick that drafter made.
+ * team and either the overall pick number or, for a traded pick, a swap icon + the acquiring team
+ * (on the pale body, so it reads clearly on every position). Click to spotlight that drafter's picks.
  */
 export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: CellProps) {
   const traded = isTraded(pick, ownerId)
   const { player } = pick
   return (
-    <CellButton pick={pick} traded={traded} tone={posTint(player.position)} highlighted={highlighted} onToggle={onToggle}>
+    <CellButton pick={pick} tone={posTint(player.position)} highlighted={highlighted} onToggle={onToggle}>
       <div className={`flex items-center justify-between gap-1 px-1.5 py-0.5 ${posBar(player.position)}`}>
         <span className="font-mono text-[10px] font-bold tabular-nums">{pickLabel(pick, numTeams)}</span>
         <span className="text-[10px] font-extrabold uppercase tracking-wide">{player.position}</span>
@@ -62,7 +60,10 @@ export function PickCell({ pick, ownerId, numTeams, highlighted, onToggle }: Cel
         <span className="flex items-center justify-between gap-1 font-mono text-[9px] uppercase tracking-wide text-muted">
           <span className="truncate">{player.position !== 'DEF' && player.nflTeam ? player.nflTeam : ''}</span>
           {traded ? (
-            <span className="shrink-0 font-bold text-accent">→ {acquirer(pick)}</span>
+            <span className="flex shrink-0 items-center gap-1 font-bold text-accent" title={`Traded to ${acquirer(pick)}`}>
+              <FaArrowRightArrowLeft className="text-[8px]" aria-label="Traded pick" />
+              {acquirer(pick)}
+            </span>
           ) : (
             <span className="shrink-0 tabular-nums">#{pick.overall}</span>
           )}

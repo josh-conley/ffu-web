@@ -56,13 +56,3 @@ export function PositionLegend({ draft }: { draft: DraftData }) {
     </div>
   )
 }
-
-/** Top-right "dog-ear" that flags a traded pick (the broadcast storyline cue). */
-export function TradeFold() {
-  return (
-    <span
-      aria-hidden
-      className="absolute right-0 top-0 size-0 border-l-[14px] border-t-[14px] border-l-transparent border-t-accent"
-    />
-  )
-}
