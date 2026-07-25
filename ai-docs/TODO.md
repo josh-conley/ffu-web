@@ -15,6 +15,10 @@ don't let it go stale.
       — as of 2026-07-18: all 23 users joined so far resolve to existing registry members; leagues
       not full yet (Premier 9, Masters 8, National 8), re-check once rosters are complete
 - [ ] Add a 2026 entry to `src/config/prizes.ts` once the commissioner posts `prizes.txt` for 2026
+- [ ] (Data) Backfill National 2018–2020 divisions (Bronze/Copper/Brass/Nickel) so their $10
+      division-champ prizes attribute — 2018–2020 schedules are now transcribed in `prizes.ts` and
+      flow into winnings, but National's division prizes go unpaid (no division data). Premier's four
+      divisions + all other 2018–2020 categories already pay out.
 - [ ] Prepare a home page draft announcement section (new — see below)
 - [ ] Spot-check the live "This Week" section once real ids are in, early in Week 1
 
