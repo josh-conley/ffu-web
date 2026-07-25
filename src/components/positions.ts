@@ -15,15 +15,17 @@ const POS_COLOR: Record<string, string> = {
   SUPER_FLEX: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
 }
 
-/** Solid position color used as a filled bar/chyron (the draft board), paired with a readable
- *  foreground. Saturated by design — the draft board's color identity is its picks. */
+/** Position "chyron" bar for the draft board's pick nameplates. Background only (posBar() appends a
+ *  shared text color): a soft pastel in light mode, a deeper fill in dark mode — so the label text
+ *  goes near-black → white to match. TE uses a deep amber in dark mode so white text stays readable
+ *  like every other position (previously it was the lone black-on-light-amber outlier). */
 const POS_BAR: Record<string, string> = {
-  QB: 'bg-red-500 text-white',
-  RB: 'bg-emerald-600 text-white',
-  WR: 'bg-sky-600 text-white',
-  TE: 'bg-amber-400 text-black',
-  K: 'bg-purple-600 text-white',
-  DEF: 'bg-slate-500 text-white',
+  QB: 'bg-red-300 dark:bg-red-700',
+  RB: 'bg-emerald-300 dark:bg-emerald-700',
+  WR: 'bg-sky-300 dark:bg-sky-700',
+  TE: 'bg-amber-300 dark:bg-amber-700',
+  K: 'bg-purple-300 dark:bg-purple-700',
+  DEF: 'bg-slate-300 dark:bg-slate-700',
 }
 
 /** Pale background-only tint (no text color) for filling a whole surface, e.g. the draft-board pick
@@ -38,5 +40,5 @@ const POS_TINT: Record<string, string> = {
 }
 
 export const posClass = (p: string) => POS_COLOR[p] ?? 'bg-surface-2 text-muted'
-export const posBar = (p: string) => POS_BAR[p] ?? 'bg-surface-2 text-text'
+export const posBar = (p: string) => `${POS_BAR[p] ?? 'bg-surface-2'} text-slate-900 dark:text-white`
 export const posTint = (p: string) => POS_TINT[p] ?? 'bg-surface'
