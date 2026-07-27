@@ -129,17 +129,9 @@ function YearRange({ years, fromYear, toYear, onFrom, onTo }: { years: string[];
   )
 }
 
-interface Option {
-  value: string
-  label: string
-}
-
 export interface ControlsProps {
   league: string
   onLeague: (v: string) => void
-  team: string
-  onTeam: (v: string) => void
-  teamOptions: Option[]
   years: string[]
   fromYear: string
   toYear: string
@@ -149,7 +141,6 @@ export interface ControlsProps {
   onThreshold: (v: string) => void
   minParam: string
   onMin: (v: string) => void
-  showMin: boolean
   selected: string[]
   onTogglePos: (p: string) => void
   onAllPos: () => void
@@ -161,7 +152,7 @@ export interface ControlsProps {
 }
 
 export function Controls(props: ControlsProps) {
-  const { league, onLeague, team, onTeam, teamOptions, years, fromYear, toYear, onFrom, onTo, threshold, onThreshold, minParam, onMin, showMin, selected, onTogglePos, onAllPos, allSlots, selectedSlots, onToggleSlot, onAllSlots, onReset } = props
+  const { league, onLeague, years, fromYear, toYear, onFrom, onTo, threshold, onThreshold, minParam, onMin, selected, onTogglePos, onAllPos, allSlots, selectedSlots, onToggleSlot, onAllSlots, onReset } = props
   const row = 'flex flex-wrap items-end gap-x-4 gap-y-3'
   return (
     <div className="space-y-3 border border-border bg-surface p-3">
@@ -172,19 +163,13 @@ export function Controls(props: ControlsProps) {
             {LEAGUE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </Field>
-        <Field label="Team">
-          <select className={`${SELECT} w-full sm:w-52`} value={team} onChange={(e) => onTeam(e.target.value)} aria-label="Team">
-            <option value="">All Teams</option>
-            {teamOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </Field>
         <YearRange years={years} fromYear={fromYear} toYear={toYear} onFrom={onFrom} onTo={onTo} />
         <button type="button" onClick={onReset} className={`${segButton(false)} ml-auto self-end`}>Reset</button>
       </div>
       {/* Row 2 — sizing sliders: how deep a build reads, and the min-sample cutoff. */}
       <div className={`${row} border-t border-border pt-3`}>
         <RangeSlider label="First N rounds" value={threshold} min={1} max={12} valueLabel={`${threshold} ${threshold === 1 ? 'rd' : 'rds'}`} onChange={onThreshold} />
-        {showMin && <RangeSlider label="Min teams" value={Number(minParam)} min={1} max={20} valueLabel={`≥ ${minParam}`} onChange={onMin} />}
+        <RangeSlider label="Min teams" value={Number(minParam)} min={1} max={20} valueLabel={`≥ ${minParam}`} onChange={onMin} />
       </div>
       {/* Row 3 — build filters: which positions count, and which draft slots qualify. */}
       <div className={row}>

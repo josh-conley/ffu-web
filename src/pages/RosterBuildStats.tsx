@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAllDrafts, useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
-import { getMember } from '@/config'
 import { analyzeBuilds, FILTER_POSITIONS, type BuildStat } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
@@ -19,10 +18,7 @@ function yearBounds(fromParam: string, toParam: string, years: string[]): [strin
   return [fromParam || years[0] || '', toParam || years.at(-1) || '']
 }
 
-const emptyMessage = (team: string) =>
-  team
-    ? 'No completed drafts for this team in the current scope.'
-    : 'No builds meet the minimum team-season count. Lower “Min teams”.'
+const EMPTY_MESSAGE = 'No builds meet the minimum team-season count. Lower “Min teams”.'
 
 function Intro({ threshold, totalTeams }: { threshold: number; totalTeams: number }) {
   return (
@@ -44,7 +40,6 @@ export function RosterBuildStats() {
   const { data: seasons, loading: seasonsLoading, error: seasonsError } = useAllSeasons()
 
   const [league, setLeague] = useUrlState('league', 'ALL')
-  const [team, setTeam] = useUrlState('team', '')
   const [roundsParam, setRounds] = useUrlState('rounds', '3')
   const [minParam, setMin] = useUrlState('min', '10')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
@@ -57,35 +52,21 @@ export function RosterBuildStats() {
   const [, setSearchParams] = useSearchParams()
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
 
-  // Every franchise that has ever drafted, by name — the Team dropdown's options.
-  const teamOptions = useMemo(() => {
-    const ids = new Set<string>()
-    for (const d of drafts ?? []) for (const p of d.picks) ids.add(p.memberId)
-    return [...ids]
-      .map((id) => ({ value: id, label: getMember(id)?.name ?? id }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  }, [drafts])
-
   const years = useMemo(() => [...new Set((seasons ?? []).map((s) => s.year))].sort(), [seasons])
   const [fromYear, toYear] = yearBounds(fromParam, toParam, years)
 
   const maxSlot = useMemo(() => Math.max(12, ...(drafts ?? []).flatMap((d) => d.picks.map((p) => p.slot))), [drafts])
   const { allSlots, selected: selectedSlots, toggleSlot, slotFilter, selectAll: selectAllSlots } = useSelectedSlots(slotsParam, setSlots, maxSlot)
 
-  // League + year range + team + draft slot all scope the sample; see the controls for each.
+  // League + year range + draft slot all scope the sample; see the controls for each.
   const analysis = useMemo(() => {
     if (!drafts || !seasons) return undefined
     const inScope = (x: { tier: string; year: string }) =>
       (league === 'ALL' || x.tier === league) && (!fromYear || x.year >= fromYear) && (!toYear || x.year <= toYear)
-    return analyzeBuilds(drafts.filter(inScope), seasons.filter(inScope), threshold, selected, team ? [team] : undefined, slotFilter)
-  }, [drafts, seasons, league, fromYear, toYear, threshold, selected, team, slotFilter])
+    return analyzeBuilds(drafts.filter(inScope), seasons.filter(inScope), threshold, selected, undefined, slotFilter)
+  }, [drafts, seasons, league, fromYear, toYear, threshold, selected, slotFilter])
 
-  const rows = useMemo(() => {
-    if (!analysis) return []
-    // A single-franchise sample is tiny, so the min-teams noise filter (and its control) drops to 1.
-    const min = team ? 1 : minTeams
-    return analysis.builds.filter((b) => b.teams >= min)
-  }, [analysis, team, minTeams])
+  const rows = useMemo(() => (analysis ? analysis.builds.filter((b) => b.teams >= minTeams) : []), [analysis, minTeams])
   const columns = useMemo(() => buildColumns(analysis?.baselines ?? EMPTY_BASELINES, openKey), [analysis?.baselines, openKey])
   const toggleOpen = (b: BuildStat) => setOpenKey((k) => (k === b.key ? undefined : b.key))
 
@@ -97,18 +78,18 @@ export function RosterBuildStats() {
     <div className="space-y-6">
       <Intro threshold={threshold} totalTeams={analysis.totalTeams} />
       <Controls
-        league={league} onLeague={setLeague} team={team} onTeam={setTeam} teamOptions={teamOptions}
+        league={league} onLeague={setLeague}
         years={years} fromYear={fromYear} toYear={toYear} onFrom={setFrom} onTo={setTo}
-        threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin} showMin={!team}
+        threshold={threshold} onThreshold={setRounds} minParam={minParam} onMin={setMin}
         selected={selected} onTogglePos={togglePos} onAllPos={selectAllPos} allSlots={allSlots} selectedSlots={selectedSlots} onToggleSlot={toggleSlot} onAllSlots={selectAllSlots}
         onReset={() => setSearchParams(new URLSearchParams(), { replace: true })}
       />
 
       {rows.length === 0 ? (
-        <p className="text-muted">{emptyMessage(team)}</p>
+        <p className="text-muted">{EMPTY_MESSAGE}</p>
       ) : (
         <DataTable
-          key={`${league}-${team}-${fromYear}-${toYear}-${threshold}-${minTeams}-${posParam}-${slotsParam}`}
+          key={`${league}-${fromYear}-${toYear}-${threshold}-${minTeams}-${posParam}-${slotsParam}`}
           columns={columns}
           rows={rows}
           getRowKey={(b) => b.key}
