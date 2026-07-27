@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { FaChevronRight } from 'react-icons/fa6'
 import type { Bracket, BuildBaselines, BuildStat } from '@/selectors'
-import { orderedPositions } from '@/selectors'
+import { FILTER_POSITIONS, orderedPositions } from '@/selectors'
 import type { Column } from '@/components/DataTable'
 import { posClass } from '@/components/positions'
 
@@ -79,9 +79,12 @@ function metricColumn(key: string, header: string, title: string, get: (b: Build
 
 const f1 = (n: number) => n.toFixed(1)
 
+/** Sort key ordering builds by QB, then RB, then WR, then TE count (zero-padded → lexicographic). */
+const buildSortKey = (b: BuildStat) => FILTER_POSITIONS.map((p) => String(b.counts[p] ?? 0).padStart(2, '0')).join('')
+
 export function buildColumns(baselines: BuildBaselines, openKey?: string): Column<BuildStat>[] {
   return [
-    { key: 'build', header: 'Build', render: (b) => buildBadges(b.counts, b.label) },
+    { key: 'build', header: 'Build', sortValue: buildSortKey, render: (b) => buildBadges(b.counts, b.label) },
     {
       key: 'teams',
       header: 'Teams',
