@@ -33,7 +33,9 @@ export const MEMBERS: Member[] = [
   { ffuId: 'ffu-021', name: 'Nighthawks', abbreviation: 'HAWK', owners: [{ ownerId: 'owner-021', role: 'primary' }], platformIds: { sleeper: ['864966364937461760'] } },
   { ffuId: 'ffu-022', name: 'The Gaston Ramblers', abbreviation: 'TGR', owners: [{ ownerId: 'owner-022', role: 'primary' }], platformIds: { sleeper: ['865078270985629696'] } },
   { ffuId: 'ffu-023', name: 'The Minutemen', abbreviation: 'MMEN', historicalNames: { '2020': 'The Minutemen' }, owners: [{ ownerId: 'owner-023', role: 'primary' }], platformIds: { sleeper: ['84006772809285632'], espn: ['mmen'] } },
-  { ffuId: 'ffu-024', name: 'Act More Stupidly', abbreviation: 'AMS', historicalNames: { '2020': 'Goat Emoji II' }, owners: [{ ownerId: 'owner-024', role: 'primary' }], platformIds: { sleeper: ['325766631336714240'], espn: ['swaggy'] } },
+  // Renamed to "The SS Paxton" for 2026; historicalNames pins every prior season (nameForYear is an
+  // exact-year lookup that falls back to the current name, so each played year must be listed).
+  { ffuId: 'ffu-024', name: 'The SS Paxton', abbreviation: 'PAX', historicalNames: { '2018': 'Act More Stupidly', '2019': 'Act More Stupidly', '2020': 'Goat Emoji II', '2021': 'Act More Stupidly', '2022': 'Act More Stupidly', '2023': 'Act More Stupidly', '2024': 'Act More Stupidly', '2025': 'Act More Stupidly' }, owners: [{ ownerId: 'owner-024', role: 'primary' }], platformIds: { sleeper: ['325766631336714240'], espn: ['swaggy'] } },
   { ffuId: 'ffu-025', name: 'Indianapolis Aztecs', abbreviation: 'AZTC', owners: [{ ownerId: 'owner-025', role: 'primary' }], platformIds: { sleeper: ['386791325690994688'], espn: ['aztecs'] } },
   { ffuId: 'ffu-026', name: 'Raging Rhinos', abbreviation: 'RAGE', historicalNames: { '2020': 'Currier Island Raging Rhinos' }, owners: [{ ownerId: 'owner-026', role: 'primary' }], platformIds: { sleeper: ['462383465753473024'], espn: ['rhinos'] } },
   { ffuId: 'ffu-027', name: 'CamDelphia', abbreviation: 'CAM', owners: [{ ownerId: 'owner-027', role: 'primary' }], platformIds: { sleeper: ['465884883869233152'] } },

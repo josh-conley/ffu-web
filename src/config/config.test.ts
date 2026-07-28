@@ -30,6 +30,13 @@ describe('member registry', () => {
     expect(nameForYear('ffu-009', '2024')).toBe('Fort Wayne Banana Bread')
   })
 
+  it('keeps prior-season names after a rename (ffu-024 → The SS Paxton in 2026)', () => {
+    expect(getMember('ffu-024')?.name).toBe('The SS Paxton')
+    expect(nameForYear('ffu-024', '2020')).toBe('Goat Emoji II')
+    expect(nameForYear('ffu-024', '2025')).toBe('Act More Stupidly')
+    expect(nameForYear('ffu-024', '2026')).toBe('The SS Paxton')
+  })
+
   it('merges Team Dogecoin onto ffu-031 across both Sleeper accounts', () => {
     expect(MEMBERS.find((m) => m.ffuId === 'ffu-032')).toBeUndefined()
     const doge = getMember('ffu-031')
