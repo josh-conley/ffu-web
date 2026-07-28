@@ -1,5 +1,6 @@
-import { getMember, ownerNames } from '@/config'
+import { formerNames, getMember, ownerNames } from '@/config'
 import type { CareerStats, MemberSeason } from '@/selectors'
+import { yearRanges } from './format'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
 import { TierTimeline } from './TierTimeline'
@@ -48,6 +49,23 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
   )
 }
 
+/** "Formerly Goat Emoji II (2020)" — every name the franchise has gone by, newest first. */
+function FormerNames({ memberId }: { memberId: string }) {
+  const former = formerNames(memberId)
+  if (former.length === 0) return null
+  return (
+    <div className="text-sm text-muted">
+      Formerly{' '}
+      {former.map(({ name, years }, i) => (
+        <span key={name}>
+          {i > 0 && ' · '}
+          <span className="italic">{name}</span> ({yearRanges(years)})
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function MemberDetail({ career, history, winnings }: { career: CareerStats; history: MemberSeason[]; winnings: number }) {
   const member = getMember(career.memberId)
   const owners = ownerNames(career.memberId)
@@ -66,6 +84,7 @@ export function MemberDetail({ career, history, winnings }: { career: CareerStat
             {owners.length > 0 ? owners.join(' / ') : 'Owner TBD'}
             {tenure && ` · ${tenure}`}
           </div>
+          <FormerNames memberId={career.memberId} />
         </div>
       </header>
 

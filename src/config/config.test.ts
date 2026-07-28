@@ -1,4 +1,5 @@
 import {
+  formerNames,
   getMember,
   nameForYear,
   memberBySleeperId,
@@ -35,6 +36,17 @@ describe('member registry', () => {
     expect(nameForYear('ffu-024', '2020')).toBe('Goat Emoji II')
     expect(nameForYear('ffu-024', '2025')).toBe('Act More Stupidly')
     expect(nameForYear('ffu-024', '2026')).toBe('The SS Paxton')
+  })
+
+  it('lists former names newest-used first, one entry per name', () => {
+    expect(formerNames('ffu-024')).toEqual([
+      { name: 'Act More Stupidly', years: ['2018', '2019', '2021', '2022', '2023', '2024', '2025'] },
+      { name: 'Goat Emoji II', years: ['2020'] },
+    ])
+    expect(formerNames('ffu-009')).toEqual([{ name: 'Wisconsian Banana Bread', years: ['2020'] }])
+    // ffu-001 pins its 2020 name to the CURRENT name — that isn't a former name.
+    expect(formerNames('ffu-001')).toEqual([])
+    expect(formerNames('nope')).toEqual([])
   })
 
   it('merges Team Dogecoin onto ffu-031 across both Sleeper accounts', () => {

@@ -27,6 +27,30 @@ export function nameForYear(ffuId: string, year: string): string | undefined {
   return member?.historicalNames?.[year] ?? member?.name
 }
 
+export interface FormerName {
+  name: string
+  /** Seasons it was used, ascending. */
+  years: string[]
+}
+
+/**
+ * Names a franchise has gone by other than its current one, most recently used first. Several
+ * seasons under one old name collapse into a single entry, and a `historicalNames` year that
+ * merely restates the current name (used to pin a name across a rename) is not "former".
+ */
+export function formerNames(ffuId: string): FormerName[] {
+  const member = byFfuId.get(ffuId)
+  if (member?.historicalNames === undefined) return []
+  const byName = new Map<string, string[]>()
+  for (const [year, name] of Object.entries(member.historicalNames)) {
+    if (name === member.name) continue
+    byName.set(name, [...(byName.get(name) ?? []), year])
+  }
+  return [...byName]
+    .map(([name, years]) => ({ name, years: years.sort() }))
+    .sort((a, b) => (b.years.at(-1) ?? '').localeCompare(a.years.at(-1) ?? ''))
+}
+
 /** Data-layer/migration use only (static provider + data/liveSleeper) — resolve a Sleeper account
  *  id to its franchise. Components/selectors never see platform ids. */
 export function memberBySleeperId(sleeperId: string): Member | undefined {
