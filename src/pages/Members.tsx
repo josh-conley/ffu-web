@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { careerStats, careerWinnings, headToHead, membersByLeague, memberSeasons, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
@@ -69,6 +70,8 @@ export function Members() {
   // member + vs live in the URL; update them together so switching members clears a stale compare.
   const member = params.get('member') ?? ''
   const vs = params.get('vs') ?? ''
+  // Opening (or leaving) a member swaps the whole view without a route change — start at the top.
+  useScrollToTop(member)
   const update = (changes: Record<string, string>) =>
     setParams(
       (prev) => {
