@@ -1,7 +1,7 @@
 import { FaArrowDown, FaArrowRotateLeft, FaArrowUp, FaStar } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
 import type { Tier } from '@/config'
-import { nameForYear } from '@/config'
+import { nameForYear, ownerNames } from '@/config'
 import type { Movement, UpcomingRoster, UpcomingTeam } from '@/selectors'
 import { ordinal } from './format'
 import { LEAGUE_STYLES } from './leagues'
@@ -67,12 +67,15 @@ function CareerTrail({ team, tier }: { team: UpcomingTeam; tier: Tier }) {
 }
 
 function TeamRow({ team, year, tier }: { team: UpcomingTeam; year: string; tier: Tier }) {
+  // Same "First / Co-owner" rendering the Members directory uses; empty when no name is on file.
+  const owners = ownerNames(team.memberId).join(' / ')
   return (
     <li className="flex items-center gap-2 border-t border-border px-3 py-2 first:border-t-0">
       <TeamLogo ffuId={team.memberId} size={28} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
+          {owners && <span className="shrink-0 text-[11px] text-muted">{owners}</span>}
           <MovementTag team={team} />
         </div>
         <CareerTrail team={team} tier={tier} />

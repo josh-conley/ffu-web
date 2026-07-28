@@ -63,6 +63,7 @@ it('lists next season\'s leagues with how each member got there', async () => {
 
   await waitFor(() => expect(screen.getByText(/^20\d\d Leagues$/)).toBeInTheDocument())
   expect(screen.getByText('Head Cow Always Grazing')).toBeInTheDocument()
+  expect(screen.getByText('Tyler')).toBeInTheDocument() // the owner's name rides along with the team
   expect(screen.getByText('Promoted')).toBeInTheDocument()
   expect(screen.getByText('Relegated')).toBeInTheDocument()
   expect(screen.getByText('New')).toBeInTheDocument()
