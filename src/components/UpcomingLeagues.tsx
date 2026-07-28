@@ -55,15 +55,12 @@ function MovementTag({ team }: { team: UpcomingTeam }) {
 /** Career at a glance, kept deliberately quiet: one dot per season played (colored by that
  *  season's tier, oldest first), a hollow dot for the season about to start, and a trophy per
  *  championship. All reuse the shared pieces the Members pages use, so the vocabulary matches.
- *  The count reads forward ("9th season") — this is a preview of a season, not a career summary —
- *  and members who've played every FFU season to date are tagged FFUNC. */
+ *  The count reads forward ("9th season") — this is a preview of a season, not a career summary. */
 function CareerTrail({ team, tier }: { team: UpcomingTeam; tier: Tier }) {
   return (
     <div className="flex items-center gap-2">
       <TierDots tiers={team.tiers} upcoming={tier} />
-      <span className="text-[11px] text-muted">
-        {ordinal(team.tiers.length + 1)} season{team.everySeason && ', FFUNC'}
-      </span>
+      <span className="text-[11px] text-muted">{ordinal(team.tiers.length + 1)} season</span>
       <Trophies titles={team.titles} />
     </div>
   )

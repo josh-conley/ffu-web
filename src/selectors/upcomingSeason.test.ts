@@ -55,13 +55,6 @@ describe('upcomingRosters', () => {
     expect(by(1, 'movement')).toEqual({ droppee: 'relegated', gone: 'returning', rookie: 'new' })
   })
 
-  it('flags members who have played every FFU season to date', () => {
-    // The fixture league has run two years (2024, 2025). `lifer` and `stayer` played both.
-    const everySeason = Object.fromEntries(rosters[0]!.teams.map((t) => [t.memberId, t.everySeason]))
-    expect(everySeason).toEqual({ lifer: true, stayer: true, riser: false, bigriser: false })
-    expect(rosters[1]!.teams.find((t) => t.memberId === 'gone')?.everySeason).toBe(false) // sat 2025 out
-  })
-
   it('counts the unbroken run in the tier being lined up for', () => {
     // lifer: 2024 + 2025 Premier. stayer: only 2025 (2024 was Masters). Arrivals: 0.
     expect(by(0, 'tierStreak')).toEqual({ lifer: 2, stayer: 1, riser: 0, bigriser: 0 })
