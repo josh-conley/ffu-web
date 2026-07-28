@@ -58,10 +58,11 @@ function TeamRow({ team, year }: { team: UpcomingTeam; year: string }) {
   )
 }
 
-/** Trailing notes: unfilled slots, plus any manager Sleeper reports who isn't in the registry yet. */
+/** Trailing notes: seats still to be filled, plus any manager Sleeper reports who isn't in the
+ *  registry yet. "Pending" rather than "open": the commissioner has these spots spoken for. */
 function RosterFooter({ roster }: { roster: UpcomingRoster }) {
   const notes: string[] = []
-  if (roster.openSlots > 0) notes.push(`${roster.openSlots} open slot${roster.openSlots === 1 ? '' : 's'}`)
+  if (roster.openSlots > 0) notes.push(`${roster.openSlots} pending member${roster.openSlots === 1 ? '' : 's'}`)
   if (roster.unregistered > 0) notes.push(`${roster.unregistered} manager${roster.unregistered === 1 ? '' : 's'} not listed yet`)
   if (notes.length === 0) return null
   return <p className="border-t border-border px-3 py-2 text-xs text-muted">{notes.join(' · ')}</p>

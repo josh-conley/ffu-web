@@ -66,7 +66,7 @@ it('lists next season\'s leagues with how each member got there', async () => {
   expect(screen.getByText('Promoted')).toBeInTheDocument()
   expect(screen.getByText('Relegated')).toBeInTheDocument()
   expect(screen.getByText('New')).toBeInTheDocument()
-  // Members who stayed put get no tag, and unfilled slots are called out.
+  // Members who stayed put get no tag, and unfilled seats are called out.
   expect(screen.getAllByText('The Minutemen').length).toBeGreaterThan(0) // also a past champion
-  expect(screen.getByText(/1 open slot/)).toBeInTheDocument()
+  expect(screen.getByText(/1 pending member/)).toBeInTheDocument()
 })
