@@ -28,10 +28,10 @@ const MOVEMENT_STYLES: Record<Exclude<Movement, 'stayed'>, MovementStyle> = {
 const styleOf = (m: Movement) => (m === 'stayed' ? undefined : MOVEMENT_STYLES[m])
 const teamName = (team: UpcomingTeam, year: string) => nameForYear(team.memberId, year) ?? team.memberId
 
-/** Longest-serving in THIS league first, then longest FFU career, then alphabetical — so each
- *  card reads as a tenure order, with newcomers at the bottom. */
+/** Longest UNBROKEN run in this league first (the established core), then longest FFU career,
+ *  then alphabetical — so arrivals and newcomers settle at the bottom of each card. */
 const byTenure = (year: string) => (a: UpcomingTeam, b: UpcomingTeam) =>
-  b.tierSeasons - a.tierSeasons || b.tiers.length - a.tiers.length || teamName(a, year).localeCompare(teamName(b, year))
+  b.tierStreak - a.tierStreak || b.tiers.length - a.tiers.length || teamName(a, year).localeCompare(teamName(b, year))
 
 /** The right-hand tag on a member's row. Members who stayed in their league get no tag (no noise). */
 function MovementTag({ team }: { team: UpcomingTeam }) {

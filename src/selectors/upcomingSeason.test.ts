@@ -21,12 +21,13 @@ const season = (year: string, tier: SeasonData['tier'], memberIds: string[]): Se
   games: [],
 })
 
-// 2024: `gone` plays (and wins) National; `stayer` is in Masters. 2025 (the prior season): the
-// premier/masters/national regulars, with `stayer` winning Premier.
+// 2024: `lifer` wins Premier, `gone` wins National, `stayer` is in Masters. 2025 (the prior
+// season): the regulars, with `stayer` winning Premier and `gone` sitting the year out.
 const seasons: SeasonData[] = [
+  season('2024', 'PREMIER', ['lifer']),
   season('2024', 'NATIONAL', ['gone']),
   season('2024', 'MASTERS', ['stayer']),
-  season('2025', 'PREMIER', ['stayer', 'droppee']),
+  season('2025', 'PREMIER', ['stayer', 'droppee', 'lifer']),
   season('2025', 'MASTERS', ['riser']),
   season('2025', 'NATIONAL', ['bigriser']),
 ]
@@ -43,15 +44,22 @@ const roster = (tier: LeagueRosterSummary['tier'], memberIds: string[], extra?: 
 
 describe('upcomingRosters', () => {
   const rosters = upcomingRosters(seasons, [
-    roster('PREMIER', ['stayer', 'riser', 'bigriser']),
+    roster('PREMIER', ['stayer', 'riser', 'bigriser', 'lifer']),
     roster('NATIONAL', ['droppee', 'gone', 'rookie']),
   ])
-  const movement = (tierIndex: number) =>
-    Object.fromEntries(rosters[tierIndex]!.teams.map((t) => [t.memberId, t.movement]))
+  const by = <K extends 'movement' | 'tierStreak'>(tierIndex: number, field: K) =>
+    Object.fromEntries(rosters[tierIndex]!.teams.map((t) => [t.memberId, t[field]]))
 
   it('labels movement against the last completed season', () => {
-    expect(movement(0)).toEqual({ stayer: 'stayed', riser: 'promoted', bigriser: 'promoted' })
-    expect(movement(1)).toEqual({ droppee: 'relegated', gone: 'returning', rookie: 'new' })
+    expect(by(0, 'movement')).toEqual({ stayer: 'stayed', riser: 'promoted', bigriser: 'promoted', lifer: 'stayed' })
+    expect(by(1, 'movement')).toEqual({ droppee: 'relegated', gone: 'returning', rookie: 'new' })
+  })
+
+  it('counts the unbroken run in the tier being lined up for', () => {
+    // lifer: 2024 + 2025 Premier. stayer: only 2025 (2024 was Masters). Arrivals: 0.
+    expect(by(0, 'tierStreak')).toEqual({ lifer: 2, stayer: 1, riser: 0, bigriser: 0 })
+    // `gone` last played National in 2024 — sitting out 2025 breaks the run.
+    expect(by(1, 'tierStreak')).toEqual({ gone: 0, droppee: 0, rookie: 0 })
   })
 
   it('carries where each member came from (absent for a first-timer)', () => {
@@ -65,13 +73,12 @@ describe('upcomingRosters', () => {
   it('carries the career trail: tiers played (oldest first) and championships', () => {
     const stayer = rosters[0]!.teams.find((t) => t.memberId === 'stayer')!
     expect(stayer.tiers).toEqual(['MASTERS', 'PREMIER']) // 2024 then 2025
-    expect(stayer.tierSeasons).toBe(1) // of those two, one was in Premier (the tier they're in next)
     expect(stayer.titles).toEqual([
       { tier: 'PREMIER', year: '2025' },
       { tier: 'MASTERS', year: '2024' },
     ])
     const rookie = rosters[1]!.teams.find((t) => t.memberId === 'rookie')!
-    expect(rookie).toMatchObject({ tiers: [], tierSeasons: 0, titles: [] })
+    expect(rookie).toMatchObject({ tiers: [], tierStreak: 0, titles: [] })
   })
 
   it('reports open slots and managers missing from the registry', () => {

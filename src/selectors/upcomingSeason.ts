@@ -21,8 +21,9 @@ export interface UpcomingTeam {
   fromYear?: string
   /** Tier played in each completed season, oldest first — a compact career trail. */
   tiers: Tier[]
-  /** How many of those seasons were in the tier they're lining up in next season. */
-  tierSeasons: number
+  /** Unbroken run in the tier they're lining up in, counting back from the last completed season.
+   *  0 for anyone who wasn't in this tier last season (promoted, relegated, returning, new). */
+  tierStreak: number
   /** Championships won, for the trophy row. Empty for most members. */
   titles: TitleWin[]
 }
@@ -46,6 +47,23 @@ interface LastSeason {
  *  off this, so the two can never disagree. */
 const seasonsPlayed = (career: CareerStats | undefined) =>
   [...(career?.finishes ?? [])].sort((a, b) => Number(a.year) - Number(b.year))
+
+/**
+ * Consecutive seasons in `tier` ending with the last completed season. Walks backwards requiring
+ * BOTH the tier and the year to line up, so a sat-out year breaks the run just as a spell in
+ * another league does.
+ */
+function tierStreakFor(played: LastSeason[], tier: Tier, priorYear: string): number {
+  let expected = Number(priorYear)
+  let streak = 0
+  for (let i = played.length - 1; i >= 0; i--) {
+    const season = played[i]
+    if (season === undefined || season.tier !== tier || Number(season.year) !== expected) break
+    streak++
+    expected--
+  }
+  return streak
+}
 
 function movementFor(tier: Tier, priorYear: string, last: LastSeason | undefined): Movement {
   if (last === undefined) return 'new'
@@ -78,7 +96,7 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
         memberId,
         movement: movementFor(roster.tier, priorYear, prev),
         tiers: played.map((f) => f.tier),
-        tierSeasons: played.filter((f) => f.tier === roster.tier).length,
+        tierStreak: tierStreakFor(played, roster.tier, priorYear),
         titles: career ? championshipTitles(career) : [],
         ...(prev ? { fromTier: prev.tier, fromYear: prev.year } : {}),
       }
