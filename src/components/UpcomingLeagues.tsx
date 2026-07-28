@@ -1,7 +1,9 @@
 import { FaArrowDown, FaArrowRotateLeft, FaArrowUp, FaStar } from 'react-icons/fa6'
 import type { IconType } from 'react-icons'
+import type { Tier } from '@/config'
 import { nameForYear } from '@/config'
 import type { Movement, UpcomingRoster, UpcomingTeam } from '@/selectors'
+import { ordinal } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
 import { TierDots, Trophies } from './Trophies'
@@ -51,22 +53,20 @@ function MovementTag({ team }: { team: UpcomingTeam }) {
 }
 
 /** Career at a glance, kept deliberately quiet: one dot per season played (colored by that
- *  season's tier, oldest first) and a trophy per championship. Both reuse the shared pieces the
- *  Members pages already use, so the visual vocabulary matches. */
-function CareerTrail({ team }: { team: UpcomingTeam }) {
-  if (team.tiers.length === 0) return <p className="text-[11px] italic text-muted">First FFU season</p>
+ *  season's tier, oldest first), a hollow dot for the season about to start, and a trophy per
+ *  championship. All reuse the shared pieces the Members pages use, so the vocabulary matches.
+ *  The count reads forward ("9th season") — this is a preview of a season, not a career summary. */
+function CareerTrail({ team, tier }: { team: UpcomingTeam; tier: Tier }) {
   return (
     <div className="flex items-center gap-2">
-      <TierDots tiers={team.tiers} />
-      <span className="text-[11px] text-muted">
-        {team.tiers.length} {team.tiers.length === 1 ? 'season' : 'seasons'}
-      </span>
+      <TierDots tiers={team.tiers} upcoming={tier} />
+      <span className="text-[11px] text-muted">{ordinal(team.tiers.length + 1)} season</span>
       <Trophies titles={team.titles} />
     </div>
   )
 }
 
-function TeamRow({ team, year }: { team: UpcomingTeam; year: string }) {
+function TeamRow({ team, year, tier }: { team: UpcomingTeam; year: string; tier: Tier }) {
   return (
     <li className="flex items-center gap-2 border-t border-border px-3 py-2 first:border-t-0">
       <TeamLogo ffuId={team.memberId} size={28} />
@@ -75,7 +75,7 @@ function TeamRow({ team, year }: { team: UpcomingTeam; year: string }) {
           <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
           <MovementTag team={team} />
         </div>
-        <CareerTrail team={team} />
+        <CareerTrail team={team} tier={tier} />
       </div>
     </li>
   )
@@ -106,7 +106,7 @@ function RosterCard({ roster }: { roster: UpcomingRoster }) {
       </h3>
       <ul>
         {teams.map((team) => (
-          <TeamRow key={team.memberId} team={team} year={roster.year} />
+          <TeamRow key={team.memberId} team={team} year={roster.year} tier={roster.tier} />
         ))}
       </ul>
       <RosterFooter roster={roster} />

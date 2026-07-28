@@ -2,6 +2,7 @@ import type { DraftPick } from '@/data'
 import type { BuildInstance, BuildStat } from '@/selectors'
 import { nameForYear } from '@/config'
 import { FaToilet, FaTrophy } from 'react-icons/fa6'
+import { ordinal } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
@@ -9,13 +10,6 @@ import { TeamLogo } from './TeamLogo'
 // Drill-down for one build: every team-season that drafted it, with the actual roster (its picks in
 // the first N rounds) and how the season finished. Presentational only — the page owns selection
 // state; positions come from positions.ts, tier colors from leagues.ts (Charter DRY).
-
-const SUFFIX = ['th', 'st', 'nd', 'rd']
-/** English ordinal, e.g. 1 → "1st", 12 → "12th". */
-function ordinal(n: number): string {
-  const v = n % 100
-  return `${n}${SUFFIX[(v - 20) % 10] ?? SUFFIX[v] ?? SUFFIX[0]}`
-}
 
 /** Leading finish tag: trophy for a title, toilet for dead last, else the ordinal (green within top-6). */
 function FinishTag({ inst }: { inst: BuildInstance }) {

@@ -117,4 +117,5 @@ weeks (15–17), static lineup backfill. 2026-readiness checklist lives in `ai-d
 Ops/planning docs that aren't app source live here (kept out of the repo root to cut clutter):
 `ai-docs/DEPLOY.md` (deploy + apex cutover checklist), `ai-docs/PREVIEW-ENVIRONMENT.md` (Cloudflare
 preview setup), `ai-docs/TODO.md` (**living task list — check it, and keep it current as work
-happens**, e.g. what's left for 2026 season readiness).
+happens**, e.g. what's left for 2026 season readiness), `ai-docs/DECISIONS.md` (short ADR notes for
+non-obvious choices — e.g. when a season counts as "started"; add an entry rather than re-deciding).

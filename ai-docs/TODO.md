@@ -34,6 +34,17 @@ don't let it go stale.
       `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
       of `LIVE_LEAGUE_IDS` into `SEASONS`.
 
+## New members before their first backfill
+
+A member with zero completed seasons exists only in the home page's "2026 Leagues" section —
+`Members.tsx` builds its directory from `careerStats`, so ffu-057/ffu-058 have no directory entry
+or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28) for the rule.
+
+- [ ] Feed the upcoming rosters into the Members directory as a "Joining 2026" group (empty career;
+      detail page must render gracefully with no seasons)
+- [ ] Read Sleeper's `league.status` / draft status so membership-shaped views can flip at draft
+      completion rather than at "ids are configured" — only needed once the group above exists
+
 ## Deferred / not blocking Week 1
 
 - Phase 5 apex cutover (`ffunion.com`) — see `ai-docs/DEPLOY.md`
