@@ -2,8 +2,16 @@
 // capture (the espn-api pull that recorded them post-dates the original migration).
 //
 // Mirrors scripts/backfill-divisions.mjs, but the source is an offline espn-api export rather than
-// the Sleeper API. It only writes the checked-in supplement; `npm run migrate` then merges it
-// (applyDivisionsSupplement) into public/data + flips hasDivisions — one materializer, no dup.
+// the Sleeper API. It only writes the supplement under gitignored legacy-source/; `npm run migrate`
+// then merges it (applyDivisionsSupplement) into public/data + flips hasDivisions — one
+// materializer, no dup. public/data is what's committed, so a fresh clone needs no re-pull.
+//
+// Regenerating an export (needs ESPN cookies; ../espn-api is a sibling repo):
+//   python3 export_league.py --league-id <id> --years 2018 2019 2020 \
+//       --out espn_export/<tier> --espn-s2 "$ESPN_S2" --swid "$SWID"
+//   python3 export_divisions.py --dir espn_export/<tier> \
+//       --out ../ffu-web/legacy-source/data/espn-<tier>-divisions.json
+// League ids: Premier 5523, National 4270.
 //
 // Identity join: the supplement is keyed by legacy userId tokens (resolved to ffuId by migration).
 // The export carries no platform ids, so we join each division team to its legacy standings row by

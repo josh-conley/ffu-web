@@ -13,7 +13,7 @@
       "tier": "NATIONAL",
       "year": "2018",
       "era": "espn",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": false
     },
@@ -29,7 +29,7 @@
       "tier": "NATIONAL",
       "year": "2019",
       "era": "espn",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": false
     },
@@ -45,7 +45,7 @@
       "tier": "NATIONAL",
       "year": "2020",
       "era": "espn",
-      "hasDivisions": false,
+      "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": false
     },

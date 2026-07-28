@@ -71,8 +71,18 @@ describe('standingsByDivision (real 2025 Premier, divisions)', () => {
   })
 
   it('returns null for a season without divisions', () => {
-    // ESPN-era National — Sleeper years and ESPN Premier (backfilled) all have divisions now.
-    expect(standingsByDivision(national2020 as unknown as SeasonData)).toBeNull()
+    // Every real season now carries divisions (ESPN 2018–2020 backfilled for both tiers), so the
+    // no-divisions contract is pinned with synthetic seasons rather than a real file.
+    const teams = [team('a', 3, 0, 300), team('b', 1, 2, 100)]
+    expect(standingsByDivision({ teams, divisions: [], games: [] } as unknown as SeasonData)).toBeNull()
+    expect(standingsByDivision({ teams, games: [] } as unknown as SeasonData)).toBeNull()
+  })
+
+  it('groups real (backfilled) 2020 National into its 4 divisions, covering every team', () => {
+    const groups = standingsByDivision(national2020 as unknown as SeasonData)
+    expect(groups).toHaveLength(4)
+    expect(groups!.map((g) => g.division.name)).toEqual(['Bronze', 'Copper', 'Brass', 'Nickel'])
+    expect(groups!.reduce((n, g) => n + g.rows.length, 0)).toBe(12)
   })
 })
 
@@ -100,8 +110,14 @@ describe('divisionWinnerIds (pennants)', () => {
     expect(divisionWinnerIds(season)).toEqual(new Set(['a', 'b']))
   })
 
-  it('is empty for ESPN-era seasons (no divisions)', () => {
-    expect(divisionWinnerIds(national2020 as unknown as SeasonData).size).toBe(0)
+  it('is empty for a season without divisions', () => {
+    const teams = [team('a', 3, 0, 300), team('b', 1, 2, 100)]
+    expect(divisionWinnerIds({ teams, divisions: [], games: [] } as unknown as SeasonData).size).toBe(0)
+    expect(divisionWinnerIds({ teams, games: [] } as unknown as SeasonData).size).toBe(0)
+  })
+
+  it('finds one winner per division in real (backfilled) 2020 National', () => {
+    expect(divisionWinnerIds(national2020 as unknown as SeasonData).size).toBe(4)
   })
 
   it('finds one winner per division in real (backfilled) 2024 Premier', () => {

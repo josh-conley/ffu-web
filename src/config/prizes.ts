@@ -49,10 +49,10 @@ export interface SeasonPrizeSchedule {
 }
 
 export const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {
-  // 2018–2020 share one schedule (ESPN era: Premier + National only — Masters began 2022). National
-  // offered division prizes too (Bronze/Copper/Brass/Nickel), but those divisions weren't captured in
-  // the migrated National data, so its `divisionChamp` is transcribed for the record yet pays no one
-  // (the selector finds no division winners). Premier's four divisions ARE in the data and pay out.
+  // 2018–2020 share one schedule (ESPN era: Premier + National only — Masters began 2022). Both tiers
+  // ran four divisions — Premier: Diamond/Platinum/Gold/Silver, National: Bronze/Copper/Brass/Nickel —
+  // and both are now in the migrated data (backfilled from the espn-api export), so `divisionChamp`
+  // pays out for each.
   '2018': {
     tiers: {
       PREMIER: { champion: 400, runnerUp: 160, third: 60, divisionChamp: 15, mostPoints: 35, weeklyHighScore: 5 },
