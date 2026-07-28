@@ -24,6 +24,9 @@ export interface UpcomingTeam {
   /** Unbroken run in the tier they're lining up in, counting back from the last completed season.
    *  0 for anyone who wasn't in this tier last season (promoted, relegated, returning, new). */
   tierStreak: number
+  /** Has played every FFU season to date — i.e. is entering their Nth season of an N-season
+   *  league. Derived rather than hardcoded to "9th" so it still holds in future years. */
+  everySeason: boolean
   /** Championships won, for the trophy row. Empty for most members. */
   titles: TitleWin[]
 }
@@ -81,6 +84,7 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
   const years = seasons.map((s) => Number(s.year))
   if (years.length === 0) return []
   const priorYear = String(Math.max(...years))
+  const leagueYears = new Set(seasons.map((s) => s.year)).size
   const careers = careerStats(seasons)
 
   return rosters.map((roster) => ({
@@ -97,6 +101,7 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
         movement: movementFor(roster.tier, priorYear, prev),
         tiers: played.map((f) => f.tier),
         tierStreak: tierStreakFor(played, roster.tier, priorYear),
+        everySeason: played.length === leagueYears,
         titles: career ? championshipTitles(career) : [],
         ...(prev ? { fromTier: prev.tier, fromYear: prev.year } : {}),
       }
