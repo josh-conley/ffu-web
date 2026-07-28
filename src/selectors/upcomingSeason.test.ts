@@ -65,12 +65,13 @@ describe('upcomingRosters', () => {
   it('carries the career trail: tiers played (oldest first) and championships', () => {
     const stayer = rosters[0]!.teams.find((t) => t.memberId === 'stayer')!
     expect(stayer.tiers).toEqual(['MASTERS', 'PREMIER']) // 2024 then 2025
+    expect(stayer.tierSeasons).toBe(1) // of those two, one was in Premier (the tier they're in next)
     expect(stayer.titles).toEqual([
       { tier: 'PREMIER', year: '2025' },
       { tier: 'MASTERS', year: '2024' },
     ])
     const rookie = rosters[1]!.teams.find((t) => t.memberId === 'rookie')!
-    expect(rookie).toMatchObject({ tiers: [], titles: [] })
+    expect(rookie).toMatchObject({ tiers: [], tierSeasons: 0, titles: [] })
   })
 
   it('reports open slots and managers missing from the registry', () => {

@@ -21,6 +21,8 @@ export interface UpcomingTeam {
   fromYear?: string
   /** Tier played in each completed season, oldest first — a compact career trail. */
   tiers: Tier[]
+  /** How many of those seasons were in the tier they're lining up in next season. */
+  tierSeasons: number
   /** Championships won, for the trophy row. Empty for most members. */
   titles: TitleWin[]
 }
@@ -76,6 +78,7 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
         memberId,
         movement: movementFor(roster.tier, priorYear, prev),
         tiers: played.map((f) => f.tier),
+        tierSeasons: played.filter((f) => f.tier === roster.tier).length,
         titles: career ? championshipTitles(career) : [],
         ...(prev ? { fromTier: prev.tier, fromYear: prev.year } : {}),
       }

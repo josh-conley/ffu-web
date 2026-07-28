@@ -16,21 +16,22 @@ interface MovementStyle {
   label: string
   icon: IconType
   className: string
-  /** Sort weight — movers and newcomers surface above the members who simply stayed put. */
-  rank: number
 }
 
 const MOVEMENT_STYLES: Record<Exclude<Movement, 'stayed'>, MovementStyle> = {
-  promoted: { label: 'Promoted', icon: FaArrowUp, className: 'text-positive', rank: 0 },
-  relegated: { label: 'Relegated', icon: FaArrowDown, className: 'text-negative', rank: 1 },
-  new: { label: 'New', icon: FaStar, className: 'text-notable', rank: 2 },
-  returning: { label: 'Returning', icon: FaArrowRotateLeft, className: 'text-muted', rank: 3 },
+  promoted: { label: 'Promoted', icon: FaArrowUp, className: 'text-positive' },
+  relegated: { label: 'Relegated', icon: FaArrowDown, className: 'text-negative' },
+  new: { label: 'New', icon: FaStar, className: 'text-notable' },
+  returning: { label: 'Returning', icon: FaArrowRotateLeft, className: 'text-muted' },
 }
 
-const STAYED_RANK = 4
 const styleOf = (m: Movement) => (m === 'stayed' ? undefined : MOVEMENT_STYLES[m])
-const rankOf = (m: Movement) => styleOf(m)?.rank ?? STAYED_RANK
 const teamName = (team: UpcomingTeam, year: string) => nameForYear(team.memberId, year) ?? team.memberId
+
+/** Longest-serving in THIS league first, then longest FFU career, then alphabetical — so each
+ *  card reads as a tenure order, with newcomers at the bottom. */
+const byTenure = (year: string) => (a: UpcomingTeam, b: UpcomingTeam) =>
+  b.tierSeasons - a.tierSeasons || b.tiers.length - a.tiers.length || teamName(a, year).localeCompare(teamName(b, year))
 
 /** The right-hand tag on a member's row. Members who stayed in their league get no tag (no noise). */
 function MovementTag({ team }: { team: UpcomingTeam }) {
@@ -94,9 +95,7 @@ function RosterCard({ roster }: { roster: UpcomingRoster }) {
   const style = LEAGUE_STYLES[roster.tier]
   const filled = roster.teams.length + roster.unregistered
   const size = filled + roster.openSlots
-  const teams = [...roster.teams].sort(
-    (a, b) => rankOf(a.movement) - rankOf(b.movement) || teamName(a, roster.year).localeCompare(teamName(b, roster.year)),
-  )
+  const teams = [...roster.teams].sort(byTenure(roster.year))
   return (
     <div className="border border-border bg-surface shadow-sm">
       <h3 className={`flex items-center justify-between px-3 py-2 text-sm font-bold uppercase tracking-wide ${style.solidHeader}`}>
