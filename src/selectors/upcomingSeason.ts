@@ -1,5 +1,6 @@
 import type { Tier } from '@/config/types'
 import type { LeagueRosterSummary, SeasonData } from '@/data'
+import { careerStats, championshipTitles, type CareerStats, type TitleWin } from './career'
 
 // How each franchise arrived in the league it will play next season — derived by comparing the
 // upcoming rosters (live from Sleeper) against the last COMPLETED season's tiers. Never stored:
@@ -18,6 +19,10 @@ export interface UpcomingTeam {
   fromTier?: Tier
   /** The season `fromTier` refers to: the prior season, or an older one when `returning`. */
   fromYear?: string
+  /** Tier played in each completed season, oldest first — a compact career trail. */
+  tiers: Tier[]
+  /** Championships won, for the trophy row. Empty for most members. */
+  titles: TitleWin[]
 }
 
 export interface UpcomingRoster {
@@ -35,19 +40,10 @@ interface LastSeason {
   tier: Tier
 }
 
-/** Each member's most recent completed season (year + tier). */
-function lastSeasonByMember(seasons: SeasonData[]): Map<string, LastSeason> {
-  const last = new Map<string, LastSeason>()
-  for (const season of seasons) {
-    for (const team of season.teams) {
-      const prev = last.get(team.memberId)
-      if (prev === undefined || Number(season.year) > Number(prev.year)) {
-        last.set(team.memberId, { year: season.year, tier: season.tier })
-      }
-    }
-  }
-  return last
-}
+/** A member's completed seasons, oldest first — the career trail and the "came from" both read
+ *  off this, so the two can never disagree. */
+const seasonsPlayed = (career: CareerStats | undefined) =>
+  [...(career?.finishes ?? [])].sort((a, b) => Number(a.year) - Number(b.year))
 
 function movementFor(tier: Tier, priorYear: string, last: LastSeason | undefined): Movement {
   if (last === undefined) return 'new'
@@ -65,7 +61,7 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
   const years = seasons.map((s) => Number(s.year))
   if (years.length === 0) return []
   const priorYear = String(Math.max(...years))
-  const last = lastSeasonByMember(seasons)
+  const careers = careerStats(seasons)
 
   return rosters.map((roster) => ({
     tier: roster.tier,
@@ -73,10 +69,14 @@ export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSumm
     openSlots: roster.totalRosters - roster.claimed,
     unregistered: roster.claimed - roster.memberIds.length,
     teams: roster.memberIds.map((memberId) => {
-      const prev = last.get(memberId)
+      const career = careers.get(memberId)
+      const played = seasonsPlayed(career)
+      const prev = played.at(-1)
       return {
         memberId,
         movement: movementFor(roster.tier, priorYear, prev),
+        tiers: played.map((f) => f.tier),
+        titles: career ? championshipTitles(career) : [],
         ...(prev ? { fromTier: prev.tier, fromYear: prev.year } : {}),
       }
     }),

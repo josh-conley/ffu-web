@@ -4,6 +4,7 @@ import { nameForYear } from '@/config'
 import type { Movement, UpcomingRoster, UpcomingTeam } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
+import { TierDots, Trophies } from './Trophies'
 
 /**
  * Next season's signups, one card per tier: who's in, and how they got there (promoted / relegated
@@ -48,12 +49,33 @@ function MovementTag({ team }: { team: UpcomingTeam }) {
   )
 }
 
+/** Career at a glance, kept deliberately quiet: one dot per season played (colored by that
+ *  season's tier, oldest first) and a trophy per championship. Both reuse the shared pieces the
+ *  Members pages already use, so the visual vocabulary matches. */
+function CareerTrail({ team }: { team: UpcomingTeam }) {
+  if (team.tiers.length === 0) return <p className="text-[11px] italic text-muted">First FFU season</p>
+  return (
+    <div className="flex items-center gap-2">
+      <TierDots tiers={team.tiers} />
+      <span className="text-[11px] text-muted">
+        {team.tiers.length} {team.tiers.length === 1 ? 'season' : 'seasons'}
+      </span>
+      <Trophies titles={team.titles} />
+    </div>
+  )
+}
+
 function TeamRow({ team, year }: { team: UpcomingTeam; year: string }) {
   return (
     <li className="flex items-center gap-2 border-t border-border px-3 py-2 first:border-t-0">
-      <TeamLogo ffuId={team.memberId} size={24} />
-      <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
-      <MovementTag team={team} />
+      <TeamLogo ffuId={team.memberId} size={28} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
+          <MovementTag team={team} />
+        </div>
+        <CareerTrail team={team} />
+      </div>
     </li>
   )
 }

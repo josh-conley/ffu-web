@@ -1,28 +1,31 @@
 import type { LeagueRosterSummary, SeasonData, SeasonTeam } from '@/data'
 import { upcomingRosters } from './upcomingSeason'
 
-const team = (memberId: string): SeasonTeam => ({
+const team = (memberId: string, finalPlacement: number): SeasonTeam => ({
   memberId,
   record: { wins: 7, losses: 7, ties: 0 },
   points: { for: 1400, against: 1400 },
-  finalPlacement: 1,
+  finalPlacement,
   promoted: false,
   relegated: false,
 })
 
+/** The first member listed wins that tier-season; everyone else finishes mid-table. */
 const season = (year: string, tier: SeasonData['tier'], memberIds: string[]): SeasonData => ({
   schemaVersion: 1,
   tier,
   year,
   era: 'sleeper',
   platformLeagueId: 'x',
-  teams: memberIds.map(team),
+  teams: memberIds.map((id, i) => team(id, i === 0 ? 1 : 4)),
   games: [],
 })
 
-// 2024: `gone` plays National. 2025 (the prior season): premier/masters/national regulars.
+// 2024: `gone` plays (and wins) National; `stayer` is in Masters. 2025 (the prior season): the
+// premier/masters/national regulars, with `stayer` winning Premier.
 const seasons: SeasonData[] = [
   season('2024', 'NATIONAL', ['gone']),
+  season('2024', 'MASTERS', ['stayer']),
   season('2025', 'PREMIER', ['stayer', 'droppee']),
   season('2025', 'MASTERS', ['riser']),
   season('2025', 'NATIONAL', ['bigriser']),
@@ -57,6 +60,17 @@ describe('upcomingRosters', () => {
     // 'returning' points at the older season actually played, not the prior one.
     expect(rosters[1]!.teams.find((t) => t.memberId === 'gone')).toMatchObject({ fromTier: 'NATIONAL', fromYear: '2024' })
     expect(rosters[1]!.teams.find((t) => t.memberId === 'rookie')?.fromTier).toBeUndefined()
+  })
+
+  it('carries the career trail: tiers played (oldest first) and championships', () => {
+    const stayer = rosters[0]!.teams.find((t) => t.memberId === 'stayer')!
+    expect(stayer.tiers).toEqual(['MASTERS', 'PREMIER']) // 2024 then 2025
+    expect(stayer.titles).toEqual([
+      { tier: 'PREMIER', year: '2025' },
+      { tier: 'MASTERS', year: '2024' },
+    ])
+    const rookie = rosters[1]!.teams.find((t) => t.memberId === 'rookie')!
+    expect(rookie).toMatchObject({ tiers: [], titles: [] })
   })
 
   it('reports open slots and managers missing from the registry', () => {
