@@ -237,6 +237,23 @@ export interface LiveSeasonData {
   games: Game[]
 }
 
+/**
+ * Who is signed up for one tier of an upcoming/in-progress season (src/data/liveRosters.ts).
+ * Narrower than LiveSeasonData on purpose: this is available the moment the leagues exist on
+ * Sleeper (pre-draft, no games), which is exactly when the home page wants to show it.
+ */
+export interface LeagueRosterSummary {
+  tier: Tier
+  year: string
+  leagueId: string
+  /** Franchises claimed by a manager AND present in the member registry, in Sleeper roster order. */
+  memberIds: string[]
+  /** Rosters with a manager attached — may exceed memberIds.length if someone isn't in config yet. */
+  claimed: number
+  /** League size (claimed + still-open slots). */
+  totalRosters: number
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

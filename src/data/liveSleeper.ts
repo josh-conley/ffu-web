@@ -2,20 +2,13 @@ import type { Tier } from '@/config/types'
 import { memberBySleeperId } from '@/config'
 import type { Game, GameParticipant, LineupPlayer, LiveSeasonData, PlayerMap, TeamLineup } from './types'
 import { assertGame } from './validate'
+import { sleeperGet } from './sleeperApi'
 
 // Live client-side reads of Sleeper's public API for the season currently in progress. Deliberately
 // NOT part of `LeagueDataProvider`/`getSeason` (see LiveSeasonData in types.ts): that contract and
 // its validator assume a mostly-complete season, which every other page/selector already relies on,
 // so retrofitting it for a partial in-progress season would be a much larger, riskier change than
 // this home-page-only feature needs. This module is additive and used only by useLiveWeek.
-
-const API = 'https://api.sleeper.app/v1'
-
-async function sleeperGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`)
-  if (!res.ok) throw new Error(`Sleeper ${path} -> HTTP ${res.status}`)
-  return res.json() as Promise<T>
-}
 
 export interface NflState {
   week: number

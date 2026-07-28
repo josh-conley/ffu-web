@@ -34,6 +34,11 @@
   --color-positive: #15803d;
   --color-negative: #dc2626;
 
+  /* Notable-but-neutral gold (e.g. a first-time member) — deliberately NOT the accent red, which
+     reads as a warning, and NOT --color-premier, which must stay tier-only. Darkened here for AA
+     on the light surface (#a16207 on #fff ≈ 4.9:1). */
+  --color-notable: #a16207;
+
   /* Tier colors — solid (for colored headers/dots) + soft badge bg/fg, LIGHT defaults.
      Exact newsletter identity: Premier amber, Masters purple, National (bright) red. */
   --color-premier: #fca800;
@@ -62,9 +67,10 @@
   --color-text: #f3f4f6;
   --color-muted: #9ca3af;
 
-  /* Brighter green/red for contrast on the dark surface. */
+  /* Brighter green/red/gold for contrast on the dark surface. */
   --color-positive: #4ade80;
   --color-negative: #f87171;
+  --color-notable: #fbbf24;
 
   --color-premier-bg: #3d2600;
   --color-premier-fg: #ffc861;

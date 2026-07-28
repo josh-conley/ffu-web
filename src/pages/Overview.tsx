@@ -4,6 +4,8 @@ import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
+import { useLeagueRosters } from '@/hooks/useLeagueRosters'
+import { upcomingRosters } from '@/selectors'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
@@ -11,6 +13,7 @@ import { CurrentWeekStandings } from '@/components/CurrentWeekStandings'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
 import { RosterBuildsBanner } from '@/components/RosterBuildsBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
+import { UpcomingLeagues } from '@/components/UpcomingLeagues'
 import { TIER_PRESTIGE } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -33,6 +36,9 @@ export function Overview() {
   }, [seasons])
 
   const latest = years[0]
+  const nextYear = latest ? String(Number(latest) + 1) : undefined
+  const { rosters } = useLeagueRosters(nextYear)
+  const upcoming = useMemo(() => upcomingRosters(seasons ?? [], rosters), [seasons, rosters])
   const latestChampions: LatestChampion[] = useMemo(
     () =>
       latest
@@ -79,7 +85,8 @@ export function Overview() {
           </section>
         </>
       )}
-      <UpcomingDrafts year={latest ? String(Number(latest) + 1) : undefined} />
+      <UpcomingDrafts year={nextYear} />
+      {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
