@@ -65,6 +65,8 @@ export const MEMBERS: Member[] = [
   { ffuId: 'ffu-054', name: 'The Underdogs', abbreviation: 'DOGS', owners: [{ ownerId: 'owner-054', role: 'primary' }], platformIds: { sleeper: ['1259227854642622464'] } },
   { ffuId: 'ffu-055', name: 'Dawn Island Straw Hats', abbreviation: 'STRW', owners: [{ ownerId: 'owner-055', role: 'primary' }], platformIds: { sleeper: ['797222154151247872'] } },
   { ffuId: 'ffu-056', name: 'The Inferno Swarm', abbreviation: 'SWRM', owners: [{ ownerId: 'owner-056', role: 'primary' }], platformIds: { sleeper: ['866063012375719936'] } },
+  { ffuId: 'ffu-057', name: 'YAC Attack', abbreviation: 'YAC', owners: [{ ownerId: 'owner-057', role: 'primary' }], platformIds: { sleeper: ['1380233141997809664'] } },
+  { ffuId: 'ffu-058', name: 'jimmycandles', abbreviation: 'JIMM', owners: [{ ownerId: 'owner-058', role: 'primary' }], platformIds: { sleeper: ['1068295210456793088'] } },
   { ffuId: 'ffu-h01', name: 'Naptown Makos', abbreviation: 'NM', historicalNames: { '2019': 'Naptown Makos' }, owners: [{ ownerId: 'owner-h01', role: 'primary' }], platformIds: { espn: ['makos'] } },
   { ffuId: 'ffu-h02', name: 'Speedway\'s Ritual Cog', abbreviation: 'SRC', historicalNames: { '2018': 'Speedway\'s Ritual Cog', '2019': 'Speedway\'s Ritual Cog' }, owners: [{ ownerId: 'owner-h02', role: 'primary' }], platformIds: { espn: ['cog'] } },
   { ffuId: 'ffu-h03', name: 'The Well Done Stakes', abbreviation: 'WDS', historicalNames: { '2018': 'The Well Done Stakes' }, owners: [{ ownerId: 'owner-h03', role: 'primary' }], platformIds: { espn: ['twds'] } },
