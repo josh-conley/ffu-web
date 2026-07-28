@@ -9,11 +9,14 @@ don't let it go stale.
 - [x] Get 2026 Sleeper league IDs (Premier/Masters/National) from the commissioner/Sleeper app
 - [x] Add those ids to `src/config/liveSeason.ts`'s `LIVE_LEAGUE_IDS['2026']` (all 3 tiers) — this
       is what turns on the live "This Week" home page section (added 2026-07-18; leagues pre_draft)
-- [ ] Add any new members to `src/config/members.ts` (ffuId + `platformIds.sleeper`)
-- [ ] Add any new owners to `src/config/owners.ts`
+- [ ] Add any new members to `src/config/members.ts` (ffuId + `platformIds.sleeper`) — rolling task
+      until the leagues fill; done 2026-07-28 for ffu-057 (YAC Attack) + ffu-058 (jimmycandles)
+- [ ] Add any new owners to `src/config/owners.ts` — owner-057 (Tom) + owner-058 (Mladen) added
+      2026-07-28
 - [ ] Confirm returning members' `platformIds.sleeper` still match (no swapped Sleeper accounts)
-      — as of 2026-07-18: all 23 users joined so far resolve to existing registry members; leagues
-      not full yet (Premier 9, Masters 8, National 8), re-check once rosters are complete
+      — as of 2026-07-28: every roster owner resolves to a registry member; still filling
+      (Premier 11/12, Masters 8/12, National 11/12), re-check once rosters are complete. The home
+      page's "2026 Leagues" section surfaces this: unmapped managers show as "not listed yet".
 - [ ] Add a 2026 entry to `src/config/prizes.ts` once the commissioner posts `prizes.txt` for 2026
 - [x] (Data) Backfill National 2018–2020 divisions (Bronze/Copper/Brass/Nickel) so their $10
       division-champ prizes attribute (done 2026-07-27 — pulled from ESPN league 4270 via the
@@ -26,6 +29,10 @@ don't let it go stale.
 
 - [ ] Design + build a section (likely on Overview, near the top) announcing the upcoming/live draft
       — exact content/timing TBD
+- [x] "2026 Leagues" section under Upcoming Drafts: who's signed up per tier, tagged Promoted /
+      Relegated / Returning / New vs the last completed season (2026-07-28). Live from Sleeper via
+      `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
+      of `LIVE_LEAGUE_IDS` into `SEASONS`.
 
 ## Deferred / not blocking Week 1
 
