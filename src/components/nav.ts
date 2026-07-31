@@ -20,6 +20,7 @@ export const NAV: readonly NavItem[] = [
   { to: '/matchups', label: 'Matchups', end: false, seasonScoped: true },
   { to: '/drafts', label: 'Drafts', end: false, seasonScoped: true },
   { to: '/records', label: 'Records', end: false, startGroup: true },
+  { to: '/lineal', label: 'Lineal', end: false },
   { to: '/members', label: 'Members', end: false },
   { to: '/stats', label: 'Stats', end: false },
   { to: '/builds', label: 'Builds', end: false },

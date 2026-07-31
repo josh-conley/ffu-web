@@ -51,3 +51,6 @@ or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28)
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now
 - H2H matrix, draft fun-facts, playoff machine, further live-active-week refinements — per
   `CLAUDE.md` "Next / open"
+- Lineal Championship (`/lineal`) reads completed seasons only, so the belt won't move during a live
+  season until that year is backfilled. Wiring `liveSleeper` games into `linealHistory` would fix
+  that (the selector takes any `SeasonData[]`, so it's a data-assembly job, not a selector change).

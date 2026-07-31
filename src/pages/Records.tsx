@@ -8,7 +8,7 @@ import { DataTable, type Column } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
 import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
-import { LeagueBadge } from '@/components/LeagueBadge'
+import { GameWhen } from '@/components/GameWhen'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -39,16 +39,6 @@ function rank<T>(rows: T[]): Ranked<T>[] {
   return rows.map((row, i) => ({ ...row, rank: i + 1 }))
 }
 
-function SeasonCell({ year, tier, week, round }: { year: string; tier: TeamGameRecord['tier']; week: number; round?: string }) {
-  return (
-    <span className="flex items-center gap-2 whitespace-nowrap text-muted">
-      <span className="tabular-nums">{year}</span>
-      <LeagueBadge tier={tier} />
-      <span>{round ?? `Wk ${week}`}</span>
-    </span>
-  )
-}
-
 function TeamCell({ ffuId, year }: { ffuId: string; year: string }) {
   return (
     <span className="flex items-center gap-2 whitespace-nowrap">
@@ -64,7 +54,7 @@ function teamColumns(): Column<Ranked<TeamGameRecord>>[] {
     { key: 'team', header: 'Team', render: (r) => <TeamCell ffuId={r.memberId} year={r.year} /> },
     { key: 'score', header: 'Score', align: 'right', render: (r) => r.score.toFixed(2), sortValue: (r) => r.score },
     { key: 'opp', header: 'Opponent', render: (r) => `${nameForYear(r.opponentId, r.year) ?? r.opponentId} (${r.opponentScore.toFixed(2)})` },
-    { key: 'season', header: 'When', render: (r) => <SeasonCell year={r.year} tier={r.tier} week={r.week} round={r.round} /> },
+    { key: 'season', header: 'When', render: (r) => <GameWhen year={r.year} tier={r.tier} week={r.week} round={r.round} /> },
   ]
 }
 
@@ -91,7 +81,7 @@ function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
       ),
     },
     metric,
-    { key: 'season', header: 'When', render: (r) => <SeasonCell year={r.year} tier={r.tier} week={r.week} round={r.round} /> },
+    { key: 'season', header: 'When', render: (r) => <GameWhen year={r.year} tier={r.tier} week={r.week} round={r.round} /> },
   ]
 }
 

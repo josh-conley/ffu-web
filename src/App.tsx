@@ -4,6 +4,7 @@ import { Overview } from '@/pages/Overview'
 import { Standings } from '@/pages/Standings'
 import { Matchups } from '@/pages/Matchups'
 import { Records } from '@/pages/Records'
+import { LinealChampion } from '@/pages/LinealChampion'
 import { Members } from '@/pages/Members'
 import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="standings" element={<Standings />} />
           <Route path="matchups" element={<Matchups />} />
           <Route path="records" element={<Records />} />
+          <Route path="lineal" element={<LinealChampion />} />
           <Route path="members" element={<Members />} />
           <Route path="stats" element={<AllTimeStats />} />
           {/* Earlier paths for this page; redirect stale bookmarks to the current /stats. */}

@@ -84,7 +84,8 @@ npm run validate   # per-game migration diff harness
 
 ## Status
 **Build complete through Phase 4** (all phases 0–4 done; styling overhaul done). Pages live: Overview,
-Standings, Matchups, Drafts, Records, Members (directory/detail/compare), and **Stats** (route `/stats`,
+Standings, Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
+Members (directory/detail/compare), and **Stats** (route `/stats`,
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
 reorder, full-bleed/sticky Team column, FA icons). All gates green.
 
