@@ -28,7 +28,7 @@ function DrawerLink({ item, onClose }: { item: NavItem; onClose: () => void }) {
       onClick={onClose}
       className={({ isActive }) =>
         `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
-          isActive ? 'rounded-md bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
+          isActive ? 'bg-accent text-accent-fg' : 'text-muted hover:bg-surface-2 hover:text-text'
         }`
       }
     >
@@ -64,7 +64,7 @@ function NavDrawer({
           type="button"
           onClick={onClose}
           aria-label="Close menu"
-          className="mb-2 self-end flex size-11 items-center justify-center rounded-md text-muted hover:bg-surface-2 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="mb-2 self-end flex size-11 items-center justify-center text-muted hover:bg-surface-2 hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           {CLOSE_ICON}
         </button>
@@ -123,7 +123,7 @@ export function MobileNav({ entries }: { entries: readonly NavEntry[] }) {
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
         aria-label="Open menu"
-        className="flex size-11 items-center justify-center rounded-md text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        className="flex size-11 items-center justify-center text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
       >
         {MENU_ICON}
       </button>

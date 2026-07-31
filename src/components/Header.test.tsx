@@ -52,11 +52,11 @@ describe('Header dropdowns', () => {
 
     await user.hover(trigger)
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('link', { name: 'Lineal' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
 
     await user.unhover(trigger)
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.queryByRole('link', { name: 'Lineal' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Lineal Champ' })).not.toBeInTheDocument()
   })
 
   it('a click on a hover-opened menu pins it instead of closing it', async () => {
@@ -65,7 +65,7 @@ describe('Header dropdowns', () => {
 
     await user.hover(trigger)
     await user.click(trigger)
-    expect(screen.getByRole('link', { name: 'Lineal' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
   })
 
   it('toggles on keyboard activation, where there is no pointer to hover with', async () => {
@@ -101,10 +101,10 @@ describe('Header dropdowns', () => {
     const trigger = screen.getByRole('button', { name: /More/ })
 
     await user.hover(trigger)
-    expect(screen.getByRole('link', { name: 'Lineal' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('link', { name: 'Lineal' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Lineal Champ' })).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
   })
 
@@ -114,7 +114,7 @@ describe('Header dropdowns', () => {
     await user.hover(screen.getByRole('button', { name: /More/ }))
 
     expect(screen.queryByRole('link', { name: 'Records' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Lineal' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
   })
 
   it('anchors panels to the right so they never overflow the viewport', async () => {

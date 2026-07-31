@@ -132,8 +132,8 @@ export function NavMenu({ group }: { group: NavGroup }) {
         onClick={onTriggerClick}
         className={`${TRIGGER_BASE} ${
           groupActive
-            ? 'rounded-md bg-accent text-accent-fg'
-            : `rounded-md hover:bg-white/10 hover:text-white ${open ? 'bg-white/10 text-white' : 'text-white/70'}`
+            ? 'bg-accent text-accent-fg'
+            : `hover:bg-white/10 hover:text-white ${open ? 'bg-white/10 text-white' : 'text-white/70'}`
         }`}
       >
         {group.label}
