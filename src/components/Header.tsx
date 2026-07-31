@@ -44,7 +44,7 @@ export function Header() {
                 className={({ isActive }) =>
                   `px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
                     isActive
-                      ? 'angular-sm bg-accent text-accent-fg'
+                      ? 'rounded-md bg-accent text-accent-fg'
                       : 'rounded-md text-white/70 hover:bg-white/10 hover:text-white'
                   }`
                 }

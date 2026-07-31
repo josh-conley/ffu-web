@@ -117,6 +117,19 @@ describe('Header dropdowns', () => {
     expect(screen.getByRole('link', { name: 'Lineal' })).toBeInTheDocument()
   })
 
+  it('anchors panels to the right so they never overflow the viewport', async () => {
+    // Regression: the rightmost menu ("More") was left-anchored and wider than its trigger, which
+    // pushed it past the viewport edge and made the whole page horizontally scrollable. jsdom has
+    // no layout, so this guards the anchoring class that fixes it.
+    const user = renderAt('/')
+    const trigger = screen.getByRole('button', { name: /More/ })
+
+    await user.hover(trigger)
+    const panel = document.getElementById(trigger.getAttribute('aria-controls')!)
+    expect(panel).toHaveClass('right-0')
+    expect(panel).not.toHaveClass('left-0')
+  })
+
   it('renders bare entries inline and one trigger per group', () => {
     renderAt('/')
     expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument()

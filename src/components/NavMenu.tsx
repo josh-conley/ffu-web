@@ -37,9 +37,13 @@ function Chevron({ open }: { open: boolean }) {
 function MenuPanel({ group, panelId, onNavigate }: { group: NavGroup; panelId: string; onNavigate: () => void }) {
   const hrefFor = useNavHref()
   return (
+    // right-0, not left-0: the nav sits at the right edge of the header, and the panel is wider
+    // than its trigger — anchoring left pushed the last menu ("More") past the viewport and made
+    // the whole page horizontally scrollable. Growing leftwards keeps every panel on screen.
+    //
     // pt-1.5 is a TRANSPARENT bridge: it keeps the gap between trigger and panel inside the hover
     // subtree, so crossing it doesn't fire pointerleave and snap the panel shut.
-    <div id={panelId} className="absolute left-0 top-full z-30 w-52 pt-1.5">
+    <div id={panelId} className="absolute right-0 top-full z-30 w-52 pt-1.5">
       <div className="flex flex-col border border-border bg-surface shadow-xl">
         {/* Accent cap — same card language as the rest of the site (see LatestChampions). */}
         <span aria-hidden className="h-0.5 bg-accent" />
@@ -128,7 +132,7 @@ export function NavMenu({ group }: { group: NavGroup }) {
         onClick={onTriggerClick}
         className={`${TRIGGER_BASE} ${
           groupActive
-            ? 'angular-sm bg-accent text-accent-fg'
+            ? 'rounded-md bg-accent text-accent-fg'
             : `rounded-md hover:bg-white/10 hover:text-white ${open ? 'bg-white/10 text-white' : 'text-white/70'}`
         }`}
       >

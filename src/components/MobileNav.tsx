@@ -28,7 +28,7 @@ function DrawerLink({ item, onClose }: { item: NavItem; onClose: () => void }) {
       onClick={onClose}
       className={({ isActive }) =>
         `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
-          isActive ? 'angular-sm bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
+          isActive ? 'rounded-md bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
         }`
       }
     >
