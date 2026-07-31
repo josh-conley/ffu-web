@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import { useNavHref } from '@/hooks/useNavHref'
-import type { NavItem } from './nav'
+import { isGroup, type NavEntry, type NavItem } from './nav'
 
 const MENU_ICON = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -18,18 +18,36 @@ const CLOSE_ICON = (
   </svg>
 )
 
+/** One drawer link. Groups render these under a heading; bare entries render them directly. */
+function DrawerLink({ item, onClose }: { item: NavItem; onClose: () => void }) {
+  const hrefFor = useNavHref()
+  return (
+    <NavLink
+      to={hrefFor(item)}
+      end={item.end}
+      onClick={onClose}
+      className={({ isActive }) =>
+        `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
+          isActive ? 'angular-sm bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
+        }`
+      }
+    >
+      {item.label}
+    </NavLink>
+  )
+}
+
 // Portaled to <body> so the overlay escapes the header's sticky stacking context (otherwise a
 // nested z-index stays trapped below the page content that paints later in the DOM).
 function NavDrawer({
-  items,
+  entries,
   panelRef,
   onClose,
 }: {
-  items: readonly NavItem[]
+  entries: readonly NavEntry[]
   panelRef: React.RefObject<HTMLDivElement | null>
   onClose: () => void
 }) {
-  const hrefFor = useNavHref()
   return createPortal(
     <div className="fixed inset-0 z-50">
       {/* Scrim closes on tap. */}
@@ -50,23 +68,22 @@ function NavDrawer({
         >
           {CLOSE_ICON}
         </button>
-        {items.map((item) => (
-          <Fragment key={item.to}>
-            {item.startGroup && <div aria-hidden className="my-1 border-t border-border" />}
-            <NavLink
-              to={hrefFor(item)}
-              end={item.end}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex min-h-11 items-center px-3 text-base font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text ${
-                  isActive ? 'angular-sm bg-accent text-accent-fg' : 'rounded-md text-muted hover:bg-surface-2 hover:text-text'
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          </Fragment>
-        ))}
+        {/* Sections stay expanded — the whole nav is ~10 links, so an accordion would add taps
+            without saving meaningful height. */}
+        {entries.map((entry) =>
+          isGroup(entry) ? (
+            <Fragment key={entry.label}>
+              <h2 className="mt-3 border-t border-border px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-widest text-muted">
+                {entry.label}
+              </h2>
+              {entry.items.map((item) => (
+                <DrawerLink key={item.to} item={item} onClose={onClose} />
+              ))}
+            </Fragment>
+          ) : (
+            <DrawerLink key={entry.to} item={entry} onClose={onClose} />
+          ),
+        )}
       </div>
     </div>,
     document.body,
@@ -76,7 +93,7 @@ function NavDrawer({
 // Mobile-only nav: hamburger button + slide-in drawer. The desktop row (in Header) handles
 // >=md; this renders only below md. Accessible: aria-expanded, Esc to close, focus moves into
 // the drawer on open and back to the trigger on close.
-export function MobileNav({ items }: { items: readonly NavItem[] }) {
+export function MobileNav({ entries }: { entries: readonly NavEntry[] }) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -111,7 +128,7 @@ export function MobileNav({ items }: { items: readonly NavItem[] }) {
         {MENU_ICON}
       </button>
 
-      {open && <NavDrawer items={items} panelRef={panelRef} onClose={close} />}
+      {open && <NavDrawer entries={entries} panelRef={panelRef} onClose={close} />}
     </div>
   )
 }

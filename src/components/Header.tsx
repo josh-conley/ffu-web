@@ -3,7 +3,8 @@ import { NavLink } from 'react-router-dom'
 import { useNavHref } from '@/hooks/useNavHref'
 import { ThemeToggle } from './ThemeToggle'
 import { MobileNav } from './MobileNav'
-import { NAV } from './nav'
+import { NavMenu } from './NavMenu'
+import { NAV, isGroup } from './nav'
 
 // The header is intentionally ALWAYS dark (independent of the light/dark theme), so its colors are
 // fixed near-black + white rather than theme tokens. The FFU red identity stays in the bottom rule
@@ -24,14 +25,22 @@ export function Header() {
             </span>
           </span>
         </NavLink>
-        {/* Desktop nav row (>=md). Below md the hamburger drawer takes over. */}
+        {/* Desktop nav row (>=md): bare links inline, groups as dropdowns. Below md the hamburger
+            drawer takes over and renders the same groups as titled sections. */}
         <nav className="hidden items-center gap-0.5 md:flex">
-          {NAV.map((item) => (
-            <Fragment key={item.to}>
-              {item.startGroup && <span aria-hidden className="mx-1.5 h-5 w-px bg-white/15" />}
+          {NAV.map((entry, i) =>
+            isGroup(entry) ? (
+              <Fragment key={entry.label}>
+                {/* Rule before the FIRST menu, splitting the everyday pages from the grouped ones.
+                    Derived from position, so nav.ts stays pure structure. */}
+                {!isGroup(NAV[i - 1]!) && <span aria-hidden className="mx-1.5 h-5 w-px bg-white/15" />}
+                <NavMenu group={entry} />
+              </Fragment>
+            ) : (
               <NavLink
-                to={hrefFor(item)}
-                end={item.end}
+                key={entry.to}
+                to={hrefFor(entry)}
+                end={entry.end}
                 className={({ isActive }) =>
                   `px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
                     isActive
@@ -40,16 +49,16 @@ export function Header() {
                   }`
                 }
               >
-                {item.label}
+                {entry.label}
               </NavLink>
-            </Fragment>
-          ))}
+            ),
+          )}
           <ThemeToggle />
         </nav>
         {/* Mobile controls (<md): theme toggle + hamburger. */}
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
-          <MobileNav items={NAV} />
+          <MobileNav entries={NAV} />
         </div>
       </div>
     </header>

@@ -8,5 +8,7 @@ describe('App', () => {
     render(<App />)
     expect(screen.getByRole('link', { name: /fantasy football union/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Standings' })).toBeInTheDocument()
+    // Grouped links live behind a dropdown; the shell renders their trigger.
+    expect(screen.getByRole('button', { name: /Stats/ })).toBeInTheDocument()
   })
 })

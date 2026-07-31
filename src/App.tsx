@@ -31,8 +31,6 @@ export default function App() {
           <Route path="builds" element={<RosterBuildStats />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
-          {/* Hidden (intentionally absent from nav.ts): reachable only by direct URL while the
-              cross-tier tournament is being built out. */}
           <Route path="tournament" element={<Tournament />} />
           <Route path="*" element={<NotFound />} />
         </Route>

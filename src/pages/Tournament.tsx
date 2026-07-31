@@ -9,8 +9,9 @@ import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
-// Hidden page (not in nav): a mid-season, 36-team, cross-tier knockout tournament. Currently wired to
-// the 2025 season as a working backfill; the year is the one knob to change when it moves forward.
+// A mid-season, 36-team, cross-tier knockout tournament (linked from nav under History). Pinned to
+// one season — the year below is the single knob to change when the tournament moves forward, which
+// is why the nav entry is NOT season-scoped (?year=/&tier= would be ignored).
 const YEAR = '2025'
 
 // Tournament theme color — one-off accent for this event (not a tier color, so it stays local here

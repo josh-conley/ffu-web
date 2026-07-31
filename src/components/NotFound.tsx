@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 // Catch-all for unknown URLs (e.g. a stale deep link). Without this an unmatched route renders
-// nothing under the header — a blank page. Recoverable: links back to the Overview.
+// nothing under the header — a blank page. Recoverable: links back to the home page.
 export function NotFound() {
   return (
     <div className="py-12 text-center">
@@ -12,7 +12,7 @@ export function NotFound() {
         to="/"
         className="angular-sm mt-6 inline-block bg-accent px-4 py-2 text-sm font-bold uppercase tracking-wide text-accent-fg hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text"
       >
-        Back to Overview
+        Back to Home
       </Link>
     </div>
   )
