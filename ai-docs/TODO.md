@@ -47,7 +47,6 @@ or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28)
 
 ## Deferred / not blocking Week 1
 
-- Phase 5 apex cutover (`ffunion.com`) — see `ai-docs/DEPLOY.md`
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now
 - H2H matrix, draft fun-facts, playoff machine, further live-active-week refinements — per
   `CLAUDE.md` "Next / open"

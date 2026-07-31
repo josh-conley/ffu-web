@@ -3,7 +3,7 @@
 **Goal:** when `auto/requests` updates from a Discord request, the requestor gets a **live preview
 URL** in the bot's ✅ reply, so they can see the change rendered before it's merged to `main`.
 
-GitHub Pages serves one site per repo (`main` → `new.ffunion.com`), so previews need a second host.
+GitHub Pages serves one site per repo (`main` → `ffunion.com`, live), so previews need a second host.
 We use **Cloudflare Pages**, deployed **explicitly from our own GitHub Action** with `wrangler` —
 *not* Cloudflare's Git auto-detection, which proved unreliable. Deploying ourselves means it's
 deterministic: a failure shows up in the Actions log instead of silently not building.
@@ -16,7 +16,7 @@ After a request lands on `auto/requests`, the workflow:
 3. captures the resulting `*.ffu-web-preview.pages.dev` URL and includes it in the bot's ✅ reply.
 
 The deploy step is `continue-on-error` — a preview hiccup never fails the request (the PR is already
-open). `main` is untouched (GitHub Pages still owns `new.ffunion.com`); the Cloudflare project only
+open). `main` is untouched (GitHub Pages still owns `ffunion.com`); the Cloudflare project only
 ever serves `auto/requests` previews.
 
 ## Setup (one-time)

@@ -61,8 +61,9 @@ for the 👀 → ✅ + PR link.
 - **Hard gate** — a red typecheck/lint/test never produces a PR.
 - **Credential isolation** — the Claude step only receives `ANTHROPIC_API_KEY`; the Discord and
   GitHub tokens are confined to the read/report/PR steps, so a prompt-injected request can't leak them.
-- **Staging buffer** — `main` currently deploys to `new.ffunion.com` (staging), not the live apex.
-  Re-evaluate the autonomy/PR bar before cutover to production.
+- **No staging buffer** — `main` deploys straight to the live apex `ffunion.com`, so a merged PR
+  is public immediately. The PR-first rule above is the only thing between a request and production;
+  keep the review bar high (there is no longer a staging host to catch mistakes).
 
 ## How a request is tracked
 Each message gets at most one bot reaction: 👀 (claimed) then ✅ (done) or ❌ (failed). The poller

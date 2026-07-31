@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
 # Deploys the built site to GitHub Pages on every push to main. The custom domain
-# (new.ffunion.com for now) is set by public/CNAME, which Vite copies into dist.
-# Cutover later = change public/CNAME to ffunion.com.
+# (ffunion.com — the live apex, post-cutover) is set by public/CNAME, which Vite copies into dist.
+# NOTE: pushing main publishes to PRODUCTION; there is no staging host.
 on:
   push:
     branches: [main]

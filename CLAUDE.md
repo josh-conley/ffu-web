@@ -104,12 +104,13 @@ push after every green change** without being asked. Dev server is the **user's*
 the live site and will eyeball/flag issues; only screenshot when they're away or it's genuinely ambiguous,
 and trust well-tested libraries rather than proving each one visually.
 
-**Deploy:** staging at `new.ffunion.com` (GitHub Pages, auto-deploys on push to `main`); a Cloudflare
-preview at `preview.ffunion.com` serves the `auto/requests` branch (autonomous Discord-request pipeline).
-Apex `ffunion.com` still serves the **old** `ffu-app` site. Setup + apex cutover checklist in `ai-docs/DEPLOY.md`;
-Phase 5 (cutover + `old.ffunion.com`) is mostly pre-wired.
+**Deploy:** production is the apex **`ffunion.com`** (GitHub Pages, auto-deploys on push to `main` —
+the cutover from the old `ffu-app` site is done). A Cloudflare preview at `preview.ffunion.com` serves
+the `auto/requests` branch (autonomous Discord-request pipeline). `new.ffunion.com` and
+`old.ffunion.com` are NOT in use — neither resolves; don't cite them as URLs. Details in
+`ai-docs/DEPLOY.md`.
 
-**Next / open:** Phase 5 cutover; optional UPR-progression line chart (All-Time horserace + Members view);
+**Next / open:** optional UPR-progression line chart (All-Time horserace + Members view);
 confirm ffu-035/ffu-048 (in the registry but never appear in data) belong; a couple owner first-names
 (ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
 weeks (15–17), static lineup backfill. 2026-readiness checklist lives in `ai-docs/TODO.md`.

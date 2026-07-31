@@ -3,12 +3,15 @@
 Hosting: **GitHub Pages** (free, public repo) via the GitHub **Actions** flow
 (`.github/workflows/deploy.yml`) — auto-deploys on every push to `main`.
 
-## Current state (target — apex cutover)
+## Current state (cutover complete)
 
 | URL | Repo | Notes |
 |---|---|---|
-| `ffunion.com` (apex) | `ffu-web` (this repo) | Production. |
-| `old.ffunion.com` | `ffu-app` (old) | Archived old site. |
+| `ffunion.com` (apex) | `ffu-web` (this repo) | **Production** — the live site. |
+| `preview.ffunion.com` | `ffu-web` (`auto/requests`) | Cloudflare preview of the request pipeline. |
+
+`new.ffunion.com` (the old staging host) and `old.ffunion.com` are **retired — neither resolves**.
+Use `ffunion.com` when referring to the live site.
 
 DNS is at **Namecheap**. The apex `A` records point at GitHub's shared Pages IPs
 (`185.199.108–111.153`); subdomains are `CNAME`s → `josh-conley.github.io`:
@@ -31,7 +34,7 @@ CNAME    www    josh-conley.github.io   (optional — www → apex)
 
 - `deploy.yml` builds (`npm run build`) and publishes `dist/` via `actions/deploy-pages`.
 - `vite.config.ts` uses `base: '/'` — correct because the site is served at a **custom-domain
-  root** (`new.ffunion.com`), not a project subpath. Do **not** change it.
+  root** (`ffunion.com`), not a project subpath. Do **not** change it.
 - `public/404.html` is the SPA fallback for BrowserRouter deep links (decoded in `index.html`).
 - `public/CNAME` (`ffunion.com`) is copied into `dist` — kept consistent with the Pages
   custom-domain setting (see gotchas).
@@ -39,7 +42,8 @@ CNAME    www    josh-conley.github.io   (optional — www → apex)
 ## One-time setup (already done — recorded for reproducibility)
 
 1. **Settings → Pages → Build and deployment → Source = "GitHub Actions"** (not "Deploy from a branch").
-2. **Settings → Pages → Custom domain = `new.ffunion.com`** → Save → wait for the green
+2. **Settings → Pages → Custom domain = `ffunion.com`** (originally `new.ffunion.com`, before the
+   apex cutover) → Save → wait for the green
    "DNS check successful" → tick **Enforce HTTPS** once the cert provisions (a few minutes).
 3. Namecheap: add the `CNAME` record above (apex records left alone).
 
@@ -53,7 +57,11 @@ CNAME    www    josh-conley.github.io   (optional — www → apex)
 3. A GitHub-served 404 means DNS is fine but no repo is **claiming** the domain (see #1/#2);
    a registrar parking page would mean DNS isn't reaching GitHub.
 
-## Cutover runbook (apex swap)
+## Cutover runbook (apex swap) — DONE, kept for reference/rollback
+
+The swap has happened: `ffunion.com` now serves this repo. `old.ffunion.com` was never brought up
+(it doesn't resolve — the old `ffu-app` site appears to have simply been retired), and the `new`
+CNAME is gone. The steps below are the historical runbook, still accurate if a rollback is needed.
 
 No apex DNS change is needed (shared IPs) — it's a CNAME-claim swap via each repo's Pages setting.
 `ffunion.com` can only be claimed by one repo, so **ffu-app must release it before ffu-web claims
@@ -77,5 +85,5 @@ Manual steps (GitHub UI + Namecheap — no CLI/API access from the agent):
 6. If GitHub blocks a repo as "domain already in use," add account-level verification: Settings →
    Pages → verified domains → `_github-pages-challenge-josh-conley` TXT at Namecheap.
 
-Rollback: reverse steps 2–3 (ffu-web → `new.ffunion.com`, ffu-app → `ffunion.com`) and revert
-`public/CNAME`.
+Rollback: reverse steps 2–3 (ffu-web off the apex, ffu-app → `ffunion.com`) and revert
+`public/CNAME`. Note this would need a staging host re-created — `new.ffunion.com` no longer exists.
