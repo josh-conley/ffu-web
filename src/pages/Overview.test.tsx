@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS } from '@/config'
+import { draftDateTime } from '@/components/format'
 import { Overview } from './Overview'
 
 const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
@@ -49,6 +50,7 @@ it('lists next season\'s leagues with how each member got there', async () => {
   }
   const ids = Object.values(LIVE_LEAGUE_IDS).at(-1) as Record<Tier, string>
   vi.stubGlobal('fetch', (url: string) => {
+    if (url.includes('/drafts')) return ok([])
     if (url.includes(ids.PREMIER)) return ok(ROSTERS.PREMIER)
     if (url.includes(ids.NATIONAL)) return ok(ROSTERS.NATIONAL)
     if (url.includes('/rosters')) return ok([])
@@ -70,4 +72,27 @@ it('lists next season\'s leagues with how each member got there', async () => {
   // Members who stayed put get no tag, and unfilled seats are called out.
   expect(screen.getAllByText('The Minutemen').length).toBeGreaterThan(0) // also a past champion
   expect(screen.getByText(/1 pending member/)).toBeInTheDocument()
+})
+
+// Draft dates come live from Sleeper (no hand-entered config), so the page must show a date for a
+// league whose draft is set while the others still read TBD.
+it('shows a scheduled draft date and leaves unscheduled leagues TBD', async () => {
+  const START = 1787445046000
+  const ids = Object.values(LIVE_LEAGUE_IDS).at(-1) as Record<Tier, string>
+  vi.stubGlobal('fetch', (url: string) => {
+    if (url.includes(`${ids.PREMIER}/drafts`)) return ok([{ draft_id: 'd1', start_time: START, status: 'pre_draft', created: 1 }])
+    if (url.includes('/drafts')) return ok([{ draft_id: 'd2', start_time: null, status: 'pre_draft', created: 1 }])
+    if (url.includes('/rosters')) return ok([])
+    return FILES[url] === undefined ? notFound() : ok(FILES[url])
+  })
+
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  )
+
+  await waitFor(() => expect(screen.getByText(draftDateTime(START))).toBeInTheDocument())
+  // The two unscheduled leagues keep their marker (matched exactly, so the body copy's "TBD" doesn't count).
+  expect(screen.getAllByText('— TBD').length).toBe(2)
 })

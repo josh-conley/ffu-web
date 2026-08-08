@@ -30,7 +30,9 @@ export type {
   TournamentParticipant,
   LiveSeasonData,
   LeagueRosterSummary,
+  DraftSchedule,
 } from './types'
 export { fetchNflState, fetchLiveSeason, fetchLiveLineups, fetchMissingPlayers } from './liveSleeper'
 export { fetchLeagueRoster, fetchLeagueRosters } from './liveRosters'
+export { fetchDraftSchedule, fetchDraftSchedules } from './liveDrafts'
 export type { NflState, LiveLineups } from './liveSleeper'

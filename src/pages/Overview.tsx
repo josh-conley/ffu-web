@@ -5,6 +5,7 @@ import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
+import { useDraftSchedules } from '@/hooks/useDraftSchedules'
 import { upcomingRosters } from '@/selectors'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
@@ -38,6 +39,7 @@ export function Overview() {
   const latest = years[0]
   const nextYear = latest ? String(Number(latest) + 1) : undefined
   const { rosters } = useLeagueRosters(nextYear)
+  const { schedules: draftSchedules } = useDraftSchedules(nextYear)
   const upcoming = useMemo(() => upcomingRosters(seasons ?? [], rosters), [seasons, rosters])
   const latestChampions: LatestChampion[] = useMemo(
     () =>
@@ -85,7 +87,7 @@ export function Overview() {
           </section>
         </>
       )}
-      <UpcomingDrafts year={nextYear} />
+      <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
       {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">

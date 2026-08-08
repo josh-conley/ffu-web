@@ -254,6 +254,20 @@ export interface LeagueRosterSummary {
   totalRosters: number
 }
 
+/**
+ * When one tier's upcoming draft is scheduled (src/data/liveDrafts.ts). Like LeagueRosterSummary
+ * this is readable as soon as the league exists on Sleeper — the draft object is created with the
+ * league, before a date is set.
+ */
+export interface DraftSchedule {
+  tier: Tier
+  year: string
+  /** Epoch ms of the first pick, or null when the commissioner hasn't set a date yet. */
+  startTime: number | null
+  /** Sleeper's draft status: 'pre_draft' | 'drafting' | 'complete' (kept as-is, it's their vocabulary). */
+  status: string
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

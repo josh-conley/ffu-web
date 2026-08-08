@@ -29,6 +29,11 @@ don't let it go stale.
 
 - [ ] Design + build a section (likely on Overview, near the top) announcing the upcoming/live draft
       — exact content/timing TBD
+- [x] Draft date + time per tier, live from Sleeper (2026-08-07): `useDraftSchedules` →
+      `fetchDraftSchedules` reads `/league/{id}/drafts` and `UpcomingDrafts` renders each tier's
+      `start_time` (viewer's timezone, zone named) or TBD when the commissioner hasn't set one.
+      Deliberately NOT copied into config — Masters/National fill in on their own when set.
+      Premier 2026 is set: 2026-08-22 8:30 PM ET.
 - [x] "2026 Leagues" section under Upcoming Drafts: who's signed up per tier, tagged Promoted /
       Relegated / Returning / New vs the last completed season (2026-07-28). Live from Sleeper via
       `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
