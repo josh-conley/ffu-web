@@ -10,11 +10,14 @@ don't let it go stale.
 - [x] Add those ids to `src/config/liveSeason.ts`'s `LIVE_LEAGUE_IDS['2026']` (all 3 tiers) — this
       is what turns on the live "This Week" home page section (added 2026-07-18; leagues pre_draft)
 - [ ] Add any new members to `src/config/members.ts` (ffuId + `platformIds.sleeper`) — rolling task
-      until the leagues fill; done 2026-07-28 for ffu-057 (YAC Attack) + ffu-058 (jimmycandles)
+      until the leagues fill; done 2026-07-28 for ffu-057 (YAC Attack) + ffu-058 (Croatian National
+      Team), and 2026-08-07 for ffu-059 (Seymour Owls) + ffu-060 (Fort Wayne Warthogs)
 - [ ] Add any new owners to `src/config/owners.ts` — owner-057 (Tom) + owner-058 (Mladen) added
-      2026-07-28
+      2026-07-28; owner-059 (Alex) + owner-060 (Kam) added 2026-08-07
 - [ ] Confirm returning members' `platformIds.sleeper` still match (no swapped Sleeper accounts)
-      — as of 2026-07-28: every roster owner resolves to a registry member; still filling
+      — as of 2026-08-07: all 12 National roster owners resolve to a registry member
+- [ ] Team logos for new members: drop `public/team-logos/{ffuId}.png` (max 256px, square-ish — the
+      avatar is a circular `object-cover` mask). Done 2026-08-07 for ffu-057…ffu-060.
       (Premier 11/12, Masters 8/12, National 11/12), re-check once rosters are complete. The home
       page's "2026 Leagues" section surfaces this: unmapped managers show as "not listed yet".
 - [ ] Add a 2026 entry to `src/config/prizes.ts` once the commissioner posts `prizes.txt` for 2026

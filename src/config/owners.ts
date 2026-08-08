@@ -64,7 +64,9 @@ export const OWNERS: Owner[] = [
   { id: 'owner-055', firstName: 'Erik', lastInitial: '' }, // Dawn Island Straw Hats
   { id: 'owner-056', firstName: 'Hunter', lastInitial: '' }, // The Inferno Swarm
   { id: 'owner-057', firstName: 'Tom', lastInitial: '' }, // YAC Attack
-  { id: 'owner-058', firstName: 'Mladen', lastInitial: '' }, // jimmycandles
+  { id: 'owner-058', firstName: 'Mladen', lastInitial: '' }, // Croatian National Team
+  { id: 'owner-059', firstName: 'Alex', lastInitial: '' }, // Seymour Owls
+  { id: 'owner-060', firstName: 'Kam', lastInitial: '' }, // Fort Wayne Warthogs
   { id: 'owner-h01', firstName: '', lastInitial: '' }, // Naptown Makos
   { id: 'owner-h02', firstName: '', lastInitial: '' }, // Speedway's Ritual Cog
   { id: 'owner-h03', firstName: '', lastInitial: '' }, // The Well Done Stakes
