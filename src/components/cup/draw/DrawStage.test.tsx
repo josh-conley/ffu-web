@@ -254,3 +254,61 @@ it('schedules no ticks when muted', () => {
     vi.unstubAllGlobals()
   }
 })
+
+it('announces each tie as it lands, and never lets two overlap', async () => {
+  stubReducedMotion(true)
+  const spoken: string[] = []
+  let cancels = 0
+  vi.stubGlobal('speechSynthesis', {
+    cancel: () => cancels++,
+    speak: (u: { text: string }) => spoken.push(u.text),
+    getVoices: () => [],
+  })
+  vi.stubGlobal('SpeechSynthesisUtterance', class {
+    text: string
+    voice: unknown = null
+    rate = 1
+    pitch = 1
+    volume = 1
+    constructor(text: string) {
+      this.text = text
+    }
+  })
+  const user = userEvent.setup()
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+
+  // Nothing said before the draw.
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(spoken).toHaveLength(1)
+  expect(spoken[0]).toContain(nameOf(expected.matchups[0]!.a))
+  expect(spoken[0]).toContain('versus')
+  expect(spoken[0]).toContain(nameOf(expected.matchups[0]!.b))
+
+  await user.click(screen.getByRole('button', { name: /next tie/i }))
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(spoken).toHaveLength(2)
+  // Each call cancels first, so a fast operator can't stack two ties on top of each other.
+  expect(cancels).toBeGreaterThanOrEqual(2)
+
+  vi.unstubAllGlobals()
+})
+
+it('stays silent when muted', async () => {
+  stubReducedMotion(true)
+  const spoken: string[] = []
+  vi.stubGlobal('speechSynthesis', { cancel: () => {}, speak: (u: { text: string }) => spoken.push(u.text), getVoices: () => [] })
+  vi.stubGlobal('SpeechSynthesisUtterance', class {
+    text: string
+    constructor(text: string) {
+      this.text = text
+    }
+  })
+  const user = userEvent.setup()
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+
+  await user.click(screen.getByRole('button', { name: /mute the wheel/i }))
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(spoken).toHaveLength(0)
+
+  vi.unstubAllGlobals()
+})

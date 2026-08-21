@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { FaVolumeHigh, FaVolumeXmark } from 'react-icons/fa6'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { SeasonData } from '@/data'
+import { browserVoice, tiePhrases } from '@/lib/announcer'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { tieStory } from '@/selectors'
@@ -141,6 +142,16 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [advance])
+
+  // Call the tie the moment it lands. Cancelled on unmount (or a fast next press) so two ties can
+  // never talk over each other.
+  useEffect(() => {
+    if (reveal.phase !== 'shown' || muted || !drawer || !drawn) return
+    browserVoice.speak(tiePhrases(drawer, drawn, story?.meetings === 0))
+    return () => browserVoice.cancel()
+    // Keyed on the tie number so it fires once per tie, not on every unrelated re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reveal.phase, reveal.tieNumber, muted])
 
   const buttonLabel =
     reveal.phase === 'spinning' ? 'Reveal' : reveal.phase === 'shown' ? 'Next tie' : 'Draw'

@@ -5,6 +5,32 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-08-21 — The draw announcer speaks in phrase tokens, not sentences
+
+**Context.** The commissioner wants the streamed draw announced aloud, in the style of a game
+announcer. Browser `speechSynthesis` is free and instant but sounds like a satnav; a hype voice
+really needs pre-generated audio clips.
+
+**Decision.** Build the plumbing once, against PHRASE TOKENS, and treat the voice as swappable.
+`AnnouncePhrase` says what is meant — `{kind:'team'}`, `{kind:'word'}` — never a finished sentence.
+`browserVoice` renders tokens to text for `speechSynthesis`; a future clip voice maps the same
+tokens onto audio files. Neither the call site nor the wording logic changes between them.
+
+**Why not go straight to clips.** The unknown was whether an announcer helps the broadcast at all,
+and what its timing against the reveal should be. Browser speech answers both for an hour's work.
+If the beat is wrong, nothing was spent generating 40 clips.
+
+**Consequences.**
+- `SPOKEN_NAMES` maps ffuId → respelling for names a synthesiser mangles (FFUcked Up, Jawn of Arc,
+  bstarrr…). It is a stopgap: with clips you HEAR each name and fix it, rather than guessing.
+- Speaking always cancels first, so a fast operator can't stack two ties over each other.
+- Everything is best-effort — a platform with no speech synthesis stays silent rather than throwing
+  mid-broadcast, and the mute toggle covers wheel and voice together.
+- **Do not clone a real announcer's voice** when the clip route is built. A generic hype voice gets
+  the same energy without appropriating a person's likeness.
+
+---
+
 ## 2026-08-21 — The streamed draw reuses the algorithm, not just the rules
 
 **Context.** The commissioner wants the Cup draw run as a live streamed event with some fanfare,
