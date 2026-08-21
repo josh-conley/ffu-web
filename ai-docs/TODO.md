@@ -11,7 +11,12 @@ don't let it go stale.
       is what turns on the live "This Week" home page section (added 2026-07-18; leagues pre_draft)
 - [x] **Registry complete for 2026** — re-audited against live Sleeper 2026-08-21: all three
       leagues are full (36/36 rosters, no open slots), every roster owner AND every `draft_order`
-      entry resolves to a member, and all 36 have a team logo. Members added along the way:
+      entry resolves to a member, all 36 have a team logo, and every 2026 team NAME matches what
+      `nameForYear` would render — zero renames to transcribe. Note when checking names yourself:
+      11 of the 36 have no `metadata.team_name` set on Sleeper, so Sleeper shows their username;
+      the registry name is correct in those cases and a naive comparison will look like drift.
+      Two names differ only by a curly vs straight apostrophe (ffu-038, ffu-040) — left alone
+      deliberately, since the registry is internally consistent on straight apostrophes. Members added along the way:
       ffu-057 (YAC Attack) + ffu-058 (Croatian National Team) on 2026-07-28, ffu-059 (Seymour Owls)
       + ffu-060 (Fort Wayne Warthogs) on 2026-08-07; owners owner-057…owner-060 alongside them.
       Re-run the audit if the commissioner swaps anyone in before draft day — an unmapped account
