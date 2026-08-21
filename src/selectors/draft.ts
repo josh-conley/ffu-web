@@ -28,3 +28,18 @@ export function isTraded(pick: DraftPick, bySlot: Map<number, string>): boolean 
   const owner = bySlot.get(pick.slot)
   return owner !== undefined && owner !== pick.memberId
 }
+
+/**
+ * Every overall pick number a slot owns, round 1 → `rounds`. Snake order reverses each even round,
+ * so slot 1 picks 1st and then last-but-one; derived rather than stored because it is pure
+ * arithmetic off the draft's shape, and the pre-draft board has no picks to read it from.
+ */
+export function snakePickNumbers(slot: number, rounds: number, teams: number): number[] {
+  if (slot < 1 || slot > teams || rounds < 1) return []
+  const picks: number[] = []
+  for (let round = 1; round <= rounds; round++) {
+    const inRound = round % 2 === 1 ? slot : teams - slot + 1
+    picks.push((round - 1) * teams + inRound)
+  }
+  return picks
+}

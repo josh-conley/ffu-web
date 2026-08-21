@@ -7,6 +7,7 @@ import type { Member, Owner, SeasonMeta, Tier } from './types'
 import { MEMBERS } from './members'
 import { SEASONS } from './seasons'
 import { OWNERS } from './owners'
+import { LIVE_LEAGUE_IDS } from './liveSeason'
 
 const TIER_ORDER: Record<Tier, number> = { PREMIER: 0, MASTERS: 1, NATIONAL: 2 }
 
@@ -61,11 +62,16 @@ export function getSeasonMeta(tier: Tier, year: string): SeasonMeta | undefined 
   return SEASONS.find((s) => s.tier === tier && s.year === year)
 }
 
-/** Tiers that existed in a year, in promotion/relegation order. */
+/**
+ * Tiers that exist in a year, in promotion/relegation order. Falls back to the LIVE season's
+ * configured leagues for a year that hasn't been backfilled into SEASONS yet — otherwise the season
+ * currently being played would report no tiers at all, and any picker offering it would be stuck on
+ * Premier.
+ */
 export function tiersForYear(year: string): Tier[] {
-  return SEASONS.filter((s) => s.year === year)
-    .map((s) => s.tier)
-    .sort((a, b) => TIER_ORDER[a] - TIER_ORDER[b])
+  const played = SEASONS.filter((s) => s.year === year).map((s) => s.tier)
+  const tiers = played.length > 0 ? played : Object.keys(LIVE_LEAGUE_IDS[year] ?? {}) as Tier[]
+  return tiers.sort((a, b) => TIER_ORDER[a] - TIER_ORDER[b])
 }
 
 export function getOwner(ownerId: string): Owner | undefined {
@@ -99,6 +105,6 @@ export type { Member, Owner, SeasonMeta, Tier, Era, OwnerRole, MemberOwner } fro
 export { seasonLength, playoffWeeks, regularSeasonWeeks, isPlayoffWeek } from './eras'
 export { PRIZE_SCHEDULES, getPrizeSchedule } from './prizes'
 export type { SeasonPrizeSchedule, TierPrizeSchedule, CrossUnionSchedule, CrossLeagueSchedule, CupPrizeSchedule } from './prizes'
-export { LIVE_LEAGUE_IDS } from './liveSeason'
+export { LIVE_LEAGUE_IDS }
 export { CUP_NAME, CUP_YEAR, CUP_INAUGURAL_YEAR, CUP_FIELD_SIZE, CUP_ACCENT, CUP_DISCORD_ROLE, CUP_ROUND_KEYS, CUP_ROUND_RULES, isCupRoundKey } from './cup'
 export type { CupRoundKey } from './cup'

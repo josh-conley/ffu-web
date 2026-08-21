@@ -22,9 +22,14 @@ export interface SeasonPicker {
  * Masters). Does NOT fetch the season — pages load whatever they need (season, draft, …) gated on
  * `ready`.
  */
-export function useSeasonPicker(): SeasonPicker {
+/**
+ * @param extraYears Years to offer beyond the completed-season manifest — the Drafts page passes the
+ *        LIVE season, which has a draft order on Sleeper but no backfilled data. Deliberately opt-in
+ *        per page: Standings/Matchups have nothing to show for a season that hasn't been played.
+ */
+export function useSeasonPicker(extraYears: string[] = []): SeasonPicker {
   const { data: manifest, loading: manifestLoading, error: manifestError } = useSeasons()
-  const years = manifest ? [...new Set(manifest.map((s) => s.year))].sort().reverse() : []
+  const years = manifest ? [...new Set([...extraYears, ...manifest.map((s) => s.year)])].sort().reverse() : []
 
   const [yearParam, setYear] = useUrlState('year', '')
   const [tierParam, setTier] = useUrlState('tier', 'PREMIER')

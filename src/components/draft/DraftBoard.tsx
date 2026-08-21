@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { DraftData, DraftPick } from '@/data'
 import { teamsBySlot } from '@/selectors'
 import { LEAGUE_STYLES, type LeagueStyle } from '../leagues'
+import { BoardFrame, RoundRailCorner } from './BoardFrame'
 import { PickCell } from './PickCell'
 import { PositionLegend, RoundLabel, TeamHeader } from './parts'
 
@@ -15,9 +16,7 @@ function HeaderRow({ slots, teamBySlot, year, highlighted, onToggle }: {
 }) {
   return (
     <tr>
-      <th className="sticky left-0 z-10 border-r border-border bg-surface-2 px-0.5 py-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted sm:px-1">
-        Rd
-      </th>
+      <RoundRailCorner />
       {slots.map((slot) => (
         <TeamHeader key={slot} slot={slot} ownerId={teamBySlot.get(slot)} year={year} highlighted={highlighted} onToggle={onToggle} />
       ))}
@@ -77,23 +76,12 @@ export function DraftBoard({ draft }: { draft: DraftData }) {
   return (
     <div className="space-y-3">
       <PositionLegend draft={draft} />
-      <div className="mx-[calc(50%-50vw+1rem)] border border-border bg-surface shadow-sm">
-        <div className={`h-1.5 ${tier.dot}`} />
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[64rem] table-fixed border-collapse text-xs">
-            <colgroup>
-              <col className="w-6 sm:w-10" />
-              {slots.map((slot) => <col key={slot} />)}
-            </colgroup>
-            <thead>
-              <HeaderRow slots={slots} teamBySlot={teamBySlot} year={draft.year} highlighted={highlighted} onToggle={toggle} />
-            </thead>
-            <tbody>
-              <BodyRows rounds={rounds} slots={slots} byCell={byCell} teamBySlot={teamBySlot} numTeams={slots.length} tier={tier} highlighted={highlighted} onToggle={toggle} />
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <BoardFrame
+        tier={tier}
+        slots={slots}
+        head={<HeaderRow slots={slots} teamBySlot={teamBySlot} year={draft.year} highlighted={highlighted} onToggle={toggle} />}
+        body={<BodyRows rounds={rounds} slots={slots} byCell={byCell} teamBySlot={teamBySlot} numTeams={slots.length} tier={tier} highlighted={highlighted} onToggle={toggle} />}
+      />
     </div>
   )
 }

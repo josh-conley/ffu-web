@@ -282,6 +282,32 @@ export interface DraftSchedule {
   status: string
 }
 
+/** One position in the draft order. */
+export interface DraftOrderSlot {
+  /** 1-based round-1 pick position; a snake draft reverses it every even round. */
+  slot: number
+  /** Registry member holding the slot — undefined when that Sleeper account isn't in members.ts yet. */
+  ffuId?: string
+}
+
+/**
+ * A live season's draft ORDER, read from Sleeper before (or during) the draft. Distinct from
+ * `DraftData`, which is the completed, backfilled draft with every pick: here there are no picks
+ * yet, only who drafts where.
+ */
+export interface LiveDraftOrder {
+  tier: Tier
+  year: string
+  status: string
+  startTime: number | null
+  /** Rounds the draft is configured for — Sleeper's `settings.rounds`. */
+  rounds: number
+  /** Slots in order, 1 → n. Empty when the commissioner hasn't set an order yet. */
+  slots: DraftOrderSlot[]
+  /** Slot-holders not yet in the member registry (kept in `slots` with no ffuId, so order is intact). */
+  unregistered: number
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

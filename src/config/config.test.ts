@@ -72,6 +72,9 @@ describe('season registry', () => {
     expect(tiersForYear('2019')).toEqual(['PREMIER', 'NATIONAL']) // ESPN: no Masters
     expect(tiersForYear('2021')).toEqual(['PREMIER', 'NATIONAL']) // Masters not yet
     expect(tiersForYear('2024')).toEqual(['PREMIER', 'MASTERS', 'NATIONAL'])
+    // The live season isn't in SEASONS yet, so its tiers come from LIVE_LEAGUE_IDS.
+    expect(tiersForYear('2026')).toEqual(['PREMIER', 'MASTERS', 'NATIONAL'])
+    expect(tiersForYear('1999')).toEqual([])
   })
 
   it('covers all 20 legacy tier-seasons', () => {

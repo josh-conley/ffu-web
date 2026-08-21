@@ -1,5 +1,5 @@
 import type { DraftData, DraftPick } from '@/data'
-import { isTraded, pickLabel, teamsBySlot } from './draft'
+import { isTraded, pickLabel, snakePickNumbers, teamsBySlot } from './draft'
 
 const pick = (overall: number, round: number, slot: number, memberId: string): DraftPick => ({
   overall,
@@ -70,5 +70,26 @@ describe('isTraded', () => {
 
   it('is false for a slot with no recorded owner', () => {
     expect(isTraded(pick(1, 1, 1, 'ffu-001'), bySlot)).toBe(false)
+  })
+})
+
+describe('snakePickNumbers', () => {
+  it('snakes: the first slot picks 1st, then last in round 2', () => {
+    expect(snakePickNumbers(1, 4, 12)).toEqual([1, 24, 25, 48])
+    expect(snakePickNumbers(12, 4, 12)).toEqual([12, 13, 36, 37])
+  })
+
+  it('gives every slot one pick per round, and the rounds tile 1..rounds*teams', () => {
+    const teams = 12
+    const rounds = 15
+    const all = Array.from({ length: teams }, (_, i) => snakePickNumbers(i + 1, rounds, teams)).flat()
+    expect(all).toHaveLength(rounds * teams)
+    expect([...all].sort((a, b) => a - b)).toEqual(Array.from({ length: rounds * teams }, (_, i) => i + 1))
+  })
+
+  it('is empty for a slot outside the field or a draft with no rounds', () => {
+    expect(snakePickNumbers(0, 15, 12)).toEqual([])
+    expect(snakePickNumbers(13, 15, 12)).toEqual([])
+    expect(snakePickNumbers(1, 0, 12)).toEqual([])
   })
 })

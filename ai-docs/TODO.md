@@ -28,6 +28,19 @@ don't let it go stale.
 - [ ] Prepare a home page draft announcement section (new — see below)
 - [ ] Spot-check the live "This Week" section once real ids are in, early in Week 1
 
+## Drafts page — live season
+
+- [x] `/drafts` offers the live season alongside the completed ones and shows its **draft board**
+      pre-draft: real board chrome (team nameplates, round rail, snake), every cell showing the
+      coordinate + overall pick it will hold, click a team to spotlight its picks (2026-08-20).
+      Order comes live from Sleeper via `fetchDraftOrder`; unmapped managers keep their slot and are
+      counted as "not listed yet". `/drafts` now DEFAULTS to the live year.
+- [ ] **Fill the board as picks happen.** Sleeper's `/draft/{id}/picks` is empty until the draft
+      starts; wiring it in (plus the player map + polling while `status === 'drafting'`) would make
+      the board live during the draft rather than only before and after it
+- [ ] Once 2026 is backfilled, the year moves out of `LIVE_LEAGUE_IDS` into `SEASONS` and the page
+      switches to the completed board on its own — no code change
+
 ## Home page — draft announcement section
 
 - [ ] Design + build a section (likely on Overview, near the top) announcing the upcoming/live draft
@@ -36,7 +49,9 @@ don't let it go stale.
       `fetchDraftSchedules` reads `/league/{id}/drafts` and `UpcomingDrafts` renders each tier's
       `start_time` (viewer's timezone, zone named) or TBD when the commissioner hasn't set one.
       Deliberately NOT copied into config — Masters/National fill in on their own when set.
-      Premier 2026 is set: 2026-08-22 8:30 PM ET.
+      Dates are read live, so they follow the commissioner: as of 2026-08-20 all three are set —
+      Masters Sun Aug 30 9:15 PM ET, National Wed Sep 2 8:00 PM ET, Premier Mon Sep 7 2:00 PM ET
+      (Premier moved from the Aug 22 date noted here on 2026-08-07).
 - [x] "2026 Leagues" section under Upcoming Drafts: who's signed up per tier, tagged Promoted /
       Relegated / Returning / New vs the last completed season (2026-07-28). Live from Sleeper via
       `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
