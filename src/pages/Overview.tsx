@@ -12,7 +12,7 @@ import { LatestChampions, type LatestChampion } from '@/components/LatestChampio
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
 import { CurrentWeekStandings } from '@/components/CurrentWeekStandings'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
-import { RosterBuildsBanner } from '@/components/RosterBuildsBanner'
+import { CupBanner } from '@/components/CupBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
 import { UpcomingLeagues } from '@/components/UpcomingLeagues'
 import { TIER_PRESTIGE } from '@/components/leagues'
@@ -61,7 +61,7 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
-      <RosterBuildsBanner />
+      <CupBanner />
       {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
           resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
           keeps the section headings from rendering over an empty (or permanently failed) grid. */}
