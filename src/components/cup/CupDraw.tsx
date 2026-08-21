@@ -56,8 +56,8 @@ export function CupDraw() {
         </Step>
       </ol>
       <Callout>
-        Worked example: if nine Premier teams have drawn and six of the nine came out National, then the National
-        side is full — Premier seeds 10, 11 and 12 draw from the nine Masters teams still in the pool.
+        Say nine Premier teams have drawn, and six of those nine came out National. The National side is
+        full, so Premier 10, 11 and 12 draw from the nine Masters teams still in the pool.
       </Callout>
       <Callout>
         Because Premier only ever draws Masters or National, and the leftover Masters teams only ever draw

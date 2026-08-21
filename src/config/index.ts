@@ -100,5 +100,5 @@ export { seasonLength, playoffWeeks, regularSeasonWeeks, isPlayoffWeek } from '.
 export { PRIZE_SCHEDULES, getPrizeSchedule } from './prizes'
 export type { SeasonPrizeSchedule, TierPrizeSchedule, CrossUnionSchedule, CrossLeagueSchedule, CupPrizeSchedule } from './prizes'
 export { LIVE_LEAGUE_IDS } from './liveSeason'
-export { CUP_NAME, CUP_YEAR, CUP_INAUGURAL_YEAR, CUP_FIELD_SIZE, CUP_ACCENT, CUP_DISCORD_ROLE, CUP_ROUND_KEYS, CUP_ROUND_RULES } from './cup'
+export { CUP_NAME, CUP_YEAR, CUP_INAUGURAL_YEAR, CUP_FIELD_SIZE, CUP_ACCENT, CUP_DISCORD_ROLE, CUP_ROUND_KEYS, CUP_ROUND_RULES, isCupRoundKey } from './cup'
 export type { CupRoundKey } from './cup'

@@ -59,9 +59,11 @@ Page is `/cup` (was `/tournament`, which redirects). Rules live in `src/config/c
 weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS.md` (2026-08-20).
 
 - [x] Amendment applied: name, 5-round schedule (wks 6/7/8/10/12), round rules, draw + seeding
-      procedure, winner's spoils. Page reads as a preview until the draw is held (2026-08-20)
-- [ ] **Cup prize amounts** — commissioner to supply per-round payouts; add as
-      `PRIZE_SCHEDULES['2026'].cup` (page shows "TBA" until then)
+      procedure, winner's spoils (2026-08-20). Page opens on the Bracket tab (an outline of empty
+      slots until the draw) with everything else under Format & Rules; `?view=` keeps tabs linkable
+- [x] **Cup prize amounts** (2026-08-20): $10/$20/$40/$60/$100 per round won, in
+      `PRIZE_SCHEDULES['2026'].cup`. NB that entry's `tiers` is still empty — the regular
+      season's 2026 prizes.txt is a separate outstanding item above
 - [ ] **Hold the draw**, then fill `participants` (36 entries, each with its `seed`) into
       `public/data/2026/tournament.json` — the page flips from outline to live bracket on its own
 - [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are

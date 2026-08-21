@@ -86,7 +86,8 @@ npm run validate   # per-game migration diff harness
 **Build complete through Phase 4** (all phases 0–4 done; styling overhaul done). Pages live: Overview,
 Standings, Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
 Members (directory/detail/compare), **FFU Cup** (route `/cup` — the 36-team cross-league knockout;
-a rules/format preview until the season's draw is held, then the live bracket), and **Stats** (route `/stats`,
+tabbed Bracket / Format & Rules, the bracket being an empty outline until the season's draw is held),
+and **Stats** (route `/stats`,
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
 reorder, full-bleed/sticky Team column, FA icons). All gates green.
 

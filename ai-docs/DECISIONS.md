@@ -37,7 +37,9 @@ they cannot disagree.
   scores, never a contested competition, and the site should only show Cups that happened. It moved
   to `src/test/fixtures/tournament-2025.json`, where it remains the engine's end-to-end test.
 - Cup prize amounts live in `src/config/prizes.ts` (`SeasonPrizeSchedule.cup`) alongside every other
-  payout — absent until announced, and the page says "TBA" rather than guessing.
+  payout, keyed by the round a team wins to earn it; a year with no `cup` entry renders "TBA" rather
+  than a guess. The Cup pays for winning *and advancing*, so the Round of 18's lowest-scoring winner
+  is not paid — `cupWinnerPurse` sums the champion's run ($230 in 2026).
 - **Still unspecified by the amendment:** how the 8 survivors re-pair for the quarterfinals after the
   lowest-winner drop. The engine pairs adjacent winners (`pairAdjacent`); a round can override that
   with authored `matchups` when the commissioner rules on it.

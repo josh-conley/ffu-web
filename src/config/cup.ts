@@ -39,3 +39,6 @@ export const CUP_ROUND_RULES: Record<CupRoundKey, string> = {
   r4: 'Winners advance and are awarded prizing.',
   final: 'The winner is awarded prizing, the blue Discord role, and a diamond in the trophy case.',
 }
+
+/** Narrows a round key coming from per-season data to one the rules know about. */
+export const isCupRoundKey = (key: string): key is CupRoundKey => key in CUP_ROUND_RULES

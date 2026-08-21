@@ -119,6 +119,14 @@ export const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {
     crossUnion: { weeklyHighScore: 10, mostPoints: 40, highestFloor: 30, highestScoreInLoss: 30 },
     crossLeague: { mostLeaguewidePoints: 10 },
   },
+  // 2026 carries ONLY the Cup so far. `tiers` is deliberately empty until the commissioner posts
+  // the season's prizes.txt — do not read this entry's existence as "2026 prizes are transcribed".
+  '2026': {
+    tiers: {},
+    // Keyed by the round a team wins to earn it. Note the amendment pays for winning AND advancing,
+    // so the Round of 18's lowest-scoring winner — who wins but is eliminated — is not paid.
+    cup: { r36: 10, r18: 20, r8: 40, r4: 60, final: 100 },
+  },
 }
 
 export function getPrizeSchedule(year: string): SeasonPrizeSchedule | undefined {

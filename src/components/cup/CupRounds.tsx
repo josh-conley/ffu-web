@@ -1,11 +1,9 @@
-import { CUP_ROUND_RULES, type CupRoundKey } from '@/config'
+import { CUP_ROUND_RULES, isCupRoundKey } from '@/config'
 import type { RoundOutline } from '@/selectors'
 
 // Round-by-round advancement rules. The rule text is CONFIG (it is the same every season); the
 // rounds and their weeks come from the season's data — so a season that shifts its weeks or drops
 // a round needs no change here.
-
-const isCupRoundKey = (key: string): key is CupRoundKey => key in CUP_ROUND_RULES
 
 export function CupRounds({ rounds }: { rounds: RoundOutline[] }) {
   return (

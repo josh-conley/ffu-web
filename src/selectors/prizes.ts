@@ -1,5 +1,5 @@
 import type { Tier } from '@/config'
-import { getPrizeSchedule, type CrossLeagueSchedule, type CrossUnionSchedule, type TierPrizeSchedule } from '@/config'
+import { getPrizeSchedule, type CrossLeagueSchedule, type CrossUnionSchedule, type CupPrizeSchedule, type CupRoundKey, type TierPrizeSchedule } from '@/config'
 import type { SeasonData } from '@/data'
 import { regularSeasonTotals, winnerOf } from './games'
 import { divisionWinnerIds } from './standings'
@@ -179,4 +179,20 @@ export function careerWinnings(seasons: SeasonData[]): Map<string, Winnings> {
     if (sched.crossLeague) applyCrossLeague(result, metrics, sched.crossLeague)
   }
   return result
+}
+
+/**
+ * What winning the Cup outright is worth: the Cup pays at every round you win and advance out of,
+ * so the champion collects all of them. Undefined when any round's amount is still unannounced —
+ * a partial total would understate the purse.
+ */
+export function cupWinnerPurse(cup: CupPrizeSchedule | undefined, roundKeys: readonly CupRoundKey[]): number | undefined {
+  if (cup === undefined) return undefined
+  let total = 0
+  for (const key of roundKeys) {
+    const amount = cup[key]
+    if (amount === undefined) return undefined
+    total += amount
+  }
+  return total
 }

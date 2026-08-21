@@ -1,6 +1,6 @@
 import type { Game, SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config'
-import { careerWinnings } from './prizes'
+import { careerWinnings, cupWinnerPurse } from './prizes'
 
 // `record` matters: divisionWinnerIds reads the stored regular-season record to pick division champs.
 const team = (memberId: string, finalPlacement: number, opts: { div?: number; w?: number; l?: number } = {}): SeasonTeam => ({
@@ -80,5 +80,19 @@ describe('careerWinnings — cross-union + cross-league (2024, two tiers)', () =
   it('pays National its own tier prizes but no cross prizes (Premier swept those)', () => {
     expect(w.get('n1')?.total).toBe(240) // 200 champ + 40 most points
     expect(w.get('n2')?.total).toBe(90) // runner-up only
+  })
+})
+
+describe('cupWinnerPurse', () => {
+  const keys = ['r36', 'r18', 'r8', 'r4', 'final'] as const
+
+  it('sums every round a champion wins on the way through', () => {
+    expect(cupWinnerPurse({ r36: 10, r18: 20, r8: 40, r4: 60, final: 100 }, keys)).toBe(230)
+  })
+
+  it('is undefined when the schedule is missing or any round is unannounced', () => {
+    expect(cupWinnerPurse(undefined, keys)).toBeUndefined()
+    // A partial total would understate the purse, so refuse rather than half-answer.
+    expect(cupWinnerPurse({ r36: 10, r18: 20 }, keys)).toBeUndefined()
   })
 })
