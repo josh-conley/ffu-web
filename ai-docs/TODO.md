@@ -35,9 +35,14 @@ don't let it go stale.
       coordinate + overall pick it will hold, click a team to spotlight its picks (2026-08-20).
       Order comes live from Sleeper via `fetchDraftOrder`; unmapped managers keep their slot and are
       counted as "not listed yet". `/drafts` now DEFAULTS to the live year.
-- [ ] **Fill the board as picks happen.** Sleeper's `/draft/{id}/picks` is empty until the draft
-      starts; wiring it in (plus the player map + polling while `status === 'drafting'`) would make
-      the board live during the draft rather than only before and after it
+- [x] **Fills as picks happen** (2026-08-20). `fetchDraftPicks` maps Sleeper picks straight into the
+      `DraftPick` shape, so live picks render through the same `PickCell` as a completed board. No
+      player map needed: each pick's `metadata` carries name/position/NFL team inline.
+      `useLiveDraftPicks` polls every 12s, pauses while the tab is hidden (refreshing on return),
+      and stops once the board is full. Next pick is flagged "on the clock".
+- [ ] Watch the first live draft (Masters, Sun Aug 30) and sanity-check: does `pick_no` stay
+      contiguous with an autopick/queue, and does a traded pick attribute to the acquirer as it does
+      in the backfilled data?
 - [ ] Once 2026 is backfilled, the year moves out of `LIVE_LEAGUE_IDS` into `SEASONS` and the page
       switches to the completed board on its own — no code change
 

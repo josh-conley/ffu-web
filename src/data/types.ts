@@ -298,6 +298,8 @@ export interface DraftOrderSlot {
 export interface LiveDraftOrder {
   tier: Tier
   year: string
+  /** Sleeper draft id — the handle for polling picks once the draft is under way. */
+  draftId: string | null
   status: string
   startTime: number | null
   /** Rounds the draft is configured for — Sleeper's `settings.rounds`. */

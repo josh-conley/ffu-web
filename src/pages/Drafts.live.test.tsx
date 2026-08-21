@@ -28,15 +28,27 @@ const DRAFT = {
   settings: { rounds: 3 },
 }
 
+/** Picks the fake Sleeper hands back; tests push onto it to simulate the draft running. */
+let livePicks: unknown[] = []
+const pick = (overall: number, round: number, slot: number, by: string, first: string, last: string) => ({
+  pick_no: overall,
+  round,
+  draft_slot: slot,
+  player_id: `p${overall}`,
+  picked_by: by,
+  metadata: { first_name: first, last_name: last, position: 'RB', team: 'CIN' },
+})
+
 beforeEach(() => {
-  vi.stubGlobal('fetch', (url: string) => {
-    const body = url.includes('/drafts') ? [DRAFT] : FILES[url]
+  livePicks = []
+  vi.stubGlobal('fetch', vi.fn((url: string) => {
+    const body = url.includes('/picks') ? livePicks : url.includes('/drafts') ? [DRAFT] : FILES[url]
     return Promise.resolve(
       body === undefined
         ? ({ ok: false, status: 404, json: async () => ({}) } as Response)
         : ({ ok: true, status: 200, json: async () => body } as Response),
     )
-  })
+  }))
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 afterEach(() => vi.restoreAllMocks())
@@ -93,4 +105,44 @@ it('lands on the live season by default, since it is the topical one', async () 
   await renderDrafts('')
   await waitFor(() => expect(screen.getByText(/3 rounds · snake/)).toBeInTheDocument())
   expect(screen.getByRole('combobox', { name: /season/i })).toHaveValue('2026')
+})
+
+it('renders picks that have already been made, and marks the next one on the clock', async () => {
+  livePicks = [
+    pick(1, 1, 1, '467404039059927040', 'Bijan', 'Robinson'),
+    pick(2, 1, 2, '470715135581745152', 'Jahmyr', 'Gibbs'),
+  ]
+  await renderDrafts()
+
+  // Real nameplates, through the same PickCell the completed boards use (shortName → "B. Robinson").
+  await waitFor(() => expect(screen.getByText('B. Robinson')).toBeInTheDocument())
+  expect(screen.getByText('J. Gibbs')).toBeInTheDocument()
+
+  // Progress reads off the picks themselves, and pick 3 is next.
+  expect(screen.getByText(/Drafting now/)).toBeInTheDocument()
+  expect(screen.getByText(/pick 3 of 18/)).toBeInTheDocument()
+  expect(screen.getByText('On the clock')).toBeInTheDocument()
+})
+
+it('says the draft is complete once every pick is in, and stops polling', async () => {
+  const owners = Object.keys(PREMIER_ORDER)
+  // 6 slots × 3 rounds = 18 picks, snake order.
+  livePicks = Array.from({ length: 18 }, (_, i) => {
+    const round = Math.floor(i / 6) + 1
+    const inRound = (i % 6) + 1
+    const slot = round % 2 === 1 ? inRound : 6 - inRound + 1
+    return pick(i + 1, round, slot, owners[slot - 1]!, 'Player', `Number${i + 1}`)
+  })
+  await renderDrafts()
+
+  await waitFor(() => expect(screen.getByText(/Draft complete/)).toBeInTheDocument())
+  expect(screen.queryByText('On the clock')).not.toBeInTheDocument()
+
+  // Polling really has stopped: the visibility-change refresh (the other thing that triggers a
+  // fetch) is a no-op once the board is full.
+  const pickCalls = () => (globalThis.fetch as unknown as { mock: { calls: [string][] } }).mock.calls.filter((c) => c[0].includes('/picks')).length
+  const before = pickCalls()
+  document.dispatchEvent(new Event('visibilitychange'))
+  await new Promise((r) => setTimeout(r, 10))
+  expect(pickCalls()).toBe(before)
 })

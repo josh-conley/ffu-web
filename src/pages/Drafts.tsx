@@ -1,12 +1,13 @@
 import { LIVE_LEAGUE_IDS } from '@/config'
-import type { DraftData, LiveDraftOrder } from '@/data'
+import type { DraftData, DraftPick, LiveDraftOrder } from '@/data'
 import { useSeasonPicker } from '@/hooks/useSeasonView'
 import { useDraft } from '@/hooks/useLeagueData'
-import { isLiveDraftYear, useDraftOrder } from '@/hooks/useDraftOrder'
+import { isLiveDraftYear } from '@/hooks/useDraftOrder'
+import { useLiveDraft } from '@/hooks/useLiveDraft'
 import { useUrlState } from '@/hooks/useUrlState'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { DraftBoard } from '@/components/draft/DraftBoard'
-import { DraftOrderBoard } from '@/components/draft/DraftOrderBoard'
+import { LiveDraftBoard } from '@/components/draft/LiveDraftBoard'
 import { DraftList } from '@/components/DraftList'
 import { segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -32,18 +33,18 @@ function DraftContent({ loading, error, draft, view, year }: { loading: boolean;
   return view === 'list' ? <DraftList draft={draft} year={year} /> : <DraftBoard draft={draft} />
 }
 
-function LiveDraftContent({ loading, error, order, year }: { loading: boolean; error: Error | undefined; order: LiveDraftOrder | undefined; year: string }) {
+function LiveDraftContent({ loading, error, order, picks, year }: { loading: boolean; error: Error | undefined; order: LiveDraftOrder | undefined; picks: DraftPick[]; year: string }) {
   if (loading) return <LoadingSpinner />
   if (error) return <ErrorMessage error={error} />
   if (!order) return <p className="text-muted">No draft is configured for this season yet.</p>
-  return <DraftOrderBoard order={order} year={year} />
+  return <LiveDraftBoard order={order} picks={picks} year={year} />
 }
 
 export function Drafts() {
   const { years, year, tier, setYear, setTier, ready, manifestLoading, manifestError } = useSeasonPicker(LIVE_YEARS)
   const live = isLiveDraftYear(year)
   const { data: draft, loading, error } = useDraft(tier, year, ready && !live)
-  const { order, loading: orderLoading, error: orderError } = useDraftOrder(tier, year, ready && live)
+  const { order, picks, loading: orderLoading, error: orderError } = useLiveDraft(tier, year, ready && live)
   const [view, setView] = useUrlState('view', 'board')
 
   const isLoading = manifestLoading || (ready && (live ? orderLoading : loading))
@@ -68,7 +69,7 @@ export function Drafts() {
       )}
 
       {live ? (
-        <LiveDraftContent loading={isLoading} error={err} order={order} year={year} />
+        <LiveDraftContent loading={isLoading} error={err} order={order} picks={picks} year={year} />
       ) : (
         <DraftContent loading={isLoading} error={err} draft={draft} view={view} year={year} />
       )}

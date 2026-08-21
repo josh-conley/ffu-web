@@ -1,6 +1,6 @@
 import type { Tier } from '@/config/types'
 import { memberBySleeperId } from '@/config'
-import type { DraftOrderSlot, DraftSchedule, LiveDraftOrder } from './types'
+import type { DraftOrderSlot, DraftPick, DraftSchedule, LiveDraftOrder } from './types'
 import { sleeperGet } from './sleeperApi'
 
 // Client-side read of "when is each league's draft" (see src/data/liveSleeper.ts for why the live
@@ -75,10 +75,64 @@ export async function fetchDraftOrder(tier: Tier, year: string, leagueId: string
   return {
     tier,
     year,
+    draftId: draft?.draft_id ?? null,
     status: draft?.status ?? 'pre_draft',
     startTime: typeof draft?.start_time === 'number' ? draft.start_time : null,
     rounds: draft?.settings?.rounds ?? 0,
     slots,
     unregistered,
   }
+}
+
+// ── Picks, live ───────────────────────────────────────────────────────────────────────────────
+// Every pick Sleeper returns carries the player inline (`metadata`: name, position, NFL team), so a
+// live board needs no player map and no /players/nfl download — unlike the backfill path, which
+// builds public/data/players.json for the historical boards.
+
+interface SleeperPickMetadata {
+  first_name?: string
+  last_name?: string
+  position?: string
+  team?: string
+}
+
+interface SleeperPick {
+  pick_no: number
+  round: number
+  draft_slot: number
+  player_id: string
+  picked_by: string
+  metadata?: SleeperPickMetadata
+}
+
+const fullName = (m: SleeperPickMetadata | undefined) => [m?.first_name, m?.last_name].filter(Boolean).join(' ')
+
+/**
+ * Picks made so far, in the SAME `DraftPick` shape the completed boards use — so the live board
+ * renders them through the very same PickCell. `picked_by` is the drafting account, which is what
+ * makes a traded pick show up under its acquirer, exactly as the backfilled data does.
+ */
+export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {
+  const picks = await sleeperGet<SleeperPick[]>(`/draft/${draftId}/picks`)
+  if (!Array.isArray(picks)) throw new Error(`Sleeper draft/${draftId}/picks: not an array`)
+  const out: DraftPick[] = []
+  for (const p of picks) {
+    // An unmapped account keeps its pick with an empty memberId: the player IS off the board, so
+    // hiding the pick would misinform (and would stop the board ever reading complete). Only the
+    // attribution is unknown, which costs nothing but the click-to-spotlight on that one cell.
+    const member = memberBySleeperId(String(p.picked_by))
+    out.push({
+      overall: p.pick_no,
+      round: p.round,
+      slot: p.draft_slot,
+      memberId: member?.ffuId ?? '',
+      player: {
+        id: String(p.player_id),
+        name: fullName(p.metadata) || String(p.player_id),
+        position: p.metadata?.position ?? '',
+        nflTeam: p.metadata?.team ?? undefined,
+      },
+    })
+  }
+  return out
 }
