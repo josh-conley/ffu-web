@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { FaFire, FaTrophy } from 'react-icons/fa6'
+import { FaFire } from 'react-icons/fa6'
 import { CUP_ACCENT } from '@/config'
 import type { TieStory } from '@/selectors'
 import { LEAGUE_STYLES } from '../../leagues'
@@ -30,8 +30,6 @@ function seriesLine(story: TieStory, aName: string, bName: string): string {
 }
 
 export function TieStoryLine({ story, aName, bName }: { story: TieStory; aName: string; bName: string }) {
-  const titles = story.aTitles + story.bTitles
-
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
       {story.meetings === 0 ? (
@@ -56,18 +54,11 @@ export function TieStoryLine({ story, aName, bName }: { story: TieStory; aName: 
         </>
       )}
 
-      <span className="ml-auto flex flex-wrap gap-2">
-        {story.playoffRematch && (
+      {story.playoffRematch && (
+        <span className="ml-auto">
           <Flag icon={<FaFire aria-hidden />}>Playoff rematch</Flag>
-        )}
-        {titles > 0 && (
-          <Flag icon={<FaTrophy aria-hidden />}>
-            {story.aTitles > 0 && story.bTitles > 0
-              ? 'Champion v champion'
-              : `${story.aTitles > 0 ? aName : bName} — champion`}
-          </Flag>
-        )}
-      </span>
+        </span>
+      )}
     </div>
   )
 }

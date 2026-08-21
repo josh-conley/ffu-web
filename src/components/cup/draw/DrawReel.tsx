@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CUP_ACCENT } from '@/config'
-import { playCue } from '@/lib/drawSound'
 import type { BowlTeam } from './DrawBowl'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
@@ -26,14 +25,12 @@ function Cell({ team }: { team: BowlTeam }) {
   )
 }
 
-export function DrawReel({ pool, winnerId, durationMs, muted }: {
+export function DrawReel({ pool, winnerId, durationMs }: {
   pool: BowlTeam[]
   winnerId: string
   durationMs: number
-  muted: boolean
 }) {
   const [rolling, setRolling] = useState(false)
-  const ticked = useRef(false)
 
   // Run-up, then the winner. The run-up simply CYCLES the pool rather than sampling it randomly:
   // it looks identical in motion, and keeps the render pure — the only randomness in this whole
@@ -52,18 +49,6 @@ export function DrawReel({ pool, winnerId, durationMs, muted }: {
     const id = requestAnimationFrame(() => setRolling(true))
     return () => cancelAnimationFrame(id)
   }, [])
-
-  // Ticks thin out as the strip slows, which is what makes it sound like it is decelerating.
-  useEffect(() => {
-    if (muted || ticked.current) return
-    ticked.current = true
-    const timers: number[] = []
-    for (let i = 0; i < 26; i++) {
-      const progress = i / 26
-      timers.push(window.setTimeout(() => playCue('tick'), durationMs * (1 - (1 - progress) ** 2.2)))
-    }
-    return () => timers.forEach(window.clearTimeout)
-  }, [durationMs, muted])
 
   const offset = rolling ? -(winnerIndex * ITEM_PX + ITEM_PX / 2) : -(ITEM_PX / 2)
 

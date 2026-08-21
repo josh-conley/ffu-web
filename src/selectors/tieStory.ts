@@ -1,6 +1,5 @@
 import type { SeasonData } from '@/data'
 import type { Tier } from '@/config'
-import { careerFor, championshipTitles } from './career'
 import { headToHead } from './headToHead'
 
 // The story behind one Cup tie, for the live draw's reveal. Every fact is DERIVED from the eight
@@ -24,14 +23,6 @@ export interface TieStory {
   last?: TieMeeting
   /** Their last meeting was a playoff game — the tie the commissioner should linger on. */
   playoffRematch: boolean
-  /** Championships won, per side. */
-  aTitles: number
-  bTitles: number
-}
-
-const titlesFor = (seasons: SeasonData[], ffuId: string): number => {
-  const career = careerFor(seasons, ffuId)
-  return career ? championshipTitles(career).length : 0
 }
 
 /**
@@ -48,7 +39,5 @@ export function tieStory(seasons: SeasonData[], a: string, b: string): TieStory 
     ties: h2h.ties,
     last: last && { year: last.year, tier: last.tier, week: last.week, isPlayoff: last.isPlayoff },
     playoffRematch: last?.isPlayoff === true,
-    aTitles: titlesFor(seasons, a),
-    bTitles: titlesFor(seasons, b),
   }
 }
