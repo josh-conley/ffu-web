@@ -9,6 +9,9 @@ import { NAV, NAV_LINKS, isGroup } from './nav'
  * state across calls, so hovering B after A fires the pointerleave on A that a real mouse would.
  * The bare `userEvent.hover()` helpers each start from a fresh pointer and never emit that leave.
  */
+/** The bar's only dropdown. Anchored so it can't also match a nav link of the same words. */
+const GROUP = /^Stats & More/
+
 function renderAt(path: string) {
   const user = userEvent.setup()
   render(
@@ -23,9 +26,15 @@ describe('nav structure', () => {
   it('exposes every route exactly once across the groups', () => {
     const paths = NAV_LINKS.map((i) => i.to)
     expect(new Set(paths).size).toBe(paths.length)
-    // The Cup page is public now (it used to be reachable only by direct URL).
+    // The Cup has its own top-level slot (2026-08-21), not a menu entry.
     expect(paths).toContain('/cup')
     expect(paths).toHaveLength(10)
+  })
+
+  it('has a single dropdown, so no one has to guess which menu a page is under', () => {
+    expect(NAV.filter(isGroup).map((g) => g.label)).toEqual(['Stats & More'])
+    // ...and the Cup sits in the bar itself.
+    expect(NAV.filter((e) => !isGroup(e)).map((e) => e.label)).toContain('FFU Cup')
   })
 
   it('marks only the three season views as season-scoped', () => {
@@ -37,18 +46,19 @@ describe('nav structure', () => {
 describe('Header dropdowns', () => {
   it('keeps the everyday pages in the bar and the grouped ones behind a menu', async () => {
     const user = renderAt('/')
-    for (const label of ['Home', 'Standings', 'Matchups', 'Drafts', 'Members']) {
+    for (const label of ['Home', 'Standings', 'Matchups', 'Drafts', 'Members', 'FFU Cup']) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument()
     }
     expect(screen.queryByRole('link', { name: 'Records' })).not.toBeInTheDocument()
 
-    await user.hover(screen.getByRole('button', { name: /Stats/ }))
+    await user.hover(screen.getByRole('button', { name: GROUP }))
     expect(screen.getByRole('link', { name: 'Records' })).toBeInTheDocument()
   })
 
+
   it('opens on mouse hover and closes when the pointer leaves', async () => {
     const user = renderAt('/')
-    const trigger = screen.getByRole('button', { name: /More/ })
+    const trigger = screen.getByRole('button', { name: GROUP })
 
     await user.hover(trigger)
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
@@ -61,7 +71,7 @@ describe('Header dropdowns', () => {
 
   it('a click on a hover-opened menu pins it instead of closing it', async () => {
     const user = renderAt('/')
-    const trigger = screen.getByRole('button', { name: /More/ })
+    const trigger = screen.getByRole('button', { name: GROUP })
 
     await user.hover(trigger)
     await user.click(trigger)
@@ -70,7 +80,7 @@ describe('Header dropdowns', () => {
 
   it('toggles on keyboard activation, where there is no pointer to hover with', async () => {
     const user = renderAt('/')
-    const trigger = screen.getByRole('button', { name: /More/ })
+    const trigger = screen.getByRole('button', { name: GROUP })
     trigger.focus()
 
     await user.keyboard('{Enter}')
@@ -80,25 +90,29 @@ describe('Header dropdowns', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('carries the current season context onto season-scoped links only', async () => {
-    const user = renderAt('/standings?year=2021&tier=MASTERS')
+  it('carries the current season context onto season-scoped links only', () => {
+    renderAt('/standings?year=2021&tier=MASTERS')
 
     expect(screen.getByRole('link', { name: 'Matchups' })).toHaveAttribute('href', '/matchups?year=2021&tier=MASTERS')
     expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute('href', '/members')
 
-    await user.hover(screen.getByRole('button', { name: /More/ }))
+    // The Cup is a top-level link now, and unscoped: it must NOT pick up the season params.
     expect(screen.getByRole('link', { name: 'FFU Cup' })).toHaveAttribute('href', '/cup')
   })
 
   it('shows the group as active while you are on one of its pages', () => {
     renderAt('/lineal')
-    expect(screen.getByRole('button', { name: /More/ })).toHaveClass('bg-accent')
-    expect(screen.getByRole('button', { name: /Stats/ })).not.toHaveClass('bg-accent')
+    expect(screen.getByRole('button', { name: GROUP })).toHaveClass('bg-accent')
+  })
+
+  it('does not light the group up for a top-level page', () => {
+    renderAt('/cup')
+    expect(screen.getByRole('button', { name: GROUP })).not.toHaveClass('bg-accent')
   })
 
   it('closes on Escape and returns focus to the trigger', async () => {
     const user = renderAt('/')
-    const trigger = screen.getByRole('button', { name: /More/ })
+    const trigger = screen.getByRole('button', { name: GROUP })
 
     await user.hover(trigger)
     expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
@@ -108,21 +122,12 @@ describe('Header dropdowns', () => {
     expect(trigger).toHaveFocus()
   })
 
-  it('closes an open menu when another is opened', async () => {
-    const user = renderAt('/')
-    await user.hover(screen.getByRole('button', { name: /Stats/ }))
-    await user.hover(screen.getByRole('button', { name: /More/ }))
-
-    expect(screen.queryByRole('link', { name: 'Records' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
-  })
-
   it('anchors panels to the right so they never overflow the viewport', async () => {
-    // Regression: the rightmost menu ("More") was left-anchored and wider than its trigger, which
+    // Regression: the rightmost menu (then "More") was left-anchored and wider than its trigger, which
     // pushed it past the viewport edge and made the whole page horizontally scrollable. jsdom has
     // no layout, so this guards the anchoring class that fixes it.
     const user = renderAt('/')
-    const trigger = screen.getByRole('button', { name: /More/ })
+    const trigger = screen.getByRole('button', { name: GROUP })
 
     await user.hover(trigger)
     const panel = document.getElementById(trigger.getAttribute('aria-controls')!)
