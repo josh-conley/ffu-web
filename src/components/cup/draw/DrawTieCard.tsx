@@ -43,7 +43,12 @@ export function DrawTieCard({ drawer, drawn, tieNumber }: {
   tieNumber: number
 }) {
   return (
-    <div className="border-2 bg-surface p-4 shadow-sm sm:p-6" style={{ borderColor: CUP_ACCENT }}>
+    <div
+      role="group"
+      aria-label="Current tie"
+      className="border-2 bg-surface p-4 shadow-sm sm:p-6"
+      style={{ borderColor: CUP_ACCENT }}
+    >
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
           {drawn ? `Tie ${tieNumber}` : 'On the clock'}

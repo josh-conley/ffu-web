@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawSheet } from '@/lib/drawSheet.mjs'
@@ -25,25 +25,64 @@ function stubReducedMotion(reduce: boolean) {
 
 afterEach(() => vi.unstubAllGlobals())
 
+const nameOf = (ffuId: string) =>
+  [...field.PREMIER, ...field.MASTERS, ...field.NATIONAL].find((t) => t.ffuId === ffuId)!.name
+
+/** Scope to the tie card: the bowl legitimately shows every remaining team, so a document-wide
+ *  query would find a not-yet-drawn opponent sitting in the pot and prove nothing. */
+const card = () => within(screen.getByRole('group', { name: /current tie/i }))
+
+// REGRESSION: the first cut modelled only spinning/not-spinning, so with nowhere to hold a revealed
+// result every tie's resting state rendered its own answer — the opponent was on screen before it
+// had been drawn. These assert concealment, not just ordering.
+it('does not show the opponent until the tie is actually drawn', async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+
+  const firstOpponent = nameOf(expected.matchups[0]!.b)
+  expect(card().getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(card().queryByText(firstOpponent)).not.toBeInTheDocument()
+  expect(card().getByText(/on the clock/i)).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(card().getByText(firstOpponent)).toBeInTheDocument()
+})
+
+it('holds a revealed tie on screen, then hides the next opponent again', async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  // The result stays up for the operator to talk over, rather than vanishing into the ledger.
+  expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /next tie/i }))
+  expect(card().getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  expect(card().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
+})
+
 it('reveals every tie of the CLI draw, in the same order', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
-  // The counter appears in both the top bar and the tie card.
   expect(screen.getAllByText(/tie 1 of 18/i).length).toBeGreaterThan(0)
 
   for (let i = 0; i < 18; i++) {
-    // The drawing team is on the clock before the tie is made.
-    const drawerName = field.PREMIER.concat(field.MASTERS).find((t) => t.ffuId === expected.matchups[i]!.a)!.name
-    expect(screen.getAllByText(drawerName).length, `tie ${i + 1} drawer`).toBeGreaterThan(0)
-    await user.click(screen.getByRole('button', { name: /draw next/i }))
+    const opponent = nameOf(expected.matchups[i]!.b)
+    expect(card().getByText(nameOf(expected.matchups[i]!.a)), `tie ${i + 1} drawer`).toBeInTheDocument()
+    // Hidden before the draw...
+    expect(card().queryByText(opponent), `tie ${i + 1} opponent leaked`).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /^draw$/i }))
+    // ...shown after it.
+    expect(card().getByText(opponent), `tie ${i + 1} opponent`).toBeInTheDocument()
+    if (i < 17) await user.click(screen.getByRole('button', { name: /next tie/i }))
   }
 
   expect(screen.getByText(/the draw is complete/i)).toBeInTheDocument()
-
-  // The ledger holds all 18 ties, and its numbering runs 1..18.
   const ledger = screen.getByRole('list')
   expect(ledger.querySelectorAll('li')).toHaveLength(18)
 })
@@ -54,7 +93,10 @@ it('empties the Masters half of the bowl once Premier has finished drawing', asy
   render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
 
   expect(screen.getByText(/Masters · 12 left/i)).toBeInTheDocument()
-  for (let i = 0; i < 12; i++) await user.click(screen.getByRole('button', { name: /draw next/i }))
+  for (let i = 0; i < 12; i++) {
+    await user.click(screen.getByRole('button', { name: /^draw$/i }))
+    await user.click(screen.getByRole('button', { name: /next tie/i }))
+  }
 
   // Phase two: the leftover Masters teams are drawers now, so nothing of theirs is left to draw.
   expect(screen.getByText(/Masters · 0 left/i)).toBeInTheDocument()
@@ -67,7 +109,7 @@ it('runs a suspense spin, and a second press cuts it short', () => {
   try {
     render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /draw next/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
 
     // Part-way through the spin it is still undecided on screen...
@@ -77,11 +119,11 @@ it('runs a suspense spin, and a second press cuts it short', () => {
     // ...and pressing again cuts straight to the result rather than waiting it out.
     fireEvent.click(screen.getByRole('button', { name: /^reveal$/i }))
     expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
-    expect(screen.getAllByText(/tie 2 of 18/i).length).toBeGreaterThan(0)
+    expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
 
-    // Leftover spin timers must not advance the draw a second time.
+    // Leftover spin timers must not skip ahead to the next tie on their own.
     act(() => void vi.advanceTimersByTime(5000))
-    expect(screen.getAllByText(/tie 2 of 18/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/tie 1 of 18/i).length).toBeGreaterThan(0)
   } finally {
     vi.useRealTimers()
   }

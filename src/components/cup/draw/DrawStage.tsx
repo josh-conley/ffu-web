@@ -11,7 +11,7 @@ import { downloadText } from './downloads'
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
 
-function TopBar({ seed, revealed, done }: { seed: string; revealed: number; done: boolean }) {
+function TopBar({ seed, tieNumber, done }: { seed: string; tieNumber: number; done: boolean }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 pb-2" style={{ borderColor: CUP_ACCENT }}>
       <h1 className="text-xl font-extrabold uppercase tracking-tight sm:text-2xl">{CUP_NAME} Draw</h1>
@@ -19,15 +19,16 @@ function TopBar({ seed, revealed, done }: { seed: string; revealed: number; done
         <span>
           seed <span className="font-bold text-text">{seed}</span>
         </span>
-        <span>{done ? 'complete' : `tie ${Math.min(revealed + 1, 18)} of 18`}</span>
+        <span>{done ? 'complete' : `tie ${tieNumber} of 18`}</span>
       </div>
     </div>
   )
 }
 
-function Controls({ done, spinning, onAdvance, onDownload }: {
+function Controls({ done, label, onAdvance, onDownload }: {
   done: boolean
-  spinning: boolean
+  /** Reads what the next press will do: draw, cut the spin short, or move on. */
+  label: string
   onAdvance: () => void
   onDownload: (kind: 'txt' | 'csv') => void
 }) {
@@ -41,7 +42,7 @@ function Controls({ done, spinning, onAdvance, onDownload }: {
           className="min-h-11 border px-6 py-2 text-sm font-extrabold uppercase tracking-wide text-white md:min-h-0"
           style={{ backgroundColor: CUP_ACCENT, borderColor: CUP_ACCENT }}
         >
-          {spinning ? 'Reveal' : 'Draw next'}
+          {label}
         </button>
       )}
       {!done && <span className="text-xs uppercase tracking-widest text-muted">or press space</span>}
@@ -76,6 +77,9 @@ export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: s
     return () => window.removeEventListener('keydown', onKey)
   }, [advance])
 
+  const buttonLabel =
+    reveal.phase === 'spinning' ? 'Reveal' : reveal.phase === 'shown' ? 'Next tie' : 'Draw'
+
   const download = (kind: 'txt' | 'csv') =>
     kind === 'csv'
       ? downloadText(`ffu-cup-draw-${seed}.csv`, formatDrawCsv(field, result, seed), 'text/csv')
@@ -83,9 +87,9 @@ export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: s
 
   return (
     <div className="space-y-5">
-      <TopBar seed={seed} revealed={reveal.revealed} done={reveal.done} />
+      <TopBar seed={seed} tieNumber={reveal.tieNumber} done={reveal.done} />
 
-      {reveal.drawer && <DrawTieCard drawer={reveal.drawer} drawn={reveal.drawn} tieNumber={reveal.revealed + 1} />}
+      {reveal.drawer && <DrawTieCard drawer={reveal.drawer} drawn={reveal.drawn} tieNumber={reveal.tieNumber} />}
 
       {reveal.done && (
         <div className="border-2 bg-surface p-4 text-center" style={{ borderColor: CUP_ACCENT }}>
@@ -97,7 +101,7 @@ export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: s
         </div>
       )}
 
-      <Controls done={reveal.done} spinning={reveal.spinning} onAdvance={advance} onDownload={download} />
+      <Controls done={reveal.done} label={buttonLabel} onAdvance={advance} onDownload={download} />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-2">

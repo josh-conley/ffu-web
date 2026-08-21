@@ -7,23 +7,32 @@ import type { TieSide } from '@/components/cup/draw/DrawTieCard'
 
 // Drives the on-stream reveal. The bracket is decided ONCE, by drawCup, before a single crest is
 // lit: everything here is presentation over an already-final result. The spinner cannot change who
-// gets drawn — it only decides which crests flash on the way to showing it. That separation is the
-// whole reason the streamed draw is as verifiable as the CLI one.
+// gets drawn — it only decides which crests flash on the way to showing it.
+//
+// A tie moves through THREE states, and all three matter on camera:
+//   ready    — the drawing team is on the clock; the opponent is NOT on screen
+//   spinning — the bowl flickers
+//   shown    — the opponent is revealed, and stays up until the operator moves on
+// Collapsing this to a spinning/not-spinning pair is what caused the opponent to be visible before
+// it was drawn: with nowhere to hold a revealed result, every tie's resting state showed its answer.
 
 const SPIN_MS = 1800
 const FLICKER_MS = 80
 const TOTAL_TIES = 18
 
+type Phase = 'ready' | 'spinning' | 'shown'
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
 
 export interface DrawRevealState {
-  /** Ties fully revealed so far, 0 → 18. */
-  revealed: number
+  /** 1-based number of the tie on the card. */
+  tieNumber: number
+  phase: Phase
   spinning: boolean
-  /** Crest lit by the spinner right now (cosmetic). */
   spotlitId: string | null
   drawer: TieSide | undefined
+  /** Undefined until this tie's result is actually revealed. */
   drawn: TieSide | undefined
   ledger: LedgerTie[]
   mastersBowl: BowlTeam[]
@@ -31,7 +40,7 @@ export interface DrawRevealState {
   mastersClosed: boolean
   nationalClosed: boolean
   done: boolean
-  /** Reveal the next tie — or, mid-spin, cut straight to the result. */
+  /** Reveal the next thing: spin, or cut a spin short, or move to the next tie. */
   advance: () => void
 }
 
@@ -52,8 +61,8 @@ function sideBuilder(field: CupField, result: CupDrawResult): (ffuId: string) =>
 }
 
 export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRevealState {
-  const [revealed, setRevealed] = useState(0)
-  const [spinning, setSpinning] = useState(false)
+  const [index, setIndex] = useState(0)
+  const [phase, setPhase] = useState<Phase>('ready')
   const [spotlitId, setSpotlitId] = useState<string | null>(null)
   const timers = useRef<number[]>([])
 
@@ -65,37 +74,40 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRe
   }, [])
   useEffect(() => clearTimers, [clearTimers])
 
-  // Teams still in the bowl, and which halves the six-per-league quota has closed.
-  const bowl = useMemo(() => bowlAfter(field, result, revealed), [field, result, revealed])
+  // Teams out of the bowl = ties whose result is on screen. A tie mid-spin has NOT left the bowl,
+  // so its crest is still there to be flickered over.
+  const settled = phase === 'shown' ? index + 1 : index
+  const bowl = useMemo(() => bowlAfter(field, result, settled), [field, result, settled])
 
-  const current = result.matchups[revealed]
+  const current = result.matchups[index]
   const drawer = current ? side(current.a) : undefined
-  const drawn = spinning || !current ? undefined : side(current.b)
+  const drawn = current && phase === 'shown' ? side(current.b) : undefined
 
-  const finish = useCallback(() => {
+  const reveal = useCallback(() => {
     clearTimers()
-    setSpinning(false)
     setSpotlitId(null)
-    setRevealed((n) => Math.min(n + 1, TOTAL_TIES))
+    setPhase('shown')
   }, [clearTimers])
 
   const advance = useCallback(() => {
-    if (spinning) {
-      finish() // second press cuts the suspense short
+    if (phase === 'spinning') {
+      reveal() // second press cuts the suspense short
       return
     }
-    if (revealed >= TOTAL_TIES) return
-
-    // Flicker only over crests that are actually eligible, so the animation never teases a team the
-    // rules have already ruled out.
+    if (phase === 'shown') {
+      if (index + 1 >= TOTAL_TIES) return // the last tie stays up; the draw is over
+      setIndex((i) => i + 1)
+      setPhase('ready')
+      return
+    }
+    // 'ready': start drawing. Flicker only over crests the rules still allow, so the animation
+    // never teases a team that could not come out.
     const eligible = eligibleForSpin(bowl)
-
     if (prefersReducedMotion() || eligible.length === 0) {
-      setRevealed((n) => Math.min(n + 1, TOTAL_TIES))
+      reveal()
       return
     }
-
-    setSpinning(true)
+    setPhase('spinning')
     for (let t = 0; t < SPIN_MS; t += FLICKER_MS) {
       timers.current.push(
         window.setTimeout(() => {
@@ -104,23 +116,24 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRe
         }, t),
       )
     }
-    timers.current.push(window.setTimeout(finish, SPIN_MS))
-  }, [spinning, revealed, bowl, finish])
+    timers.current.push(window.setTimeout(reveal, SPIN_MS))
+  }, [phase, index, bowl, reveal])
 
   const ledger = useMemo(
-    () => result.matchups.slice(0, revealed).map((m) => ({ a: side(m.a), b: side(m.b) })),
-    [result, revealed, side],
+    () => result.matchups.slice(0, settled).map((m) => ({ a: side(m.a), b: side(m.b) })),
+    [result, settled, side],
   )
 
   return {
-    revealed,
-    spinning,
+    tieNumber: index + 1,
+    phase,
+    spinning: phase === 'spinning',
     spotlitId,
     drawer,
     drawn,
     ledger,
     ...bowl,
-    done: revealed >= TOTAL_TIES,
+    done: index + 1 >= TOTAL_TIES && phase === 'shown',
     advance,
   }
 }
