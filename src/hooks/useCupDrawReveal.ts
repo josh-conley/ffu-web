@@ -16,8 +16,10 @@ import type { TieSide } from '@/components/cup/draw/DrawTieCard'
 // Collapsing this to a spinning/not-spinning pair is what caused the opponent to be visible before
 // it was drawn: with nowhere to hold a revealed result, every tie's resting state showed its answer.
 
-// Slowed from 1800 (2026-08-21): the wheel reads better on stream with a longer crawl at the end.
-export const SPIN_MS = 2600
+// 1800 → 2600 → 5500 (2026-08-21). Paired with REEL_CURVE, which holds pace for the first ~60% of
+// the run rather than braking immediately: the wheel now spins for about three seconds before it
+// visibly slows. One constant — shorten it here if it drags on the night.
+export const SPIN_MS = 5500
 const TOTAL_TIES = 18
 
 type Phase = 'ready' | 'spinning' | 'shown'

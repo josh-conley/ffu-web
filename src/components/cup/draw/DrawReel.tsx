@@ -12,8 +12,11 @@ import { TeamLogo } from '../../TeamLogo'
 // reveal treatment needs, so a different one can drop straight in.
 
 const ITEM_PX = 104
-/** Crests scrolled past before landing. Enough to read as motion, not so many it drags. */
-const RUN_UP = 34
+/**
+ * Crests scrolled past before landing. Scaled with SPIN_MS so the wheel keeps a readable pace
+ * (~28 crests/sec at speed) for the whole of the fast phase instead of easing off early.
+ */
+const RUN_UP = 100
 
 function Cell({ team }: { team: BowlTeam }) {
   return (

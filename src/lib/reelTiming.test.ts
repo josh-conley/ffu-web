@@ -22,11 +22,11 @@ describe('timeAtProgress', () => {
 })
 
 describe('tickTimes', () => {
-  const times = tickTimes(30, 2600)
+  const times = tickTimes(100, 5500)
 
   it('gives one tick per crest, the last landing on the end of the run', () => {
-    expect(times).toHaveLength(30)
-    expect(times.at(-1)).toBeCloseTo(2600, 5)
+    expect(times).toHaveLength(100)
+    expect(times.at(-1)).toBeCloseTo(5500, 5)
     expect(times[0]!).toBeGreaterThan(0)
   })
 
@@ -34,29 +34,39 @@ describe('tickTimes', () => {
     for (let i = 1; i < times.length; i++) expect(times[i]!).toBeGreaterThan(times[i - 1]!)
   })
 
-  it('decelerates hard across the run', () => {
+  // The shape that matters: the wheel RUNS, then brakes. Asserted as shape rather than exact
+  // numbers, so the curve can be re-tuned without rewriting the test — but a curve that brakes
+  // immediately (the one this replaced) fails the first assertion outright.
+  it('holds a steady pace through the first half of the run', () => {
+    const gaps = times.slice(1).map((t, i) => t - times[i]!)
+    const firstHalf = gaps.slice(0, Math.floor(gaps.length / 2))
+    const fastest = Math.min(...firstHalf)
+    const slowest = Math.max(...firstHalf)
+    // Every gap in the first half is within 25% of every other — a hold, not a brake.
+    expect(slowest / fastest).toBeLessThan(1.25)
+  })
+
+  it('then decelerates into a long final crawl', () => {
     const gaps = times.slice(1).map((t, i) => t - times[i]!)
     const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
-    const third = Math.floor(gaps.length / 3)
+    const quarter = Math.floor(gaps.length / 4)
 
-    // The curve eases IN very slightly over the first few crests (~14.5ms → ~14.2ms) before it
-    // slows, so gap-by-gap monotonicity is not true — and at a third of a frame it is inaudible.
-    // What matters is the shape over the run: the end crawls compared with the start.
-    expect(mean(gaps.slice(-third))).toBeGreaterThan(mean(gaps.slice(0, third)) * 10)
-    expect(gaps.at(-1)!).toBeGreaterThan(gaps[0]! * 20)
+    expect(mean(gaps.slice(-quarter))).toBeGreaterThan(mean(gaps.slice(0, quarter)) * 2.5)
+    expect(gaps.at(-1)!).toBeGreaterThan(gaps[0]! * 15)
 
-    // Monotonic once past the brief spin-up, which is what the ear actually follows.
-    for (let i = 4; i < gaps.length; i++) {
+    // Monotonic from the fastest crest onwards — once it starts slowing it never speeds up again.
+    const fastestAt = gaps.indexOf(Math.min(...gaps))
+    for (let i = fastestAt + 1; i < gaps.length; i++) {
       expect(gaps[i]!, `gap ${i}`).toBeGreaterThanOrEqual(gaps[i - 1]!)
     }
   })
 
   it('is empty for a degenerate run', () => {
-    expect(tickTimes(0, 2600)).toEqual([])
-    expect(tickTimes(30, 0)).toEqual([])
+    expect(tickTimes(0, 5500)).toEqual([])
+    expect(tickTimes(100, 0)).toEqual([])
   })
 
   it('exports the curve as CSS so the picture and the sound cannot drift', () => {
-    expect(REEL_EASING_CSS).toBe('cubic-bezier(0.12, 0.7, 0.1, 1)')
+    expect(REEL_EASING_CSS).toBe('cubic-bezier(0.6, 0.78, 0.5, 1)')
   })
 })

@@ -5,8 +5,15 @@
 // the tick times have to come from the SAME curve rather than from an evenly spaced count. One
 // definition drives both, which is why they can't drift apart.
 
-/** Shared by the CSS transition and the tick schedule. */
-export const REEL_CURVE = { x1: 0.12, y1: 0.7, x2: 0.1, y2: 1 } as const
+/**
+ * Shared by the CSS transition and the tick schedule.
+ *
+ * Tuned 2026-08-21 for a wheel that RUNS before it slows. The previous curve
+ * (0.12, 0.7, 0.1, 1) held near its peak speed for only 8% of the run — it braked almost at once
+ * and then crawled for two seconds. This one holds pace for roughly the first 60%, then decelerates
+ * over the last 40%, which is how a real wheel behaves.
+ */
+export const REEL_CURVE = { x1: 0.6, y1: 0.78, x2: 0.5, y2: 1 } as const
 export const REEL_EASING_CSS = `cubic-bezier(${REEL_CURVE.x1}, ${REEL_CURVE.y1}, ${REEL_CURVE.x2}, ${REEL_CURVE.y2})`
 
 /** A cubic Bézier component with fixed endpoints 0 and 1, evaluated at parameter `t`. */
