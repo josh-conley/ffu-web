@@ -192,3 +192,65 @@ it('says so when two teams have never met', async () => {
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(screen.getByText(/first ever meeting/i)).toBeInTheDocument()
 })
+
+it('ticks the wheel while it spins, and stops ticking if the spin is cut short', () => {
+  stubReducedMotion(false)
+  const cancels: number[] = []
+  // Stand in for Web Audio: record the schedule handed over, and whether it gets cancelled.
+  vi.stubGlobal('AudioContext', class {
+    state = 'running'
+    currentTime = 0
+    sampleRate = 48000
+    createBuffer = (_c: number, frames: number) => ({ getChannelData: () => new Float32Array(frames) })
+    createBufferSource = () => ({
+      buffer: null,
+      connect: (n: unknown) => n,
+      start: () => {},
+      stop: () => cancels.push(1),
+    })
+    createBiquadFilter = () => ({
+      type: '',
+      frequency: { setValueAtTime: () => {} },
+      Q: { setValueAtTime: () => {} },
+      connect: (n: unknown) => n,
+    })
+    createGain = () => ({ gain: { setValueAtTime: () => {}, exponentialRampToValueAtTime: () => {} }, connect: (n: unknown) => n })
+    destination = {}
+    resume = () => Promise.resolve()
+  })
+  vi.useFakeTimers()
+  try {
+    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
+
+    // A tick per crest of the run-up, not a fixed count.
+    expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
+
+    // Cutting the spin short must silence the pending ticks.
+    fireEvent.click(screen.getByRole('button', { name: /^reveal$/i }))
+    expect(cancels.length).toBeGreaterThan(0)
+  } finally {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  }
+})
+
+it('schedules no ticks when muted', () => {
+  stubReducedMotion(false)
+  let contextsCreated = 0
+  vi.stubGlobal('AudioContext', class {
+    constructor() {
+      contextsCreated++
+    }
+  })
+  vi.useFakeTimers()
+  try {
+    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    fireEvent.click(screen.getByRole('button', { name: /mute the wheel/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
+    expect(contextsCreated).toBe(0)
+  } finally {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  }
+})

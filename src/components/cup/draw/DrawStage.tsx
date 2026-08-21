@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { FaVolumeHigh, FaVolumeXmark } from 'react-icons/fa6'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { SeasonData } from '@/data'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
@@ -29,11 +30,13 @@ function TopBar({ seed, tieNumber, done }: { seed: string; tieNumber: number; do
   )
 }
 
-function Controls({ done, label, onAdvance, onDownload }: {
+function Controls({ done, label, muted, onAdvance, onToggleMute, onDownload }: {
   done: boolean
   /** Reads what the next press will do: draw, cut the spin short, or move on. */
   label: string
+  muted: boolean
   onAdvance: () => void
+  onToggleMute: () => void
   onDownload: (kind: 'txt' | 'csv') => void
 }) {
   const button = 'min-h-11 border border-border px-4 py-1.5 text-sm font-bold uppercase tracking-wide hover:bg-surface-2 md:min-h-0'
@@ -51,6 +54,15 @@ function Controls({ done, label, onAdvance, onDownload }: {
       )}
       {!done && <span className="text-xs uppercase tracking-widest text-muted">or press space</span>}
       <span className="ml-auto flex gap-2">
+        <button
+          type="button"
+          onClick={onToggleMute}
+          aria-pressed={muted}
+          aria-label={muted ? 'Unmute the wheel' : 'Mute the wheel'}
+          className={button}
+        >
+          {muted ? <FaVolumeXmark aria-hidden /> : <FaVolumeHigh aria-hidden />}
+        </button>
         <button type="button" onClick={() => onDownload('txt')} className={button}>
           Download sheet
         </button>
@@ -76,9 +88,10 @@ function CompleteBanner({ seed }: { seed: string }) {
 }
 
 /** The tie on the stage: nameplates, the reveal reel while it spins, then the storyline. */
-function CurrentTie({ reveal, story }: {
+function CurrentTie({ reveal, story, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof tieStory> | undefined
+  muted: boolean
 }) {
   const { drawer, drawn, phase } = reveal
   if (!drawer) return null
@@ -86,7 +99,7 @@ function CurrentTie({ reveal, story }: {
     <div className="space-y-3">
       <DrawTieCard drawer={drawer} drawn={drawn} tieNumber={reveal.tieNumber} />
       {phase === 'spinning' && reveal.spinWinner !== undefined && (
-        <DrawReel pool={reveal.spinPool} winnerId={reveal.spinWinner} durationMs={SPIN_MS} />
+        <DrawReel pool={reveal.spinPool} winnerId={reveal.spinWinner} durationMs={SPIN_MS} muted={muted} />
       )}
       {story && drawn && (
         <div className="border border-border bg-surface px-4 pb-3 pt-1">
@@ -109,6 +122,8 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
   const result = useMemo(() => drawCup(field, seed), [field, seed])
   const reveal = useCupDrawReveal(field, result)
   const { advance, drawer, drawn } = reveal
+  // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
+  const [muted, setMuted] = useState(false)
 
   const story = useMemo(
     () => (drawer && drawn && seasons.length > 0 ? tieStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
@@ -139,11 +154,18 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
     <div className="space-y-5">
       <TopBar seed={seed} tieNumber={reveal.tieNumber} done={reveal.done} />
 
-      <CurrentTie reveal={reveal} story={story} />
+      <CurrentTie reveal={reveal} story={story} muted={muted} />
 
       {reveal.done && <CompleteBanner seed={seed} />}
 
-      <Controls done={reveal.done} label={buttonLabel} onAdvance={advance} onDownload={download} />
+      <Controls
+        done={reveal.done}
+        label={buttonLabel}
+        muted={muted}
+        onAdvance={advance}
+        onToggleMute={() => setMuted((m) => !m)}
+        onDownload={download}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-2">

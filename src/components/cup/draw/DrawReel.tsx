@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CUP_ACCENT } from '@/config'
+import { scheduleTicks } from '@/lib/drawSound'
+import { REEL_EASING_CSS, tickTimes } from '@/lib/reelTiming'
 import type { BowlTeam } from './DrawBowl'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
@@ -25,10 +27,11 @@ function Cell({ team }: { team: BowlTeam }) {
   )
 }
 
-export function DrawReel({ pool, winnerId, durationMs }: {
+export function DrawReel({ pool, winnerId, durationMs, muted }: {
   pool: BowlTeam[]
   winnerId: string
   durationMs: number
+  muted: boolean
 }) {
   const [rolling, setRolling] = useState(false)
 
@@ -50,6 +53,13 @@ export function DrawReel({ pool, winnerId, durationMs }: {
     return () => cancelAnimationFrame(id)
   }, [])
 
+  // One tick per crest crossing the marker, timed off the SAME curve as the transition below — so
+  // the wheel is heard to slow at exactly the rate it is seen to. Cancelled if the spin is cut short.
+  useEffect(() => {
+    if (muted || winnerIndex <= 0) return
+    return scheduleTicks(tickTimes(winnerIndex, durationMs))
+  }, [muted, winnerIndex, durationMs])
+
   const offset = rolling ? -(winnerIndex * ITEM_PX + ITEM_PX / 2) : -(ITEM_PX / 2)
 
   return (
@@ -62,7 +72,7 @@ export function DrawReel({ pool, winnerId, durationMs }: {
         className="absolute left-1/2 top-3 flex"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: rolling ? `transform ${durationMs}ms cubic-bezier(0.12, 0.7, 0.1, 1)` : undefined,
+          transition: rolling ? `transform ${durationMs}ms ${REEL_EASING_CSS}` : undefined,
         }}
       >
         {strip.map((team, i) => (
