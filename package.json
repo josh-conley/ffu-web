@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "migrate": "node scripts/migrate-to-v2.mjs",
     "validate": "node scripts/validate-migration.mjs",
+    "draw-cup": "node scripts/draw-cup.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

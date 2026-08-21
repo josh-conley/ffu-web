@@ -64,8 +64,17 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [x] **Cup prize amounts** (2026-08-20): $10/$20/$40/$60/$100 per round won, in
       `PRIZE_SCHEDULES['2026'].cup`. NB that entry's `tiers` is still empty — the regular
       season's 2026 prizes.txt is a separate outstanding item above
-- [ ] **Hold the draw**, then fill `participants` (36 entries, each with its `seed`) into
-      `public/data/2026/tournament.json` — the page flips from outline to live bracket on its own
+- [ ] **Hold the draw**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
+      (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the page flips
+      from outline to live bracket on its own. Rehearse first with `--dry-run`.
+      - Publish the seed BEFORE drawing — a number nobody controls and nobody knows yet (e.g. the
+        combined final score of an announced NFL game). That is what makes the draw checkable:
+        anyone can re-run the same command and diff the result.
+      - Wait until Premier's and Masters' draft orders are FINAL on Sleeper. The script reads them
+        live, and a pre-draft order can still be changed by the commissioner. (National's order is
+        irrelevant — National teams never draw, they are only drawn.)
+      - Verified 2026-08-20 against live Sleeper: all 36 owners resolve to registry members and both
+        drawing tiers already have an order set, so the pipeline runs end to end today
 - [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
       variable by design, so edit the `rounds[].week` values if they move
 - [ ] **Open rule question:** after the lowest-winner drop leaves 8 teams, how do they re-pair for
