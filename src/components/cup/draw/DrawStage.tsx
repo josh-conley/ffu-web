@@ -1,9 +1,15 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { FaVolumeHigh, FaVolumeXmark } from 'react-icons/fa6'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
+import type { SeasonData } from '@/data'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { useCupDrawReveal } from '@/hooks/useCupDrawReveal'
+import { playCue, setMuted } from '@/lib/drawSound'
+import { tieStory } from '@/selectors'
+import { SPIN_MS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { DrawBowl } from './DrawBowl'
+import { DrawReel } from './DrawReel'
+import { TieStoryLine } from './TieStoryLine'
 import { DrawLedger } from './DrawLedger'
 import { DrawTieCard } from './DrawTieCard'
 import { downloadText } from './downloads'
@@ -25,11 +31,13 @@ function TopBar({ seed, tieNumber, done }: { seed: string; tieNumber: number; do
   )
 }
 
-function Controls({ done, label, onAdvance, onDownload }: {
+function Controls({ done, label, muted, onAdvance, onToggleMute, onDownload }: {
   done: boolean
   /** Reads what the next press will do: draw, cut the spin short, or move on. */
   label: string
+  muted: boolean
   onAdvance: () => void
+  onToggleMute: () => void
   onDownload: (kind: 'txt' | 'csv') => void
 }) {
   const button = 'min-h-11 border border-border px-4 py-1.5 text-sm font-bold uppercase tracking-wide hover:bg-surface-2 md:min-h-0'
@@ -47,6 +55,15 @@ function Controls({ done, label, onAdvance, onDownload }: {
       )}
       {!done && <span className="text-xs uppercase tracking-widest text-muted">or press space</span>}
       <span className="ml-auto flex gap-2">
+        <button
+          type="button"
+          onClick={onToggleMute}
+          aria-pressed={muted}
+          aria-label={muted ? 'Unmute draw sounds' : 'Mute draw sounds'}
+          className={button}
+        >
+          {muted ? <FaVolumeXmark aria-hidden /> : <FaVolumeHigh aria-hidden />}
+        </button>
         <button type="button" onClick={() => onDownload('txt')} className={button}>
           Download sheet
         </button>
@@ -58,12 +75,67 @@ function Controls({ done, label, onAdvance, onDownload }: {
   )
 }
 
-export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: string; onRestart: () => void }) {
+/** What to do once the last tie has landed. */
+function CompleteBanner({ seed }: { seed: string }) {
+  return (
+    <div className="border-2 bg-surface p-4 text-center" style={{ borderColor: CUP_ACCENT }}>
+      <p className="text-lg font-extrabold uppercase tracking-tight">The draw is complete</p>
+      <p className="mt-1 text-sm text-muted">
+        Record the seed <span className="font-mono font-bold text-text">{seed}</span>, then run{' '}
+        <code className="font-mono">npm run draw-cup -- --seed {seed}</code> to write the official bracket.
+      </p>
+    </div>
+  )
+}
+
+/** The tie on the stage: nameplates, the reveal reel while it spins, then the storyline. */
+function CurrentTie({ reveal, story, mute }: {
+  reveal: ReturnType<typeof useCupDrawReveal>
+  story: ReturnType<typeof tieStory> | undefined
+  mute: boolean
+}) {
+  const { drawer, drawn, phase } = reveal
+  if (!drawer) return null
+  return (
+    <div className="space-y-3">
+      <DrawTieCard drawer={drawer} drawn={drawn} tieNumber={reveal.tieNumber} />
+      {phase === 'spinning' && reveal.spinWinner !== undefined && (
+        <DrawReel pool={reveal.spinPool} winnerId={reveal.spinWinner} durationMs={SPIN_MS} muted={mute} />
+      )}
+      {story && drawn && (
+        <div className="border border-border bg-surface px-4 pb-3 pt-1">
+          <TieStoryLine story={story} aName={drawer.name} bName={drawn.name} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function DrawStage({ field, seed, seasons, onRestart }: {
+  field: CupField
+  seed: string
+  /** Completed seasons, for each tie's head-to-head story. Empty just hides the storyline. */
+  seasons: SeasonData[]
+  onRestart: () => void
+}) {
   // Decided once, here, before anything is shown. The reveal below is presentation over a result
   // that already exists — the animation cannot change who was drawn.
   const result = useMemo(() => drawCup(field, seed), [field, seed])
   const reveal = useCupDrawReveal(field, result)
-  const { advance } = reveal
+  const { advance, phase, drawer, drawn } = reveal
+  const [mute, setMute] = useState(false)
+
+  // Cue the landing (and a sting for the last tie of the night) the moment a result appears.
+  useEffect(() => {
+    if (phase !== 'shown' || mute) return
+    playCue(reveal.done ? 'finale' : 'land')
+    // reveal.done is derived from the same transition, so this fires exactly once per tie.
+  }, [phase, reveal.tieNumber, reveal.done, mute])
+
+  const story = useMemo(
+    () => (drawer && drawn && seasons.length > 0 ? tieStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
+    [seasons, drawer, drawn],
+  )
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -89,19 +161,22 @@ export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: s
     <div className="space-y-5">
       <TopBar seed={seed} tieNumber={reveal.tieNumber} done={reveal.done} />
 
-      {reveal.drawer && <DrawTieCard drawer={reveal.drawer} drawn={reveal.drawn} tieNumber={reveal.tieNumber} />}
+      <CurrentTie reveal={reveal} story={story} mute={mute} />
 
-      {reveal.done && (
-        <div className="border-2 bg-surface p-4 text-center" style={{ borderColor: CUP_ACCENT }}>
-          <p className="text-lg font-extrabold uppercase tracking-tight">The draw is complete</p>
-          <p className="mt-1 text-sm text-muted">
-            Record the seed <span className="font-mono font-bold text-text">{seed}</span>, then run{' '}
-            <code className="font-mono">npm run draw-cup -- --seed {seed}</code> to write the official bracket.
-          </p>
-        </div>
-      )}
+      {reveal.done && <CompleteBanner seed={seed} />}
 
-      <Controls done={reveal.done} label={buttonLabel} onAdvance={advance} onDownload={download} />
+      <Controls
+        done={reveal.done}
+        label={buttonLabel}
+        muted={mute}
+        onAdvance={advance}
+        onToggleMute={() => {
+          const next = !mute
+          setMute(next)
+          setMuted(next)
+        }}
+        onDownload={download}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-2">
@@ -109,7 +184,6 @@ export function DrawStage({ field, seed, onRestart }: { field: CupField; seed: s
           <DrawBowl
             masters={reveal.mastersBowl}
             national={reveal.nationalBowl}
-            spotlitId={reveal.spotlitId}
             mastersClosed={reveal.mastersClosed}
             nationalClosed={reveal.nationalClosed}
           />

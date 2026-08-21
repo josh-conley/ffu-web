@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CUP_YEAR } from '@/config'
 import { useCupField } from '@/hooks/useCupField'
+import { useAllSeasons } from '@/hooks/useLeagueData'
 import { DrawSetup } from '@/components/cup/draw/DrawSetup'
 import { DrawStage } from '@/components/cup/draw/DrawStage'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -15,6 +16,9 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 
 export function CupDraw() {
   const { field, loading, problem } = useCupField(CUP_YEAR)
+  // Every completed season, for each tie's head-to-head story. Not fatal if it fails: the draw runs
+  // regardless and simply loses the storyline.
+  const { data: seasons } = useAllSeasons()
   const [seed, setSeed] = useState<string | null>(null)
 
   if (loading) return <LoadingSpinner />
@@ -22,5 +26,5 @@ export function CupDraw() {
     return <ErrorMessage error={problem ?? `No field available for ${CUP_YEAR}.`} />
   }
   if (seed === null) return <DrawSetup onStart={setSeed} />
-  return <DrawStage field={field} seed={seed} onRestart={() => setSeed(null)} />
+  return <DrawStage field={field} seed={seed} seasons={seasons ?? []} onRestart={() => setSeed(null)} />
 }

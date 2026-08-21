@@ -16,8 +16,7 @@ import type { TieSide } from '@/components/cup/draw/DrawTieCard'
 // Collapsing this to a spinning/not-spinning pair is what caused the opponent to be visible before
 // it was drawn: with nowhere to hold a revealed result, every tie's resting state showed its answer.
 
-const SPIN_MS = 1800
-const FLICKER_MS = 80
+export const SPIN_MS = 1800
 const TOTAL_TIES = 18
 
 type Phase = 'ready' | 'spinning' | 'shown'
@@ -30,7 +29,10 @@ export interface DrawRevealState {
   tieNumber: number
   phase: Phase
   spinning: boolean
-  spotlitId: string | null
+  /** Crests the reveal animation may show — never one the rules have ruled out. */
+  spinPool: BowlTeam[]
+  /** The team this tie actually lands on. Known up front; the animation only has to arrive at it. */
+  spinWinner: string | undefined
   drawer: TieSide | undefined
   /** Undefined until this tie's result is actually revealed. */
   drawn: TieSide | undefined
@@ -63,14 +65,13 @@ function sideBuilder(field: CupField, result: CupDrawResult): (ffuId: string) =>
 export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRevealState {
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<Phase>('ready')
-  const [spotlitId, setSpotlitId] = useState<string | null>(null)
-  const timers = useRef<number[]>([])
+  const timer = useRef<number | undefined>(undefined)
 
   const side = useMemo(() => sideBuilder(field, result), [field, result])
 
   const clearTimers = useCallback(() => {
-    for (const id of timers.current) window.clearTimeout(id)
-    timers.current = []
+    if (timer.current !== undefined) window.clearTimeout(timer.current)
+    timer.current = undefined
   }, [])
   useEffect(() => clearTimers, [clearTimers])
 
@@ -79,13 +80,14 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRe
   const settled = phase === 'shown' ? index + 1 : index
   const bowl = useMemo(() => bowlAfter(field, result, settled), [field, result, settled])
 
+  // Only crests the rules still allow, so the animation can never tease an impossible team.
+  const spinPool = useMemo(() => eligibleForSpin(bowl), [bowl])
   const current = result.matchups[index]
   const drawer = current ? side(current.a) : undefined
   const drawn = current && phase === 'shown' ? side(current.b) : undefined
 
   const reveal = useCallback(() => {
     clearTimers()
-    setSpotlitId(null)
     setPhase('shown')
   }, [clearTimers])
 
@@ -100,24 +102,14 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRe
       setPhase('ready')
       return
     }
-    // 'ready': start drawing. Flicker only over crests the rules still allow, so the animation
-    // never teases a team that could not come out.
-    const eligible = eligibleForSpin(bowl)
-    if (prefersReducedMotion() || eligible.length === 0) {
+    // 'ready': start drawing.
+    if (prefersReducedMotion() || spinPool.length === 0) {
       reveal()
       return
     }
     setPhase('spinning')
-    for (let t = 0; t < SPIN_MS; t += FLICKER_MS) {
-      timers.current.push(
-        window.setTimeout(() => {
-          const pick = eligible[Math.floor(Math.random() * eligible.length)]
-          setSpotlitId(pick?.ffuId ?? null)
-        }, t),
-      )
-    }
-    timers.current.push(window.setTimeout(reveal, SPIN_MS))
-  }, [phase, index, bowl, reveal])
+    timer.current = window.setTimeout(reveal, SPIN_MS)
+  }, [phase, index, spinPool, reveal])
 
   const ledger = useMemo(
     () => result.matchups.slice(0, settled).map((m) => ({ a: side(m.a), b: side(m.b) })),
@@ -128,7 +120,8 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult): DrawRe
     tieNumber: index + 1,
     phase,
     spinning: phase === 'spinning',
-    spotlitId,
+    spinPool,
+    spinWinner: current?.b,
     drawer,
     drawn,
     ledger,

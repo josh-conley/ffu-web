@@ -38,7 +38,7 @@ const card = () => within(screen.getByRole('group', { name: /current tie/i }))
 it('does not show the opponent until the tie is actually drawn', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   const firstOpponent = nameOf(expected.matchups[0]!.b)
   expect(card().getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
@@ -52,7 +52,7 @@ it('does not show the opponent until the tie is actually drawn', async () => {
 it('holds a revealed tie on screen, then hides the next opponent again', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   // The result stays up for the operator to talk over, rather than vanishing into the ledger.
@@ -66,7 +66,7 @@ it('holds a revealed tie on screen, then hides the next opponent again', async (
 it('reveals every tie of the CLI draw, in the same order', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
   expect(screen.getAllByText(/tie 1 of 18/i).length).toBeGreaterThan(0)
@@ -90,7 +90,7 @@ it('reveals every tie of the CLI draw, in the same order', async () => {
 it('empties the Masters half of the bowl once Premier has finished drawing', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(/Masters · 12 left/i)).toBeInTheDocument()
   for (let i = 0; i < 12; i++) {
@@ -107,7 +107,7 @@ it('runs a suspense spin, and a second press cuts it short', () => {
   stubReducedMotion(false)
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
@@ -140,10 +140,55 @@ it('downloads a sheet identical to the CLI output', async () => {
     revokeObjectURL: () => {},
   })
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /download sheet/i }))
   expect(captured).toBeDefined()
   // Byte-identical to `npm run draw-cup` — same formatter, same module.
   expect(await captured!.text()).toBe(formatDrawSheet(field, expected, SEED))
+})
+
+// The storyline is the reason the reveal is worth watching, so prove it renders off real games
+// rather than just not crashing.
+const seasonWith = (year: string, games: { week: number; a: number; b: number; isPlayoff?: boolean }[]) => ({
+  schemaVersion: 1,
+  tier: 'PREMIER' as const,
+  year,
+  era: 'sleeper' as const,
+  platformLeagueId: 'x',
+  teams: [],
+  games: games.map((g) => ({
+    week: g.week,
+    isPlayoff: g.isPlayoff ?? false,
+    participants: [
+      { memberId: expected.matchups[0]!.a, score: g.a },
+      { memberId: expected.matchups[0]!.b, score: g.b },
+    ],
+  })),
+})
+
+it('tells the story of a tie once it is revealed', async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  const seasons = [seasonWith('2024', [{ week: 3, a: 120, b: 100 }, { week: 15, a: 90, b: 130, isPlayoff: true }])]
+  render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+
+  // Nothing before the draw — the story belongs to the reveal.
+  expect(screen.queryByText(/met 2 times/i)).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(screen.getByText(/met 2 times/i)).toBeInTheDocument()
+  expect(screen.getByText(/all square at 1–1/i)).toBeInTheDocument()
+  expect(screen.getByText(/playoff rematch/i)).toBeInTheDocument()
+})
+
+it('says so when two teams have never met', async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  // Seasons that contain neither of tie 1's teams.
+  const seasons = [{ ...seasonWith('2024', []), games: [] }]
+  render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(screen.getByText(/first ever meeting/i)).toBeInTheDocument()
 })

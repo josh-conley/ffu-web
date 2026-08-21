@@ -1,4 +1,3 @@
-import { CUP_ACCENT } from '@/config'
 import type { CupTier, DrawTeam } from '@/lib/cupDraw.mjs'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
@@ -20,12 +19,9 @@ function ClosedStamp({ tier }: { tier: CupTier }) {
   )
 }
 
-function Crest({ team, spotlit, dimmed }: { team: BowlTeam; spotlit: boolean; dimmed: boolean }) {
+function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
   return (
-    <div
-      className={`flex flex-col items-center gap-1 border p-2 transition-all duration-100 ${dimmed ? 'opacity-25' : ''}`}
-      style={spotlit ? { borderColor: CUP_ACCENT, backgroundColor: `${CUP_ACCENT}26`, transform: 'scale(1.08)' } : { borderColor: 'var(--color-border)' }}
-    >
+    <div className={`flex flex-col items-center gap-1 border border-border p-2 transition-opacity ${dimmed ? 'opacity-25' : ''}`}>
       <TeamLogo ffuId={team.ffuId} size={40} />
       <span className="w-full truncate text-center text-[11px] font-bold leading-tight">{team.name}</span>
       <span className={`text-[9px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
@@ -36,7 +32,7 @@ function Crest({ team, spotlit, dimmed }: { team: BowlTeam; spotlit: boolean; di
 }
 
 /** One league's half of the bowl. */
-function Half({ tier, teams, spotlitId, closed }: { tier: CupTier; teams: BowlTeam[]; spotlitId: string | null; closed: boolean }) {
+function Half({ tier, teams, closed }: { tier: CupTier; teams: BowlTeam[]; closed: boolean }) {
   return (
     <section className="relative flex-1">
       <h3 className={`mb-2 text-xs font-bold uppercase tracking-widest ${LEAGUE_STYLES[tier].text}`}>
@@ -44,7 +40,7 @@ function Half({ tier, teams, spotlitId, closed }: { tier: CupTier; teams: BowlTe
       </h3>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4">
         {teams.map((t) => (
-          <Crest key={t.ffuId} team={t} spotlit={t.ffuId === spotlitId} dimmed={closed} />
+          <Crest key={t.ffuId} team={t} dimmed={closed} />
         ))}
       </div>
       {closed && teams.length > 0 && <ClosedStamp tier={tier} />}
@@ -52,18 +48,16 @@ function Half({ tier, teams, spotlitId, closed }: { tier: CupTier; teams: BowlTe
   )
 }
 
-export function DrawBowl({ masters, national, spotlitId, mastersClosed, nationalClosed }: {
+export function DrawBowl({ masters, national, mastersClosed, nationalClosed }: {
   masters: BowlTeam[]
   national: BowlTeam[]
-  /** The crest currently lit by the spinner — cosmetic only; the result is already decided. */
-  spotlitId: string | null
   mastersClosed: boolean
   nationalClosed: boolean
 }) {
   return (
     <div className="flex flex-col gap-6 sm:flex-row">
-      <Half tier="MASTERS" teams={masters} spotlitId={spotlitId} closed={mastersClosed} />
-      <Half tier="NATIONAL" teams={national} spotlitId={spotlitId} closed={nationalClosed} />
+      <Half tier="MASTERS" teams={masters} closed={mastersClosed} />
+      <Half tier="NATIONAL" teams={national} closed={nationalClosed} />
     </div>
   )
 }
