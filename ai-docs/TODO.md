@@ -88,9 +88,14 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [x] **Cup prize amounts** (2026-08-20): $10/$20/$40/$60/$100 per round won, in
       `PRIZE_SCHEDULES['2026'].cup`. NB that entry's `tiers` is still empty — the regular
       season's 2026 prizes.txt is a separate outstanding item above
-- [ ] **Hold the draw**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
-      (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the page flips
-      from outline to live bracket on its own. Rehearse first with `--dry-run`.
+- [ ] **Hold the draw.** Two ways, same rules — both import `src/lib/cupDraw.mjs`, so they cannot
+      diverge:
+      - **Live on stream** at `/cup/draw` (unlisted operator view). Take a seed from something the
+        audience watches happen, type it in on camera, then space-bar through the 18 ties. Downloads
+        a sheet/CSV; the seed is the record. Afterwards still run the CLI to write the official file.
+      - **Headless**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
+        (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the Cup page
+        flips from outline to live bracket on its own. Rehearse first with `--dry-run`.
       - Publish the seed BEFORE drawing — a number nobody controls and nobody knows yet (e.g. the
         combined final score of an announced NFL game). That is what makes the draw checkable:
         anyone can re-run the same command and diff the result.

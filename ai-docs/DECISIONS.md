@@ -5,6 +5,42 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-08-21 — The streamed draw reuses the algorithm, not just the rules
+
+**Context.** The commissioner wants the Cup draw run as a live streamed event with some fanfare,
+rather than a terminal command. The obvious build — a React page that draws teams as you click — is
+a trap: it would be a SECOND implementation of rules that decide a competition paying out $230, and
+the two would drift the first time anything changed.
+
+**Decision.** `src/lib/cupDraw.mjs` (moved there from `scripts/lib/` so it sits inside the
+tsconfig `include`) stays the single implementation. It is plain ESM with no Node APIs, so bare
+`node` runs it for the CLI and Vite bundles it for the page. The live page at `/cup/draw` calls
+`drawCup(field, seed)` ONCE, up front, and everything after that is presentation over an
+already-final result — the spinner picks which crests flash, never who was drawn.
+
+Sheet formatting moved to `src/lib/drawSheet.mjs` for the same reason: the text read out on stream,
+the file downloaded from the page, and the CLI's stdout are the same bytes.
+
+**Why the result is computed up front** rather than one tie at a time: it makes the animation
+provably incapable of affecting the outcome, it survives a mid-draw browser crash (reload, same
+seed, same bracket), and it means the page cannot produce a bracket the CLI would not.
+
+**Consequences.**
+- A `.d.mts` declares the module's types; the algorithm file itself stays JavaScript. Converting it
+  to TypeScript would break `scripts/draw-cup.mjs`, which has no TS runner.
+- The page needs the field from Sleeper, so `useCupField` refuses to hand back a partial one: an
+  unmapped manager or an unset draft order blocks the draw with a specific message rather than
+  drawing a wrong bracket.
+- The seed remains the record. The page offers a sheet/CSV download for Discord, but the official
+  `tournament.json` is still written by the CLI afterwards from the same seed.
+- **Viewers following along on their own devices is deliberately NOT built** — that needs shared
+  server state this site has no backend for. The stream is the broadcast; `/cup/draw` is one
+  operator's screen.
+- `/cup/draw` is unlisted (not in `nav.ts`). It is an operator view for one night, not a page to
+  browse to.
+
+---
+
 ## 2026-08-20 — The Cup draw is seeded, and the seed is published first
 
 **Context.** The Round of 36 draw decides a competition that pays out ($230 to a team that runs the

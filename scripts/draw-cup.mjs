@@ -16,7 +16,8 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { drawCup } from './lib/cupDraw.mjs'
+import { drawCup } from '../src/lib/cupDraw.mjs'
+import { formatDrawSheet } from '../src/lib/drawSheet.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const API = 'https://api.sleeper.app/v1'
@@ -121,23 +122,9 @@ function loadFixture(path) {
 
 // ── output ────────────────────────────────────────────────────────────────────────────────────
 
-const LABEL = { PREMIER: 'PL', MASTERS: 'ML', NATIONAL: 'NL' }
-
 /** The draw sheet, in the order ties were made — this is what gets read out in Discord. */
 function printSheet(field, result, seed) {
-  const nameOf = new Map()
-  for (const tier of TIERS) for (const t of field[tier]) nameOf.set(t.ffuId, t.name)
-  const seedOf = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
-  const tierOf = new Map(result.participants.map((p) => [p.ffuId, p.tier]))
-  const side = (id) => `${nameOf.get(id)} (${LABEL[tierOf.get(id)]}, ${seedOf.get(id)})`
-
-  console.log(`\nFFU CUP — ROUND OF 36 DRAW\nSeed: ${seed}\n`)
-  result.matchups.forEach((m, i) => {
-    if (i === 12) console.log('  — Masters draws the remaining National teams —')
-    console.log(`  ${String(i + 1).padStart(2)}. ${side(m.a)}  v  ${side(m.b)}`)
-  })
-  console.log('\nSEEDS')
-  console.log(result.participants.map((p) => `  ${String(p.seed).padStart(2)}. ${nameOf.get(p.ffuId)} (${LABEL[p.tier]})`).join('\n'))
+  console.log(`\n${formatDrawSheet(field, result, seed)}`)
 }
 
 function writeTournament(year, result, force) {

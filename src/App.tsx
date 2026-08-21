@@ -10,6 +10,7 @@ import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
 import { RosterBuildStats } from '@/pages/RosterBuildStats'
 import { Cup } from '@/pages/Cup'
+import { CupDraw } from '@/pages/CupDraw'
 import { NotFound } from '@/components/NotFound'
 
 export default function App() {
@@ -32,6 +33,8 @@ export default function App() {
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           <Route path="cup" element={<Cup />} />
+          {/* Operator view for the live draw night. Unlisted: reachable by URL, not via the nav. */}
+          <Route path="cup/draw" element={<CupDraw />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /cup. */}
           <Route path="tournament" element={<Navigate to="/cup" replace />} />
           <Route path="*" element={<NotFound />} />
