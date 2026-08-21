@@ -1,3 +1,4 @@
+import type { CupRoundKey } from './cup'
 import type { Tier } from './types'
 
 // Prize SCHEDULES — the league's published payout amounts per season. Source of record is the
@@ -42,10 +43,18 @@ export interface CrossLeagueSchedule {
   mostLeaguewidePoints?: number
 }
 
+/**
+ * FFU Cup prizing: what each team that advances OUT of a round is paid, keyed by round key. The
+ * amendment establishes that every round pays; the amounts are published with the season's prize
+ * sheet, so a year is simply absent from `cup` until the commissioner announces them.
+ */
+export type CupPrizeSchedule = Partial<Record<CupRoundKey, number>>
+
 export interface SeasonPrizeSchedule {
   tiers: Partial<Record<Tier, TierPrizeSchedule>>
   crossUnion?: CrossUnionSchedule
   crossLeague?: CrossLeagueSchedule
+  cup?: CupPrizeSchedule
 }
 
 export const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {

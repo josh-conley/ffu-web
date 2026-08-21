@@ -5,6 +5,45 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-08-20 — The Cup is published before it is drawn
+
+**Context.** The commissioner's amendment establishes the **FFU Cup**: a 36-team, cross-league
+knockout run inside the regular season (all three tiers, single elimination, your normal weekly
+lineup score is your Cup score). The inaugural running is 2026. Rounds and their NFL weeks are
+announced with Draft Day; the field is not known until the draw is held some weeks later.
+
+**Decision.** Split the Cup across three homes by *how often the fact changes*:
+
+| Fact | Home | Why |
+|---|---|---|
+| Name, field size, round rules, winner's spoils, accent | `src/config/cup.ts` | Same every season |
+| Which weeks the rounds fall on; who drew whom; seeds | `public/data/{year}/tournament.json` | Varies per season — the amendment says timing is variable "considering NFL bye week impacts and the FFU calendar" |
+| Round sizes, winners, advancement | `src/selectors/tournament.ts` | Derived, never stored |
+
+`Tournament.participants` is therefore allowed to be **empty**, with a new required `fieldSize`
+carrying the shape. `outlineTournament` derives each round's entrants/games/eliminations from
+`fieldSize` alone, so the page renders a real bracket outline months before anyone is drawn into it,
+and `resolveTournament` takes over unchanged once the field lands.
+
+**Why not fabricate placeholder teams** and feed the existing bracket renderer? That would put
+invented participants into the data the resolver reads. `CupBracketOutline` renders blank slots from
+the outline instead — no fake data, and both renderers take their shape from the same rounds, so
+they cannot disagree.
+
+**Consequences.**
+- The tier season fetches are gated on `participants.length > 0` (`useCup`). A live season has no
+  `public/data/{year}/*.json` yet, so an ungated fetch would fail the page.
+- The 2025 backfill bracket is **not** published: it was a dry run of the format against real 2025
+  scores, never a contested competition, and the site should only show Cups that happened. It moved
+  to `src/test/fixtures/tournament-2025.json`, where it remains the engine's end-to-end test.
+- Cup prize amounts live in `src/config/prizes.ts` (`SeasonPrizeSchedule.cup`) alongside every other
+  payout — absent until announced, and the page says "TBA" rather than guessing.
+- **Still unspecified by the amendment:** how the 8 survivors re-pair for the quarterfinals after the
+  lowest-winner drop. The engine pairs adjacent winners (`pairAdjacent`); a round can override that
+  with authored `matchups` when the commissioner rules on it.
+
+---
+
 ## 2026-07-28 — When a season counts as "started"
 
 **Decision.** A season is *entered* once its **draft has completed**, and *played out* once it has

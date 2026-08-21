@@ -86,9 +86,13 @@ export function assertTournament(raw: unknown, ctx: string): Tournament {
   check(isObject(raw), ctx, 'not an object')
   assertSchema(raw, ctx)
   check(typeof raw.year === 'string', ctx, 'missing year')
-  check(Array.isArray(raw.participants) && raw.participants.length > 0, ctx, 'participants not a non-empty array')
+  check(typeof raw.fieldSize === 'number' && raw.fieldSize > 0, ctx, 'missing fieldSize')
+  // Empty is legal: the rounds/weeks are published before the draw is held (participants land later).
+  check(Array.isArray(raw.participants), ctx, 'participants not an array')
+  check(raw.participants.length === 0 || raw.participants.length === raw.fieldSize, ctx, 'participants do not fill fieldSize')
   for (const p of raw.participants) {
     check(isObject(p) && typeof p.ffuId === 'string' && typeof p.tier === 'string', ctx, 'bad participant')
+    check(p.seed === undefined || typeof p.seed === 'number', ctx, `bad seed for ${String(p.ffuId)}`)
   }
   check(Array.isArray(raw.rounds) && raw.rounds.length > 0, ctx, 'rounds not a non-empty array')
   for (const r of raw.rounds) assertTournamentRound(r, ctx)

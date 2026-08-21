@@ -1,7 +1,7 @@
 import type { Game, SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
-import { resolveTournament, weekScore } from './tournament'
-import realTournament from '../../public/data/2025/tournament.json'
+import { outlineTournament, resolveTournament, weekScore } from './tournament'
+import dryRun2025 from '../test/fixtures/tournament-2025.json'
 import premier2025 from '../../public/data/2025/premier.json'
 import masters2025 from '../../public/data/2025/masters.json'
 import national2025 from '../../public/data/2025/national.json'
@@ -32,6 +32,7 @@ const base: Tournament = {
   schemaVersion: 1,
   name: 'Test Cup',
   year: '2025',
+  fieldSize: 4,
   participants: [
     { ffuId: 'a', tier: 'PREMIER' },
     { ffuId: 'b', tier: 'PREMIER' },
@@ -95,7 +96,7 @@ describe('resolveTournament', () => {
       z: { 6: 150, 7: 60 }, z2: { 6: 10 },
     })
     const t: Tournament = {
-      schemaVersion: 1, name: 'Drop', year: '2025',
+      schemaVersion: 1, name: 'Drop', year: '2025', fieldSize: 6,
       participants: ['x', 'x2', 'y', 'y2', 'z', 'z2'].map((ffuId) => ({ ffuId, tier: 'PREMIER' as Tier })),
       rounds: [
         { key: 'r6', label: 'R6', week: 6, matchups: [{ a: 'x', b: 'x2' }, { a: 'y', b: 'y2' }, { a: 'z', b: 'z2' }] },
@@ -122,10 +123,10 @@ describe('resolveTournament', () => {
   })
 })
 
-// Resolves the real seeded 2025 bracket against the actual tier data, proving the full structure
-// holds end-to-end: 36 → 18 → 9 → (drop 1) → 8 → 4 → 2 → champion.
-describe('the seeded 2025 tournament resolves to a full bracket', () => {
-  const real = resolveTournament(realTournament as Tournament, {
+// Resolves the commissioner's 2025 dry run (src/test/fixtures) against the real tier data, proving
+// the full structure holds end-to-end: 36 → 18 → 9 → (drop 1) → 8 → 4 → 2 → champion.
+describe('the seeded 2025 dry run resolves to a full bracket', () => {
+  const real = resolveTournament(dryRun2025 as Tournament, {
     PREMIER: premier2025 as SeasonData,
     MASTERS: masters2025 as SeasonData,
     NATIONAL: national2025 as SeasonData,
@@ -133,7 +134,7 @@ describe('the seeded 2025 tournament resolves to a full bracket', () => {
   const round = (key: string) => real.rounds.find((r) => r.key === key)!
 
   it('has 36 participants and the five expected rounds', () => {
-    expect((realTournament as Tournament).participants).toHaveLength(36)
+    expect((dryRun2025 as Tournament).participants).toHaveLength(36)
     expect(real.rounds.map((r) => r.key)).toEqual(['r36', 'r18', 'r8', 'r4', 'final'])
   })
 
@@ -147,7 +148,7 @@ describe('the seeded 2025 tournament resolves to a full bracket', () => {
   })
 
   it('opens with no intra-tier matchup (every Round-of-36 game is cross-tier)', () => {
-    const tierOf = new Map((realTournament as Tournament).participants.map((p) => [p.ffuId, p.tier]))
+    const tierOf = new Map((dryRun2025 as Tournament).participants.map((p) => [p.ffuId, p.tier]))
     for (const m of round('r36').matchups) {
       expect(tierOf.get(m.a.ffuId), `${m.a.ffuId} vs ${m.b.ffuId}`).not.toBe(tierOf.get(m.b.ffuId))
     }
@@ -158,5 +159,49 @@ describe('the seeded 2025 tournament resolves to a full bracket', () => {
       for (const m of r.matchups) expect(m.winner, `${r.key} matchup`).toBeDefined()
     }
     expect(real.champion).toBeDefined()
+  })
+})
+
+// The shape published before the draw: rounds/weeks are known, the field is not.
+describe('outlineTournament', () => {
+  const cup2026 = {
+    schemaVersion: 1,
+    name: 'FFU Cup',
+    year: '2026',
+    fieldSize: 36,
+    participants: [],
+    rounds: [
+      { key: 'r36', label: 'Round of 36', week: 6 },
+      { key: 'r18', label: 'Round of 18', week: 7 },
+      { key: 'r8', label: 'Quarterfinals', week: 8, dropLowestWinner: true },
+      { key: 'r4', label: 'Semifinals', week: 10 },
+      { key: 'final', label: 'Final', week: 12 },
+    ],
+  } satisfies Tournament
+
+  it('shapes a 36-team bracket with no participants drawn yet', () => {
+    const outline = outlineTournament(cup2026)
+    expect(outline.map((r) => r.entrants)).toEqual([36, 18, 8, 4, 2])
+    expect(outline.map((r) => r.matchups)).toEqual([18, 9, 4, 2, 1])
+    expect(outline.map((r) => r.week)).toEqual([6, 7, 8, 10, 12])
+  })
+
+  it('accounts for the lowest-winner drop between the Round of 18 and the quarterfinals', () => {
+    const outline = outlineTournament(cup2026)
+    expect(outline.map((r) => r.dropped)).toEqual([0, 0, 1, 0, 0])
+    // 9 winners come out of the Round of 18; one is dropped, leaving 8.
+    expect(outline[1]!.matchups).toBe(9)
+    expect(outline[2]!.entrants).toBe(8)
+  })
+
+  it('agrees with the resolved bracket on every round size (2025 dry run)', () => {
+    const outline = outlineTournament(dryRun2025 as Tournament)
+    const resolved = resolveTournament(dryRun2025 as Tournament, {
+      PREMIER: premier2025 as SeasonData,
+      MASTERS: masters2025 as SeasonData,
+      NATIONAL: national2025 as SeasonData,
+    })
+    expect(outline.map((r) => r.matchups)).toEqual(resolved.rounds.map((r) => r.matchups.length))
+    expect(outline.map((r) => r.dropped)).toEqual(resolved.rounds.map((r) => r.dropped.length))
   })
 })

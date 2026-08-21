@@ -50,8 +50,8 @@ export const NAV: readonly NavEntry[] = [
     label: 'More',
     items: [
       { to: '/lineal', label: 'Lineal Champ', end: false },
-      // Pinned to one year internally (see pages/Tournament.tsx), so it is NOT season-scoped.
-      { to: '/tournament', label: 'Tournament', end: false },
+      // Pinned to one year internally (CUP_YEAR in config/cup.ts), so it is NOT season-scoped.
+      { to: '/cup', label: 'FFU Cup', end: false },
     ],
   },
 ]

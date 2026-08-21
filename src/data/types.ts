@@ -181,6 +181,12 @@ export interface TournamentParticipant {
   ffuId: string
   /** Home tier — where this team's weekly score + lineup are sourced from. */
   tier: Tier
+  /**
+   * Bracket seed, 1–36. ASSIGNED by the draw (draft order for the drawing teams; reverse order of
+   * selection for the drawn teams), so it is a fact to store, not something derivable. Absent until
+   * the draw has been held.
+   */
+  seed?: number
 }
 
 /** One pairing (two ffuIds). Winner/scores are derived, never stored. */
@@ -211,10 +217,18 @@ export interface TournamentRound {
 
 export interface Tournament {
   schemaVersion: number
-  /** Official name is TBD — placeholder until decided. */
   name: string
   year: string
+  /**
+   * Teams in the field. EMPTY before the draw is held — a season's rounds and weeks are published
+   * (and rendered as a bracket outline) well ahead of knowing who plays whom.
+   */
   participants: TournamentParticipant[]
+  /**
+   * Size of the full field this bracket is drawn for. Lets the outline be shaped before the draw;
+   * once `participants` is populated it must agree with their count.
+   */
+  fieldSize: number
   rounds: TournamentRound[]
 }
 

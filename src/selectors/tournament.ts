@@ -104,6 +104,36 @@ function applyDrop(advancers: Advancer[], drop: boolean): { pool: Advancer[]; dr
   return { pool: advancers.filter((a) => a !== lowest), droppedId: lowest.ffuId }
 }
 
+// ── Outline: the bracket's SHAPE, before anyone is drawn into it ──────────────────────────────
+// Rounds and weeks are published ahead of the draw, so the field size alone determines how many
+// games each round holds. Derived (never stored) from the same rounds the resolver walks, so the
+// outline and the real bracket can never disagree about the shape.
+
+export interface RoundOutline {
+  key: string
+  label: string
+  week: number
+  /** Teams entering this round. */
+  entrants: number
+  /** Games played in this round. */
+  matchups: number
+  /** Teams eliminated as the lowest-scoring winner of the PREVIOUS round, before this one. */
+  dropped: number
+}
+
+export function outlineTournament(t: Tournament): RoundOutline[] {
+  const out: RoundOutline[] = []
+  let entrants = t.fieldSize
+  for (const round of t.rounds) {
+    const dropped = round.dropLowestWinner === true && entrants > 0 ? 1 : 0
+    entrants -= dropped
+    const matchups = Math.floor(entrants / 2)
+    out.push({ key: round.key, label: round.label, week: round.week, entrants, matchups, dropped })
+    entrants = matchups
+  }
+  return out
+}
+
 export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): ResolvedTournament {
   const tierOf = new Map(t.participants.map((p) => [p.ffuId, p.tier]))
   const rounds: ResolvedRound[] = []

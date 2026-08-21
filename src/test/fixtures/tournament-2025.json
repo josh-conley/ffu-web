@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "name": "TBD Cross-Tier Tournament",
+  "name": "FFU Cup (2025 dry run)",
   "year": "2025",
+  "fieldSize": 36,
   "participants": [
     {
       "ffuId": "ffu-044",

@@ -9,7 +9,7 @@ import { Members } from '@/pages/Members'
 import { AllTimeStats } from '@/pages/AllTimeStats'
 import { Drafts } from '@/pages/Drafts'
 import { RosterBuildStats } from '@/pages/RosterBuildStats'
-import { Tournament } from '@/pages/Tournament'
+import { Cup } from '@/pages/Cup'
 import { NotFound } from '@/components/NotFound'
 
 export default function App() {
@@ -31,7 +31,9 @@ export default function App() {
           <Route path="builds" element={<RosterBuildStats />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
-          <Route path="tournament" element={<Tournament />} />
+          <Route path="cup" element={<Cup />} />
+          {/* Earlier path for this page; redirect stale bookmarks to the current /cup. */}
+          <Route path="tournament" element={<Navigate to="/cup" replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

@@ -23,8 +23,8 @@ describe('nav structure', () => {
   it('exposes every route exactly once across the groups', () => {
     const paths = NAV_LINKS.map((i) => i.to)
     expect(new Set(paths).size).toBe(paths.length)
-    // Tournament is public now (it used to be reachable only by direct URL).
-    expect(paths).toContain('/tournament')
+    // The Cup page is public now (it used to be reachable only by direct URL).
+    expect(paths).toContain('/cup')
     expect(paths).toHaveLength(10)
   })
 
@@ -87,7 +87,7 @@ describe('Header dropdowns', () => {
     expect(screen.getByRole('link', { name: 'Members' })).toHaveAttribute('href', '/members')
 
     await user.hover(screen.getByRole('button', { name: /More/ }))
-    expect(screen.getByRole('link', { name: 'Tournament' })).toHaveAttribute('href', '/tournament')
+    expect(screen.getByRole('link', { name: 'FFU Cup' })).toHaveAttribute('href', '/cup')
   })
 
   it('shows the group as active while you are on one of its pages', () => {

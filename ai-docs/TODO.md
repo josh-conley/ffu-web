@@ -53,6 +53,27 @@ or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28)
 - [ ] Read Sleeper's `league.status` / draft status so membership-shaped views can flip at draft
       completion rather than at "ids are configured" — only needed once the group above exists
 
+## FFU Cup (inaugural, 2026)
+
+Page is `/cup` (was `/tournament`, which redirects). Rules live in `src/config/cup.ts`; the season's
+weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS.md` (2026-08-20).
+
+- [x] Amendment applied: name, 5-round schedule (wks 6/7/8/10/12), round rules, draw + seeding
+      procedure, winner's spoils. Page reads as a preview until the draw is held (2026-08-20)
+- [ ] **Cup prize amounts** — commissioner to supply per-round payouts; add as
+      `PRIZE_SCHEDULES['2026'].cup` (page shows "TBA" until then)
+- [ ] **Hold the draw**, then fill `participants` (36 entries, each with its `seed`) into
+      `public/data/2026/tournament.json` — the page flips from outline to live bracket on its own
+- [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
+      variable by design, so edit the `rounds[].week` values if they move
+- [ ] **Open rule question:** after the lowest-winner drop leaves 8 teams, how do they re-pair for
+      the quarterfinals? The engine currently pairs adjacent winners; a round can carry authored
+      `matchups` to override once ruled on
+- [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
+      decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
+- [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
+      for "FFU Cup Winner"
+
 ## Deferred / not blocking Week 1
 
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now
