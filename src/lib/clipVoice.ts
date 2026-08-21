@@ -1,3 +1,12 @@
+// ⚠️ PARKED, NOT DEAD (2026-08-21). Nothing calls this today: the voiceover was switched off in the
+// live draw because no voice we could produce came close to the brief. The pipeline is kept
+// deliberately — generator, clip playback, phrase tokens and tests all still work — so that landing
+// a real announcer voice is a file drop rather than a rebuild.
+//
+// To switch it back on: in DrawStage, load a voice (clipVoice, falling back to browserVoice) and
+// speak `tiePhrases(drawer, drawn, firstMeeting)` when `reveal.phase === 'shown'`. See
+// ai-docs/DECISIONS.md (2026-08-21) and the announcer entry in ai-docs/TODO.md.
+
 import type { AnnouncePhrase, Voice } from './announcer'
 import { clipKey } from './announceClips.mjs'
 

@@ -22,9 +22,21 @@ then rejected on quality within the hour, which is exactly the outcome the cheap
 clip path (`clipVoice` + `scripts/generate-draw-vo.mjs`) landed the same day.
 
 **On the voice itself.** Nothing available locally sounds like a game announcer: every macOS `say`
-voice is satnav-class, and there is no ffmpeg here for post-processing. The generated set is
-explicitly a PLACEHOLDER. Getting the real thing means producing the same filenames from a neural
-TTS or a human recording — `npm run draw-vo -- --list` prints the exact script. No code changes.
+voice is satnav-class, only compact voices are installed, and there is no ffmpeg or sox here for
+post-processing. The generated set is explicitly a PLACEHOLDER. Getting the real thing means
+producing the same filenames from a neural TTS or a human recording — `npm run draw-vo -- --list`
+prints the exact script. No code changes.
+
+**Switched off, kept intact (same day).** The commissioner heard it and cut the voiceover from the
+live draw: no voice we could produce was close to the brief, and a bad announcer is worse than
+none. The pipeline is PARKED rather than deleted — generator, clip playback, phrase tokens and
+tests all still work, so landing a real voice later is a file drop plus re-wiring one effect.
+
+This is deliberate debt, written down rather than hidden (Charter §1). The unwired modules carry a
+banner saying so and pointing at how to re-enable them; without it they read as dead code and the
+next person deletes them. If a real voice never materialises, delete `announcer.ts`,
+`clipVoice.ts`, `announceClips.mjs`, `scripts/generate-draw-vo.mjs` and `public/audio/draw/`
+together — they are one unit.
 
 **Consequences.**
 - `SPOKEN_NAMES` maps ffuId → respelling for names a synthesiser mangles (FFUcked Up, Jawn of Arc,

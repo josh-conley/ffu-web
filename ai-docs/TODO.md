@@ -116,15 +116,25 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 
 ## FFU Cup draw — announcer voice
 
-- [x] Announcer plumbing + clip playback (2026-08-21). `/cup/draw` calls each tie; prefers clips
-      from `public/audio/draw`, falls back to browser speech when none are deployed.
-- [ ] **Replace the placeholder clips.** The shipped set is macOS `say` and sounds like a satnav —
+- [x] Announcer plumbing + clip playback built (2026-08-21): phrase tokens, clip generator, clip
+      playback, browser-speech fallback, tests.
+- [x] **Switched OFF in the live draw** (2026-08-21) — no voice we could produce got near the brief,
+      so `/cup/draw` is silent apart from the wheel. The pipeline is PARKED, not deleted: see the
+      banner at the top of `src/lib/announcer.ts` for how to re-enable it in one place.
+- [ ] **Get a real voice, then switch it back on.** The shipped set is macOS `say` and sounds like a satnav —
       nothing local gets near a game announcer. Produce the SAME filenames from a neural TTS or a
       human recording and drop them into `public/audio/draw/`; no code changes.
       `npm run draw-vo -- --list` prints the exact script (61 lines). Do not clone a real
       announcer's voice — a generic hype voice gets the energy without the likeness problem.
 - [ ] Settle the phrase set BEFORE recording: currently "{team} versus {team}" plus "First ever
       meeting!". Adding the league or the seed number means more lines to record.
+- [ ] Optional, ~1hr: a Web Audio broadcast chain (compressor + saturation + short reverb + slight
+      pitch drop) inside `clipVoice`. Flatters any source, so it is not wasted whichever voice
+      lands. Not built — offered and deferred.
+- [ ] Free first step worth trying before commissioning anything: download a macOS Enhanced/Premium
+      voice (System Settings → Accessibility → Spoken Content → Manage Voices), change `VOICE` in
+      `scripts/generate-draw-vo.mjs`, re-run `npm run draw-vo`. Notably better than the compact
+      voice currently shipped.
 
 ## Deferred / not blocking Week 1
 
