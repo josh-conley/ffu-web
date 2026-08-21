@@ -6,6 +6,10 @@
 // audio files without a single change at the call site. Browser speech is the prototype; it gets
 // the timing right, and it will never sound like a game announcer.
 
+import { ANNOUNCE_WORDS, spokenName } from './announceClips.mjs'
+
+export { spokenName }
+
 export type AnnouncePhrase =
   | { kind: 'team'; ffuId: string; name: string }
   | { kind: 'word'; text: string }
@@ -18,39 +22,15 @@ export interface Voice {
   available(): boolean
 }
 
-/**
- * Spoken forms for names a synthesiser mangles, keyed by ffuId. Only the ones that actually come
- * out wrong — everything else is read as written.
- *
- * This map is why pre-generating clips is the better long-term route: there you HEAR each name and
- * fix it until it's right, rather than guessing at a respelling.
- */
-export const SPOKEN_NAMES: Record<string, string> = {
-  'ffu-002': 'Effed Up', // FFUcked Up
-  'ffu-047': 'B Star', // bstarrr
-  'ffu-053': 'John of Arc', // Jawn of Arc
-  'ffu-038': 'Odin\'s Hair', // Odin's Herr
-  'ffu-027': 'Cam Delphia', // CamDelphia
-  'ffu-040': 'The Sha Dynasty', // The Sha'Dynasty
-  'ffu-015': 'Arcorey', // arcorey15
-  'ffu-016': 'Mustache Poppy', // MustachePapi
-  'ffu-010': 'Chicago Pick Six', // ChicagoPick6
-}
-
-/** What the announcer should call this team. */
-export function spokenName(ffuId: string, name: string): string {
-  return SPOKEN_NAMES[ffuId] ?? name
-}
-
 /** The call for one tie. Kept pure so the wording is testable without a speech engine. */
 export function tiePhrases(a: { ffuId: string; name: string }, b: { ffuId: string; name: string }, firstMeeting: boolean): AnnouncePhrase[] {
   const phrases: AnnouncePhrase[] = [
     { kind: 'team', ffuId: a.ffuId, name: a.name },
-    { kind: 'word', text: 'versus' },
+    { kind: 'word', text: ANNOUNCE_WORDS[0]! },
     { kind: 'team', ffuId: b.ffuId, name: b.name },
   ]
   // A pairing with no history is worth calling out — it lands about six times in ten.
-  if (firstMeeting) phrases.push({ kind: 'word', text: 'First ever meeting!' })
+  if (firstMeeting) phrases.push({ kind: 'word', text: ANNOUNCE_WORDS[1]! })
   return phrases
 }
 

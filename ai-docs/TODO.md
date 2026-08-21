@@ -114,6 +114,18 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
       for "FFU Cup Winner"
 
+## FFU Cup draw — announcer voice
+
+- [x] Announcer plumbing + clip playback (2026-08-21). `/cup/draw` calls each tie; prefers clips
+      from `public/audio/draw`, falls back to browser speech when none are deployed.
+- [ ] **Replace the placeholder clips.** The shipped set is macOS `say` and sounds like a satnav —
+      nothing local gets near a game announcer. Produce the SAME filenames from a neural TTS or a
+      human recording and drop them into `public/audio/draw/`; no code changes.
+      `npm run draw-vo -- --list` prints the exact script (61 lines). Do not clone a real
+      announcer's voice — a generic hype voice gets the energy without the likeness problem.
+- [ ] Settle the phrase set BEFORE recording: currently "{team} versus {team}" plus "First ever
+      meeting!". Adding the league or the seed number means more lines to record.
+
 ## Deferred / not blocking Week 1
 
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now

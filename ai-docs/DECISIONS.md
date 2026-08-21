@@ -17,12 +17,20 @@ really needs pre-generated audio clips.
 tokens onto audio files. Neither the call site nor the wording logic changes between them.
 
 **Why not go straight to clips.** The unknown was whether an announcer helps the broadcast at all,
-and what its timing against the reveal should be. Browser speech answers both for an hour's work.
-If the beat is wrong, nothing was spent generating 40 clips.
+and what its timing against the reveal should be. Browser speech answered both cheaply — and was
+then rejected on quality within the hour, which is exactly the outcome the cheap step is for. The
+clip path (`clipVoice` + `scripts/generate-draw-vo.mjs`) landed the same day.
+
+**On the voice itself.** Nothing available locally sounds like a game announcer: every macOS `say`
+voice is satnav-class, and there is no ffmpeg here for post-processing. The generated set is
+explicitly a PLACEHOLDER. Getting the real thing means producing the same filenames from a neural
+TTS or a human recording — `npm run draw-vo -- --list` prints the exact script. No code changes.
 
 **Consequences.**
 - `SPOKEN_NAMES` maps ffuId → respelling for names a synthesiser mangles (FFUcked Up, Jawn of Arc,
-  bstarrr…). It is a stopgap: with clips you HEAR each name and fix it, rather than guessing.
+  bstarrr…). It lives in `announceClips.mjs` because the generator and the app both need it.
+- `clipKey` is the contract between the two: the generator writes `{key}.m4a`, the player asks for
+  the same key. A mismatch would be SILENT — clips just never play — so a test asserts it directly.
 - Speaking always cancels first, so a fast operator can't stack two ties over each other.
 - Everything is best-effort — a platform with no speech synthesis stays silent rather than throwing
   mid-broadcast, and the mute toggle covers wheel and voice together.

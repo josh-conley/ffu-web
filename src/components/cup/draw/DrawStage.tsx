@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { FaVolumeHigh, FaVolumeXmark } from 'react-icons/fa6'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { SeasonData } from '@/data'
-import { browserVoice, tiePhrases } from '@/lib/announcer'
+import { browserVoice, tiePhrases, type Voice } from '@/lib/announcer'
+import { clipVoice, loadClips } from '@/lib/clipVoice'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { tieStory } from '@/selectors'
@@ -125,6 +126,17 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
   const { advance, drawer, drawn } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
+  // Prefer the generated clips; fall back to the browser's own speech if none are deployed.
+  const [voice, setVoice] = useState<Voice>(browserVoice)
+  useEffect(() => {
+    let live = true
+    void loadClips().then((ok) => {
+      if (live && ok) setVoice(clipVoice)
+    })
+    return () => {
+      live = false
+    }
+  }, [])
 
   const story = useMemo(
     () => (drawer && drawn && seasons.length > 0 ? tieStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
@@ -147,11 +159,11 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
   // never talk over each other.
   useEffect(() => {
     if (reveal.phase !== 'shown' || muted || !drawer || !drawn) return
-    browserVoice.speak(tiePhrases(drawer, drawn, story?.meetings === 0))
-    return () => browserVoice.cancel()
+    voice.speak(tiePhrases(drawer, drawn, story?.meetings === 0))
+    return () => voice.cancel()
     // Keyed on the tie number so it fires once per tie, not on every unrelated re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reveal.phase, reveal.tieNumber, muted])
+  }, [reveal.phase, reveal.tieNumber, muted, voice])
 
   const buttonLabel =
     reveal.phase === 'spinning' ? 'Reveal' : reveal.phase === 'shown' ? 'Next tie' : 'Draw'
