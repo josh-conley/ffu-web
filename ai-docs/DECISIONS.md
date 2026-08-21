@@ -5,6 +5,41 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-08-20 — The Cup draw is seeded, and the seed is published first
+
+**Context.** The Round of 36 draw decides a competition that pays out ($230 to a team that runs the
+table). Someone will draw a brutal opening tie, and they need a way to satisfy themselves it wasn't
+arranged. "The commissioner ran it" and "an AI ran it" are equally unverifiable after the fact.
+
+**Decision.** `npm run draw-cup -- --seed <s>` conducts the draw from a seeded PRNG, and the seed is
+**committed publicly before the draw happens** — a value nobody controls and nobody yet knows (e.g.
+the combined final score of an announced NFL game). Same seed + same field ⇒ byte-identical bracket,
+so anyone can re-run the command and diff `public/data/{year}/tournament.json`. `--seed` is required:
+there is deliberately no path that produces an unreproducible result.
+
+**Why not just draw it.** A one-off shuffle is trivial to write and impossible to audit. Committing
+to the entropy source in advance costs nothing and converts "trust us" into "check it yourself" —
+worth it once, for the input that shapes the entire tournament. A live Discord draw is the other
+honest option (everyone watches) and composes fine with this: run the script from the committed
+seed, then reveal the ties one at a time.
+
+**Consequences.**
+- `scripts/lib/cupDraw.mjs` is pure and has no I/O, so the algorithm is testable and the CLI stays a
+  thin shell around Sleeper reads. Plain `.mjs`, matching the other scripts (no TS runner).
+- Premier draws from all 24 Masters + National teams as ONE pool. "Pick a league, then pick a team"
+  satisfies the 6/6 quota but skews the odds as the pools diverge in size; a distribution test pins
+  the correct behaviour, since nothing else would catch the difference.
+- Only **Premier and Masters** draft orders are read. National teams never draw — they are only ever
+  drawn — so National's draft date never blocks the Cup draw.
+- Run it only once both drawing tiers' orders are FINAL on Sleeper; a pre-draft order can still be
+  changed by the commissioner. An already-drawn season needs `--force` to overwrite.
+- Seeds 1–36 are recorded because the amendment specifies them, but **nothing consumes them yet**.
+  If later rounds re-seed (best remaining vs worst remaining), they are the mechanism and the engine
+  needs that rule; if later rounds follow bracket position, they are decorative. Open with the
+  commissioner — see `ai-docs/TODO.md`.
+
+---
+
 ## 2026-08-20 — The Cup is published before it is drawn
 
 **Context.** The commissioner's amendment establishes the **FFU Cup**: a 36-team, cross-league
