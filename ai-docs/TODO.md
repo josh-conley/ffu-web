@@ -144,3 +144,8 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - Lineal Championship (`/lineal`) reads completed seasons only, so the belt won't move during a live
   season until that year is backfilled. Wiring `liveSleeper` games into `linealHistory` would fix
   that (the selector takes any `SeasonData[]`, so it's a data-assembly job, not a selector change).
+- Migration gap: `2023/premier.draft.json` and `2023/masters.draft.json` each carry only 11 entries
+  in `draftOrder` — Premier slot 7 (Team Dogecoin) and Masters slot 11 (Dmandre161) are missing, so
+  the original owner of those slots' picks can't be resolved and pick-trade attribution for 2023 has
+  to be inferred. Every other draft file has all 12. Worth a backfill pass if drafts ever grow a
+  "traded picks" feature.

@@ -1,0 +1,391 @@
+<title>Scouting the Premier Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f3f1ed;
+    --border: #e4e0d8;
+    --border-strong: #cfc9bd;
+    --text: #17161a;
+    --muted: #6b6862;
+    --amber: #b06f00;        /* Premier gold, stepped for AA on light */
+    --amber-mark: #fca800;   /* Premier gold as a mark/rail */
+    --pole-reach: #cc2f2f;
+    --pole-wait: #2a78d6;
+    --axis: #d8d3c9;
+    --rb: #2a78d6;
+    --wr: #eb6834;
+    --te: #1baf7a;
+    --qb: #4a3aa7;
+    --shadow: 0 1px 0 rgba(23,22,26,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #141416;
+      --surface: #1c1c1f;
+      --surface-2: #242428;
+      --border: #34343a;
+      --border-strong: #4a4a52;
+      --text: #f3f4f6;
+      --muted: #9d9a94;
+      --amber: #ffc861;
+      --amber-mark: #fca800;
+      --pole-reach: #e66767;
+      --pole-wait: #3987e5;
+      --axis: #3a3a41;
+      --rb: #3987e5;
+      --wr: #d95926;
+      --te: #199e70;
+      --qb: #9085e9;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #141416;
+    --surface: #1c1c1f;
+    --surface-2: #242428;
+    --border: #34343a;
+    --border-strong: #4a4a52;
+    --text: #f3f4f6;
+    --muted: #9d9a94;
+    --amber: #ffc861;
+    --amber-mark: #fca800;
+    --pole-reach: #e66767;
+    --pole-wait: #3987e5;
+    --axis: #3a3a41;
+    --rb: #3987e5;
+    --wr: #d95926;
+    --te: #199e70;
+    --qb: #9085e9;
+    --shadow: none;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  h1, h2, h3, .cond { font-family: 'Barlow Condensed', 'Barlow', system-ui, sans-serif; text-wrap: balance; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--amber-mark); outline-offset: 2px; }
+
+  /* ---- masthead ---- */
+  .masthead { border-top: 4px solid var(--amber-mark); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .eyebrow { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: var(--amber); font-weight: 700; }
+  h1 { font-size: clamp(2.6rem, 7vw, 4.2rem); line-height: .95; font-weight: 700; letter-spacing: -.01em; margin: 0; text-transform: uppercase; }
+  .dek { font-size: 1.08rem; color: var(--muted); max-width: 44rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: 0 1.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: .7rem 0; }
+  .meta div { display: flex; gap: .5rem; align-items: baseline; }
+  .meta dt { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .meta dd { margin: 0; font-weight: 600; font-size: .92rem; }
+
+  section { margin-top: 3.25rem; }
+  h2 { font-size: 1.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: .01em; margin: 0 0 .35rem; }
+  .sub { color: var(--muted); font-size: .95rem; margin: 0 0 1.25rem; max-width: 46rem; }
+
+  /* ---- rule-change callout ---- */
+  .callout { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--amber-mark); padding: 1.15rem 1.25rem; display: grid; gap: .6rem; box-shadow: var(--shadow); }
+  .callout h3 { margin: 0; font-size: 1.35rem; text-transform: uppercase; font-weight: 700; }
+  .callout p { margin: 0; }
+  .lineups { display: grid; grid-template-columns: auto 1fr; gap: .35rem .9rem; align-items: center; margin-top: .2rem; }
+  .lineups span:nth-child(odd) { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .slots { display: flex; flex-wrap: wrap; gap: 3px; }
+  .slot { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .68rem; font-weight: 700; padding: .12rem .38rem; border: 1px solid var(--border-strong); color: var(--muted); }
+  .slot.gone { text-decoration: line-through; opacity: .55; }
+  .slot.new { border-color: var(--amber-mark); color: var(--amber); background: color-mix(in srgb, var(--amber-mark) 12%, transparent); }
+
+  /* ---- chart ---- */
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--border); padding: 1.25rem; box-shadow: var(--shadow); }
+  figcaption { font-size: .82rem; color: var(--muted); margin-top: 1rem; padding-top: .75rem; border-top: 1px solid var(--border); }
+  .chart { display: grid; gap: 2px; }
+  .crow { display: grid; grid-template-columns: 13rem 1fr; align-items: center; gap: .75rem; padding: .18rem 0; }
+  .crow .who { font-size: .82rem; font-weight: 600; text-align: right; line-height: 1.2; }
+  .track { position: relative; height: 20px; }
+  .track::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--axis); }
+  .bar { position: absolute; top: 6px; height: 8px; min-width: 2px; border-radius: 0 4px 4px 0; }
+  .bar.neg { border-radius: 4px 0 0 4px; }
+  .val { position: absolute; top: 1px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .7rem; font-weight: 700; color: var(--muted); }
+  .scale { display: grid; grid-template-columns: 13rem 1fr; gap: .75rem; margin-top: .5rem; }
+  .scale > div:last-child { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--axis); padding-top: .3rem; }
+  .poles { display: flex; gap: 1.25rem; font-size: .78rem; color: var(--muted); margin-bottom: .9rem; flex-wrap: wrap; }
+  .poles span { display: inline-flex; align-items: center; gap: .4rem; }
+  .key { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* ---- baselines ---- */
+  .baselines { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1rem; }
+  .baselines div { background: var(--surface); padding: .85rem 1rem; }
+  .baselines dt { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .62rem; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); }
+  .baselines dd { margin: .15rem 0 0; font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
+  .baselines dd small { font-family: 'Barlow', sans-serif; font-size: .78rem; font-weight: 500; color: var(--muted); }
+
+  /* ---- manager cards ---- */
+  .cards { display: grid; gap: 1.25rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); display: grid; grid-template-columns: 3.25rem 1fr; }
+  .rail { background: var(--surface-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: .9rem 0; gap: .3rem; }
+  .rail .num { font-family: 'Barlow Condensed', sans-serif; font-size: 1.85rem; font-weight: 700; line-height: 1; color: var(--amber); }
+  .rail .lab { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .52rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); writing-mode: vertical-rl; }
+  .body { padding: 1.05rem 1.25rem 1.2rem; display: grid; gap: .85rem; min-width: 0; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .75rem; }
+  .head h3 { margin: 0; font-size: 1.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .005em; }
+  .head .owner { color: var(--muted); font-size: .9rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+  .chip { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .66rem; padding: .16rem .45rem; border: 1px solid var(--border-strong); color: var(--muted); white-space: nowrap; }
+  .chip b { color: var(--text); font-weight: 700; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: .1rem 1rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: .6rem 0; }
+  .stats div { display: grid; gap: .1rem; }
+  .stats dt { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .stats dd { margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .98rem; font-weight: 700; }
+  .mix { display: grid; gap: .35rem; }
+  .mixbar { display: flex; gap: 2px; height: 10px; }
+  .mixbar i { display: block; }
+  .mixbar i:first-child { border-radius: 3px 0 0 3px; }
+  .mixbar i:last-child { border-radius: 0 3px 3px 0; }
+  .mixread { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .68rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: .1rem .8rem; }
+  .mixread b { color: var(--text); }
+  .note { display: grid; grid-template-columns: 4.5rem 1fr; gap: .6rem; align-items: baseline; }
+  .note > span:first-child { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .58rem; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); padding-top: .18rem; }
+  .note p { margin: 0; font-size: .95rem; }
+  .note.play > span:first-child { color: var(--amber); }
+  .self { border-color: var(--amber-mark); border-width: 2px; }
+  .self .rail { background: color-mix(in srgb, var(--amber-mark) 14%, var(--surface-2)); }
+
+  /* ---- your board ---- */
+  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.4rem, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .board div { background: var(--surface); padding: .5rem .4rem; text-align: center; }
+  .board dt { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .56rem; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+  .board dd { margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 700; font-size: 1rem; }
+  ol.plays { margin: 1rem 0 0; padding-left: 0; list-style: none; display: grid; gap: .85rem; counter-reset: play; }
+  ol.plays li { counter-increment: play; display: grid; grid-template-columns: 2rem 1fr; gap: .75rem; }
+  ol.plays li::before { content: counter(play, decimal-leading-zero); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .8rem; font-weight: 700; color: var(--amber); padding-top: .18rem; }
+  ol.plays strong { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .01em; }
+
+  .method { background: var(--surface-2); border: 1px solid var(--border); padding: 1.15rem 1.25rem; font-size: .88rem; color: var(--muted); display: grid; gap: .6rem; }
+  .method h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; color: var(--text); }
+  .method code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .82em; }
+  @media (max-width: 640px) {
+    .crow, .scale { grid-template-columns: 8.5rem 1fr; }
+    .crow .who { font-size: .78rem; }
+    .note { grid-template-columns: 1fr; gap: .15rem; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">FFU Premier · 2026 · Pre-draft scouting</div>
+    <h1>Scouting the<br>Premier Room</h1>
+    <p class="dek">Every pick the eleven other Premier managers made in their last three drafts — 2023, 2024 and 2025, across whichever tier they were in — read for the habits that repeat. Where they buy, where they wait, and where they pay over the odds.</p>
+    <dl class="meta">
+      <div><dt>Draft</dt><dd>Mon 7 Sep 2026, 2:00 PM</dd></div>
+      <div><dt>Format</dt><dd>Snake · 15 rounds · 90s</dd></div>
+      <div><dt>Scoring</dt><dd>Half PPR · 6.5 TD</dd></div>
+      <div><dt>Your slot</dt><dd>2nd</dd></div>
+      <div><dt>Sample</dt><dd>540 picks · 12 managers</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>The rule change that moves every board</h2>
+    <p class="sub">Before reading a single tendency, note that the thing they were all drafting for has changed.</p>
+    <div class="callout">
+      <h3>Defense is gone. A third flex takes its place.</h3>
+      <div class="lineups">
+        <span>2025</span>
+        <span class="slots"><i class="slot">QB</i><i class="slot">RB</i><i class="slot">RB</i><i class="slot">WR</i><i class="slot">WR</i><i class="slot">TE</i><i class="slot">FLEX</i><i class="slot">FLEX</i><i class="slot gone">DEF</i><i class="slot">6&nbsp;BN</i></span>
+        <span>2026</span>
+        <span class="slots"><i class="slot">QB</i><i class="slot">RB</i><i class="slot">RB</i><i class="slot">WR</i><i class="slot">WR</i><i class="slot">TE</i><i class="slot">FLEX</i><i class="slot">FLEX</i><i class="slot new">FLEX</i><i class="slot">6&nbsp;BN</i></span>
+      </div>
+      <p>Two effects, both pushing the same direction. Every manager gets back the pick they used to spend on a defense — historically round 13 or later for most of this room, but round 11 or 12 for Johnkshire and Circle City — and every manager now has a ninth starting spot that only a running back, receiver or tight end can fill. Expect RB/WR to run about a round deeper than the last three years' boards suggest, and expect the late rounds to be pure upside rather than a defense and a handcuff.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Who pays up, who waits</h2>
+    <p class="sub">Each manager's average pick versus where the rest of the FFU took that same player in the same year. Left of the line means they consistently spend picks ahead of the market; right means they let players come to them. The spread here is real — the typical FFU manager-season lands within about 4 points of zero, so anything past ±6 is a habit, not noise.</p>
+    <figure>
+      <div class="poles">
+        <span><i class="key" style="background:var(--pole-reach)"></i> Takes players early (reaches)</span>
+        <span><i class="key" style="background:var(--pole-wait)"></i> Lets the board come (waits)</span>
+      </div>
+      <div class="chart" id="adp"></div>
+      <div class="scale"><div></div><div><span>−8</span><span>−4</span><span>0</span><span>+4</span><span>+8</span></div></div>
+      <figcaption>Mean (pick number − cross-league average pick), 2023–25, offensive players only. Positive = drafted later than the field did. Sample of 37–41 comparable picks per manager.</figcaption>
+    </figure>
+    <dl class="baselines">
+      <div><dt>Room's first QB</dt><dd>Rd 6.2</dd></div>
+      <div><dt>Room's first TE</dt><dd>Rd 6.3</dd></div>
+      <div><dt>Rounds 1–3 mix</dt><dd>46/40<small> WR/RB %</small></dd></div>
+      <div><dt>Managers who trade picks</dt><dd>4<small> of 12</small></dd></div>
+    </dl>
+  </section>
+
+  <section>
+    <h2>The room, in pick order</h2>
+    <p class="sub">Numbered by their 2026 draft slot. Tier history matters — five of these managers spent at least one of the last three seasons outside Premier, and their boards were built against that competition.</p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section>
+    <h2>Your board at pick 2</h2>
+    <p class="sub">Fifteen picks, and the twenty selections that happen between your first and second.</p>
+    <dl class="board" id="board"></dl>
+    <ol class="plays">
+      <li><div><strong>Shton's is the trade-down seller at 1.01</strong><p>He is the only manager who has moved a first-round pick in three years — he sold 1.02 to Fort Wayne last year and turned it into 2.20 and 2.24. If there is a clear 1.01 you want, he is reachable. If there isn't, let him take it and enjoy the fact that he has never reached: at 1.01 he takes the consensus name.</p></div></li>
+      <li><div><strong>Twenty picks pass before you're up again</strong><p>Between 1.02 and 2.23 sit five managers who open RB-heavy (Frank's, Jacamart, Rhinos, Johnkshire, and you) and two who open WR-hard (Stallions, Circle City at 78% WR in rounds 1–3). Whichever way you go at 1.02, the other position thins out behind you — plan the pair, not the pick.</p></div></li>
+      <li><div><strong>Tight end is where you're most out of step</strong><p>Tooth Tuggers (round 4.3), Stallions (4.7), Head Cow (5.3), Frank's (6.0), Rhinos (6.3) and Johnkshire (6.7) all take one before round 7. You average round 9.3 — the latest but two. Six managers chasing an early tight end means the position empties faster here than the room's 6.3 average suggests. Either accept the streaming tier deliberately or move up your window.</p></div></li>
+      <li><div><strong>Quarterback stays cheap — three managers just don't wait</strong><p>Rhinos have taken a QB in round 4 in three consecutive drafts. Head Cow and Fort Wayne average round 4.7. Everyone else is round 6 or later, and four managers average round 8 or worse. Two or three quarterbacks leave in rounds 3–5; the position then sits untouched for two rounds. Your round-8.7 habit has produced two straight runner-up finishes — nothing here argues against it.</p></div></li>
+      <li><div><strong>Never bid against Circle City</strong><p>He takes 46% of his players at least ten picks ahead of the field, and has gone as far as 54 picks early. If you and he want the same player, he will have him — but you will never need to beat him to a player by more than a round, because he isn't waiting on value, he's taking his guy. Let him overpay and take the player the room passed on instead.</p></div></li>
+      <li><div><strong>Your own tell: late-round reaches on rookies</strong><p>Your rounds 1–5 are priced exactly at market (−0.6). From round 6 on you are the second-biggest reacher in the room — Drake Maye 29 picks early, Bhayshul Tuten 24, Jaleel McLaughlin 22, Jonathon Brooks 19. Your board skews youngest in the league (average age 25.0, fourteen players 23 or under across three drafts). That is a defensible strategy, but with defense gone those late picks now compete with everyone else's extra flex-worthy swing — the discount you've been paying for is going to shrink.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="method">
+      <h3>How this was built</h3>
+      <p>Source: this repo's migrated draft data for 2023–25 across all three tiers (540 picks per year), plus the 2026 Premier league and draft settings read live from Sleeper on 25 Aug 2026. Members were resolved by <code>ffuId</code>, so a manager's Masters or National drafts count the same as their Premier ones.</p>
+      <p>"Versus market" is a leave-one-out average: for each pick, the mean overall pick of that same player in the <em>other two</em> FFU leagues that year, compared to where this manager took him. Only players drafted in all three leagues qualify (37–41 of each manager's 45 picks). It measures position against this league's own consensus, not against national ADP — a player the whole FFU under-rates will not show up as a bargain here.</p>
+      <p>Two known gaps: the 2023 Premier and Masters draft files are each missing one manager's draft slot (Team Dogecoin and Dmandre161 — neither is in the 2026 Premier field), so trades involving those two slots are inferred rather than recorded. Positional mix excludes defenses throughout.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const MAX = 8;
+const adp = [
+  ["Circle City Phantoms", -7.5], ["The Minutemen", -6.0], ["Fort Wayne Banana Bread", -3.5],
+  ["Raging Rhinos", -1.0], ["The Stallions", -0.6], ["Head Cow Always Grazing", -0.1],
+  ["Shton's Strikers", 0.1], ["The Tooth Tuggers", 0.9], ["Team Jacamart", 2.2],
+  ["Team Pancake", 2.4], ["Frank's Little Beauties", 3.4], ["Johnkshire Cats", 6.0]
+];
+document.getElementById("adp").innerHTML = adp.map(([name, v]) => {
+  const w = Math.min(Math.abs(v) / MAX, 1) * 50;
+  const neg = v < 0;
+  const bar = neg
+    ? `left:${50 - w}%;width:${w}%;background:var(--pole-reach)`
+    : `left:50%;width:${w}%;background:var(--pole-wait)`;
+  const lab = neg
+    ? `right:${50 + w + 1.2}%;` : `left:${50 + w + 1.2}%;`;
+  return `<div class="crow"><div class="who">${name}</div>
+    <div class="track" title="${name}: ${v > 0 ? "+" : ""}${v.toFixed(1)} picks vs the field">
+      <i class="bar${neg ? " neg" : ""}" style="${bar}"></i>
+      <span class="val" style="${lab}">${v > 0 ? "+" : ""}${v.toFixed(1)}</span>
+    </div></div>`;
+}).join("");
+
+const MANAGERS = [
+{n:1,team:"Shton's Strikers",owner:"Ashton",self:false,
+ hist:[["2023","PRE",4,"5th"],["2024","PRE",7,"4th"],["2025","PRE",2,"1st"]],
+ s:{mkt:"+0.1",qb:"6.0",te:"7.7",age:"27.3",reach:"14%",trades:"6"},
+ mix:{RB:40,WR:40,TE:10,QB:10},
+ tell:"The defending champion and the only manager in the room who treats his draft slot as a tradeable asset. Six of his last 45 picks were acquired — including 2025, when he sold 1.02 to Fort Wayne and turned it into picks 20 and 24 of round two, then won the league with it. Otherwise he is the definition of market-rate: balanced 40/40 between backs and receivers up top, quarterback around round 6, and no meaningful reach in three years.",
+ play:"He is at 1.01 and he has already shown he will sell it. If you want to move up, he is the one door in the room that opens. If you don't, the pick he makes there is the pick everyone expects."},
+{n:2,team:"The Minutemen",owner:"You",self:true,
+ hist:[["2023","PRE",2,"4th"],["2024","PRE",6,"2nd"],["2025","PRE",12,"2nd"]],
+ s:{mkt:"−6.0",qb:"8.7",te:"9.3",age:"25.0",reach:"33%",trades:"0"},
+ mix:{RB:56,WR:44,TE:0,QB:0},
+ tell:"Running back first (56% of your rounds 1–3), never a quarterback or tight end before round 8, and the youngest board in the room — fourteen players aged 23 or under across three drafts. Rounds 1–5 are priced dead at market; everything after round 6 is not, and the gap is entirely rookies and second-year swings.",
+ play:"Two straight runner-up finishes say the shape works. The exposure is tight end, where five managers reliably beat you to the position by three rounds or more."},
+{n:3,team:"The Tooth Tuggers",owner:"Bob",self:false,
+ hist:[["2023","NAT",11,"3rd"],["2024","MAS",2,"8th"],["2025","MAS",6,"1st"]],
+ s:{mkt:"+0.9",qb:"5.3",te:"4.3",age:"26.7",reach:"16%",trades:"0"},
+ mix:{RB:33,WR:33,TE:22,QB:11},
+ tell:"Promoted after winning Masters at 11–3. The earliest tight-end buyer in the league by a full round — Mark Andrews at 2.14, Travis Kelce at 3.26 — and the only manager here who has spent a first-rounder on a quarterback (Jalen Hurts, 1.11 in 2023). He pays over the odds early (−5.3 through round 5, second-worst in the room) and makes it back late: Joe Mixon 44 picks past his market price, Quinshon Judkins 28.",
+ play:"His early picks skew oldest in the room (average age 28.3 in rounds 1–5) — he buys proven, not projected. If you want a top-three tight end, he is the clock you're racing."},
+{n:4,team:"Frank's Little Beauties",owner:"Adam",self:false,
+ hist:[["2023","MAS",9,"8th"],["2024","MAS",6,"3rd"],["2025","PRE",9,"4th"]],
+ s:{mkt:"+3.4",qb:"8.0",te:"6.0",age:"27.4",reach:"5%",trades:"0"},
+ mix:{RB:44,WR:44,TE:0,QB:11},
+ tell:"The most predictable opening in the league: a running back with his first pick in all three drafts (Bijan Robinson twice, then Derrick Henry), a wide receiver with his second, every single time. He reaches on 5% of picks — the lowest figure in the room outside Johnkshire — and finds value instead (Jared Goff 30 picks late, Jameson Williams 26).",
+ play:"He will not jump the queue. If you and he are on the same player and you're picking within a round of him, taking the player a few slots early is enough — he won't chase."},
+{n:5,team:"The Stallions",owner:"Jonathan",self:false,
+ hist:[["2023","MAS",12,"6th"],["2024","MAS",4,"1st"],["2025","PRE",5,"5th"]],
+ s:{mkt:"−0.6",qb:"9.0",te:"4.7",age:"25.1",reach:"8%",trades:"8"},
+ mix:{RB:33,WR:56,TE:11,QB:0},
+ tell:"Receiver-led — 56% WR through three rounds, first receiver off his board by round 2 on average, and in 2023 he opened A.J. Brown, Amon-Ra St. Brown, Calvin Ridley back to back to back. He is last in the room to a quarterback (round 9.0) but early to a tight end (4.7; Brock Bowers at 2.23 last year). Second-busiest pick trader, though his are all small round-for-round swaps.",
+ play:"Young board (average 25.1) and a genuine receiver bias — expect him to take the wideout when a back is the better value. He's the manager most likely to leave a running back on the board for you at the 2/3 turn."},
+{n:6,team:"Fort Wayne Banana Bread",owner:"Kalvin",self:false,
+ hist:[["2023","MAS",3,"4th"],["2024","PRE",10,"1st"],["2025","PRE",1,"7th"]],
+ s:{mkt:"−3.5",qb:"4.7",te:"7.7",age:"25.8",reach:"26%",trades:"2"},
+ mix:{RB:25,WR:50,TE:25,QB:0},
+ tell:"He drafts his guys and he pays for them. Ja'Marr Chase in three consecutive drafts — 1.03, then 1.10, then he bought 1.02 off Shton's so he could take Chase at 1.01 and Bijan Robinson at 1.02 in the same minute. He owns the largest single reach in the sample (Jonathan Taylor at 1.22 against a market price of 73.5) and takes a quarterback earlier than anyone but the Rhinos, twice grabbing Jalen Hurts in round 3.",
+ play:"He telegraphs, and he's a buyer. The 2025 double-up bought him a 5–9 season, so he may be gun-shy about it — but he is the manager most likely to give you real value for a pick you don't need."},
+{n:7,team:"Team Jacamart",owner:"Jacob",self:false,
+ hist:[["2023","NAT",10,"5th"],["2024","MAS",10,"2nd"],["2025","PRE",4,"8th"]],
+ s:{mkt:"+2.2",qb:"9.7",te:"9.7",age:"26.2",reach:"8%",trades:"0"},
+ mix:{RB:67,WR:33,TE:0,QB:0},
+ tell:"Backs first and heavily — two-thirds of his rounds 1–3 — then receivers in a block through the middle rounds. He waits longer than anyone else in the room on both quarterback and tight end (round 9.7 at each), which is what funds the early running-back capital. Quietly a value drafter: +2.2 against market, with hits like Christian Kirk 32 picks late.",
+ play:"He takes a running back at 1.07 more often than not. If you're deciding whether a back survives to your 2.23, count him as one of the five who won't leave one there."},
+{n:8,team:"Johnkshire Cats",owner:"John",self:false,
+ hist:[["2023","PRE",8,"6th"],["2024","PRE",8,"7th"],["2025","PRE",11,"9th"]],
+ s:{mkt:"+6.0",qb:"9.0",te:"6.7",age:"26.8",reach:"0%",trades:"1"},
+ mix:{RB:56,WR:33,TE:11,QB:0},
+ tell:"The purest best-available drafter in the league: across 40 comparable picks in three years he has never once taken a player ten or more slots ahead of the field. Instead he collects the fallers — Evan Engram 48 picks late, Justin Herbert 29, Jayden Reed 23. He is also the most loyal: Rachaad White in all three drafts, plus Josh Jacobs, Stefon Diggs and Zay Flowers twice each.",
+ play:"Discipline hasn't converted — 6th, 7th, 9th. He will never take your player early, so you can let a target slide past his pick if the value is right. Watch for his own guys, though; he pays retail for them and no more."},
+{n:9,team:"Head Cow Always Grazing",owner:"Tyler",self:false,
+ hist:[["2023","NAT",12,"6th"],["2024","NAT",5,"4th"],["2025","MAS",8,"3rd"]],
+ s:{mkt:"−0.1",qb:"4.7",te:"5.3",age:"26.3",reach:"12%",trades:"3"},
+ mix:{RB:44,WR:33,TE:11,QB:11},
+ tell:"The quietest board here — perfectly balanced positionally, dead level against market, and not a single pick more than fifteen slots off the field's price in three years. He goes early at both quarterback (4.7) and tight end (5.3) and anchors at running back: Breece Hall at 1.05, then De'Von Achane and Bucky Irving back-to-back in round 2 last year. In 2025 he traded 1.08 down into 2.20, 3.29 and 6.68.",
+ play:"Nothing to exploit and nothing to fear — he'll take the sensible player at the sensible time. He is, however, the second manager who trades picks, and he trades down."},
+{n:10,team:"Circle City Phantoms",owner:"Tyler C.",self:false,
+ hist:[["2023","PRE",12,"7th"],["2024","PRE",12,"5th"],["2025","PRE",3,"6th"]],
+ s:{mkt:"−7.5",qb:"7.0",te:"7.7",age:"26.0",reach:"46%",trades:"0"},
+ mix:{RB:22,WR:78,TE:0,QB:0},
+ tell:"The most aggressive drafter in the room by a distance: 46% of his picks come at least ten slots ahead of the field, topped by Trevor Lawrence at 108 against a market price of 162. Receivers dominate the top of his board — 78% of rounds 1–3, and his first running back doesn't arrive until round 3.3 on average. He takes two quarterbacks most years and builds more QB stacks than anyone.",
+ play:"Never bid against him — he isn't hunting value, he's collecting names, so he'll always win a tie and always overpay to do it. Track which receivers he likes and take the one he passed on."},
+{n:11,team:"Team Pancake",owner:"Marcus",self:false,
+ hist:[["2023","PRE",3,"3rd"],["2024","PRE",1,"9th"],["2025","PRE",7,"3rd"]],
+ s:{mkt:"+2.4",qb:"5.7",te:"7.3",age:"27.9",reach:"15%",trades:"2"},
+ mix:{RB:38,WR:50,TE:12,QB:0},
+ tell:"The veteran buyer: an average draft age of 27.9 with eighteen players aged 29 or older against just three aged 23 or under — the oldest-skewing board in the field alongside the Rhinos. He is also willing to consolidate: in 2023 he shipped 2.22, 3.27 and 8.94 to land a second first-rounder, taking Ja'Marr Chase at 1.03 and Austin Ekeler at 1.07, then not picking again until 4.46.",
+ play:"He is a live trade partner for picks and he pays in future-round volume for present-round stars. He also lets rookies fall — the youth you like will still be there past his picks."},
+{n:12,team:"Raging Rhinos",owner:"Nathan",self:false,
+ hist:[["2023","PRE",11,"11th"],["2024","MAS",7,"5th"],["2025","MAS",2,"2nd"]],
+ s:{mkt:"−1.0",qb:"4.0",te:"6.3",age:"28.1",reach:"16%",trades:"0"},
+ mix:{RB:67,WR:33,TE:0,QB:0},
+ tell:"The most mechanical board in the league. A quarterback in round 4, three drafts running — Lamar Jackson at 4.38, then Patrick Mahomes at 4.42 and again at 4.48. Two backs in rounds 2 and 3, every year. Oldest board in the room at 28.1, with nineteen players 29 or older, and the only manager here without a single pick that came fifteen-plus slots past market — he buys at the price or above it, never below.",
+ play:"You can set your watch by him: elite quarterbacks start leaving in round 4 because of him, and he takes running backs in the 2/3 turn. Back at the wrong end of the snake at 1.12, he'll have two picks together — assume a back-back."}
+];
+
+const POS = ["RB","WR","TE","QB"];
+const POSVAR = {RB:"--rb",WR:"--wr",TE:"--te",QB:"--qb"};
+document.getElementById("cards").innerHTML = MANAGERS.map(m => {
+  const chips = m.hist.map(([y,t,s,f]) =>
+    `<span class="chip">${y} <b>${t}</b> · slot ${s} · ${f}</span>`).join("");
+  const stats = [["vs market",m.s.mkt],["1st QB",`Rd ${m.s.qb}`],["1st TE",`Rd ${m.s.te}`],
+                 ["avg age",m.s.age],["reach rate",m.s.reach],["picks traded",m.s.trades]]
+    .map(([k,v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  const segs = POS.filter(p => m.mix[p])
+    .map(p => `<i style="flex:${m.mix[p]};background:var(${POSVAR[p]})"></i>`).join("");
+  const read = POS.filter(p => m.mix[p])
+    .map(p => `<span>${p} <b>${m.mix[p]}%</b></span>`).join("");
+  return `<article class="card${m.self ? " self" : ""}">
+    <div class="rail"><span class="num">${String(m.n).padStart(2,"0")}</span><span class="lab">pick</span></div>
+    <div class="body">
+      <div class="head"><h3>${m.team}</h3><span class="owner">${m.owner}</span></div>
+      <div class="chips">${chips}</div>
+      <dl class="stats">${stats}</dl>
+      <div class="mix">
+        <div class="mixbar" role="img" aria-label="Rounds 1-3 positional mix: ${POS.filter(p=>m.mix[p]).map(p=>p+" "+m.mix[p]+"%").join(", ")}">${segs}</div>
+        <div class="mixread"><span style="color:var(--muted)">Rounds 1–3</span>${read}</div>
+      </div>
+      <div class="note"><span>The tell</span><p>${m.tell}</p></div>
+      <div class="note play"><span>Play it</span><p>${m.play}</p></div>
+    </div>
+  </article>`;
+}).join("");
+
+const board = [[1,2],[2,23],[3,26],[4,47],[5,50],[6,71],[7,74],[8,95],[9,98],[10,119],[11,122],[12,143],[13,146],[14,167],[15,170]];
+document.getElementById("board").innerHTML = board.map(([r, p]) =>
+  `<div><dt>Rd ${r}</dt><dd>${p}</dd></div>`).join("");
+</script>
