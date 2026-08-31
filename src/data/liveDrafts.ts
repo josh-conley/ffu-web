@@ -23,8 +23,8 @@ function latestDraft(drafts: SleeperDraft[]): SleeperDraft | undefined {
   return drafts.reduce<SleeperDraft | undefined>((best, d) => (!best || d.created > best.created ? d : best), undefined)
 }
 
-async function fetchLatestDraft(leagueId: string): Promise<SleeperDraft | undefined> {
-  const drafts = await sleeperGet<SleeperDraft[]>(`/league/${leagueId}/drafts`)
+async function fetchLatestDraft(leagueId: string, fresh = false): Promise<SleeperDraft | undefined> {
+  const drafts = await sleeperGet<SleeperDraft[]>(`/league/${leagueId}/drafts`, { fresh })
   if (!Array.isArray(drafts)) throw new Error(`Sleeper league/${leagueId}/drafts: not an array`)
   return latestDraft(drafts)
 }
@@ -69,8 +69,14 @@ function toSlots(tier: Tier, order: Record<string, number> | null): { slots: Dra
   return { slots, unregistered }
 }
 
+/**
+ * The draft's shape and where it has got to. Re-read on a timer while the draft is live, because
+ * all three of `status`, `draft_order` and `start_time` can change after the page is opened — the
+ * commissioner starts (or reschedules) the draft, and a board that never re-asks would sit there
+ * insisting the draft hadn't begun. Always read fresh for that reason.
+ */
 export async function fetchDraftOrder(tier: Tier, year: string, leagueId: string): Promise<LiveDraftOrder> {
-  const draft = await fetchLatestDraft(leagueId)
+  const draft = await fetchLatestDraft(leagueId, true)
   const { slots, unregistered } = toSlots(tier, draft?.draft_order ?? null)
   return {
     tier,
@@ -113,7 +119,7 @@ const fullName = (m: SleeperPickMetadata | undefined) => [m?.first_name, m?.last
  * makes a traded pick show up under its acquirer, exactly as the backfilled data does.
  */
 export async function fetchDraftPicks(draftId: string): Promise<DraftPick[]> {
-  const picks = await sleeperGet<SleeperPick[]>(`/draft/${draftId}/picks`)
+  const picks = await sleeperGet<SleeperPick[]>(`/draft/${draftId}/picks`, { fresh: true })
   if (!Array.isArray(picks)) throw new Error(`Sleeper draft/${draftId}/picks: not an array`)
   const out: DraftPick[] = []
   for (const p of picks) {

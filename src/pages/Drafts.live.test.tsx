@@ -19,6 +19,7 @@ const PREMIER_ORDER: Record<string, number> = {
   'not-a-registered-user': 6,
 }
 
+/** Mutable: tests flip `status` to simulate the commissioner starting the draft. */
 const DRAFT = {
   draft_id: 'd1',
   start_time: 1788804046000,
@@ -41,6 +42,7 @@ const pick = (overall: number, round: number, slot: number, by: string, first: s
 
 beforeEach(() => {
   livePicks = []
+  DRAFT.status = 'pre_draft'
   vi.stubGlobal('fetch', vi.fn((url: string) => {
     const body = url.includes('/picks') ? livePicks : url.includes('/drafts') ? [DRAFT] : FILES[url]
     return Promise.resolve(
@@ -145,4 +147,41 @@ it('says the draft is complete once every pick is in, and stops polling', async 
   document.dispatchEvent(new Event('visibilitychange'))
   await new Promise((r) => setTimeout(r, 10))
   expect(pickCalls()).toBe(before)
+})
+
+it('does not put 1.01 on the clock before the draft starts', async () => {
+  // The board goes up hours (or days) early. Until Sleeper says the draft is under way it is a
+  // preview of who picks where — pulsing 1.01 the whole time would read as a draft in progress.
+  await renderDrafts()
+  await waitFor(() => expect(screen.getByText(/3 rounds · snake/)).toBeInTheDocument())
+
+  expect(screen.queryByText('On the clock')).not.toBeInTheDocument()
+  expect(screen.queryByText(/Drafting now/)).not.toBeInTheDocument()
+  expect(screen.getByText('1.01')).toBeInTheDocument()
+})
+
+it('picks up the start on its own, without a reload, and puts 1.01 on the clock', async () => {
+  await renderDrafts()
+  await waitFor(() => expect(screen.queryByText('On the clock')).not.toBeInTheDocument())
+
+  // The commissioner hits start: Sleeper's status flips before any pick exists. The board re-reads
+  // the draft on a timer, and a returning tab re-reads immediately — which is what this triggers.
+  DRAFT.status = 'drafting'
+  document.dispatchEvent(new Event('visibilitychange'))
+
+  await waitFor(() => expect(screen.getByText('On the clock')).toBeInTheDocument())
+  expect(screen.getByText(/Drafting now/)).toBeInTheDocument()
+  expect(screen.getByText(/pick 1 of 18/)).toBeInTheDocument()
+})
+
+it('shows a pick made after the page loaded, without a reload', async () => {
+  await renderDrafts()
+  await waitFor(() => expect(screen.getByText(/3 rounds · snake/)).toBeInTheDocument())
+
+  DRAFT.status = 'drafting'
+  livePicks = [pick(1, 1, 1, '467404039059927040', 'Bijan', 'Robinson')]
+  document.dispatchEvent(new Event('visibilitychange'))
+
+  await waitFor(() => expect(screen.getByText('B. Robinson')).toBeInTheDocument())
+  expect(screen.getByText(/pick 2 of 18/)).toBeInTheDocument()
 })

@@ -107,8 +107,8 @@ function BodyRows({ rounds, slots, picksBySlot, ownerBySlot, made, nextOverall, 
 }
 
 /** When it starts (or how far along it is) — context for the board below. */
-function OrderStatus({ order, made, total }: { order: LiveDraftOrder; made: number; total: number }) {
-  if (made > 0 && made < total) {
+function OrderStatus({ order, made, total, underway }: { order: LiveDraftOrder; made: number; total: number; underway: boolean }) {
+  if (underway && made < total) {
     return (
       <p className="text-sm text-muted">
         <span className="font-semibold text-accent">Drafting now</span>
@@ -149,13 +149,18 @@ export function LiveDraftBoard({ order, picks, year }: { order: LiveDraftOrder; 
 
   const made = new Map(picks.map((p) => [p.overall, p]))
   const total = slots.length * order.rounds
+  // Nothing is "on the clock" until the draft actually starts: before then the board is a preview
+  // of who picks where, and pulsing 1.01 for the days beforehand would read as a draft in progress.
+  // Sleeper's status is what the commissioner's start button flips (it is re-read on a timer, so a
+  // tab opened early still catches it); a pick already made says the same thing more plainly.
+  const underway = order.status === 'drafting' || made.size > 0
   // The next unmade pick — pick_no is contiguous, so this is simply one past the last one made.
-  const nextOverall = made.size < total ? made.size + 1 : 0
+  const nextOverall = underway && made.size < total ? made.size + 1 : 0
 
   if (slots.length === 0) {
     return (
       <div className="space-y-3">
-        <OrderStatus order={order} made={made.size} total={total} />
+        <OrderStatus order={order} made={made.size} total={total} underway={underway} />
         <p className="text-muted">The draft order hasn&apos;t been set yet.</p>
       </div>
     )
@@ -163,7 +168,7 @@ export function LiveDraftBoard({ order, picks, year }: { order: LiveDraftOrder; 
 
   return (
     <div className="space-y-3">
-      <OrderStatus order={order} made={made.size} total={total} />
+      <OrderStatus order={order} made={made.size} total={total} underway={underway} />
       <BoardFrame
         tier={LEAGUE_STYLES[order.tier]}
         slots={slots}

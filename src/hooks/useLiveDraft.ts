@@ -19,9 +19,11 @@ export interface LiveDraft {
 export function useLiveDraft(tier: Tier, year: string, enabled: boolean): LiveDraft {
   const { order, loading, error } = useDraftOrder(tier, year, enabled)
   const expectedPicks = (order?.slots.length ?? 0) * (order?.rounds ?? 0)
-  // Poll any live draft that isn't already finished, so the board comes alive the moment the draft
-  // starts without anyone reloading the page.
-  const polling = enabled && order !== undefined && order.status !== 'complete'
-  const picks = useLiveDraftPicks(order?.draftId ?? null, polling, expectedPicks)
+  // Poll as soon as there's a draft to poll, so the board comes alive the moment the draft starts
+  // without anyone reloading the page. The stopping condition is the BOARD being full rather than
+  // Sleeper's status, which is both the honest test (a status of `complete` with the last pick not
+  // yet readable would strand it) and self-limiting for an already-finished draft: one fetch, full
+  // board, done.
+  const picks = useLiveDraftPicks(order?.draftId ?? null, enabled && order !== undefined, expectedPicks)
   return { order, picks, loading, error }
 }
