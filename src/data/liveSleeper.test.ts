@@ -18,7 +18,7 @@ const WEEK_1_MATCHUPS = [
 
 function mapFetch(url: string): Promise<Response> {
   const ok = (body: unknown) => Promise.resolve({ ok: true, status: 200, json: async () => body } as Response)
-  if (url.endsWith('/state/nfl')) return ok({ week: 5, season_type: 'regular', season: '2025' })
+  if (url.endsWith('/state/nfl')) return ok({ week: 5, season_type: 'regular', season: '2025', season_start_date: '2025-09-04' })
   if (url.endsWith('/league/lg1')) return ok({ roster_positions: ['QB', 'RB', 'BN', 'BN'] })
   if (url.endsWith('/league/lg1/rosters')) return ok(ROSTERS)
   if (url.endsWith('/league/lg1/matchups/1')) return ok(WEEK_1_MATCHUPS)
@@ -31,7 +31,7 @@ beforeEach(() => vi.stubGlobal('fetch', vi.fn(mapFetch)))
 
 describe('fetchNflState', () => {
   it('maps Sleeper snake_case fields to our shape', async () => {
-    expect(await fetchNflState()).toEqual({ week: 5, seasonType: 'regular', year: '2025' })
+    expect(await fetchNflState()).toEqual({ week: 5, seasonType: 'regular', year: '2025', seasonStartDate: '2025-09-04' })
   })
 })
 

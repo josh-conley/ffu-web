@@ -2,6 +2,7 @@ import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS, regularSeasonWeeks } from '@/config'
 import type { LiveSeasonData } from '@/data'
 import { fetchLiveSeason, fetchNflState, type NflState } from '@/data'
+import { seasonHasStarted } from '@/selectors'
 import { useAsyncData } from './useAsyncData'
 
 export interface LiveWeek {
@@ -21,6 +22,8 @@ const CONFIGURED = Object.keys(LIVE_LEAGUE_IDS).length > 0
 function tiersInScope(state: NflState | undefined): { tiers: Tier[]; leagueIds?: Record<Tier, string> } {
   const leagueIds = state ? LIVE_LEAGUE_IDS[state.year] : undefined
   if (!leagueIds || state?.seasonType !== 'regular' || state.week > MAX_REGULAR_WEEK) return { tiers: [] }
+  // Kickoff hasn't happened yet: there is nothing to show but zeroes (see seasonHasStarted).
+  if (!seasonHasStarted(state)) return { tiers: [] }
   return { tiers: Object.keys(leagueIds) as Tier[], leagueIds }
 }
 

@@ -235,3 +235,41 @@ intercepts navigations before any of that matters.
   and unfixable from the server once installed.
 - Deep links to `ffunion.com/*` return HTTP 404 by design — GitHub Pages serves `public/404.html`,
   which bounces through `/?/path` for BrowserRouter. `curl` showing 404 is expected, not a fault.
+
+## 2026-08-30 — "This Week" waits for kickoff, not for Sleeper's `season_type`
+
+**Context.** On 30 Aug — ten days before week 1 — the home page was showing a full This Week section
+(matchups + standings, every score 0.00). The gate was `seasonType === 'regular'`, and Sleeper flips
+that the moment the preseason ends, not when games start.
+
+**Decision.** Gate on `state/nfl`'s `season_start_date` (`selectors/liveWeek.ts` →
+`seasonHasStarted`), compared against local midnight. A missing date fails open.
+
+**Why.** It keeps the rule *data* rather than a date hardcoded in the app — the same reason draft
+dates are read from Sleeper instead of config. Nothing to remember next August.
+
+**Consequences.** The section appears on the calendar day Sleeper names as week 1 (a day before
+Thursday kickoff in 2026), showing that week's matchups pre-game — which is the intended reading of
+"this week", unlike a preview standing there for a week and a half.
+
+## 2026-08-30 — How hard the live draft board polls
+
+**Context.** Sleeper has no push API. The board polled picks every 12s on a plain URL — but their
+CDN holds `/picks` for 30s (`s-maxage=30`, verified `cf-cache-status: HIT`), so most of those
+requests could only ever return an answer up to 30s stale.
+
+**Decision.** Polled reads (`sleeperGet(..., { fresh: true })`) add a unique query parameter, which
+changes the CDN cache key and is served from origin, plus `cache: 'no-store'` for the browser's own
+cache. Picks poll at **5s while the draft is live** and **60s otherwise**; the draft object (status,
+order, start time) polls at 30s until the draft is complete. "Live" is `draftPhase()`: Sleeper's
+status, widened by a 2h window from the scheduled start so the fast poll is already running when the
+commissioner presses start.
+
+**Alternatives rejected.** *Backing off while the draft is quiet* — tempting, and backwards: a quiet
+draft is a clock running on someone, i.e. precisely when everyone is staring at the board waiting.
+Latency is most visible in the lull, not least. *Polling faster than 5s* — 12 drafters × a few dozen
+viewers is already a few hundred origin requests a minute; the gain past 5s isn't perceptible.
+
+**Consequences.** Cache-busting means these reads always hit Sleeper's origin, so keep them to the
+two that are genuinely live and keep the idle rate low. Everything else in the app takes the cached
+answer. Hidden tabs poll nothing, and both polls stop when the draft is complete.

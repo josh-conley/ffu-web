@@ -14,13 +14,15 @@ export interface NflState {
   week: number
   seasonType: 'pre' | 'regular' | 'post'
   year: string
+  /** `YYYY-MM-DD` of week 1, per Sleeper — see seasonHasStarted(). Empty if they ever stop sending it. */
+  seasonStartDate: string
 }
 
 /** The current NFL week per Sleeper — flips over Tuesday morning after Monday Night Football. */
 export async function fetchNflState(): Promise<NflState> {
-  const raw = await sleeperGet<{ week: number; season_type: string; season: string }>('/state/nfl')
+  const raw = await sleeperGet<{ week: number; season_type: string; season: string; season_start_date?: string }>('/state/nfl')
   const seasonType: NflState['seasonType'] = raw.season_type === 'regular' || raw.season_type === 'post' ? raw.season_type : 'pre'
-  return { week: raw.week, seasonType, year: raw.season }
+  return { week: raw.week, seasonType, year: raw.season, seasonStartDate: raw.season_start_date ?? '' }
 }
 
 interface SleeperRoster {

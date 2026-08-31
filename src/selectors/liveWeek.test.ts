@@ -1,5 +1,5 @@
-import type { Game, LiveSeasonData } from '@/data'
-import { currentWeekMatchups, standingsThroughPreviousWeek } from './liveWeek'
+import type { Game, LiveSeasonData, NflState } from '@/data'
+import { currentWeekMatchups, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -56,5 +56,25 @@ describe('standingsThroughPreviousWeek', () => {
     expect(a?.rank).toBe(1)
     expect(b?.rank).toBe(2)
     expect(c?.rank).toBe(3)
+  })
+})
+
+describe('seasonHasStarted', () => {
+  const state = (seasonStartDate: string): NflState => ({ week: 1, seasonType: 'regular', year: '2026', seasonStartDate })
+  const at = (iso: string) => new Date(iso).getTime()
+
+  it('is false while Sleeper says regular season but week 1 is still days away', () => {
+    // The case this exists for: on 2026-08-30 Sleeper already reported season_type "regular",
+    // week 1 — ten days before kickoff — which put an all-zeroes preview on the home page.
+    expect(seasonHasStarted(state('2026-09-09'), at('2026-08-30T21:00:00'))).toBe(false)
+  })
+
+  it('is true from the start date onward', () => {
+    expect(seasonHasStarted(state('2026-09-09'), at('2026-09-09T00:00:00'))).toBe(true)
+    expect(seasonHasStarted(state('2026-09-09'), at('2026-10-01T12:00:00'))).toBe(true)
+  })
+
+  it('fails open when Sleeper sends no start date', () => {
+    expect(seasonHasStarted(state(''), at('2026-08-30T21:00:00'))).toBe(true)
   })
 })

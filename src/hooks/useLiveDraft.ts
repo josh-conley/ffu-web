@@ -1,5 +1,6 @@
 import type { Tier } from '@/config'
 import type { DraftPick, LiveDraftOrder } from '@/data'
+import { draftPhase } from '@/selectors'
 import { useDraftOrder } from './useDraftOrder'
 import { useLiveDraftPicks } from './useLiveDraftPicks'
 
@@ -24,6 +25,9 @@ export function useLiveDraft(tier: Tier, year: string, enabled: boolean): LiveDr
   // Sleeper's status, which is both the honest test (a status of `complete` with the last pick not
   // yet readable would strand it) and self-limiting for an already-finished draft: one fetch, full
   // board, done.
-  const picks = useLiveDraftPicks(order?.draftId ?? null, enabled && order !== undefined, expectedPicks)
+  // Draft night gets the fast poll — from the scheduled hour (the commissioner is rarely punctual)
+  // through to the last pick, per draftPhase. Any other time the board barely asks.
+  const live = order !== undefined && draftPhase(order) === 'live'
+  const picks = useLiveDraftPicks(order?.draftId ?? null, enabled && order !== undefined, expectedPicks, live)
   return { order, picks, loading, error }
 }

@@ -1,5 +1,5 @@
 import type { DraftData, DraftPick } from '@/data'
-import { isTraded, pickLabel, snakePickNumbers, teamsBySlot } from './draft'
+import { draftPhase, isTraded, pickLabel, snakePickNumbers, teamsBySlot } from './draft'
 
 const pick = (overall: number, round: number, slot: number, memberId: string): DraftPick => ({
   overall,
@@ -91,5 +91,36 @@ describe('snakePickNumbers', () => {
     expect(snakePickNumbers(0, 15, 12)).toEqual([])
     expect(snakePickNumbers(13, 15, 12)).toEqual([])
     expect(snakePickNumbers(1, 0, 12)).toEqual([])
+  })
+})
+
+describe('draftPhase', () => {
+  const schedule = (status: string, startTime: number | null) => ({ tier: 'MASTERS' as const, year: '2026', status, startTime })
+  const NINE_FIFTEEN = Date.parse('2026-08-30T21:15:00-04:00')
+  const hours = (n: number) => n * 60 * 60 * 1000
+
+  it('reads as upcoming before the scheduled hour', () => {
+    expect(draftPhase(schedule('pre_draft', NINE_FIFTEEN), NINE_FIFTEEN - hours(3))).toBe('upcoming')
+  })
+
+  it('reads as live inside the scheduled window, before the commissioner presses start', () => {
+    expect(draftPhase(schedule('pre_draft', NINE_FIFTEEN), NINE_FIFTEEN + hours(0.5))).toBe('live')
+  })
+
+  it('stays live past the window while Sleeper says it is drafting', () => {
+    // 15 rounds x 12 teams runs long; the window must never call a running draft over.
+    expect(draftPhase(schedule('drafting', NINE_FIFTEEN), NINE_FIFTEEN + hours(4))).toBe('live')
+  })
+
+  it('goes back to upcoming if the window passes with no draft — postponed, not finished', () => {
+    expect(draftPhase(schedule('pre_draft', NINE_FIFTEEN), NINE_FIFTEEN + hours(3))).toBe('upcoming')
+  })
+
+  it('is complete when Sleeper says so, whatever the clock says', () => {
+    expect(draftPhase(schedule('complete', NINE_FIFTEEN), NINE_FIFTEEN + hours(1))).toBe('complete')
+  })
+
+  it('treats a draft with no date as upcoming', () => {
+    expect(draftPhase(schedule('pre_draft', null), NINE_FIFTEEN)).toBe('upcoming')
   })
 })

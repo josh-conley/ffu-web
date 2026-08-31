@@ -1,4 +1,4 @@
-import type { DraftData, DraftPick } from '@/data'
+import type { DraftData, DraftPick, DraftSchedule } from '@/data'
 
 // Pure draft derivations shared by the board + list views (single home — Charter DRY). Presentation
 // (position colors, snake arrows, name shortening) stays in the components.
@@ -42,4 +42,29 @@ export function snakePickNumbers(slot: number, rounds: number, teams: number): n
     picks.push((round - 1) * teams + inRound)
   }
   return picks
+}
+
+/**
+ * How long after its scheduled start a draft still counts as live without Sleeper saying so. Covers
+ * the gap between the clock hitting the hour and the commissioner actually pressing start.
+ */
+const LIVE_WINDOW_MS = 2 * 60 * 60 * 1000
+
+export type DraftPhase = 'upcoming' | 'live' | 'complete'
+
+/**
+ * Where a scheduled draft has got to, for the home page's announcement.
+ *
+ * Sleeper's status leads, because it is the truth: it says `drafting` from the first pick to the
+ * last however long that takes, so a long draft is never prematurely called over. The scheduled
+ * window only fills the gap on either side of the commissioner pressing start. Past that window
+ * with the status still `pre_draft`, nothing has happened — the draft was postponed, most likely —
+ * so it reads as upcoming again rather than claiming to be finished.
+ */
+export function draftPhase(schedule: DraftSchedule, now: number = Date.now()): DraftPhase {
+  if (schedule.status === 'complete') return 'complete'
+  if (schedule.status === 'drafting') return 'live'
+  const start = schedule.startTime
+  if (start !== null && now >= start && now < start + LIVE_WINDOW_MS) return 'live'
+  return 'upcoming'
 }

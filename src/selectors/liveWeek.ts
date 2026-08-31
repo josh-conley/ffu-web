@@ -1,4 +1,4 @@
-import type { Game, LiveSeasonData } from '@/data'
+import type { Game, LiveSeasonData, NflState } from '@/data'
 import { emptyTotals, regularSeasonTotals, type TeamTotals } from './games'
 
 /** This week's games — may carry live/in-progress scores. */
@@ -36,4 +36,22 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStanding
     rows.push({ totals: t, rank })
   })
   return rows
+}
+
+/**
+ * Has the season Sleeper is reporting actually kicked off?
+ *
+ * `season_type` alone is not the answer: Sleeper flips it to `regular` the moment the preseason
+ * ends, which in 2026 is ten days before week 1 — long enough for the home page to spend a week and
+ * a half showing an all-zeroes "Week 1" preview as though games were under way. `season_start_date`
+ * is Sleeper's own statement of when the season begins, so the gate stays data rather than becoming
+ * a date hardcoded here. A missing date fails open: an unexpected payload shouldn't black out the
+ * section for a season that really is being played.
+ */
+export function seasonHasStarted(state: NflState, now: number = Date.now()): boolean {
+  const [year, month, day] = state.seasonStartDate.split('-').map(Number)
+  if (!year || !month || !day) return true
+  // Local midnight, not UTC: the date is a calendar day, and parsing it as an instant would open
+  // the section the previous evening for anyone west of Greenwich.
+  return now >= new Date(year, month - 1, day).getTime()
 }
