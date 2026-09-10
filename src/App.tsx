@@ -33,7 +33,7 @@ export default function App() {
           <Route path="drafts" element={<Drafts />} />
           <Route path="builds" element={<RosterBuildStats />} />
           <Route path="milestones" element={<Milestones />} />
-          <Route path="draft-board" element={<DraftMarket />} />
+          <Route path="adp-comparison" element={<DraftMarket />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           <Route path="cup" element={<Cup />} />

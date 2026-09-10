@@ -8,7 +8,7 @@ for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../pub
 
 afterEach(() => vi.unstubAllGlobals())
 
-function renderAt(path = '/draft-board') {
+function renderAt(path = '/adp-comparison') {
   vi.stubGlobal('fetch', (url: string) =>
     Promise.resolve(
       FILES[url] === undefined
@@ -55,7 +55,7 @@ it('shows each league side by side on the full board', async () => {
 })
 
 it('switches baseline from the URL', async () => {
-  renderAt('/draft-board?vs=sleeper')
+  renderAt('/adp-comparison?vs=sleeper')
   await ready()
   const headers = within(sectionFor('Biggest Reaches')).getAllByRole('columnheader').map((h) => h.textContent)
   expect(headers).toContain('Sleeper ADP')
@@ -63,7 +63,7 @@ it('switches baseline from the URL', async () => {
 })
 
 it('scopes to one position from the URL', async () => {
-  renderAt('/draft-board?pos=QB')
+  renderAt('/adp-comparison?pos=QB')
   await ready()
   const rows = within(sectionFor('Biggest Reaches')).getAllByRole('row').slice(1)
   expect(rows.length).toBeGreaterThan(0)
@@ -81,7 +81,7 @@ it('pages the reaches ten at a time rather than truncating to a top ten', async 
 })
 
 it('tags each player with their position', async () => {
-  renderAt('/draft-board?pos=QB')
+  renderAt('/adp-comparison?pos=QB')
   await ready()
   const row = within(sectionFor('Biggest Reaches')).getAllByRole('row')[1]!
   expect(within(row).getByText('QB')).toBeInTheDocument()

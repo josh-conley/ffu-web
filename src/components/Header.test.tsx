@@ -37,7 +37,7 @@ describe('nav structure', () => {
     expect(NAV.filter((e) => !isGroup(e))).toHaveLength(6)
     const group = NAV.filter(isGroup)[0]!
     expect(group.items.map((i) => i.to)).toContain('/milestones')
-    expect(group.items.map((i) => i.to)).toContain('/draft-board')
+    expect(group.items.map((i) => i.to)).toContain('/adp-comparison')
   })
 
   it('has a single dropdown, so no one has to guess which menu a page is under', () => {

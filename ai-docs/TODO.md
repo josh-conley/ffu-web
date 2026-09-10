@@ -260,7 +260,7 @@ never disagree; nothing is stored.
 
 ## Draft Board Comparison — new page
 
-Built 2026-09-09. Route `/draft-board`, in the Stats & More menu. Pinned to the season being played
+Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to the season being played
 (from `LIVE_LEAGUE_IDS`) — an ADP snapshot only exists for that year.
 
 - [x] **Two baselines**, because they answer different questions. *vs FFU*: each pick against where
