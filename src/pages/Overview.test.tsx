@@ -96,3 +96,20 @@ it('shows a scheduled draft date and leaves unscheduled leagues TBD', async () =
   // The two unscheduled leagues keep their marker (matched exactly, so the body copy's "TBD" doesn't count).
   expect(screen.getAllByText('— TBD').length).toBe(2)
 })
+
+it('heads the champions section with the last DECIDED season, not the one being played', async () => {
+  vi.stubGlobal('fetch', (url: string) => (FILES[url] === undefined ? notFound() : ok(FILES[url])))
+
+  render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  )
+  await waitFor(() => expect(screen.getByText('Champions by Season')).toBeInTheDocument())
+  // 2026 has a data file from the day its leagues were created, but nobody has won it. Heading the
+  // page "2026 Champions" over three blank slots — or opening the table with an empty 2026 row —
+  // is the failure this guards.
+  expect(screen.getByText('2025 Champions')).toBeInTheDocument()
+  expect(screen.queryByText('2026 Champions')).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /^2026$/ })).not.toBeInTheDocument()
+})

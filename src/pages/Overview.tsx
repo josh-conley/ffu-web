@@ -65,13 +65,19 @@ export function Overview() {
   const { data: seasons, loading, error } = useAllSeasons()
   const liveWeek = useLiveWeek()
   const [open, setOpen] = useState<OpenGame | null>(null)
+  // Years that have a CHAMPION, which is not the same as years with data. The season being played
+  // has a file from the day its leagues are created and keeps it all season, but nobody wins it
+  // until the playoffs are done — so counting it here would head the page "2026 Champions" over
+  // three blank slots, and open the Champions by Season table with an empty row. Both `years` and
+  // `latest` below feed champions views only. A season joins them the moment it has a winner.
   const { years, champions } = useMemo(() => {
     const champions = new Map<string, string>() // `${year}|${tier}` -> memberId
     const yearSet = new Set<string>()
     for (const s of seasons ?? []) {
-      yearSet.add(s.year)
       const id = championOf(s)
-      if (id) champions.set(`${s.year}|${s.tier}`, id)
+      if (!id) continue
+      yearSet.add(s.year)
+      champions.set(`${s.year}|${s.tier}`, id)
     }
     return { years: [...yearSet].sort().reverse(), champions }
   }, [seasons])
