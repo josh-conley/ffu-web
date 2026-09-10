@@ -68,6 +68,21 @@ export interface GameParticipant {
   score: number
 }
 
+/**
+ * A FIXTURE: who plays whom in a week. Set when the schedule is drawn — the whole season's pairings
+ * exist on Sleeper from before week 1 — and carries no scores, because none have been played.
+ *
+ * Kept apart from `games` on purpose. A `Game` has scores; a scheduled one does not, and writing
+ * 0-0 placeholders into `games` would make every selector count each unplayed fixture as a played
+ * tie: records, UPR, H2H and career totals would all be wrong. Nothing is DERIVED from the
+ * schedule — it is display-only, for showing a season's remaining matchups.
+ */
+export interface ScheduledGame {
+  week: number
+  /** Exactly two members, in Sleeper's roster order for that matchup. */
+  memberIds: string[]
+}
+
 export interface Game {
   week: number
   isPlayoff: boolean
@@ -77,6 +92,7 @@ export interface Game {
   /** Exactly two participants; winner/margin/running-records are derived, never stored. */
   participants: GameParticipant[]
 }
+
 
 // ── Lineups: sibling file /public/data/{year}/{tier}.lineups.json (Sleeper era only) ──
 // Stored SEPARATELY from season results (not embedded in Game) so Standings/Matchups don't pay the
@@ -133,6 +149,12 @@ export interface SeasonData {
   divisions?: Division[]
   teams: SeasonTeam[]
   games: Game[]
+  /**
+   * The season's full fixture list, when the upstream provider publishes one ahead of play. Present
+   * for the season in progress (Sleeper has every week's pairings from before week 1) and absent
+   * from the backfilled years, where the results ARE the record. Display-only — see ScheduledGame.
+   */
+  schedule?: ScheduledGame[]
 }
 
 // ── Draft: sibling file /public/data/{year}/{tier}.draft.json ───────────────────
@@ -326,6 +348,8 @@ export interface SeasonSummary {
    * played. Only the in-progress season ever sets it false, and only until its first week finishes.
    */
   hasGames?: boolean
+  /** Whether a fixture list is published for the season (upcoming matchups can be shown). */
+  hasSchedule?: boolean
 }
 
 export interface SeasonManifest {

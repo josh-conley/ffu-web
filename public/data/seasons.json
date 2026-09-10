@@ -167,6 +167,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasGames": false,
+      "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
     },
@@ -176,6 +177,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasGames": false,
+      "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
     },
@@ -185,6 +187,7 @@
       "era": "sleeper",
       "hasDivisions": true,
       "hasGames": false,
+      "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
     }

@@ -34,14 +34,16 @@ export function useSeasonPicker(extraYears: string[] = []): SeasonPicker {
   const [yearParam, setYear] = useUrlState('year', '')
   const [tierParam, setTier] = useUrlState('tier', 'PREMIER')
 
-  // Which year to open on. Passing `extraYears` is a page saying it has something to show for a
-  // season that hasn't been played (Drafts: a completed draft, or a live board) — those pages want
-  // the newest year, live one included, because that is the topical one. Every other page needs
-  // games, and the season being played has a file from the day its leagues are created, so without
-  // this Standings and Matchups would open each September on 0-0 rows and no matchups at all. The
-  // live season still sits in the picker, and becomes the default itself once its first week is in.
-  const played = manifest ? years.filter((y) => manifest.some((s) => s.year === y && s.hasGames !== false)) : []
-  const fallback = (extraYears.length > 0 ? years[0] : played[0] ?? years[0]) ?? ''
+  // Which year to open on: the newest that has something to show. A season's file now exists from
+  // the day its leagues are created, so "newest" alone could land on a season with nothing in it —
+  // but a published fixture list counts, which is why the season being played wins from week 1
+  // rather than only once results exist. Both flags are absent on every migrated row and read as
+  // true, so the backfilled years are unaffected. Pages passing `extraYears` (Drafts) always take
+  // the newest, since a draft board is worth showing before any of the season is.
+  const showable = manifest
+    ? years.filter((y) => manifest.some((s) => s.year === y && (s.hasGames !== false || s.hasSchedule === true)))
+    : []
+  const fallback = (extraYears.length > 0 ? years[0] : showable[0] ?? years[0]) ?? ''
   const year = years.includes(yearParam) ? yearParam : fallback
   const tiers = year === '' ? [] : tiersForYear(year)
   const tier = (tiers.includes(tierParam as Tier) ? tierParam : (tiers[0] ?? 'PREMIER')) as Tier

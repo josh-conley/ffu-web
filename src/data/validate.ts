@@ -38,6 +38,17 @@ export function assertGame(g: unknown, ctx: string): void {
   }
 }
 
+/** A fixture carries no scores — only who plays whom, and when. */
+function assertScheduledGame(f: unknown, ctx: string): void {
+  check(isObject(f), ctx, 'scheduled game is not an object')
+  check(typeof f.week === 'number', ctx, 'scheduled game missing week')
+  check(
+    Array.isArray(f.memberIds) && f.memberIds.length === 2 && f.memberIds.every((m) => typeof m === 'string'),
+    ctx,
+    `scheduled wk${String(f.week)} needs exactly 2 memberIds`,
+  )
+}
+
 export function assertSeasonData(raw: unknown, ctx: string): SeasonData {
   check(isObject(raw), ctx, 'not an object')
   assertSchema(raw, ctx)
@@ -51,6 +62,10 @@ export function assertSeasonData(raw: unknown, ctx: string): SeasonData {
   check(Array.isArray(raw.games), ctx, 'games not an array')
   for (const t of raw.teams) assertTeam(t, ctx)
   for (const g of raw.games) assertGame(g, ctx)
+  if (raw.schedule !== undefined) {
+    check(Array.isArray(raw.schedule), ctx, 'schedule not an array')
+    for (const f of raw.schedule) assertScheduledGame(f, ctx)
+  }
   return raw as unknown as SeasonData
 }
 

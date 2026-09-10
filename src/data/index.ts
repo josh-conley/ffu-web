@@ -11,6 +11,7 @@ export type {
   TeamRecord,
   TeamPoints,
   Game,
+  ScheduledGame,
   GameParticipant,
   Division,
   DraftData,

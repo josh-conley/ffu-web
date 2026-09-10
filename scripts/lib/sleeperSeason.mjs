@@ -46,6 +46,29 @@ export function gamesForWeek(entries, week, rosterMap) {
 }
 
 /**
+ * One week's matchup entries → FIXTURES: who plays whom, no scores.
+ *
+ * Sleeper publishes every week's pairings before a ball is thrown, so this works for weeks that
+ * have not happened. Scores are dropped deliberately — an unplayed matchup reports 0.0 for both
+ * sides, and carrying that anywhere near `games` would make it a played tie.
+ */
+export function fixturesForWeek(entries, week, rosterMap) {
+  const byMatchup = new Map()
+  for (const e of entries) {
+    if (e.matchup_id === null || e.matchup_id === undefined) continue // bye
+    byMatchup.set(e.matchup_id, [...(byMatchup.get(e.matchup_id) ?? []), e])
+  }
+  const out = []
+  for (const group of byMatchup.values()) {
+    if (group.length !== 2) continue
+    const memberIds = group.map((e) => rosterMap.get(e.roster_id))
+    if (memberIds.some((id) => id === undefined)) continue
+    out.push({ week, memberIds })
+  }
+  return out.sort((a, b) => a.memberIds[0].localeCompare(b.memberIds[0]))
+}
+
+/**
  * Team rows DERIVED from the completed games above, not mirrored from Sleeper's roster aggregates.
  *
  * For a finished season we store Sleeper's own totals as facts (see SeasonTeam in src/data/types.ts).

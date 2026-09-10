@@ -1,4 +1,4 @@
-import type { Game, GameParticipant, SeasonData } from '@/data'
+import type { Game, GameParticipant, ScheduledGame, SeasonData } from '@/data'
 
 // Per-game derivations + regular-season aggregation. This is the base "derive winners/records/
 // margins from symmetric participants" layer — winner is NEVER stored, always computed here.
@@ -190,6 +190,29 @@ export interface WeekGames {
 }
 
 /** Games grouped by week, ascending (for week-by-week views like Matchups). */
+export interface WeekFixtures {
+  week: number
+  fixtures: ScheduledGame[]
+}
+
+/**
+ * Weeks still to be played: everything in the published schedule whose week has no games yet.
+ *
+ * Derived by subtracting played weeks rather than trusting the schedule to shrink, so a fixture
+ * list that covers the whole season (which Sleeper's does) never double-reports a week that has
+ * already been played. Empty for every backfilled season, which publishes no schedule.
+ */
+export function upcomingFixtures(season: SeasonData): WeekFixtures[] {
+  if (season.schedule === undefined || season.schedule.length === 0) return []
+  const played = new Set(season.games.map((g) => g.week))
+  const byWeek = new Map<number, ScheduledGame[]>()
+  for (const fixture of season.schedule) {
+    if (played.has(fixture.week)) continue
+    byWeek.set(fixture.week, [...(byWeek.get(fixture.week) ?? []), fixture])
+  }
+  return [...byWeek.entries()].sort((a, b) => a[0] - b[0]).map(([week, fixtures]) => ({ week, fixtures }))
+}
+
 export function gamesByWeek(season: SeasonData): WeekGames[] {
   const byWeek = new Map<number, Game[]>()
   for (const game of season.games) {

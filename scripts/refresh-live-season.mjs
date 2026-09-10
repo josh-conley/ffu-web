@@ -27,7 +27,7 @@
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ROOT, TIERS, buildMemberIndex, isLiveYear, leagueIdsFor, readJson, sleeperApi, writeJson } from './lib/ffuConfig.mjs'
-import { divisionsOf, gamesForWeek, rosterMapOf, teamsFrom } from './lib/sleeperSeason.mjs'
+import { divisionsOf, fixturesForWeek, gamesForWeek, rosterMapOf, teamsFrom } from './lib/sleeperSeason.mjs'
 
 const DATA = join(ROOT, 'public', 'data')
 const SCHEMA_VERSION = 1
@@ -65,6 +65,14 @@ async function buildSeason(tier, year, leagueId, weeks, members) {
   const regular = weeks.filter((w) => w <= lastRegular)
   const perWeek = await Promise.all(regular.map((w) => sleeperApi(`/league/${leagueId}/matchups/${w}`).then((e) => gamesForWeek(e, w, rosterMap))))
   const games = perWeek.flat()
+
+  // The whole season's fixtures, played or not — Sleeper has every week's pairings from before
+  // week 1, so a page can show what is coming instead of nothing.
+  const allWeeks = Array.from({ length: lastRegular }, (_, i) => i + 1)
+  const perFixtureWeek = await Promise.all(
+    allWeeks.map((w) => sleeperApi(`/league/${leagueId}/matchups/${w}`).then((e) => fixturesForWeek(e, w, rosterMap))),
+  )
+  const schedule = perFixtureWeek.flat()
   return {
     schemaVersion: SCHEMA_VERSION,
     tier,
@@ -73,6 +81,7 @@ async function buildSeason(tier, year, leagueId, weeks, members) {
     platformLeagueId: leagueId,
     teams: teamsFrom(games, rosterMap, divisions),
     games,
+    ...(schedule.length > 0 ? { schedule } : {}),
     ...(divisions ? { divisions: divisions.names } : {}),
   }
 }
@@ -92,6 +101,7 @@ function updateManifest(year, seasons, dryRun) {
       // False only until the first week is complete — it is what keeps Standings/Matchups from
       // defaulting to a season with nothing in it yet (see useSeasonPicker).
       hasGames: season.games.length > 0,
+      hasSchedule: Array.isArray(season.schedule) && season.schedule.length > 0,
       hasDraft: existsSync(join(DATA, year, `${season.tier.toLowerCase()}.draft.json`)),
       hasLineups: existsSync(join(DATA, year, `${season.tier.toLowerCase()}.lineups.json`)),
     }

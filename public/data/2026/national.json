@@ -187,6 +187,596 @@
     }
   ],
   "games": [],
+  "schedule": [
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-012",
+        "ffu-025"
+      ]
+    },
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-042",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-052",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-054",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-056",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 1,
+      "memberIds": [
+        "ffu-057",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-012",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-024",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-025",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-042",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-056",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 2,
+      "memberIds": [
+        "ffu-059",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-012",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-024",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-025",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-042",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-056",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 3,
+      "memberIds": [
+        "ffu-057",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-012",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-025",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-042",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-052",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-054",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 4,
+      "memberIds": [
+        "ffu-056",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-012",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-024",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-025",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-042",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-056",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 5,
+      "memberIds": [
+        "ffu-059",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-012",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-042",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-052",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-054",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-056",
+        "ffu-025"
+      ]
+    },
+    {
+      "week": 6,
+      "memberIds": [
+        "ffu-057",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-012",
+        "ffu-056"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-019",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-025",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-042",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-054",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 7,
+      "memberIds": [
+        "ffu-059",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-012",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-024",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-042",
+        "ffu-025"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-052",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-056",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 8,
+      "memberIds": [
+        "ffu-058",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-012",
+        "ffu-042"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-024",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-025",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-052",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-054",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 9,
+      "memberIds": [
+        "ffu-056",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-012",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-024",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-025",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-052",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-056",
+        "ffu-042"
+      ]
+    },
+    {
+      "week": 10,
+      "memberIds": [
+        "ffu-057",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-012",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-025",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-042",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-052",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-056",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 11,
+      "memberIds": [
+        "ffu-058",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-012",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-024",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-025",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-042",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-056",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 12,
+      "memberIds": [
+        "ffu-057",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-012",
+        "ffu-052"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-024",
+        "ffu-054"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-025",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-042",
+        "ffu-057"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-056",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 13,
+      "memberIds": [
+        "ffu-059",
+        "ffu-060"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-012",
+        "ffu-025"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-042",
+        "ffu-059"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-052",
+        "ffu-058"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-054",
+        "ffu-019"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-056",
+        "ffu-024"
+      ]
+    },
+    {
+      "week": 14,
+      "memberIds": [
+        "ffu-057",
+        "ffu-060"
+      ]
+    }
+  ],
   "divisions": [
     {
       "id": 1,
