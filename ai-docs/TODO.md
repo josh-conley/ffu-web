@@ -208,8 +208,12 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       that hang off it.
 - [ ] **First real games land Tue 2026-09-15** via the routine. Sanity-check Standings/Stats then:
       that is when 2026 starts counting toward career records and becomes the default season.
-- [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 14 * * 2` —
-      Tuesdays 10am ET, after Monday Night Football flips Sleeper's week. It runs the script, checks
+- [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 10,14 * * 2` —
+      Tuesdays 6am ET, with a second pass at 10am. The second run is a safety net, not a duplicate:
+      the script derives the last completed week from Sleeper's own `state.week`, so if Sleeper
+      hasn't rolled its week over by 6am the just-finished week would otherwise wait a full seven
+      days. Re-running costs nothing — both scripts are idempotent and produce no diff when there
+      is nothing new, so the second pass commits only if the first found nothing. It runs the script, checks
       the diff touches only `public/data`, runs all three gates, and commits + pushes to `main` only
       if they pass; it reports "no change" and commits nothing otherwise. It deliberately does NOT
       edit `src/config/seasons.ts` — it just reports that the year still needs adding.
@@ -220,8 +224,9 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       `hasGames` flips, and no longer chases the seasons.ts note, which 2026 no longer prints.
       **Re-read that prompt whenever these scripts change** — it describes their behaviour, so it
       goes stale silently.
-      NB the cron is fixed UTC, so it shifts to 9am ET when the clocks change in November. Fine for
-      a Tuesday-morning job; move it to `0 15 * * 2` if the later slot is ever wanted back.
+      NB the cron is fixed UTC, so both runs shift an hour earlier (5am/9am ET) when the clocks
+      change on 1 Nov 2026 — still comfortably before anyone looks. Move to `0 11,15 * * 2` if the
+      original hours are ever wanted back mid-season.
 - [ ] Playoffs (weeks 15–17) are still out of scope: the script writes regular-season games only,
       reading each league's own `playoff_week_start`. January's backfill remains the thing that
       makes a season complete — final placements, promotions/relegations, playoff brackets.
