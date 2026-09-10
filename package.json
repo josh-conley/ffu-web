@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "migrate": "node scripts/migrate-to-v2.mjs",
     "validate": "node scripts/validate-migration.mjs",
+    "refresh-season": "node scripts/refresh-live-season.mjs",
     "draw-cup": "node scripts/draw-cup.mjs",
     "draw-vo": "node scripts/generate-draw-vo.mjs",
     "preview": "vite preview"

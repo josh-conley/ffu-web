@@ -170,22 +170,27 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       maps Sleeper picks into `DraftPick`, so the mapping exists — it moves from request time to
       build time). The page should prefer a static file when one exists and fall back to live, so
       the same code serves next year's draft night unchanged.
-- [ ] **Decide how much of 2026 the rest of the site sees.** Stats, Standings, Members, Records and
-      Lineal all read `LeagueDataProvider`, which by design holds only completed, backfilled
-      seasons — so today they are all still "through 2025" while the season is being played. That
-      is the documented architecture (`CLAUDE.md`: SEASONS is completed seasons only; live data is
-      the separate `liveSleeper` path), not an oversight, and the home page's This Week section is
-      the one place wired to live data. Three ways out, in rising order of cost:
-      1. **Leave it.** 2026 shows up everywhere when it is backfilled in January. Zero work, but
-         the site looks a season stale for four months, which is exactly when people visit most.
-      2. **Weekly static refresh.** A script writes `public/data/2026/{tier}.json` from Sleeper on
-         a schedule; 2026 becomes an ordinary (if incomplete) season and EVERY page picks it up
-         with no code change. Cheapest real answer, and it reuses the backfill path we already run.
-      3. **Wire `liveSleeper` into the provider** so 2026 is live everywhere. Most work, most
-         moving parts, and it puts a network dependency behind every stat on the site.
-      Recommend (2). Whichever is chosen, add an ADR to `ai-docs/DECISIONS.md` — this is the kind
-      of call we do not want to re-argue mid-season. Note the Cup and Lineal items below are the
-      same gap and get fixed for free by (2).
+- [x] **Decided + built (2026-09-09): option 2, the weekly static refresh.**
+      `npm run refresh-season` (`scripts/refresh-live-season.mjs`) writes the season being played
+      into `public/data/{year}/{tier}.json` and updates `seasons.json`, so 2026 becomes an ordinary
+      season and every page picks it up with no code change. **Completed weeks only** — the week in
+      progress stays with the home page's This Week section, which never writes anything down. Pure
+      mapping lives in `scripts/lib/sleeperSeason.mjs` (unit-tested); config/Sleeper helpers shared
+      with `draw-cup.mjs` in `scripts/lib/ffuConfig.mjs`. Full rationale in `ai-docs/DECISIONS.md`.
+      Verified by rebuilding 2025/2024/2022 from Sleeper and diffing: 252 regular-season games each,
+      exact.
+- [ ] **Run it for the first time once Week 1 finishes** (Tue 2026-09-15, after MNF). Nothing is
+      written before then — as of 2026-09-09 there are zero completed weeks and the script says so
+      and exits. Sanity-check Standings/Stats afterwards.
+- [ ] **Then add 2026 to `src/config/seasons.ts`** — the script prints the exact three lines. Do it
+      only AFTER the first refresh: registering a year whose data files don't exist 404s the site.
+      This is what puts 2026 on the tier timeline and in `tiersForYear`.
+- [ ] **Schedule the weekly run.** Tuesday mornings, after Monday Night Football flips Sleeper's
+      week. Not yet automated — it needs a commit, so either a scheduled agent or a calendar nudge.
+      Decide which.
+- [ ] Playoffs (weeks 15–17) are still out of scope: the script writes regular-season games only,
+      reading each league's own `playoff_week_start`. January's backfill remains the thing that
+      makes a season complete — final placements, promotions/relegations, playoff brackets.
 
 ## Milestone Watch — new page
 

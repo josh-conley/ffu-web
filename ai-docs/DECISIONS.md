@@ -273,3 +273,47 @@ viewers is already a few hundred origin requests a minute; the gain past 5s isn'
 **Consequences.** Cache-busting means these reads always hit Sleeper's origin, so keep them to the
 two that are genuinely live and keep the idle rate low. Everything else in the app takes the cached
 answer. Hidden tabs poll nothing, and both polls stop when the draft is complete.
+
+## 2026-09-09 — The in-progress season becomes an ordinary static season
+
+**Context.** `LeagueDataProvider` reads only `public/data`, so a season that has not been backfilled
+does not exist to Stats, Standings, Members, Records, Lineal or the Cup. That is correct for the
+offseason and wrong from September to January — exactly when people visit — leaving the site
+reading "through 2025" all autumn. The home page's This Week section is the one live-wired place,
+deliberately kept off the provider (see the header of `src/data/liveSleeper.ts`).
+
+**Decision.** `scripts/refresh-live-season.mjs` (`npm run refresh-season`) writes the season being
+played into `public/data/{year}/{tier}.json` — the same files, same shape, same validator as every
+other season — and adds its rows to `seasons.json`. Run it weekly. Nothing above the data layer
+changes: 2026 is just another season.
+
+**Completed weeks only.** The week in progress is excluded. Half a Sunday's scores are still
+climbing, and a team sitting on 40 points at 2pm would set an all-time low, drag its owner's career
+average and move the UPR — permanently, if it were ever committed. In-progress scores stay in This
+Week, which fetches them live in the browser and never writes them down. That split is what lets
+both be honest at once.
+
+**Team rows are derived here, not mirrored.** For a finished season we store Sleeper's own
+aggregates as facts (`SeasonTeam` in `src/data/types.ts`). Mid-season we can't: those aggregates
+move during the week we are excluding, which would leave `teams` and `games` disagreeing inside one
+file — a standings table that doesn't add up to the matchups beside it. Deriving from the games we
+wrote keeps the file internally consistent, and January's backfill replaces the rows with Sleeper's
+finals. Checked against 2025: derived records and points-for match Sleeper's stored aggregates
+exactly for all 36 teams, so nothing is lost by deriving in the Sleeper era.
+
+**`finalPlacement` stays absent,** which is already how the domain says "unfinished" —
+`standings.ts` falls back to a live sort, and `draftBuilds.ts` excludes placement-less seasons so an
+in-progress team is never counted as a failure. No new "inProgress" flag was needed.
+
+**Alternatives rejected.** *Wait for the January backfill* — free, but the site looks a season stale
+for four months. *Wire `liveSleeper` into the provider* — puts a network dependency behind every
+stat on the site, and needs every page to learn a second code path.
+
+**Verification.** `npm run refresh-season -- --verify <year>` rebuilds a completed season straight
+from Sleeper and diffs its regular-season games against the backfilled file. 2025, 2024 and 2022 all
+reproduce exactly (252 games each). Run it after any change to the mapping.
+
+**Consequences.** A refresh is a commit, so the season's history is in git. The script refuses to
+write a year already in `SEASONS` (it would drop playoffs and final placements), and reminds you to
+add the year to `src/config/seasons.ts` once its files exist — do that only after the first refresh,
+since registering a year whose data is missing 404s the site.

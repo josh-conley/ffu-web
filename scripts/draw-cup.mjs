@@ -14,14 +14,11 @@
 // "NATIONAL": […] } with PREMIER/MASTERS in draft order — for rehearsing the whole pipeline.
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { drawCup } from '../src/lib/cupDraw.mjs'
 import { formatDrawSheet } from '../src/lib/drawSheet.mjs'
+import { ROOT, TIERS, buildMemberIndex, leagueIdsFor, sleeperApi as api } from './lib/ffuConfig.mjs'
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const API = 'https://api.sleeper.app/v1'
-const TIERS = ['PREMIER', 'MASTERS', 'NATIONAL']
 /** National never draws — it is only ever drawn — so its draft order is irrelevant to the Cup. */
 const DRAWING_TIERS = ['PREMIER', 'MASTERS']
 
@@ -47,41 +44,7 @@ function die(message) {
   process.exit(1)
 }
 
-// ── config (TS source of truth, read as data — same trick as scripts/migrate-to-v2.mjs) ───────
-
-/** Extract `export const NAME…= [ … ];` / `= { … }` and evaluate it as a plain literal. */
-function evalLiteral(src, name, open, close) {
-  const re = new RegExp(`export const ${name}\\b[^=]*=\\s*(\\${open}[\\s\\S]*?\\n\\${close})`)
-  const match = src.match(re)
-  if (!match) die(`Could not find ${name} in config`)
-  return new Function(`return ${match[1]}`)()
-}
-
-/** sleeper user id → { ffuId, name }. Members may hold several accounts (co-owned franchises). */
-function buildMemberIndex() {
-  const src = readFileSync(join(ROOT, 'src', 'config', 'members.ts'), 'utf8')
-  const members = evalLiteral(src, 'MEMBERS', '[', ']')
-  const index = new Map()
-  for (const m of members) {
-    for (const sleeperId of m.platformIds?.sleeper ?? []) index.set(sleeperId, { ffuId: m.ffuId, name: m.name })
-  }
-  return index
-}
-
-function leagueIdsFor(year) {
-  const src = readFileSync(join(ROOT, 'src', 'config', 'liveSeason.ts'), 'utf8')
-  const ids = evalLiteral(src, 'LIVE_LEAGUE_IDS', '{', '}')[year]
-  if (!ids) die(`No Sleeper league ids configured for ${year} (src/config/liveSeason.ts)`)
-  return ids
-}
-
 // ── Sleeper ───────────────────────────────────────────────────────────────────────────────────
-
-async function api(path) {
-  const res = await fetch(`${API}${path}`)
-  if (!res.ok) die(`Sleeper ${path} → HTTP ${res.status}`)
-  return res.json()
-}
 
 /** The league's owners, ordered by draft slot when this tier draws (Premier/Masters). */
 async function fetchTierField(tier, leagueId, members) {
@@ -148,7 +111,14 @@ function writeTournament(year, result, force) {
 // ── main ──────────────────────────────────────────────────────────────────────────────────────
 
 const args = parseArgs(process.argv.slice(2))
-const field = args.fixture ? loadFixture(args.fixture) : await buildField(args.year, buildMemberIndex())
+// The shared config/Sleeper helpers throw rather than exiting, so a bad config or a Sleeper outage
+// lands here as one friendly line instead of a stack trace.
+let field
+try {
+  field = args.fixture ? loadFixture(args.fixture) : await buildField(args.year, buildMemberIndex())
+} catch (error) {
+  die(error.message)
+}
 const result = drawCup(field, args.seed)
 printSheet(field, result, args.seed)
 
