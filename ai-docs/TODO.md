@@ -214,6 +214,12 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       if they pass; it reports "no change" and commits nothing otherwise. It deliberately does NOT
       edit `src/config/seasons.ts` — it just reports that the year still needs adding.
       https://claude.ai/code/routines/trig_01Uj2kArjPCPNQ43h9py8hBP
+      Prompt refreshed 2026-09-09 after the season file gained `schedule`/`hasGames` and the drafts
+      backfill landed: it now runs `npm run backfill-drafts` too (a no-op once the drafts are on
+      disk, so it matters next preseason), watches for a changed `schedule` and for the week
+      `hasGames` flips, and no longer chases the seasons.ts note, which 2026 no longer prints.
+      **Re-read that prompt whenever these scripts change** — it describes their behaviour, so it
+      goes stale silently.
       NB the cron is fixed UTC, so it shifts to 9am ET when the clocks change in November. Fine for
       a Tuesday-morning job; move it to `0 15 * * 2` if the later slot is ever wanted back.
 - [ ] Playoffs (weeks 15–17) are still out of scope: the script writes regular-season games only,
