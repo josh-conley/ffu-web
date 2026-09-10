@@ -1,9 +1,7 @@
 import { LIVE_LEAGUE_IDS } from '@/config'
 import type { DraftData, DraftPick, LiveDraftOrder } from '@/data'
 import { useSeasonPicker } from '@/hooks/useSeasonView'
-import { useDraft } from '@/hooks/useLeagueData'
-import { isLiveDraftYear } from '@/hooks/useDraftOrder'
-import { useLiveDraft } from '@/hooks/useLiveDraft'
+import { useDraftSource } from '@/hooks/useDraftSource'
 import { useUrlState } from '@/hooks/useUrlState'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { DraftBoard } from '@/components/draft/DraftBoard'
@@ -42,13 +40,12 @@ function LiveDraftContent({ loading, error, order, picks, year }: { loading: boo
 
 export function Drafts() {
   const { years, year, tier, setYear, setTier, ready, manifestLoading, manifestError } = useSeasonPicker(LIVE_YEARS)
-  const live = isLiveDraftYear(year)
-  const { data: draft, loading, error } = useDraft(tier, year, ready && !live)
-  const { order, picks, loading: orderLoading, error: orderError } = useLiveDraft(tier, year, ready && live)
+  // Static file if one has been backfilled, Sleeper if not — see useDraftSource.
+  const { live, draft, order, picks, loading, error } = useDraftSource(tier, year, ready)
   const [view, setView] = useUrlState('view', 'board')
 
-  const isLoading = manifestLoading || (ready && (live ? orderLoading : loading))
-  const err = manifestError ?? (live ? orderError : error)
+  const isLoading = manifestLoading || loading
+  const err = manifestError ?? error
 
   return (
     <div className="space-y-6">

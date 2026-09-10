@@ -46,3 +46,14 @@ it('filters the list by position from the URL', async () => {
   // header row + at least one QB pick
   expect(screen.getAllByRole('row').length).toBeGreaterThan(1)
 })
+
+it('prefers the backfilled board over the live one once a draft has been written', async () => {
+  // 2026 is still configured as a live year, but its completed draft is on disk now — so the
+  // finished board must win. Before the backfill this rendered the live board and polled Sleeper
+  // every few seconds to redraw a board that could no longer change.
+  // renderAt's stub 404s anything outside public/data, so if the live path ran this would render an
+  // error rather than a finished board — the pick showing up IS the proof the static file won.
+  renderAt('/drafts?year=2026&tier=PREMIER')
+  // #1 overall pick in the 2026 Premier draft.
+  await waitFor(() => expect(screen.getByText('J. Gibbs')).toBeInTheDocument())
+})

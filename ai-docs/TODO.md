@@ -177,13 +177,20 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 Both from the commissioner's list (2026-09-09). They are one question wearing two hats: how much of
 2026 comes from static files vs. live Sleeper calls. **Needs a decision before building.**
 
-- [ ] **Back the 2026 drafts with static data.** All three drafts are done (Masters Aug 30,
-      National Sep 2, Premier Sep 7), so `/drafts` is polling Sleeper every 12s to redraw a board
-      that can no longer change. Write `scripts/backfill-drafts.mjs` to pull the three drafts into
-      `public/data/2026/{tier}.draft.json` in the existing `DraftData` shape (the live path already
-      maps Sleeper picks into `DraftPick`, so the mapping exists — it moves from request time to
-      build time). The page should prefer a static file when one exists and fall back to live, so
-      the same code serves next year's draft night unchanged.
+- [x] **Done 2026-09-09.** `npm run backfill-drafts` (`scripts/backfill-drafts.mjs`) wrote all
+      three completed 2026 drafts — 180 picks each — into `public/data/2026/{tier}.draft.json`.
+      `/drafts` no longer polls Sleeper for them: `useDraftSource` tries the static file first and
+      falls back to live only when there isn't one, so draft night still works with no file present
+      and the finished board takes over by itself the moment one is written. A tier whose draft
+      isn't `complete` on Sleeper is skipped rather than written half-finished.
+      Pure mapping in `scripts/lib/sleeperDraft.mjs` (unit-tested), the twin of the client-side
+      mapping in `src/data/liveDrafts.ts`; `--verify <year>` rebuilds a completed year from Sleeper
+      and diffs it, which keeps the two from drifting. 2025 reproduces exactly (540 picks).
+- [ ] **Draft `type` is `unknown` for 2021–2025.** Found by the verify harness: the legacy migration
+      never captured it for Sleeper-era drafts, though Sleeper reports `snake` and always has (the
+      ESPN-era 2018–2020 files do say `snake`). Purely cosmetic today — nothing reads `type` — but
+      it is wrong data, and `backfill-drafts` could set it from Sleeper in one pass over the 15
+      files. Not done unasked, since it edits already-backfilled seasons.
 - [x] **Decided + built (2026-09-09): option 2, the weekly static refresh.**
       `npm run refresh-season` (`scripts/refresh-live-season.mjs`) writes the season being played
       into `public/data/{year}/{tier}.json` and updates `seasons.json`, so 2026 becomes an ordinary
