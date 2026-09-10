@@ -54,6 +54,12 @@ export function leagueIdsFor(year) {
   return ids
 }
 
+/** Is `year` the season currently being played, per LIVE_LEAGUE_IDS? */
+export function isLiveYear(year) {
+  const src = readFileSync(join(ROOT, 'src', 'config', 'liveSeason.ts'), 'utf8')
+  return evalLiteral(src, 'LIVE_LEAGUE_IDS', '{', '}')[year] !== undefined
+}
+
 export async function sleeperApi(path) {
   const res = await fetch(`${API}${path}`)
   if (!res.ok) throw new Error(`Sleeper ${path} → HTTP ${res.status}`)

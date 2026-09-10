@@ -1,6 +1,7 @@
 import type { LeagueRosterSummary, SeasonData } from '@/data'
 import type { Tier } from '@/config/types'
 import { careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague, membersById } from './career'
+import { divisionWinnerIds } from './standings'
 import premier2024 from '../../public/data/2024/premier.json'
 
 const seasons: SeasonData[] = [
@@ -180,5 +181,46 @@ describe('membersById', () => {
     const byId = membersById(groups)
     expect([...byId.keys()].sort()).toEqual(['a', 'b', 'newcomer']) // b is in past
     expect(byId.get('newcomer')?.seasons).toBe(0)
+  })
+})
+
+describe('a season that exists but has not been played', () => {
+  // The season being played gets its data file the day its Sleeper leagues are created — teams and
+  // divisions months ahead of week 1. It must be inert until there are games.
+  const shell: SeasonData = {
+    schemaVersion: 1, tier: 'PREMIER', year: '2026', era: 'sleeper', platformLeagueId: 'x',
+    divisions: [{ id: 1, name: 'East' }],
+    teams: [
+      { memberId: 'a', record: { wins: 0, losses: 0, ties: 0 }, points: { for: 0, against: 0 }, promoted: false, relegated: false, divisionId: 1 },
+      { memberId: 'b', record: { wins: 0, losses: 0, ties: 0 }, points: { for: 0, against: 0 }, promoted: false, relegated: false, divisionId: 1 },
+    ],
+    games: [],
+  }
+
+  it('adds nothing to anyone\'s career record', () => {
+    const before = careerStats(seasons)
+    const after = careerStats([...seasons, shell])
+    for (const [id, c] of after) {
+      expect({ id, seasons: c.seasons, premier: c.premierSeasons }).toEqual({
+        id, seasons: before.get(id)!.seasons, premier: before.get(id)!.premierSeasons,
+      })
+    }
+  })
+
+  it('records no finish for it, so it cannot become a placement or a pennant', () => {
+    const after = careerStats([...seasons, shell])
+    expect([...after.values()].flatMap((c) => c.finishes).filter((f) => f.year === '2026')).toEqual([])
+  })
+
+  it('does not make everyone inactive by becoming the "latest" year', () => {
+    // isActive is lastYear === latestYear; an unplayed 2026 must not move latestYear off 2024.
+    const after = careerStats([...seasons, shell])
+    expect(after.get('a')!.isActive).toBe(careerStats(seasons).get('a')!.isActive)
+    expect(after.get('a')!.isActive).toBe(true)
+  })
+
+  it('awards no division pennant when every team is tied on nothing', () => {
+    // All teams 0-0-0 and 0 points tie for first, so without a guard the whole league wins one.
+    expect(divisionWinnerIds(shell).size).toBe(0)
   })
 })

@@ -90,3 +90,19 @@ describe('upcomingRosters', () => {
     expect(upcomingRosters([], [roster('PREMIER', ['stayer'])])).toEqual([])
   })
 })
+
+describe('when the season being played already has a data file', () => {
+  it('still measures movement against the last season actually PLAYED', () => {
+    // 2026's file exists from the day its leagues were created. Comparing against the newest year
+    // on file would compare 2026 with itself and report every manager as having "stayed".
+    const shell: SeasonData = {
+      schemaVersion: 1, tier: 'PREMIER', year: '2026', era: 'sleeper', platformLeagueId: 'x',
+      teams: [{ memberId: 'stayer', record: { wins: 0, losses: 0, ties: 0 }, points: { for: 0, against: 0 }, promoted: false, relegated: false }],
+      games: [],
+    }
+    const live = [roster('PREMIER', ['stayer', 'riser', 'bigriser', 'lifer']), roster('NATIONAL', ['droppee', 'gone', 'rookie'])]
+    const withShell = upcomingRosters([...seasons, shell], live)
+    const without = upcomingRosters(seasons, live)
+    expect(withShell).toEqual(without)
+  })
+})

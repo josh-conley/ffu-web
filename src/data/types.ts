@@ -319,6 +319,13 @@ export interface SeasonSummary {
   hasDivisions: boolean
   hasDraft: boolean
   hasLineups: boolean
+  /**
+   * Whether any games have been played. A season's file is written when its leagues are created on
+   * Sleeper — months before week 1 — so being in the manifest no longer implies being playable.
+   * Absent on every migrated row, which is why undefined reads as TRUE: every backfilled season was
+   * played. Only the in-progress season ever sets it false, and only until its first week finishes.
+   */
+  hasGames?: boolean
 }
 
 export interface SeasonManifest {

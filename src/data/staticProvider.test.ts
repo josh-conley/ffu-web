@@ -21,9 +21,9 @@ afterEach(() => vi.unstubAllGlobals())
 describe('StaticFileProvider (against real migrated data)', () => {
   beforeEach(() => vi.stubGlobal('fetch', vi.fn(mapFetch)))
 
-  it('reads the manifest (20 tier-seasons)', async () => {
+  it('reads the manifest (20 backfilled tier-seasons + the season in progress)', async () => {
     const seasons = await new StaticFileProvider().getSeasons()
-    expect(seasons).toHaveLength(20)
+    expect(seasons).toHaveLength(23)
     expect(seasons.find((s) => s.tier === 'PREMIER' && s.year === '2025')?.hasDivisions).toBe(true)
   })
 

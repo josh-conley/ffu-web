@@ -77,8 +77,10 @@ describe('season registry', () => {
     expect(tiersForYear('1999')).toEqual([])
   })
 
-  it('covers all 20 legacy tier-seasons', () => {
-    expect(SEASONS).toHaveLength(20)
+  it('covers all 20 legacy tier-seasons plus the season in progress', () => {
+    // 20 backfilled + 3 for the season being played, which is registered as soon as its data file
+    // exists rather than waiting for January's backfill.
+    expect(SEASONS).toHaveLength(23)
   })
 })
 

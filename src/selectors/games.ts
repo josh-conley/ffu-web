@@ -3,6 +3,20 @@ import type { Game, GameParticipant, SeasonData } from '@/data'
 // Per-game derivations + regular-season aggregation. This is the base "derive winners/records/
 // margins from symmetric participants" layer — winner is NEVER stored, always computed here.
 
+/**
+ * Has this season been played at all?
+ *
+ * A season's file exists from the day its leagues are created on Sleeper — teams, divisions and
+ * league metadata are known months before week 1 — so a file alone proves nothing. Games are the
+ * usual evidence, but a stored W-L-T counts too: the ESPN-era migration and several fixtures carry
+ * team records without per-game rows, and those seasons were certainly played. A season is unplayed
+ * only when there is neither.
+ */
+export function hasBeenPlayed(season: SeasonData): boolean {
+  if (season.games.length > 0) return true
+  return season.teams.some((t) => t.record.wins + t.record.losses + t.record.ties > 0)
+}
+
 export function isTie(game: Game): boolean {
   const [a, b] = game.participants
   return a !== undefined && b !== undefined && a.score === b.score

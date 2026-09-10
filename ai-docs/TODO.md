@@ -200,12 +200,14 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       with `draw-cup.mjs` in `scripts/lib/ffuConfig.mjs`. Full rationale in `ai-docs/DECISIONS.md`.
       Verified by rebuilding 2025/2024/2022 from Sleeper and diffing: 252 regular-season games each,
       exact.
-- [ ] **Run it for the first time once Week 1 finishes** (Tue 2026-09-15, after MNF). Nothing is
-      written before then — as of 2026-09-09 there are zero completed weeks and the script says so
-      and exits. Sanity-check Standings/Stats afterwards.
-- [ ] **Then add 2026 to `src/config/seasons.ts`** — the script prints the exact three lines. Do it
-      only AFTER the first refresh: registering a year whose data files don't exist 404s the site.
-      This is what puts 2026 on the tier timeline and in `tiersForYear`.
+- [x] **Shell written and 2026 registered (2026-09-09).** The season file no longer waits for a
+      completed week: league metadata, teams and divisions (Diamond/Platinum/Gold) are facts from
+      the day the leagues were created, so `public/data/2026/{tier}.json` now exists with
+      `games: []` and fills in weekly. 2026 is in `src/config/seasons.ts`. See
+      `ai-docs/DECISIONS.md` for the `hasBeenPlayed` invariant this required and the five guards
+      that hang off it.
+- [ ] **First real games land Tue 2026-09-15** via the routine. Sanity-check Standings/Stats then:
+      that is when 2026 starts counting toward career records and becomes the default season.
 - [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 14 * * 2` —
       Tuesdays 10am ET, after Monday Night Football flips Sleeper's week. It runs the script, checks
       the diff touches only `public/data`, runs all three gates, and commits + pushes to `main` only

@@ -46,7 +46,9 @@ export function assertSeasonData(raw: unknown, ctx: string): SeasonData {
   check(raw.era === 'espn' || raw.era === 'sleeper', ctx, `bad era ${String(raw.era)}`)
   check(typeof raw.platformLeagueId === 'string', ctx, 'missing platformLeagueId')
   check(Array.isArray(raw.teams) && raw.teams.length > 0, ctx, 'teams not a non-empty array')
-  check(Array.isArray(raw.games) && raw.games.length > 0, ctx, 'games not a non-empty array')
+  // Empty is legal: a season exists from the day the commissioner creates its leagues — teams,
+  // divisions and league metadata are all facts months before week 1. Only `games` waits for games.
+  check(Array.isArray(raw.games), ctx, 'games not an array')
   for (const t of raw.teams) assertTeam(t, ctx)
   for (const g of raw.games) assertGame(g, ctx)
   return raw as unknown as SeasonData

@@ -317,3 +317,39 @@ reproduce exactly (252 games each). Run it after any change to the mapping.
 write a year already in `SEASONS` (it would drop playoffs and final placements), and reminds you to
 add the year to `src/config/seasons.ts` once its files exist — do that only after the first refresh,
 since registering a year whose data is missing 404s the site.
+
+## 2026-09-09 — A season's data file exists from the day its leagues do
+
+**Context.** `{tier}.json` holds four different things: league metadata, `teams`, `divisions` and
+`games`. Only the last waits for football. The other three are settled the moment the commissioner
+creates the leagues on Sleeper — months before week 1 — yet the file was written only once a week
+had been played, so the site knew nothing about the season being played until mid-September.
+
+**Decision.** The file is written as soon as the leagues exist, with `games: []`, and fills in
+weekly. `assertSeasonData` now accepts an empty `games` array: being in the manifest no longer
+implies being playable.
+
+**The invariant that replaces it.** `hasBeenPlayed(season)` — games, OR a stored non-zero W-L-T
+(the ESPN-era migration carries records without per-game rows). Everything that used to lean on
+"the file exists, so it was played" now asks this instead:
+
+- `careerStats` skips an unplayed season. Entering a league is not a season in your career record;
+  without this, all 36 members gain a season, a tier-season and a 0-0 row every September.
+- "Latest year" for `isActive` means the latest year PLAYED. Otherwise an unplayed file lands and
+  every member in the league goes inactive at once.
+- `divisionWinnerIds` awards nothing. Every team tied on 0-0-0 and 0 points ranks first, so without
+  a guard an unplayed season hands a division pennant to the entire league.
+- `upcomingRosters` measures movement against the last season played, not the newest on file —
+  otherwise it compares the new season with itself and reports all 36 managers as having "stayed".
+- `upcomingYear` reads `LIVE_LEAGUE_IDS` rather than deriving "last season + 1", which now skips
+  past the live season to a year Sleeper has no leagues for, silently emptying every roster view.
+- The manifest carries `hasGames`, and season-scoped pages default to the newest PLAYED year.
+  Standings and Matchups would otherwise open each September on 0-0 rows and no matchups. The live
+  season stays in the picker and becomes the default by itself once its first week is in. Pages that
+  pass `extraYears` (Drafts) still open on the live year, which is the topical one for them.
+
+**Consequences.** The refresh script only ever writes the year named by `LIVE_LEAGUE_IDS` — being
+in `SEASONS` is no longer the test for "already backfilled", since the season in progress is
+registered there from the day its file lands. `hasGames` is absent on every migrated row and reads
+as true, so nothing about the backfilled years changes. Verified: adding the 2026 shell changed
+zero career rows, recorded zero finishes and awarded zero pennants.

@@ -6,7 +6,7 @@ import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { upcomingRosters } from '@/selectors'
+import { upcomingRosters, upcomingYear } from '@/selectors'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
@@ -37,7 +37,9 @@ export function Overview() {
   }, [seasons])
 
   const latest = years[0]
-  const nextYear = latest ? String(Number(latest) + 1) : undefined
+  // The season being played, from config — not `latest + 1`, which skips past it once it has a
+  // data file of its own (see upcomingYear).
+  const nextYear = upcomingYear(seasons ?? [])
   const { rosters } = useLeagueRosters(nextYear)
   const { schedules: draftSchedules } = useDraftSchedules(nextYear)
   const upcoming = useMemo(() => upcomingRosters(seasons ?? [], rosters), [seasons, rosters])

@@ -1,6 +1,8 @@
 import type { Tier } from '@/config/types'
+import { LIVE_LEAGUE_IDS } from '@/config'
 import type { LeagueRosterSummary, SeasonData } from '@/data'
 import { careerStats, championshipTitles, type CareerStats, type TitleWin } from './career'
+import { hasBeenPlayed } from './games'
 
 // How each franchise arrived in the league it will play next season — derived by comparing the
 // upcoming rosters (live from Sleeper) against the last COMPLETED season's tiers. Never stored:
@@ -11,12 +13,18 @@ import { careerStats, championshipTitles, type CareerStats, type TitleWin } from
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
 /**
- * The season after the last COMPLETED one — i.e. the season being signed up for or played, and the
- * year whose Sleeper leagues `useLeagueRosters` should be asked for. Once that season is backfilled
- * it becomes the latest completed season and this rolls forward on its own, which is why callers
- * can treat an empty roster response as "nothing live" rather than an error.
+ * The season being signed up for or played — the year whose Sleeper leagues `useLeagueRosters` and
+ * `useDraftSchedules` should be asked for.
+ *
+ * The configured live year wins, because that is precisely what `LIVE_LEAGUE_IDS` records. Deriving
+ * it as "last season + 1" instead breaks as soon as the season being played has a data file of its
+ * own: the file makes it the latest year, so the derivation skips to the year AFTER it, Sleeper has
+ * no leagues under that, and every roster-driven view silently empties. Falling back to +1 keeps
+ * behaviour unchanged in the offseason before ids are configured.
  */
 export function upcomingYear(seasons: SeasonData[]): string | undefined {
+  const live = Object.keys(LIVE_LEAGUE_IDS)
+  if (live.length > 0) return live.sort().at(-1)
   const years = seasons.map((s) => Number(s.year))
   return years.length > 0 ? String(Math.max(...years) + 1) : undefined
 }
@@ -89,7 +97,10 @@ function movementFor(tier: Tier, priorYear: string, last: LastSeason | undefined
  * compare against, since every movement label would be meaningless.
  */
 export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSummary[]): UpcomingRoster[] {
-  const years = seasons.map((s) => Number(s.year))
+  // The last season actually PLAYED — not simply the newest on file. The season these rosters are
+  // FOR now has a file of its own from the day its leagues were created, so comparing against the
+  // newest year would compare it with itself and report all 36 managers as having "stayed".
+  const years = seasons.filter(hasBeenPlayed).map((s) => Number(s.year))
   if (years.length === 0) return []
   const priorYear = String(Math.max(...years))
   const careers = careerStats(seasons)

@@ -160,6 +160,33 @@
       "hasDivisions": true,
       "hasDraft": true,
       "hasLineups": true
+    },
+    {
+      "tier": "PREMIER",
+      "year": "2026",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasGames": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "MASTERS",
+      "year": "2026",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasGames": false,
+      "hasDraft": true,
+      "hasLineups": false
+    },
+    {
+      "tier": "NATIONAL",
+      "year": "2026",
+      "era": "sleeper",
+      "hasDivisions": true,
+      "hasGames": false,
+      "hasDraft": true,
+      "hasLineups": false
     }
   ]
 }

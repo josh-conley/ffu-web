@@ -34,7 +34,15 @@ export function useSeasonPicker(extraYears: string[] = []): SeasonPicker {
   const [yearParam, setYear] = useUrlState('year', '')
   const [tierParam, setTier] = useUrlState('tier', 'PREMIER')
 
-  const year = years.includes(yearParam) ? yearParam : (years[0] ?? '')
+  // Which year to open on. Passing `extraYears` is a page saying it has something to show for a
+  // season that hasn't been played (Drafts: a completed draft, or a live board) — those pages want
+  // the newest year, live one included, because that is the topical one. Every other page needs
+  // games, and the season being played has a file from the day its leagues are created, so without
+  // this Standings and Matchups would open each September on 0-0 rows and no matchups at all. The
+  // live season still sits in the picker, and becomes the default itself once its first week is in.
+  const played = manifest ? years.filter((y) => manifest.some((s) => s.year === y && s.hasGames !== false)) : []
+  const fallback = (extraYears.length > 0 ? years[0] : played[0] ?? years[0]) ?? ''
+  const year = years.includes(yearParam) ? yearParam : fallback
   const tiers = year === '' ? [] : tiersForYear(year)
   const tier = (tiers.includes(tierParam as Tier) ? tierParam : (tiers[0] ?? 'PREMIER')) as Tier
 

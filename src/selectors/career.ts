@@ -1,7 +1,7 @@
 import type { LeagueRosterSummary, SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
 import { divisionWinnerIds, winPct } from './standings'
-import { seasonHighLow } from './games'
+import { hasBeenPlayed, seasonHighLow } from './games'
 import { seasonUpr } from './upr'
 
 // Career aggregates per member across seasons (Members career view + All-Time Stats). Sums the
@@ -136,6 +136,11 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
   const career = new Map<string, CareerStats>()
 
   for (const season of seasons) {
+    // A season's file exists from the day its leagues do (teams and divisions are known months
+    // before week 1), so skip one that hasn't been played: entering a league is not a season in
+    // anyone's career record, and counting it would add a season, a tier-season and a 0-0 row to
+    // all 36 members every September. It starts counting the week it has games.
+    if (!hasBeenPlayed(season)) continue
     const highLow = seasonHighLow(season)
     const pennants = divisionWinnerIds(season)
     for (const t of season.teams) {
@@ -148,7 +153,9 @@ export function careerStats(seasons: SeasonData[]): Map<string, CareerStats> {
     }
   }
 
-  const latestYear = Math.max(0, ...seasons.map((s) => Number(s.year)))
+  // The latest year PLAYED, not merely present: an unplayed season's file would otherwise make
+  // `isActive` (lastYear === latestYear) false for everyone the moment it lands.
+  const latestYear = Math.max(0, ...seasons.filter(hasBeenPlayed).map((s) => Number(s.year)))
   for (const [memberId, c] of career) {
     finalizeCareer(c, playoffSeasons.get(memberId), latestYear)
   }

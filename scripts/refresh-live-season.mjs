@@ -26,7 +26,7 @@
 
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { ROOT, TIERS, buildMemberIndex, leagueIdsFor, readJson, sleeperApi, writeJson } from './lib/ffuConfig.mjs'
+import { ROOT, TIERS, buildMemberIndex, isLiveYear, leagueIdsFor, readJson, sleeperApi, writeJson } from './lib/ffuConfig.mjs'
 import { divisionsOf, gamesForWeek, rosterMapOf, teamsFrom } from './lib/sleeperSeason.mjs'
 
 const DATA = join(ROOT, 'public', 'data')
@@ -89,6 +89,9 @@ function updateManifest(year, seasons, dryRun) {
       year,
       era: 'sleeper',
       hasDivisions: Array.isArray(season.divisions) && season.divisions.length > 0,
+      // False only until the first week is complete — it is what keeps Standings/Matchups from
+      // defaulting to a season with nothing in it yet (see useSeasonPicker).
+      hasGames: season.games.length > 0,
       hasDraft: existsSync(join(DATA, year, `${season.tier.toLowerCase()}.draft.json`)),
       hasLineups: existsSync(join(DATA, year, `${season.tier.toLowerCase()}.lineups.json`)),
     }
@@ -159,22 +162,25 @@ async function main() {
   const leagueIds = leagueIdsFor(year)
   const members = buildMemberIndex()
 
-  // A year in SEASONS has been backfilled the proper way, with playoffs, final placements and
-  // Sleeper's own season totals. This script writes none of those, so pointing it at one would
-  // quietly replace good data with a regular-season-only subset. Verifying against it is fine.
-  if (!verifying && !args.dryRun && isRegistered(year)) {
-    die(`${year} is already backfilled (it is in src/config/seasons.ts). Refreshing it would drop playoff games and final placements.\n  Use --verify ${year} to check this script against it instead.`)
+  // Only ever write the season being PLAYED. Any other year has been backfilled the proper way,
+  // with playoffs, final placements and Sleeper's own season totals — none of which this script
+  // writes — so pointing it at one would quietly replace good data with a regular-season-only
+  // subset. The live year is the one LIVE_LEAGUE_IDS names; being in SEASONS is not the test, since
+  // the season in progress is registered there from the day its data file lands. Verifying is fine.
+  if (!verifying && !args.dryRun && !isLiveYear(year)) {
+    die(`${year} is not the season currently being played (src/config/liveSeason.ts). Refreshing a completed season would drop its playoff games and final placements.\n  Use --verify ${year} to check this script against it instead.`)
   }
 
   const through = args.through ?? (verifying ? MAX_REGULAR_WEEK : await lastCompletedWeek(year))
-  if (through < 1) {
-    console.log(`\nNo completed regular-season weeks in ${year} yet — nothing to write.`)
-    console.log('The home page\'s This Week section covers the week in progress until one finishes.\n')
-    return
-  }
+  if (verifying && through < 1) die(`${year} has no completed weeks to verify against`)
 
-  const weeks = Array.from({ length: Math.min(through, MAX_REGULAR_WEEK) }, (_, i) => i + 1)
-  console.log(`\n${verifying ? 'Verifying' : 'Refreshing'} ${year} through week ${weeks.length}…\n`)
+  // Zero completed weeks still writes: the season's teams, divisions and league metadata are facts
+  // from the day the commissioner creates the leagues, and only `games` waits for games. The file
+  // lands with an empty games array and fills in weekly. Selectors treat a season with no games as
+  // not-yet-played (see hasBeenPlayed), so nothing counts it as a season in anyone's career.
+  const weeks = Array.from({ length: Math.max(0, Math.min(through, MAX_REGULAR_WEEK)) }, (_, i) => i + 1)
+  const scope = weeks.length === 0 ? 'league metadata only (no completed weeks yet)' : `through week ${weeks.length}`
+  console.log(`\n${verifying ? 'Verifying' : 'Refreshing'} ${year} — ${scope}…\n`)
   const built = []
   for (const tier of TIERS) built.push(await buildSeason(tier, year, leagueIds[tier], weeks, members))
 
@@ -188,7 +194,8 @@ async function main() {
   }
   updateManifest(year, built, args.dryRun)
   const written = Math.max(...built.map((s) => Math.max(0, ...s.games.map((g) => g.week))))
-  console.log(args.dryRun ? '\n(--dry-run: nothing written)\n' : `\n✓ ${year} refreshed through week ${written}. Commit the changed files.\n`)
+  const summary = written === 0 ? 'league metadata written; games follow once week 1 is complete' : `refreshed through week ${written}`
+  console.log(args.dryRun ? '\n(--dry-run: nothing written)\n' : `\n✓ ${year} ${summary}. Commit the changed files.\n`)
   warnIfUnregistered(year)
 }
 

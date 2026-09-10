@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "tier": "MASTERS",
+  "year": "2026",
+  "era": "sleeper",
+  "platformLeagueId": "1384255128558665728",
+  "teams": [
+    {
+      "memberId": "ffu-006",
+      "divisionId": 1,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-002",
+      "divisionId": 3,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-036",
+      "divisionId": 3,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-021",
+      "divisionId": 2,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-028",
+      "divisionId": 1,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-013",
+      "divisionId": 1,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-038",
+      "divisionId": 3,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-039",
+      "divisionId": 2,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-053",
+      "divisionId": 1,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-027",
+      "divisionId": 2,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-033",
+      "divisionId": 3,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    },
+    {
+      "memberId": "ffu-040",
+      "divisionId": 2,
+      "record": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      },
+      "points": {
+        "for": 0,
+        "against": 0
+      },
+      "promoted": false,
+      "relegated": false
+    }
+  ],
+  "games": [],
+  "divisions": [
+    {
+      "id": 1,
+      "name": "East"
+    },
+    {
+      "id": 2,
+      "name": "North"
+    },
+    {
+      "id": 3,
+      "name": "West"
+    }
+  ]
+}

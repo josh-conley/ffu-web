@@ -1,5 +1,5 @@
 import type { Game, SeasonData } from '@/data'
-import { isTie, winnerOf, marginOf, scoreFor, regularSeasonTotals, runningRecords } from './games'
+import { hasBeenPlayed, isTie, winnerOf, marginOf, scoreFor, regularSeasonTotals, runningRecords } from './games'
 
 const game = (aId: string, aScore: number, bId: string, bScore: number, isPlayoff = false): Game => ({
   week: 1,
@@ -28,12 +28,14 @@ const seasons: SeasonData[] = Object.entries(modules)
   .map(([, mod]) => mod as SeasonData)
 
 describe('regularSeasonTotals cross-checks the STORED regular-season records', () => {
-  it('loaded all 20 seasons', () => {
-    expect(seasons).toHaveLength(20)
+  it('loaded all 20 backfilled seasons plus the season in progress', () => {
+    expect(seasons).toHaveLength(23)
   })
 
   it('derived W-L-T matches stored team.record for every team (proves winner logic)', () => {
-    for (const season of seasons) {
+    // The season being played has a file from the day its leagues were created; before its first
+    // week there is nothing to cross-check, and its 0-0 rows are not evidence of anything.
+    for (const season of seasons.filter(hasBeenPlayed)) {
       const totals = regularSeasonTotals(season)
       for (const team of season.teams) {
         const t = totals.get(team.memberId)
@@ -77,5 +79,28 @@ describe('runningRecords', () => {
     expect(rr.get('a')!.get(3)).toEqual({ wins: 1, losses: 1, ties: 1 })
     expect(rr.get('b')!.get(3)).toEqual({ wins: 1, losses: 1, ties: 1 })
     expect(rr.get('a')!.get(15)).toBeUndefined() // playoff week not recorded
+  })
+})
+
+describe('hasBeenPlayed', () => {
+  const shell = (over: Partial<SeasonData> = {}): SeasonData => ({
+    schemaVersion: 1, tier: 'PREMIER', year: '2026', era: 'sleeper', platformLeagueId: 'x',
+    teams: [{ memberId: 'a', record: { wins: 0, losses: 0, ties: 0 }, points: { for: 0, against: 0 }, promoted: false, relegated: false }],
+    games: [],
+    ...over,
+  })
+
+  it('is false for a season whose leagues exist but whose games have not started', () => {
+    expect(hasBeenPlayed(shell())).toBe(false)
+  })
+
+  it('is true once there are games', () => {
+    const games = [{ week: 1, isPlayoff: false, participants: [{ memberId: 'a', score: 100 }, { memberId: 'b', score: 90 }] }]
+    expect(hasBeenPlayed(shell({ games }))).toBe(true)
+  })
+
+  it('is true for a stored record with no per-game rows (the ESPN-era migration)', () => {
+    const teams = [{ memberId: 'a', record: { wins: 7, losses: 7, ties: 0 }, points: { for: 1, against: 1 }, promoted: false, relegated: false }]
+    expect(hasBeenPlayed(shell({ teams }))).toBe(true)
   })
 })

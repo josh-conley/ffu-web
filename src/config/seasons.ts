@@ -6,6 +6,7 @@ import type { SeasonMeta } from './types'
  * seasonLength/playoffWeeks are omitted (derived from era — see eraInfo helpers).
  */
 export const SEASONS: SeasonMeta[] = [
+  { tier: 'PREMIER', year: '2026', era: 'sleeper', platformLeagueId: '1384254952158814208', hasDivisions: true },
   { tier: 'PREMIER', year: '2025', era: 'sleeper', platformLeagueId: '1256010768692805632', hasDivisions: true },
   { tier: 'PREMIER', year: '2024', era: 'sleeper', platformLeagueId: '1124841088360660992', hasDivisions: true },
   { tier: 'PREMIER', year: '2023', era: 'sleeper', platformLeagueId: '989237166217723904', hasDivisions: true },
@@ -14,10 +15,12 @@ export const SEASONS: SeasonMeta[] = [
   { tier: 'PREMIER', year: '2020', era: 'espn', platformLeagueId: 'espn-2020-premier', hasDivisions: false },
   { tier: 'PREMIER', year: '2019', era: 'espn', platformLeagueId: 'espn-2019-premier', hasDivisions: false },
   { tier: 'PREMIER', year: '2018', era: 'espn', platformLeagueId: 'espn-2018-premier', hasDivisions: false },
+  { tier: 'MASTERS', year: '2026', era: 'sleeper', platformLeagueId: '1384255128558665728', hasDivisions: true },
   { tier: 'MASTERS', year: '2025', era: 'sleeper', platformLeagueId: '1256011253583708161', hasDivisions: true },
   { tier: 'MASTERS', year: '2024', era: 'sleeper', platformLeagueId: '1124833010697379840', hasDivisions: true },
   { tier: 'MASTERS', year: '2023', era: 'sleeper', platformLeagueId: '989238596353794048', hasDivisions: true },
   { tier: 'MASTERS', year: '2022', era: 'sleeper', platformLeagueId: '856271401471029248', hasDivisions: true },
+  { tier: 'NATIONAL', year: '2026', era: 'sleeper', platformLeagueId: '1384255395987488768', hasDivisions: true },
   { tier: 'NATIONAL', year: '2025', era: 'sleeper', platformLeagueId: '1256012193275576320', hasDivisions: true },
   { tier: 'NATIONAL', year: '2024', era: 'sleeper', platformLeagueId: '1124834889196134400', hasDivisions: true },
   { tier: 'NATIONAL', year: '2023', era: 'sleeper', platformLeagueId: '989240797381951488', hasDivisions: true },
