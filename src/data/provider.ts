@@ -1,5 +1,5 @@
 import type { Tier } from '@/config/types'
-import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary, Tournament } from './types'
+import type { AdpSnapshot, DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary, Tournament } from './types'
 
 /**
  * THE data boundary. All methods are async and domain-phrased (never file paths), so an
@@ -12,6 +12,8 @@ export interface LeagueDataProvider {
   getSeason(tier: Tier, year: string): Promise<SeasonData>
   /** Null when a tier-season has no draft (none in current data, but modelled). */
   getDraft(tier: Tier, year: string): Promise<DraftData | null>
+  /** Draft-season ADP snapshot for a year. Null for every year one was never captured. */
+  getAdp(year: string): Promise<AdpSnapshot | null>
   /** Per-game starters + bench. Null for ESPN-era seasons (no recoverable lineups). A live
    *  current-week source would satisfy this same method differently in-season. */
   getLineups(tier: Tier, year: string): Promise<SeasonLineups | null>

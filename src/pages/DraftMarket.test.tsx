@@ -1,0 +1,71 @@
+import { render, screen, waitFor, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { DraftMarket } from './DraftMarket'
+
+const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
+const FILES: Record<string, unknown> = {}
+for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../public', '')] = mod
+
+afterEach(() => vi.unstubAllGlobals())
+
+function renderAt(path = '/draft-board') {
+  vi.stubGlobal('fetch', (url: string) =>
+    Promise.resolve(
+      FILES[url] === undefined
+        ? ({ ok: false, status: 404, json: async () => ({}) } as Response)
+        : ({ ok: true, status: 200, json: async () => FILES[url] } as Response),
+    ),
+  )
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <DraftMarket />
+    </MemoryRouter>,
+  )
+}
+
+const sectionFor = (heading: string) => screen.getByText(heading).closest('section') as HTMLElement
+const ready = () => waitFor(() => expect(screen.getByText('Draft Board Comparison')).toBeInTheDocument())
+
+it('ranks reaches ahead of the field and values behind it', async () => {
+  renderAt()
+  await ready()
+  const diff = (heading: string) =>
+    within(sectionFor(heading))
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) => Number(within(r).getAllByRole('cell')[5]!.textContent))
+
+  const reaches = diff('Biggest Reaches')
+  const values = diff('Biggest Values')
+  expect(reaches.every((d) => d > 0)).toBe(true)
+  expect(values.every((d) => d < 0)).toBe(true)
+  // Biggest first in each direction.
+  expect(reaches).toEqual([...reaches].sort((a, b) => b - a))
+  expect(values).toEqual([...values].sort((a, b) => a - b))
+})
+
+it('shows each league side by side on the full board', async () => {
+  renderAt()
+  await ready()
+  // The sorted column carries a ▲ indicator, so match on the label rather than the exact text.
+  const headers = within(sectionFor('Every Player')).getAllByRole('columnheader').map((h) => h.textContent ?? '')
+  for (const label of ['Premier', 'Masters', 'National', 'FFU ADP', 'Sleeper ADP', 'Spread']) {
+    expect(headers.some((h) => h.startsWith(label))).toBe(true)
+  }
+})
+
+it('switches baseline from the URL', async () => {
+  renderAt('/draft-board?vs=sleeper')
+  await ready()
+  const headers = within(sectionFor('Biggest Reaches')).getAllByRole('columnheader').map((h) => h.textContent)
+  expect(headers).toContain('Sleeper ADP')
+  expect(headers).not.toContain('Other leagues')
+})
+
+it('scopes to one position from the URL', async () => {
+  renderAt('/draft-board?pos=QB')
+  await ready()
+  const rows = within(sectionFor('Biggest Reaches')).getAllByRole('row').slice(1)
+  expect(rows.length).toBeGreaterThan(0)
+  for (const row of rows) expect(row.textContent).toContain('QB')
+})

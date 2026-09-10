@@ -258,6 +258,32 @@ never disagree; nothing is stored.
       tiers sit there as the long game. Currently 33 teams on watch across the four categories.
 - [ ] Optional: a member's own milestone progress on their Members detail page. Not built.
 
+## Draft Board Comparison — new page
+
+Built 2026-09-09. Route `/draft-board`, in the Stats & More menu. Pinned to the season being played
+(from `LIVE_LEAGUE_IDS`) — an ADP snapshot only exists for that year.
+
+- [x] **Two baselines**, because they answer different questions. *vs FFU*: each pick against where
+      the OTHER two leagues took the same player. *vs Sleeper ADP*: each pick against the wider
+      half-PPR market. Biggest reaches and biggest values under either, plus a full board with all
+      three leagues side by side, FFU ADP, Sleeper ADP and the spread.
+- [x] **A pick is never part of its own baseline.** With three leagues, including it drags the
+      average a third of the way toward the pick and hides the disagreement: Josh Jacobs at 52
+      against a field of 115 is a 63-slot reach, but only 42 if his own pick is in the average.
+- [x] **Sleeper ADP found and snapshotted** (`npm run backfill-adp` →
+      `public/data/{year}/adp.json`). It is NOT in the documented v1 API — it lives on
+      `api.sleeper.com/projections/nfl/{year}` under `stats.adp_half_ppr`. Half PPR because all
+      three leagues score `rec: 0.5` (verified, not assumed). All 198 drafted players have a real
+      value. Stored rather than read live because ADP is a market that keeps drifting after the
+      drafts are over — the file is a dated record of the board the drafts were made against, which
+      is why the script refuses to overwrite without `--force`.
+- [ ] The projections endpoint is undocumented, so treat a shape change as expected someday. The
+      script fails loudly rather than writing a file of nulls. If it breaks, `adp_ppr`, `adp_std`
+      and `adp_2qb` are in the same payload.
+- [ ] Not built, offered: per-manager summaries (who reached most / found the most value across
+      their whole board), and keeping the page for past seasons — that needs an ADP snapshot per
+      year, which we only have from 2026 on.
+
 ## Deferred / not blocking Week 1
 
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now

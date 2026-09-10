@@ -1,7 +1,7 @@
 import type { Tier } from '@/config/types'
-import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary, Tournament } from './types'
+import type { AdpSnapshot, DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonSummary, Tournament } from './types'
 import type { LeagueDataProvider } from './provider'
-import { assertDraftData, assertManifest, assertPlayerMap, assertSeasonData, assertSeasonLineups, assertTournament } from './validate'
+import { assertAdpSnapshot, assertDraftData, assertManifest, assertPlayerMap, assertSeasonData, assertSeasonLineups, assertTournament } from './validate'
 
 // public/data is served at the site root (Vite base '/').
 const BASE = '/data'
@@ -38,6 +38,10 @@ export class StaticFileProvider implements LeagueDataProvider {
 
   getDraft(tier: Tier, year: string): Promise<DraftData | null> {
     return this.load(`/${year}/${tier.toLowerCase()}.draft.json`, assertDraftData, true)
+  }
+
+  getAdp(year: string): Promise<AdpSnapshot | null> {
+    return this.load(`/${year}/adp.json`, assertAdpSnapshot, true)
   }
 
   getLineups(tier: Tier, year: string): Promise<SeasonLineups | null> {

@@ -51,6 +51,7 @@ export const NAV: readonly NavEntry[] = [
       { to: '/records', label: 'Records', end: false },
       { to: '/milestones', label: 'Milestones', end: false },
       { to: '/builds', label: 'Builds', end: false },
+      { to: '/draft-board', label: 'Draft Board', end: false },
       { to: '/lineal', label: 'Lineal Champ', end: false },
     ],
   },

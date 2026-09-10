@@ -28,7 +28,7 @@ describe('nav structure', () => {
     expect(new Set(paths).size).toBe(paths.length)
     // The Cup has its own top-level slot (2026-08-21), not a menu entry.
     expect(paths).toContain('/cup')
-    expect(paths).toHaveLength(11)
+    expect(paths).toHaveLength(12)
   })
 
   it('puts a new page in the menu rather than an eighth slot in the bar', () => {
@@ -37,6 +37,7 @@ describe('nav structure', () => {
     expect(NAV.filter((e) => !isGroup(e))).toHaveLength(6)
     const group = NAV.filter(isGroup)[0]!
     expect(group.items.map((i) => i.to)).toContain('/milestones')
+    expect(group.items.map((i) => i.to)).toContain('/draft-board')
   })
 
   it('has a single dropdown, so no one has to guess which menu a page is under', () => {

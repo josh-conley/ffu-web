@@ -332,6 +332,23 @@ export interface LiveDraftOrder {
   unregistered: number
 }
 
+// ── ADP snapshot: /public/data/{year}/adp.json ──────────────────────────────────
+// Sleeper's half-PPR ADP as it stood around draft time. A SNAPSHOT, not a live read: ADP is a
+// market that keeps moving after the drafts are over, and what the comparison page needs is the
+// board the drafts were actually made against. `capturedAt` says when it was true.
+
+export interface AdpSnapshot {
+  schemaVersion: number
+  year: string
+  source: string
+  /** Scoring the ADP is for — `half_ppr`, matching the leagues' `scoring_settings.rec` of 0.5. */
+  format: string
+  /** YYYY-MM-DD the snapshot was taken. */
+  capturedAt: string
+  /** Sleeper player id → average draft position. */
+  adp: Record<string, number>
+}
+
 // ── Manifest: /public/data/seasons.json ─────────────────────────────────────────
 
 export interface SeasonSummary {

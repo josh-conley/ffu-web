@@ -23,8 +23,11 @@ describe('per-game derivations', () => {
 
 // Load every migrated season (drafts + lineups excluded) for a cross-check.
 const modules = import.meta.glob('../../public/data/*/*.json', { eager: true, import: 'default' })
+// Match the season files by NAME rather than excluding the others: a denylist silently reclassifies
+// every new sibling file (adp.json did exactly that) as a season, and the failure looks like a data
+// bug rather than a glob bug.
 const seasons: SeasonData[] = Object.entries(modules)
-  .filter(([path]) => !path.includes('.draft.') && !path.includes('.lineups.') && !path.includes('tournament'))
+  .filter(([path]) => /\/(premier|masters|national)\.json$/.test(path))
   .map(([, mod]) => mod as SeasonData)
 
 describe('regularSeasonTotals cross-checks the STORED regular-season records', () => {

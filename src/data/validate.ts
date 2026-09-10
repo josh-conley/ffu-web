@@ -4,7 +4,7 @@
 // corrupt/old file. Lightweight hand-written checks (no schema-lib dependency).
 
 import { SCHEMA_VERSION } from './types'
-import type { DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonManifest, Tournament } from './types'
+import type { AdpSnapshot, DraftData, PlayerMap, SeasonData, SeasonLineups, SeasonManifest, Tournament } from './types'
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
 
@@ -119,6 +119,18 @@ export function assertTournament(raw: unknown, ctx: string): Tournament {
 export function assertPlayerMap(raw: unknown, ctx: string): PlayerMap {
   check(isObject(raw), ctx, 'not an object')
   return raw as PlayerMap
+}
+
+export function assertAdpSnapshot(raw: unknown, ctx: string): AdpSnapshot {
+  check(isObject(raw), ctx, 'not an object')
+  assertSchema(raw, ctx)
+  check(typeof raw.year === 'string', ctx, 'missing year')
+  check(typeof raw.capturedAt === 'string', ctx, 'missing capturedAt')
+  check(isObject(raw.adp), ctx, 'adp is not an object')
+  for (const [id, value] of Object.entries(raw.adp)) {
+    check(typeof value === 'number', ctx, `adp for ${id} is not a number`)
+  }
+  return raw as unknown as AdpSnapshot
 }
 
 export function assertManifest(raw: unknown, ctx: string): SeasonManifest {
