@@ -123,11 +123,11 @@ export function DraftMarket() {
       </div>
 
       <Section title="Biggest Reaches" icon={<FaArrowUpLong aria-hidden />}>
-        <ComparisonTable rows={biggestReaches(scoped, 10, active)} baseline={active} year={YEAR} />
+        <ComparisonTable rows={biggestReaches(scoped, undefined, active)} baseline={active} year={YEAR} />
       </Section>
 
       <Section title="Biggest Values" icon={<FaArrowDownLong aria-hidden />}>
-        <ComparisonTable rows={biggestValues(scoped, 10, active)} baseline={active} year={YEAR} />
+        <ComparisonTable rows={biggestValues(scoped, undefined, active)} baseline={active} year={YEAR} />
       </Section>
 
       <Section title="Every Player" icon={<span className="font-mono text-xs">#</span>}>

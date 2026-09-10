@@ -5,6 +5,7 @@ import type { Baseline, PickComparison, PlayerMarket } from '@/selectors'
 import { deltaFor, pickIn } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from '../leagues'
+import { posClass } from '../positions'
 
 const one = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
@@ -28,10 +29,14 @@ function TierTag({ tier }: { tier: Tier }) {
   )
 }
 
-const PlayerCell = ({ c }: { c: PickComparison }) => (
-  <span className="whitespace-nowrap">
-    <span className="font-semibold">{c.player.name}</span>
-    <span className="ml-1.5 font-mono text-[11px] text-muted">{c.player.position}</span>
+const PositionBadge = ({ position }: { position: string }) => (
+  <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${posClass(position)}`}>{position}</span>
+)
+
+const PlayerCell = ({ name, position }: { name: string; position: string }) => (
+  <span className="flex items-center gap-2 whitespace-nowrap">
+    <span className="font-semibold">{name}</span>
+    <PositionBadge position={position} />
   </span>
 )
 
@@ -47,7 +52,7 @@ export function ComparisonTable({
 }) {
   const columns = useMemo<Column<PickComparison>[]>(
     () => [
-      { key: 'player', header: 'Player', render: (c) => <PlayerCell c={c} /> },
+      { key: 'player', header: 'Player', sortValue: (c) => c.player.name, render: (c) => <PlayerCell name={c.player.name} position={c.player.position} /> },
       { key: 'tier', header: 'League', render: (c) => <TierTag tier={c.tier} /> },
       { key: 'pick', header: 'Pick', align: 'right', sortValue: (c) => c.overall, render: (c) => `#${c.overall}` },
       {
@@ -72,7 +77,9 @@ export function ComparisonTable({
     ],
     [baseline, year],
   )
-  return <DataTable columns={columns} rows={rows} getRowKey={(c) => `${c.tier}-${c.overall}`} />
+  // Ten a page. The list itself is every reach (or every value) rather than a top ten, so the
+  // extremes still lead and the rest is a page away instead of cut off.
+  return <DataTable columns={columns} rows={rows} getRowKey={(c) => `${c.tier}-${c.overall}`} pageSize={10} />
 }
 
 /** Every player, with where each league took them side by side. */
@@ -94,12 +101,7 @@ export function BoardTable({ markets, adp }: { markets: PlayerMarket[]; adp: Rec
         key: 'player',
         header: 'Player',
         sortValue: (m) => m.player.name,
-        render: (m) => (
-          <span className="whitespace-nowrap">
-            <span className="font-semibold">{m.player.name}</span>
-            <span className="ml-1.5 font-mono text-[11px] text-muted">{m.player.position}</span>
-          </span>
-        ),
+        render: (m) => <PlayerCell name={m.player.name} position={m.player.position} />,
       },
       ...tierColumns,
       {

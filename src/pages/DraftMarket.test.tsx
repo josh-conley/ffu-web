@@ -69,3 +69,20 @@ it('scopes to one position from the URL', async () => {
   expect(rows.length).toBeGreaterThan(0)
   for (const row of rows) expect(row.textContent).toContain('QB')
 })
+
+it('pages the reaches ten at a time rather than truncating to a top ten', async () => {
+  renderAt()
+  await ready()
+  const section = sectionFor('Biggest Reaches')
+  expect(within(section).getAllByRole('row').slice(1)).toHaveLength(10)
+  // More than one page means the list is the whole set, not a cut-off preview.
+  const pager = section.textContent?.match(/Page 1 of (\d+)/)
+  expect(Number(pager?.[1])).toBeGreaterThan(1)
+})
+
+it('tags each player with their position', async () => {
+  renderAt('/draft-board?pos=QB')
+  await ready()
+  const row = within(sectionFor('Biggest Reaches')).getAllByRole('row')[1]!
+  expect(within(row).getByText('QB')).toBeInTheDocument()
+})

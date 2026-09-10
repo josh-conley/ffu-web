@@ -105,18 +105,29 @@ export type Baseline = 'ffu' | 'sleeper'
 export const deltaFor = (c: PickComparison, baseline: Baseline): number | undefined =>
   baseline === 'ffu' ? c.delta : c.adpDelta
 
-const ranked = (comparisons: PickComparison[], baseline: Baseline, sign: 1 | -1, limit: number) =>
-  comparisons
-    .filter((c) => deltaFor(c, baseline) !== undefined)
+/**
+ * Picks that went one side of the baseline, furthest first.
+ *
+ * Every one of them, not a top ten: the tables page, so the extremes still lead and the long tail
+ * stays reachable. Picks exactly ON the baseline are in neither list — they are the definition of
+ * neither a reach nor a value — and `limit` is left for callers that genuinely want a preview.
+ */
+const ranked = (comparisons: PickComparison[], baseline: Baseline, sign: 1 | -1, limit?: number) => {
+  const rows = comparisons
+    .filter((c) => {
+      const delta = deltaFor(c, baseline)
+      return delta !== undefined && Math.sign(delta) === sign
+    })
     .sort((a, b) => sign * ((deltaFor(b, baseline) as number) - (deltaFor(a, baseline) as number)))
-    .slice(0, limit)
+  return limit === undefined ? rows : rows.slice(0, limit)
+}
 
-/** The picks taken furthest ahead of the baseline, biggest reach first. */
-export const biggestReaches = (comparisons: PickComparison[], limit = 10, baseline: Baseline = 'ffu') =>
+/** Every pick taken ahead of the baseline, biggest reach first. */
+export const biggestReaches = (comparisons: PickComparison[], limit?: number, baseline: Baseline = 'ffu') =>
   ranked(comparisons, baseline, 1, limit)
 
-/** The picks that fell furthest past the baseline, biggest value first. */
-export const biggestValues = (comparisons: PickComparison[], limit = 10, baseline: Baseline = 'ffu') =>
+/** Every pick that fell past the baseline, biggest value first. */
+export const biggestValues = (comparisons: PickComparison[], limit?: number, baseline: Baseline = 'ffu') =>
   ranked(comparisons, baseline, -1, limit)
 
 /** A player's pick in one tier, for the side-by-side board. */

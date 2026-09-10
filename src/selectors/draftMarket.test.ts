@@ -132,3 +132,35 @@ describe('the Sleeper ADP baseline', () => {
     expect(biggestReaches(partial, 10, 'sleeper').every((c) => c.player.id === 'star')).toBe(true)
   })
 })
+
+describe('reaches and values are not capped', () => {
+  const comparisons = pickComparisons(playerMarkets(drafts))
+
+  it('returns every pick on its side of the baseline, not a top ten', () => {
+    const reaches = biggestReaches(comparisons)
+    const values = biggestValues(comparisons)
+    expect(reaches.every((c) => c.delta > 0)).toBe(true)
+    expect(values.every((c) => c.delta < 0)).toBe(true)
+    // Every comparable pick is a reach or a value unless it sits exactly on the baseline.
+    const onBaseline = comparisons.filter((c) => c.delta === 0).length
+    expect(reaches.length + values.length + onBaseline).toBe(comparisons.length)
+  })
+
+  it('leaves a pick exactly on the baseline out of both lists', () => {
+    // 'star' at 1/2/6: none of those is its own field average, so build an exact case.
+    const even = [
+      draft('PREMIER', [['x', 10]]),
+      draft('MASTERS', [['x', 20]]),
+      draft('NATIONAL', [['x', 15]]),
+    ]
+    const rows = pickComparisons(playerMarkets(even))
+    const exact = rows.find((c) => c.tier === 'NATIONAL')!
+    expect(exact.delta).toBe(0) // field is (10 + 20) / 2 = 15
+    expect(biggestReaches(rows).some((c) => c.tier === 'NATIONAL')).toBe(false)
+    expect(biggestValues(rows).some((c) => c.tier === 'NATIONAL')).toBe(false)
+  })
+
+  it('still honours a limit when one is asked for', () => {
+    expect(biggestReaches(comparisons, 1)).toHaveLength(1)
+  })
+})

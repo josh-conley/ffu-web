@@ -266,7 +266,10 @@ Built 2026-09-09. Route `/draft-board`, in the Stats & More menu. Pinned to the 
 - [x] **Two baselines**, because they answer different questions. *vs FFU*: each pick against where
       the OTHER two leagues took the same player. *vs Sleeper ADP*: each pick against the wider
       half-PPR market. Biggest reaches and biggest values under either, plus a full board with all
-      three leagues side by side, FFU ADP, Sleeper ADP and the spread.
+      three leagues side by side, FFU ADP, Sleeper ADP and the spread. The reach/value lists are
+      EVERY pick on that side of the baseline (250-odd each), paged ten at a time — the extremes
+      lead and the tail is a page away rather than cut off at a top ten. Positions use the shared
+      `posClass` badge, same colors as the draft list.
 - [x] **A pick is never part of its own baseline.** With three leagues, including it drags the
       average a third of the way toward the pick and hides the disagreement: Josh Jacobs at 52
       against a field of 115 is a 63-slot reach, but only 42 if his own pick is in the average.
