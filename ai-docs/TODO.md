@@ -79,26 +79,30 @@ this section is unread by me until you say so, so it's safe to leave half-formed
       `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
       of `LIVE_LEAGUE_IDS` into `SEASONS`.
 
-## New members before their first backfill
+## Members directory reads the current season's rosters
 
-A member with zero completed seasons exists only in the home page's "2026 Leagues" section —
-`Members.tsx` builds its directory from `careerStats`, so ffu-057/ffu-058 have no directory entry
-or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28) for the rule.
-
-**Largely solved by the weekly refresh above** (2026-09-09). `useAllSeasons` builds from
-`public/data/seasons.json`, which the refresh script updates, so once the first completed week
-lands, 2026 is in `careerStats` and the Members page corrects itself. Measured against live Sleeper
-on 2026-09-09, the directory is currently wrong for **20 members**: 12 in the wrong tier (it groups
-by `currentLeague`, i.e. their 2025 tier — the Rhinos, Head Cow and Tooth Tuggers are still shown in
-Masters after promotion), 4 new members missing entirely (ffu-057…060), and 4 departed members still
-shown as active (`isActive` is `lastYear === latestYear`). All three fix themselves once 2026 is the
-latest year in the data. The "Joining 2026" group below is then only needed for the gap BEFORE a
-season's first completed week — a much smaller window than originally thought.
-
-- [ ] Feed the upcoming rosters into the Members directory as a "Joining 2026" group (empty career;
-      detail page must render gracefully with no seasons)
-- [ ] Read Sleeper's `league.status` / draft status so membership-shaped views can flip at draft
-      completion rather than at "ids are configured" — only needed once the group above exists
+- [x] **Done 2026-09-09.** The directory grouped members by their finish in the last COMPLETED
+      season, so all preseason and all September it showed everyone in the tier they had just left.
+      Measured against live Sleeper that day it was wrong for 20 members: 12 in the wrong tier
+      (Raging Rhinos, Head Cow and the Tooth Tuggers still in Masters after promotion; CamDelphia,
+      El Guapo Puto and Pottsville still in Premier after relegation), 4 new members missing
+      entirely, and 4 departed members still listed as active.
+      Who is in which league is a fact about SIGNUPS, not about games — Sleeper knows it from the
+      day the commissioner creates the leagues, months before week 1. `membersByLeague(seasons,
+      currentRosters)` now takes the live rosters (`useLeagueRosters`, the same hook the home page
+      already used) and groups off them, falling back to last-season finishes only when Sleeper
+      gives us nothing. Verified against live 2026: 12/12/12, promotions and relegations correct,
+      the four newcomers present, the four departures moved to past members.
+- [x] A first-time member now has a directory entry and an openable detail page (`membersById`
+      builds the lookup from the groups, so anything listed can be opened; `MemberDetail` shows a
+      short "playing their first FFU season" panel instead of a wall of zeroes and empty tables).
+      This closes the old "Joining 2026" item — they appear in their actual tier rather than a
+      separate group, which is what the commissioner's rosters actually say.
+- [ ] Sleeper's `league.status` is still not read. Not needed for the above (rosters alone are
+      enough), but it would let membership views distinguish "signed up" from "drafted" if that
+      ever matters. Deferred.
+- [ ] `currentLeague(c)` (used by `TeamProfileModal`) still answers from the last completed season.
+      Same staleness, smaller blast radius — worth pointing at the rosters too when convenient.
 
 ## FFU Cup (inaugural, 2026)
 

@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
-import { careerStats, careerWinnings, headToHead, membersByLeague, memberSeasons, type CareerStats } from '@/selectors'
+import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingYear, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
 import { MemberCompare } from '@/components/MemberCompare'
@@ -63,9 +64,15 @@ function SelectedMember({
 export function Members() {
   const { data: seasons, loading, error } = useAllSeasons()
   const [params, setParams] = useSearchParams()
-  const careersMap = useMemo(() => (seasons ? careerStats(seasons) : undefined), [seasons])
-  const memberIds = useMemo(() => (careersMap ? [...careersMap.keys()] : []), [careersMap])
-  const groups = useMemo(() => (seasons ? membersByLeague(seasons) : undefined), [seasons])
+  // The directory groups by who is signed up for the season being played, which Sleeper knows from
+  // the day the leagues are created — not by last season's finishes, which strand every promoted or
+  // relegated member in the tier they just left and hide anyone who has only just joined.
+  const { rosters } = useLeagueRosters(seasons ? upcomingYear(seasons) : undefined)
+  const groups = useMemo(() => (seasons ? membersByLeague(seasons, rosters) : undefined), [seasons, rosters])
+  // Looked up from the GROUPS, not from careerStats, so everything the directory shows can be
+  // opened — a member in their first season has no career row yet but must still be clickable.
+  const careersMap = useMemo(() => (groups ? membersById(groups) : new Map<string, CareerStats>()), [groups])
+  const memberIds = useMemo(() => [...careersMap.keys()], [careersMap])
 
   // member + vs live in the URL; update them together so switching members clears a stale compare.
   const member = params.get('member') ?? ''
@@ -86,7 +93,7 @@ export function Members() {
     )
 
   if (loading) return <LoadingSpinner />
-  if (error || !seasons || !careersMap || !groups) return <ErrorMessage error={error ?? 'No data'} />
+  if (error || !seasons || !groups) return <ErrorMessage error={error ?? 'No data'} />
 
   const selected = member === '' ? undefined : careersMap.get(member)
   if (!selected) {

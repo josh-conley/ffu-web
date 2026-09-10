@@ -1,5 +1,6 @@
-import type { SeasonData } from '@/data'
-import { careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague } from './career'
+import type { LeagueRosterSummary, SeasonData } from '@/data'
+import type { Tier } from '@/config/types'
+import { careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague, membersById } from './career'
 import premier2024 from '../../public/data/2024/premier.json'
 
 const seasons: SeasonData[] = [
@@ -132,5 +133,52 @@ describe('membersByLeague', () => {
 
   it('puts members who missed the latest season in past', () => {
     expect(past.map((c) => c.memberId)).toEqual(['b']) // last played 2023
+  })
+})
+
+describe('membersByLeague with the current season\'s rosters', () => {
+  const roster = (tier: Tier, memberIds: string[]): LeagueRosterSummary => ({
+    tier, year: '2025', leagueId: 'l', memberIds, claimed: memberIds.length, totalRosters: memberIds.length,
+  })
+
+  it('groups by where a member is signed up NOW, not where they last finished', () => {
+    // 'a' played 2024 Premier but is in Masters for the season being played.
+    const { current } = membersByLeague(seasons, [roster('MASTERS', ['a'])])
+    expect(current).toEqual([{ tier: 'MASTERS', members: [expect.objectContaining({ memberId: 'a' })] }])
+  })
+
+  it('includes a first-time member who has never finished a season', () => {
+    const { current } = membersByLeague(seasons, [roster('NATIONAL', ['a', 'newcomer'])])
+    const members = current[0]!.members
+    expect(members.map((c) => c.memberId)).toEqual(['a', 'newcomer'])
+    // An empty career, not a missing row — the directory must be able to list and open them.
+    expect(members[1]).toMatchObject({ memberId: 'newcomer', seasons: 0, wins: 0, finishes: [] })
+  })
+
+  it('moves a member who did not sign up this season into past, even if they played last season', () => {
+    // 'a' played the latest completed season but is on no current roster: they have left.
+    const { current, past } = membersByLeague(seasons, [roster('PREMIER', ['b'])])
+    expect(current).toEqual([{ tier: 'PREMIER', members: [expect.objectContaining({ memberId: 'b' })] }])
+    expect(past.map((c) => c.memberId)).toEqual(['a'])
+  })
+
+  it('keeps tier order regardless of the order rosters arrive in', () => {
+    const { current } = membersByLeague(seasons, [roster('NATIONAL', ['b']), roster('PREMIER', ['a'])])
+    expect(current.map((g) => g.tier)).toEqual(['PREMIER', 'NATIONAL'])
+  })
+
+  it('falls back to latest-season grouping when Sleeper gives us nothing', () => {
+    expect(membersByLeague(seasons, [])).toEqual(membersByLeague(seasons))
+  })
+})
+
+describe('membersById', () => {
+  it('covers everyone the directory shows, first-timers included', () => {
+    const groups = membersByLeague(seasons, [
+      { tier: 'PREMIER', year: '2025', leagueId: 'l', memberIds: ['a', 'newcomer'], claimed: 2, totalRosters: 2 },
+    ])
+    const byId = membersById(groups)
+    expect([...byId.keys()].sort()).toEqual(['a', 'b', 'newcomer']) // b is in past
+    expect(byId.get('newcomer')?.seasons).toBe(0)
   })
 })

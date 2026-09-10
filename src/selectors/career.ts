@@ -1,4 +1,4 @@
-import type { SeasonData, SeasonTeam } from '@/data'
+import type { LeagueRosterSummary, SeasonData, SeasonTeam } from '@/data'
 import type { Tier } from '@/config/types'
 import { divisionWinnerIds, winPct } from './standings'
 import { seasonHighLow } from './games'
@@ -279,12 +279,47 @@ export interface MembersByLeague {
 }
 
 /**
- * Roster for the Members directory: active members bucketed by their latest-season league, plus a
- * past-members list. Grouping only — display ordering and names are a view concern. An active
- * member's current league is the tier of their finish in the latest year.
+ * Every member the directory shows, by id. Built from the GROUPS rather than from `careerStats` so
+ * the two can't disagree: a member in their first season has no career row yet, but is on a roster
+ * and so must still be openable from the directory.
  */
-export function membersByLeague(seasons: SeasonData[]): MembersByLeague {
+export function membersById(groups: MembersByLeague): Map<string, CareerStats> {
+  const byId = new Map<string, CareerStats>()
+  for (const group of groups.current) for (const c of group.members) byId.set(c.memberId, c)
+  for (const c of groups.past) byId.set(c.memberId, c)
+  return byId
+}
+
+/**
+ * Grouping straight off the CURRENT season's rosters. Who is in which league is a fact about
+ * signups, not about games: the commissioner sets the leagues up on Sleeper months before week 1,
+ * so promotions, relegations, new members and departures are all knowable long before anything is
+ * played. Reading them here is what keeps the directory honest all preseason and all season.
+ */
+function byCurrentRosters(careers: Map<string, CareerStats>, rosters: LeagueRosterSummary[]): MembersByLeague {
+  const signedUp = new Set(rosters.flatMap((r) => r.memberIds))
+  const current = TIER_ORDER.flatMap((tier) => {
+    const roster = rosters.find((r) => r.tier === tier)
+    // A first-time member has no completed season and so no CareerStats. An empty career puts them
+    // in the directory the day they sign up instead of after their first backfill.
+    return roster ? [{ tier, members: roster.memberIds.map((id) => careers.get(id) ?? emptyCareer(id)) }] : []
+  })
+  return { current, past: [...careers.values()].filter((c) => !signedUp.has(c.memberId)) }
+}
+
+/**
+ * Roster for the Members directory: members bucketed by the league they're in, plus a past-members
+ * list. Grouping only — display ordering and names are a view concern.
+ *
+ * `currentRosters` (live from Sleeper, via useLeagueRosters) is the authority when present. Without
+ * it the grouping falls back to each member's finish in the latest COMPLETED season, which is
+ * correct in the offseason but goes stale the moment the next season's leagues are set — everyone
+ * shown in the tier they just left. The fallback also covers the case where Sleeper is unreachable.
+ */
+export function membersByLeague(seasons: SeasonData[], currentRosters: LeagueRosterSummary[] = []): MembersByLeague {
   const careers = careerStats(seasons)
+  if (currentRosters.length > 0) return byCurrentRosters(careers, currentRosters)
+
   const byTier = new Map<Tier, CareerStats[]>()
   const past: CareerStats[] = []
   for (const c of careers.values()) {

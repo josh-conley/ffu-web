@@ -10,6 +10,17 @@ import { careerStats, championshipTitles, type CareerStats, type TitleWin } from
 
 const TIER_ORDER: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
+/**
+ * The season after the last COMPLETED one — i.e. the season being signed up for or played, and the
+ * year whose Sleeper leagues `useLeagueRosters` should be asked for. Once that season is backfilled
+ * it becomes the latest completed season and this rolls forward on its own, which is why callers
+ * can treat an empty roster response as "nothing live" rather than an error.
+ */
+export function upcomingYear(seasons: SeasonData[]): string | undefined {
+  const years = seasons.map((s) => Number(s.year))
+  return years.length > 0 ? String(Math.max(...years) + 1) : undefined
+}
+
 export type Movement = 'promoted' | 'relegated' | 'stayed' | 'returning' | 'new'
 
 export interface UpcomingTeam {
