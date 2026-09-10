@@ -24,7 +24,8 @@ function renderAt(path = '/adp-comparison') {
 }
 
 const sectionFor = (heading: string) => screen.getByText(heading).closest('section') as HTMLElement
-const ready = () => waitFor(() => expect(screen.getByText('Draft Board Comparison')).toBeInTheDocument())
+// Matched loosely: the heading carries the live season's year, which moves each September.
+const ready = () => waitFor(() => expect(screen.getByRole('heading', { name: /ADP Comparison/ })).toBeInTheDocument())
 
 it('ranks reaches ahead of the field and values behind it', async () => {
   renderAt()

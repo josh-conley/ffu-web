@@ -258,7 +258,7 @@ never disagree; nothing is stored.
       tiers sit there as the long game. Currently 33 teams on watch across the four categories.
 - [ ] Optional: a member's own milestone progress on their Members detail page. Not built.
 
-## Draft Board Comparison — new page
+## ADP Comparison — new page
 
 Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to the season being played
 (from `LIVE_LEAGUE_IDS`) — an ADP snapshot only exists for that year.

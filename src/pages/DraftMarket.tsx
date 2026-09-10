@@ -90,7 +90,8 @@ export function DraftMarket() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-extrabold uppercase tracking-tight">Draft Board Comparison</h1>
+        {/* Year from YEAR, not written in: the page follows the season being played. */}
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight">{`${YEAR} ADP Comparison`}</h1>
         <p className="max-w-2xl text-sm text-muted">{caption}</p>
       </div>
 
