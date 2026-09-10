@@ -4,6 +4,14 @@ Living task list — not a spec or a plan doc. Check things off as they're done,
 come up, delete anything that's no longer relevant. Claude: keep this current as work happens;
 don't let it go stale.
 
+## Inbox (unsorted)
+
+Dump raw items here — one line each, no format required, no section needed. Claude: triage these
+into the right section below (or just do them), then delete the line from here. Anything sitting in
+this section is unread by me until you say so, so it's safe to leave half-formed thoughts.
+
+- [ ] _(empty)_
+
 ## 2026 season — ready for Week 1
 
 - [x] Get 2026 Sleeper league IDs (Premier/Masters/National) from the commissioner/Sleeper app
