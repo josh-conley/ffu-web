@@ -85,6 +85,16 @@ A member with zero completed seasons exists only in the home page's "2026 League
 `Members.tsx` builds its directory from `careerStats`, so ffu-057/ffu-058 have no directory entry
 or detail page until 2026 is backfilled. See `ai-docs/DECISIONS.md` (2026-07-28) for the rule.
 
+**Largely solved by the weekly refresh above** (2026-09-09). `useAllSeasons` builds from
+`public/data/seasons.json`, which the refresh script updates, so once the first completed week
+lands, 2026 is in `careerStats` and the Members page corrects itself. Measured against live Sleeper
+on 2026-09-09, the directory is currently wrong for **20 members**: 12 in the wrong tier (it groups
+by `currentLeague`, i.e. their 2025 tier — the Rhinos, Head Cow and Tooth Tuggers are still shown in
+Masters after promotion), 4 new members missing entirely (ffu-057…060), and 4 departed members still
+shown as active (`isActive` is `lastYear === latestYear`). All three fix themselves once 2026 is the
+latest year in the data. The "Joining 2026" group below is then only needed for the gap BEFORE a
+season's first completed week — a much smaller window than originally thought.
+
 - [ ] Feed the upcoming rosters into the Members directory as a "Joining 2026" group (empty career;
       detail page must render gracefully with no seasons)
 - [ ] Read Sleeper's `league.status` / draft status so membership-shaped views can flip at draft
@@ -185,9 +195,14 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
 - [ ] **Then add 2026 to `src/config/seasons.ts`** — the script prints the exact three lines. Do it
       only AFTER the first refresh: registering a year whose data files don't exist 404s the site.
       This is what puts 2026 on the tier timeline and in `tiersForYear`.
-- [ ] **Schedule the weekly run.** Tuesday mornings, after Monday Night Football flips Sleeper's
-      week. Not yet automated — it needs a commit, so either a scheduled agent or a calendar nudge.
-      Decide which.
+- [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 14 * * 2` —
+      Tuesdays 10am ET, after Monday Night Football flips Sleeper's week. It runs the script, checks
+      the diff touches only `public/data`, runs all three gates, and commits + pushes to `main` only
+      if they pass; it reports "no change" and commits nothing otherwise. It deliberately does NOT
+      edit `src/config/seasons.ts` — it just reports that the year still needs adding.
+      https://claude.ai/code/routines/trig_01Uj2kArjPCPNQ43h9py8hBP
+      NB the cron is fixed UTC, so it shifts to 9am ET when the clocks change in November. Fine for
+      a Tuesday-morning job; move it to `0 15 * * 2` if the later slot is ever wanted back.
 - [ ] Playoffs (weeks 15–17) are still out of scope: the script writes regular-season games only,
       reading each league's own `playoff_week_start`. January's backfill remains the thing that
       makes a season complete — final placements, promotions/relegations, playoff brackets.
