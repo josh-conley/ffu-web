@@ -39,6 +39,21 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStanding
 }
 
 /**
+ * Which live section the home page leads with.
+ *
+ * Sleeper rolls its week over on Tuesday morning, once Monday Night Football is done. So from
+ * Tuesday until Thursday's kickoff, "this week's matchups" is twelve fixtures on 0.00 — nothing to
+ * look at — while the standings have just become the interesting thing on the page, because the
+ * week they summarise finished hours earlier. Tuesday gets the standings; every other day gets the
+ * matchups, which are either in progress or about to be.
+ *
+ * Local day deliberately, like seasonHasStarted: it should be Tuesday where the reader is.
+ */
+export function homeLiveSection(now: Date = new Date()): 'standings' | 'matchups' {
+  return now.getDay() === 2 ? 'standings' : 'matchups'
+}
+
+/**
  * Has the season Sleeper is reporting actually kicked off?
  *
  * `season_type` alone is not the answer: Sleeper flips it to `regular` the moment the preseason

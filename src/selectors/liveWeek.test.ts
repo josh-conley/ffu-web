@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
+import { currentWeekMatchups, homeLiveSection, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -76,5 +76,29 @@ describe('seasonHasStarted', () => {
 
   it('fails open when Sleeper sends no start date', () => {
     expect(seasonHasStarted(state(''), at('2026-08-30T21:00:00'))).toBe(true)
+  })
+})
+
+describe('homeLiveSection', () => {
+  // Sleeper rolls its week over on Tuesday morning, so Tuesday→Thursday "this week" is all 0.00
+  // while the standings have just been settled by Monday night.
+  const on = (iso: string) => homeLiveSection(new Date(iso))
+
+  it('leads with the standings on a Tuesday', () => {
+    expect(on('2026-09-15T09:00:00')).toBe('standings')
+    expect(on('2026-11-17T23:30:00')).toBe('standings')
+  })
+
+  it('leads with the matchups every other day', () => {
+    expect(on('2026-09-13T13:00:00')).toBe('matchups') // Sunday, games running
+    expect(on('2026-09-14T20:00:00')).toBe('matchups') // Monday night
+    expect(on('2026-09-16T09:00:00')).toBe('matchups') // Wednesday
+    expect(on('2026-09-17T20:00:00')).toBe('matchups') // Thursday kickoff
+  })
+
+  it('reads the local day, so it is Tuesday where the reader is', () => {
+    // Late Monday local is still Monday, not yet the standings day.
+    expect(on('2026-09-14T23:59:00')).toBe('matchups')
+    expect(on('2026-09-15T00:01:00')).toBe('standings')
   })
 })

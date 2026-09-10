@@ -43,7 +43,10 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
 export function CurrentWeekStandings({ tier, data }: { tier: Tier; data: LiveSeasonData }) {
   const columns = useMemo(() => buildColumns(data.year), [data.year])
 
-  if (data.currentWeek <= 1) return <p className="text-sm text-muted">Standings will appear once Week 1 concludes.</p>
+  // Nothing to say before a week has finished. The caller decides whether the section appears at
+  // all (see Overview), so an explanatory placeholder here would only be noise — and would print
+  // once per tier.
+  if (data.currentWeek <= 1) return null
 
   return (
     <DataTable

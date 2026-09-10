@@ -63,6 +63,12 @@ export function UpcomingDrafts({ year, schedules = [] }: { year?: string; schedu
   const phases = TIER_PRESTIGE.map(phaseFor)
   const anyLive = phases.includes('live')
 
+  // Once every draft is complete the panel has nothing left to announce, so it stands down rather
+  // than lingering on the home page all season saying "Drafts Are Done". It comes back on its own
+  // next preseason, when Sleeper creates the drafts — the same way it arrives each year, and the
+  // reason there is no config knob for this.
+  if (phases.length > 0 && phases.every((p) => p === 'complete')) return null
+
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{anyLive ? 'Drafts' : 'Upcoming Drafts'}</h2>

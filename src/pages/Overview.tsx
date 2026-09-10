@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import type { SeasonData } from '@/data'
+import type { LiveSeasonData, SeasonData } from '@/data'
 import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { upcomingRosters, upcomingYear } from '@/selectors'
+import { homeLiveSection, upcomingRosters, upcomingYear } from '@/selectors'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
@@ -20,6 +20,46 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
 const championOf = (season: SeasonData) => season.teams.find((t) => t.finalPlacement === 1)?.memberId
+
+interface LiveTier {
+  tier: Tier
+  data: LiveSeasonData
+}
+
+/**
+ * The one live block on the home page: this week's matchups, or — on Tuesdays, once a week has
+ * finished — the standings they produced. One or the other, never both, so the page leads with
+ * whichever is actually worth reading that day (see homeLiveSection).
+ */
+function LiveSection({
+  tiers,
+  week,
+  showStandings,
+  onOpen,
+}: {
+  tiers: LiveTier[]
+  week: number | undefined
+  showStandings: boolean
+  onOpen: (open: OpenGame) => void
+}) {
+  const heading = showStandings
+    ? `Standings${week ? ` — Through Week ${week - 1}` : ''}`
+    : `This Week${week ? ` — Week ${week}` : ''}`
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{heading}</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {tiers.map(({ tier, data }) =>
+          showStandings ? (
+            <CurrentWeekStandings key={tier} tier={tier} data={data} />
+          ) : (
+            <CurrentWeekMatchups key={tier} tier={tier} data={data} onOpen={onOpen} />
+          ),
+        )}
+      </div>
+    </section>
+  )
+}
 
 export function Overview() {
   const { data: seasons, loading, error } = useAllSeasons()
@@ -56,6 +96,9 @@ export function Overview() {
     return data ? [{ tier, data }] : []
   })
   const currentWeekNumber = liveTiers[0]?.data.currentWeek
+  // Tuesday leads with the standings instead of the matchups (see homeLiveSection) — but only once
+  // a week has actually finished, otherwise there is nothing in them and the matchups stay.
+  const showStandings = homeLiveSection() === 'standings' && liveTiers.some(({ data }) => data.currentWeek > 1)
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -68,26 +111,7 @@ export function Overview() {
           resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
           keeps the section headings from rendering over an empty (or permanently failed) grid. */}
       {liveTiers.length > 0 && (
-        <>
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted">
-              This Week{currentWeekNumber ? ` — Week ${currentWeekNumber}` : ''}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {liveTiers.map(({ tier, data }) => (
-                <CurrentWeekMatchups key={tier} tier={tier} data={data} onOpen={setOpen} />
-              ))}
-            </div>
-          </section>
-          <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Standings</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {liveTiers.map(({ tier, data }) => (
-                <CurrentWeekStandings key={tier} tier={tier} data={data} />
-              ))}
-            </div>
-          </section>
-        </>
+        <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
       {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
