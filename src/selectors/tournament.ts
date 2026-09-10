@@ -29,7 +29,12 @@ export interface ResolvedRound {
   label: string
   week: number
   matchups: ResolvedMatchup[]
-  /** Teams eliminated by the lowest-winner drop just before this round (usually 0 or 1). */
+  /**
+   * Teams culled from THIS round's winners by the lowest-winner drop (usually 0 or 1). They won
+   * here and are eliminated here — which is the round the rules put it in (see CUP_ROUND_RULES.r18,
+   * "eliminated alongside the losers"), even though the JSON carries the flag on the round that
+   * receives the shrunken field.
+   */
   dropped: ResolvedSide[]
 }
 
@@ -117,7 +122,7 @@ export interface RoundOutline {
   entrants: number
   /** Games played in this round. */
   matchups: number
-  /** Teams eliminated as the lowest-scoring winner of the PREVIOUS round, before this one. */
+  /** Teams culled from THIS round's winners as the lowest-scoring winner (usually 0 or 1). */
   dropped: number
 }
 
@@ -125,10 +130,14 @@ export function outlineTournament(t: Tournament): RoundOutline[] {
   const out: RoundOutline[] = []
   let entrants = t.fieldSize
   for (const round of t.rounds) {
-    const dropped = round.dropLowestWinner === true && entrants > 0 ? 1 : 0
-    entrants -= dropped
+    const drop = round.dropLowestWinner === true && entrants > 0 ? 1 : 0
+    entrants -= drop
     const matchups = Math.floor(entrants / 2)
-    out.push({ key: round.key, label: round.label, week: round.week, entrants, matchups, dropped })
+    // The flag rides on the round that inherits the smaller field, but the team it culls won its
+    // game in the PREVIOUS round — so that is the round it counts as eliminated in.
+    const previous = out[out.length - 1]
+    if (previous !== undefined) previous.dropped = drop
+    out.push({ key: round.key, label: round.label, week: round.week, entrants, matchups, dropped: 0 })
     entrants = matchups
   }
   return out
@@ -144,8 +153,13 @@ export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): 
     // Authored pairings override the computed ones (e.g. a bespoke post-drop seed).
     const pairs = round.matchups ?? pairAdjacent(pool.map((a) => a.ffuId))
     const matchups = pairs.map((m) => resolveMatchup(tierOf, seasonsByTier, m, round.week))
-    const dropped = droppedId === undefined ? [] : [resolveSide(tierOf, seasonsByTier, droppedId, round.week)]
-    rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped })
+    // Attribute the culled winner to the round it actually played and won (see ResolvedRound.dropped),
+    // and score it in THAT week — scoring it in this round's week would report a game it never played.
+    const previous = rounds[rounds.length - 1]
+    if (droppedId !== undefined && previous !== undefined) {
+      previous.dropped = [resolveSide(tierOf, seasonsByTier, droppedId, previous.week)]
+    }
+    rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped: [] })
     advancers = advancersOf(matchups)
   }
 

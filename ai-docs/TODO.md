@@ -30,6 +30,11 @@ this section is unread by me until you say so, so it's safe to leave half-formed
       Re-run the audit if the commissioner swaps anyone in before draft day — an unmapped account
       shows as "not listed yet" on the draft board and the home page's "2026 Leagues" section, and
       `npm run draw-cup -- --seed 1 --dry-run` fails loudly on one.
+- [x] Abbreviations corrected per the commissioner (2026-09-09): ffu-060 Fort Wayne Warthogs
+      FWW → **HOGS**, ffu-058 Croatian National Team CNT → **CRO**. `abbreviation` is a stored
+      registry field, not derived, so it is a one-line edit per member in `src/config/members.ts`.
+- [x] Shton's Strikers (ffu-044) logo replaced with the commissioner's new artwork (2026-09-09),
+      resized 1254px → 256px square into `public/team-logos/ffu-044.png`.
 - [ ] Team logos for anyone added LATER: drop `public/team-logos/{ffuId}.png` (max 256px,
       square-ish — the avatar is a circular `object-cover` mask)
 - [ ] Add a 2026 entry to `src/config/prizes.ts` once the commissioner posts `prizes.txt` for 2026
@@ -112,6 +117,15 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
         irrelevant — National teams never draw, they are only drawn.)
       - Verified 2026-08-20 against live Sleeper: all 36 owners resolve to registry members and both
         drawing tiers already have an order set, so the pipeline runs end to end today
+- [x] **Elimination counts fixed** (2026-09-09). The Schedule table read 9 eliminated in the Round
+      of 18 and 5 in the quarterfinals; the commissioner is right that it is **10 and 4**. The
+      bracket engine was always correct — only the attribution was off. `dropLowestWinner` rides on
+      the round that INHERITS the shrunken field (r8), and both `outlineTournament` and
+      `resolveTournament` credited the culled team to that round. But the team wins its game in the
+      Round of 18 and is eliminated there, which is what `CUP_ROUND_RULES.r18` already said. The
+      drop now attaches to the round the team actually played, which also fixes a second bug: the
+      resolved bracket had been scoring the dropped team in the quarterfinal week, a game it never
+      played. Bracket note copy updated to match.
 - [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
       variable by design, so edit the `rounds[].week` values if they move
 - [ ] **Open rule question:** after the lowest-winner drop leaves 8 teams, how do they re-pair for
@@ -143,6 +157,60 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       voice (System Settings → Accessibility → Spoken Content → Manage Voices), change `VOICE` in
       `scripts/generate-draw-vo.mjs`, re-run `npm run draw-vo`. Notably better than the compact
       voice currently shipped.
+
+## 2026 in-season data — static drafts, and how live the rest of the site gets
+
+Both from the commissioner's list (2026-09-09). They are one question wearing two hats: how much of
+2026 comes from static files vs. live Sleeper calls. **Needs a decision before building.**
+
+- [ ] **Back the 2026 drafts with static data.** All three drafts are done (Masters Aug 30,
+      National Sep 2, Premier Sep 7), so `/drafts` is polling Sleeper every 12s to redraw a board
+      that can no longer change. Write `scripts/backfill-drafts.mjs` to pull the three drafts into
+      `public/data/2026/{tier}.draft.json` in the existing `DraftData` shape (the live path already
+      maps Sleeper picks into `DraftPick`, so the mapping exists — it moves from request time to
+      build time). The page should prefer a static file when one exists and fall back to live, so
+      the same code serves next year's draft night unchanged.
+- [ ] **Decide how much of 2026 the rest of the site sees.** Stats, Standings, Members, Records and
+      Lineal all read `LeagueDataProvider`, which by design holds only completed, backfilled
+      seasons — so today they are all still "through 2025" while the season is being played. That
+      is the documented architecture (`CLAUDE.md`: SEASONS is completed seasons only; live data is
+      the separate `liveSleeper` path), not an oversight, and the home page's This Week section is
+      the one place wired to live data. Three ways out, in rising order of cost:
+      1. **Leave it.** 2026 shows up everywhere when it is backfilled in January. Zero work, but
+         the site looks a season stale for four months, which is exactly when people visit most.
+      2. **Weekly static refresh.** A script writes `public/data/2026/{tier}.json` from Sleeper on
+         a schedule; 2026 becomes an ordinary (if incomplete) season and EVERY page picks it up
+         with no code change. Cheapest real answer, and it reuses the backfill path we already run.
+      3. **Wire `liveSleeper` into the provider** so 2026 is live everywhere. Most work, most
+         moving parts, and it puts a network dependency behind every stat on the site.
+      Recommend (2). Whichever is chosen, add an ADR to `ai-docs/DECISIONS.md` — this is the kind
+      of call we do not want to re-argue mid-season. Note the Cup and Lineal items below are the
+      same gap and get fixed for free by (2).
+
+## Milestone Watch — new page
+
+From the commissioner (2026-09-09): the league is 8+ years old and members should be able to see
+their progress toward career milestones. A member appears on the page once they are ~75% of the way
+to their next milestone in any category.
+
+- [ ] Confirm the thresholds and the watch cutoff with the commissioner before building:
+      - Total points scored **and** points against: 10k / 15k / 20k / 25k
+      - Career wins: 50 / 100 / 150
+      - Career earnings: $500 / $1k / $1.5k (commissioner flagged this one with a "?" — confirm it
+        is in, and that it counts Cup prizing as well as regular-season)
+      - Is 75% the real cutoff, or should it be "within N of the line"? 75% of the way to 15k
+        points is a long way out; 75% to 150 wins is much closer. A per-category cutoff may read
+        better than one number.
+- [ ] Build it by layers (`/milestones`, use the `feature-by-layers` skill). Everything needed is
+      already derived: `careerStats` has points for/against and wins, and prizes are already
+      computed for the earnings columns. So this is a pure selector — `milestoneProgress(career)` →
+      next threshold, distance, percentage — plus a table page. **No new stored data**; do not
+      cache "milestones reached" anywhere, derive it like everything else.
+- [ ] Decide what happens when a milestone is PASSED: does it disappear from the watch list, or
+      show as recently achieved for the rest of the season? A "just hit it" row is the fun part.
+- [ ] Depends on the decision above: while 2026 is not in the provider, the page counts 2025 totals
+      and someone can cross 10,000 points without the site noticing. Worth calling out on the page,
+      or worth doing option (2) first.
 
 ## Deferred / not blocking Week 1
 

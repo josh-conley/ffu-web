@@ -1,5 +1,6 @@
 import type { Game, SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
+import { CUP_FIELD_SIZE } from '@/config/cup'
 import { outlineTournament, resolveTournament, weekScore } from './tournament'
 import dryRun2025 from '../test/fixtures/tournament-2025.json'
 import premier2025 from '../../public/data/2025/premier.json'
@@ -104,8 +105,12 @@ describe('resolveTournament', () => {
       ],
     }
     const r = resolveTournament(t, { PREMIER: s })
+    const first = r.rounds[0]!
     const second = r.rounds[1]!
-    expect(second.dropped.map((d) => d.ffuId)).toEqual(['y']) // y won with 80, the lowest winner
+    // y won R6 with 80, the lowest winning score — so y is eliminated in R6, the round it won.
+    expect(first.dropped.map((d) => d.ffuId)).toEqual(['y'])
+    expect(first.dropped[0]!.score).toBe(80) // scored in week 6, the week it actually played
+    expect(second.dropped).toEqual([])
     expect(second.matchups).toHaveLength(1)
     expect(second.matchups[0]!.a.ffuId).toBe('x')
     expect(second.matchups[0]!.b.ffuId).toBe('z')
@@ -138,10 +143,11 @@ describe('the seeded 2025 dry run resolves to a full bracket', () => {
     expect(real.rounds.map((r) => r.key)).toEqual(['r36', 'r18', 'r8', 'r4', 'final'])
   })
 
-  it('plays out 18 → 9 → 8 → 4 → 1 matchups, dropping exactly one before the Round of 8', () => {
+  it('plays out 18 → 9 → 8 → 4 → 1 matchups, dropping exactly one in the Round of 18', () => {
     expect(round('r36').matchups).toHaveLength(18)
     expect(round('r18').matchups).toHaveLength(9)
-    expect(round('r8').dropped).toHaveLength(1)
+    expect(round('r18').dropped).toHaveLength(1)
+    expect(round('r8').dropped).toEqual([])
     expect(round('r8').matchups).toHaveLength(4)
     expect(round('r4').matchups).toHaveLength(2)
     expect(round('final').matchups).toHaveLength(1)
@@ -186,12 +192,18 @@ describe('outlineTournament', () => {
     expect(outline.map((r) => r.week)).toEqual([6, 7, 8, 10, 12])
   })
 
-  it('accounts for the lowest-winner drop between the Round of 18 and the quarterfinals', () => {
+  it('counts the lowest-winner drop in the Round of 18, the round that team won in', () => {
     const outline = outlineTournament(cup2026)
-    expect(outline.map((r) => r.dropped)).toEqual([0, 0, 1, 0, 0])
+    expect(outline.map((r) => r.dropped)).toEqual([0, 1, 0, 0, 0])
     // 9 winners come out of the Round of 18; one is dropped, leaving 8.
     expect(outline[1]!.matchups).toBe(9)
     expect(outline[2]!.entrants).toBe(8)
+  })
+
+  it('eliminates 18 / 10 / 4 / 2 / 1 across the rounds, accounting for all 35 non-champions', () => {
+    const out = outlineTournament(cup2026).map((r) => r.matchups + r.dropped)
+    expect(out).toEqual([18, 10, 4, 2, 1])
+    expect(out.reduce((a, b) => a + b, 0)).toBe(CUP_FIELD_SIZE - 1)
   })
 
   it('agrees with the resolved bracket on every round size (2025 dry run)', () => {

@@ -29,7 +29,7 @@ function RoundColumn({ round }: { round: RoundOutline }) {
       </header>
       {round.dropped > 0 && (
         <p className="mb-2 border-l-2 border-national pl-2 text-[11px] leading-tight text-muted">
-          Lowest winner of the previous round is eliminated here.
+          Lowest winner of this round is eliminated here.
         </p>
       )}
       <div className="flex flex-1 flex-col justify-around gap-3">
