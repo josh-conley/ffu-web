@@ -134,6 +134,25 @@ export const biggestValues = (comparisons: PickComparison[], limit?: number, bas
 export const pickIn = (market: PlayerMarket, tier: Tier): MarketPick | undefined =>
   market.picks.find((p) => p.tier === tier)
 
+export interface MarketTeam {
+  memberId: string
+  tier: Tier
+}
+
+/**
+ * Every franchise that drafted, with the league it drafted in — the Team filter's options.
+ *
+ * Read from `draftOrder` rather than from the picks, so a team that traded away every pick it
+ * originally held still appears. Ordered by league, then by draft slot.
+ */
+export function marketTeams(drafts: DraftData[]): MarketTeam[] {
+  return drafts.flatMap((draft) =>
+    Object.entries(draft.draftOrder)
+      .sort((a, b) => a[1] - b[1])
+      .map(([memberId]) => ({ memberId, tier: draft.tier })),
+  )
+}
+
 /** Positions present across the drafts, in canonical order — for the page's filter. */
 const POS_ORDER = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
 export function marketPositions(markets: PlayerMarket[]): string[] {

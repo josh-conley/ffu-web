@@ -87,3 +87,40 @@ it('tags each player with their position', async () => {
   const row = within(sectionFor('Biggest Reaches')).getAllByRole('row')[1]!
   expect(within(row).getByText('QB')).toBeInTheDocument()
 })
+
+it('offers League, Team and Position filters', async () => {
+  renderAt()
+  await ready()
+  for (const label of ['League', 'Team', 'Position']) expect(screen.getByLabelText(label)).toBeInTheDocument()
+  // All + the 36 franchises that drafted, each labelled with its league.
+  const options = within(screen.getByLabelText('Team')).getAllByRole('option')
+  expect(options).toHaveLength(37)
+  expect(options[1]!.textContent).toMatch(/ · (Premier|Masters|National)$/)
+})
+
+it('scopes the rankings to one league', async () => {
+  renderAt('/adp-comparison?league=MASTERS')
+  await ready()
+  const rows = within(sectionFor('Biggest Reaches')).getAllByRole('row').slice(1)
+  expect(rows.length).toBeGreaterThan(0)
+  for (const row of rows) expect(row.textContent).toContain('Masters')
+})
+
+it('scopes the rankings to one team', async () => {
+  renderAt('/adp-comparison?team=ffu-044') // Shton's Strikers, Premier
+  await ready()
+  const rows = within(sectionFor('Biggest Reaches')).getAllByRole('row').slice(1)
+  expect(rows.length).toBeGreaterThan(0)
+  for (const row of rows) expect(row.textContent).toContain("Shton's Strikers")
+})
+
+it('keeps a player on the board when a filtered league drafted them, wherever else they went', async () => {
+  renderAt('/adp-comparison?league=NATIONAL')
+  await ready()
+  // A board row is a player, not a pick: filtering by league keeps everyone National took, and
+  // still shows where the other two leagues had them — which is the comparison worth seeing.
+  const headers = within(sectionFor('Every Player')).getAllByRole('columnheader').map((h) => h.textContent ?? '')
+  for (const label of ['Premier', 'Masters', 'National']) {
+    expect(headers.some((h) => h.startsWith(label))).toBe(true)
+  }
+})

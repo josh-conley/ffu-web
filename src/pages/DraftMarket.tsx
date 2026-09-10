@@ -1,18 +1,25 @@
 import { useMemo } from 'react'
 import { FaArrowUpLong, FaArrowDownLong } from 'react-icons/fa6'
-import { LIVE_LEAGUE_IDS } from '@/config'
+import { LIVE_LEAGUE_IDS, nameForYear } from '@/config'
+import type { Tier } from '@/config'
 import { useAdp, useYearDrafts } from '@/hooks/useYearDrafts'
 import { useUrlState } from '@/hooks/useUrlState'
+import { applyFilters, useFilters, type FilterDef } from '@/hooks/useFilters'
 import {
   biggestReaches,
   biggestValues,
   marketPositions,
+  marketTeams,
   pickComparisons,
   playerMarkets,
   type Baseline,
+  type PickComparison,
+  type PlayerMarket,
 } from '@/selectors'
 import { BoardTable, ComparisonTable } from '@/components/draft/MarketTables'
-import { segButton, SELECT } from '@/components/controls'
+import { FilterBar } from '@/components/FilterBar'
+import { LEAGUE_STYLES, TIER_PRESTIGE } from '@/components/leagues'
+import { segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -35,6 +42,35 @@ const BASELINES: { key: Baseline; label: string; caption: string }[] = [
     caption: 'Each pick against Sleeper’s half-PPR ADP, snapshotted around draft time.',
   },
 ]
+
+const tierLabel = (tier: Tier) => LEAGUE_STYLES[tier].label
+
+/**
+ * The filter row. Two def sets over the same URL values, because the two tables hold different
+ * things: a comparison row is ONE league's pick, so League/Team ask about that pick directly; a
+ * board row is a player up to three leagues took, so they ask whether ANY of those picks matches.
+ * Keeping both here means the labels and options are written once and can't drift apart.
+ */
+function filterDefs(teams: ReturnType<typeof marketTeams>, positions: string[], year: string) {
+  const leagueOptions = TIER_PRESTIGE.map((tier) => ({ value: tier, label: tierLabel(tier) }))
+  const teamOptions = teams.map(({ memberId, tier }) => ({
+    value: memberId,
+    label: `${nameForYear(memberId, year) ?? memberId} · ${tierLabel(tier)}`,
+  }))
+  const positionOptions = positions.map((p) => ({ value: p, label: p }))
+
+  const comparison: FilterDef<PickComparison>[] = [
+    { key: 'league', label: 'League', options: leagueOptions, predicate: (c, v) => c.tier === v },
+    { key: 'team', label: 'Team', options: teamOptions, predicate: (c, v) => c.memberId === v },
+    { key: 'pos', label: 'Position', options: positionOptions, predicate: (c, v) => c.player.position === v },
+  ]
+  const board: FilterDef<PlayerMarket>[] = [
+    { key: 'league', label: 'League', options: leagueOptions, predicate: (m, v) => m.picks.some((p) => p.tier === v) },
+    { key: 'team', label: 'Team', options: teamOptions, predicate: (m, v) => m.picks.some((p) => p.memberId === v) },
+    { key: 'pos', label: 'Position', options: positionOptions, predicate: (m, v) => m.player.position === v },
+  ]
+  return { comparison, board }
+}
 
 function Section({
   title,
@@ -66,21 +102,17 @@ export function DraftMarket() {
   const { drafts, loading, error } = useYearDrafts(YEAR)
   const { adp, capturedAt } = useAdp(YEAR)
   const [baseline, setBaseline] = useUrlState('vs', 'ffu')
-  const [position, setPosition] = useUrlState('pos', '')
 
   const markets = useMemo(() => playerMarkets(drafts), [drafts])
   const comparisons = useMemo(() => pickComparisons(markets, adp), [markets, adp])
-  const positions = useMemo(() => marketPositions(markets), [markets])
+  const defs = useMemo(
+    () => filterDefs(marketTeams(drafts), marketPositions(markets), YEAR),
+    [drafts, markets],
+  )
 
+  const { rows: scoped, values, setValue, clear, activeCount } = useFilters(defs.comparison, comparisons)
+  const board = useMemo(() => applyFilters(defs.board, values, markets), [defs.board, values, markets])
   const active: Baseline = baseline === 'sleeper' && Object.keys(adp).length > 0 ? 'sleeper' : 'ffu'
-  const scoped = useMemo(
-    () => (position ? comparisons.filter((c) => c.player.position === position) : comparisons),
-    [comparisons, position],
-  )
-  const board = useMemo(
-    () => (position ? markets.filter((m) => m.player.position === position) : markets),
-    [markets, position],
-  )
 
   if (loading) return <LoadingSpinner />
   if (error) return <ErrorMessage error={error} />
@@ -110,17 +142,13 @@ export function DraftMarket() {
             </button>
           ))}
         </div>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">Position</span>
-          <select className={`${SELECT} w-32`} value={position} onChange={(e) => setPosition(e.target.value)} aria-label="Position">
-            <option value="">All</option>
-            {positions.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </label>
+        <FilterBar
+          defs={defs.comparison}
+          values={values}
+          onChange={setValue}
+          onClear={clear}
+          activeCount={activeCount}
+        />
       </div>
 
       <Section title="Biggest Reaches" icon={<FaArrowUpLong aria-hidden />}>
