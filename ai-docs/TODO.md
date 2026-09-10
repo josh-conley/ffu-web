@@ -233,28 +233,30 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
 
 ## Milestone Watch — new page
 
-From the commissioner (2026-09-09): the league is 8+ years old and members should be able to see
-their progress toward career milestones. A member appears on the page once they are ~75% of the way
-to their next milestone in any category.
+Built 2026-09-09. Route `/milestones`, in the Stats & More menu. Pure selector
+(`src/selectors/milestones.ts`) over the same career totals the Stats page uses, so the two can
+never disagree; nothing is stored.
 
-- [ ] Confirm the thresholds and the watch cutoff with the commissioner before building:
-      - Total points scored **and** points against: 10k / 15k / 20k / 25k
-      - Career wins: 50 / 100 / 150
-      - Career earnings: $500 / $1k / $1.5k (commissioner flagged this one with a "?" — confirm it
-        is in, and that it counts Cup prizing as well as regular-season)
-      - Is 75% the real cutoff, or should it be "within N of the line"? 75% of the way to 15k
-        points is a long way out; 75% to 150 wins is much closer. A per-category cutoff may read
-        better than one number.
-- [ ] Build it by layers (`/milestones`, use the `feature-by-layers` skill). Everything needed is
-      already derived: `careerStats` has points for/against and wins, and prizes are already
-      computed for the earnings columns. So this is a pure selector — `milestoneProgress(career)` →
-      next threshold, distance, percentage — plus a table page. **No new stored data**; do not
-      cache "milestones reached" anywhere, derive it like everything else.
-- [ ] Decide what happens when a milestone is PASSED: does it disappear from the watch list, or
-      show as recently achieved for the rest of the season? A "just hit it" row is the fun part.
-- [ ] Depends on the decision above: while 2026 is not in the provider, the page counts 2025 totals
-      and someone can cross 10,000 points without the site noticing. Worth calling out on the page,
-      or worth doing option (2) first.
+- [x] **Progress is measured from the milestone last passed, not from zero.** This was the one real
+      design decision and it was worth measuring rather than guessing. From zero, a member on 11,300
+      points is "75% of the way to 15,000" despite having only just cleared 10,000, and would sit on
+      the list for years: against the real data that puts **18 of 61** members on the points watch.
+      From the previous milestone it is **7**, which is what "about to happen" should mean.
+- [x] Milestones already banked are credited to the season they were reached in, derived by
+      re-running the career totals year by year rather than accumulating by hand — so "10,000 in
+      2024" comes from the same selectors as the figure beside it.
+- [ ] **Two things to confirm with the commissioner** (both were flagged with a `?` originally):
+      - **Earnings is in.** $500 / $1k / $1.5k, counting every prize including cross-league Cup
+        prizing. Say if it should be regular-season only.
+      - **75% is the cutoff**, one number for all four categories. `WATCH_THRESHOLD` in
+        `src/selectors/milestones.ts` is the only place to change it, and `milestoneWatch` takes it
+        as an argument, so a per-category cutoff is a small change if one is wanted.
+- [ ] **The upper thresholds are years away** — worth knowing before anyone judges the page empty.
+      Measured 2026-09-09: points max is 13,516 (nobody past 15k, let alone 20k/25k); wins max is 69
+      (nobody past 100 or 150); earnings max is $1,635, and one member has passed $1,500. So in
+      practice the page is about the 10,000-point, 50-win and $500 lines for now, and the higher
+      tiers sit there as the long game. Currently 33 teams on watch across the four categories.
+- [ ] Optional: a member's own milestone progress on their Members detail page. Not built.
 
 ## Deferred / not blocking Week 1
 
