@@ -4,11 +4,16 @@
 //   public/data/players.json                 (trimmed id -> {name,position,team}, only appearing ids)
 // ESPN-era seasons (<=2020) have no recoverable lineups and are skipped.
 //
-// Run:  node scripts/backfill-lineups.mjs            (all Sleeper tier-seasons + players map + manifest)
-//       node scripts/backfill-lineups.mjs 2024 premier   (single season trial: writes its lineups,
-//                                                          prints validation, skips the players map)
+// Run:  node scripts/backfill-lineups.mjs            (all Sleeper tier-seasons)
+//       node scripts/backfill-lineups.mjs 2026          (one year — what the weekly refresh runs)
+//       node scripts/backfill-lineups.mjs 2024 premier  (one tier-season)
+//
+// Every run writes the lineups it built, merges the players it saw into players.json, and marks
+// those tier-seasons `hasLineups` in the manifest. A narrowed run therefore leaves the seasons it
+// didn't touch exactly as they were: players.json is merged rather than replaced, because a subset
+// run that rewrote it wholesale would drop every player the other seasons depend on.
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -146,18 +151,28 @@ async function buildSeason(season, ffuMap, ids, warn) {
 }
 
 // ── Players map (trimmed) — fetched once over all collected ids ──
+
+/** Merge the ids this run saw into players.json, keeping everyone already in it. Only fetches
+ *  Sleeper's (large) players map when there is at least one id we don't already know. */
 async function writePlayersMap(ids) {
-  process.stdout.write(`Fetching Sleeper players map (filtering to ${ids.size} appearing)...\n`)
+  const path = join(DATA, 'players.json')
+  const existing = existsSync(path) ? readJson(path) : {}
+  const missing = [...ids].filter((id) => existing[id] === undefined)
+  if (missing.length === 0) {
+    process.stdout.write(`players.json already covers all ${ids.size} players seen\n`)
+    return
+  }
+  process.stdout.write(`Fetching Sleeper players map (${missing.length} new of ${ids.size} seen)...\n`)
   const all = await api('/players/nfl')
-  const out = {}
-  for (const id of ids) {
+  const out = { ...existing }
+  for (const id of missing) {
     const p = all[id]
     if (!p) continue
     const name = p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || id
     out[id] = { name, position: p.position ?? '?' } // team is per-lineup (season-accurate), not here
   }
-  writeFileSync(join(DATA, 'players.json'), JSON.stringify(out))
-  process.stdout.write(`Wrote players.json (${Object.keys(out).length} players)\n`)
+  writeFileSync(path, JSON.stringify(out))
+  process.stdout.write(`Wrote players.json (${Object.keys(out).length} players, +${Object.keys(out).length - Object.keys(existing).length})\n`)
 }
 
 async function main() {
@@ -182,15 +197,11 @@ async function main() {
 
   process.stdout.write(warn.length ? `\n⚠ ${warn.length} score mismatches:\n${warn.slice(0, 20).join('\n')}\n` : `\n✓ all starter sums matched stored scores\n`)
 
-  const trial = Boolean(yearArg)
-  if (!trial) {
-    await writePlayersMap(ids)
-    for (const s of manifest.seasons) if (s.era === 'sleeper') s.hasLineups = true
-    writeFileSync(join(DATA, 'seasons.json'), JSON.stringify(manifest, null, 2) + '\n')
-    process.stdout.write('Updated seasons.json (hasLineups=true for Sleeper seasons)\n')
-  } else {
-    process.stdout.write(`(trial: skipped players.json + manifest; ${ids.size} unique players seen)\n`)
-  }
+  await writePlayersMap(ids)
+  const written = new Set(targets.map((t) => `${t.year}|${t.tier}`))
+  for (const s of manifest.seasons) if (written.has(`${s.year}|${s.tier}`)) s.hasLineups = true
+  writeFileSync(join(DATA, 'seasons.json'), JSON.stringify(manifest, null, 2) + '\n')
+  process.stdout.write(`Updated seasons.json (hasLineups=true for ${written.size} tier-season(s))\n`)
 }
 
 main().catch((e) => {

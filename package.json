@@ -15,6 +15,7 @@
     "refresh-season": "node scripts/refresh-live-season.mjs",
     "backfill-drafts": "node scripts/backfill-drafts.mjs",
     "backfill-adp": "node scripts/backfill-adp.mjs",
+    "backfill-lineups": "node scripts/backfill-lineups.mjs",
     "draw-cup": "node scripts/draw-cup.mjs",
     "draw-vo": "node scripts/generate-draw-vo.mjs",
     "preview": "vite preview"

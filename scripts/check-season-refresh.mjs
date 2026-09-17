@@ -3,7 +3,8 @@
 // decides whether that change is safe to publish unattended.
 //
 // It FAILS (exit 1, nothing gets committed) when:
-//   - a file outside public/data/<live year>/ or public/data/seasons.json changed, or
+//   - a file outside public/data/<live year>/, public/data/seasons.json or public/data/players.json
+//     changed, or
 //   - a game that was already written changed its score or disappeared. Only completed weeks are
 //     ever written, so a moved score means something upstream is wrong — a human should look.
 // It WARNS (job summary, still commits) when the schedule changed: the commissioner may have
@@ -85,7 +86,10 @@ function main() {
     return
   }
   if (!isLiveYear(year)) fail(`${year} is not the live season (src/config/liveSeason.ts), but files changed.`)
-  const allowed = (p) => p === 'public/data/seasons.json' || p.startsWith(`public/data/${year}/`)
+  // players.json is shared across seasons — the lineups backfill merges the week's new players
+  // into it, so it changes outside the year's folder by design.
+  const SHARED = new Set(['public/data/seasons.json', 'public/data/players.json'])
+  const allowed = (p) => SHARED.has(p) || p.startsWith(`public/data/${year}/`)
   const stray = paths.filter((p) => !allowed(p))
   if (stray.length > 0) fail(`Files outside \`public/data/${year}/\` changed:\n\n${stray.map((p) => `- \`${p}\``).join('\n')}`)
 

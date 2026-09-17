@@ -5,8 +5,8 @@ name: Refresh live season
 # this until 2026-09-17: the job is fixed steps, a failure should be a red ✗ + email rather than a
 # "successful" session, and GitHub's runners can reach api.sleeper.app without an allowlist.
 #
-# Flow: refresh from Sleeper → check-season-refresh (fails on changed completed scores or stray
-# files) → typecheck/lint/test → commit + push → start the deploy.
+# Flow: refresh from Sleeper → drafts + lineups → check-season-refresh (fails on changed completed
+# scores or stray files) → typecheck/lint/test → commit + push → start the deploy.
 #
 # Schedule: Tuesdays 10:00 and 14:00 UTC (6am/10am ET; an hour earlier after the clocks change),
 # September–December. The second run is a safety net for Sleeper rolling its week over late, and
@@ -43,6 +43,12 @@ jobs:
       - run: npm run refresh-season
 
       - run: npm run backfill-drafts
+
+      # Box scores for the week just written. Without this the Matchups modal says "Lineups aren't
+      # available for this game" all season: the refresh writes games, never lineups. Narrowed to
+      # the live year so completed seasons are never rewritten; it merges any new players into
+      # players.json and sets `hasLineups` for the tier-seasons it wrote.
+      - run: npm run backfill-lineups "$(date +%Y)"
 
       - id: check
         run: node scripts/check-season-refresh.mjs
