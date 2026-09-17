@@ -42,9 +42,7 @@ function LiveSection({
   showStandings: boolean
   onOpen: (open: OpenGame) => void
 }) {
-  const heading = showStandings
-    ? `Standings${week ? ` — Through Week ${week - 1}` : ''}`
-    : `This Week${week ? ` — Week ${week}` : ''}`
+  const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}` : 'This Week'
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{heading}</h2>

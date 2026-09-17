@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, homeLiveSection, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
+import { currentWeekMatchups, homeLiveSection, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -56,6 +56,32 @@ describe('standingsThroughPreviousWeek', () => {
     expect(a?.rank).toBe(1)
     expect(b?.rank).toBe(2)
     expect(c?.rank).toBe(3)
+  })
+})
+
+describe('liveWeekFor', () => {
+  const state = (over: Partial<NflState> = {}): NflState => ({ week: 3, seasonType: 'regular', year: '2026', seasonStartDate: '2026-09-09', ...over })
+  const during = new Date(2026, 8, 24).getTime() // well after kickoff
+
+  it('is the current week for the season being played', () => {
+    expect(liveWeekFor('2026', state(), during)).toBe(3)
+  })
+
+  it('is undefined for any other season, so an archive year never claims a live week', () => {
+    expect(liveWeekFor('2025', state(), during)).toBeUndefined()
+  })
+
+  it('is undefined before kickoff, when week 1 is still merely upcoming', () => {
+    expect(liveWeekFor('2026', state({ week: 1 }), new Date(2026, 8, 1).getTime())).toBeUndefined()
+  })
+
+  it('is undefined outside the regular season', () => {
+    expect(liveWeekFor('2026', state({ seasonType: 'post' }), during)).toBeUndefined()
+    expect(liveWeekFor('2026', state({ seasonType: 'pre' }), during)).toBeUndefined()
+  })
+
+  it('is undefined with no state at all (the fetch failed or is still in flight)', () => {
+    expect(liveWeekFor('2026', undefined, during)).toBeUndefined()
   })
 })
 

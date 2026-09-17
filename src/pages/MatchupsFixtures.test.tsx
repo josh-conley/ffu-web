@@ -31,6 +31,7 @@ const SLEEPER: Record<string, unknown> = {
     { roster_id: 1, matchup_id: 1, points: 0, starters: ['p1'], starters_points: [0], players: ['p1', 'p9'], players_points: { p1: 0, p9: 0 } },
     { roster_id: 2, matchup_id: 1, points: 0, starters: ['p2'], starters_points: [0], players: ['p2'], players_points: { p2: 0 } },
   ],
+  '/state/nfl': { week: 2, season_type: 'regular', season: '2026', season_start_date: '2026-09-09' },
   '/players/nfl': { p1: { full_name: 'Live Starter', position: 'QB' }, p2: { full_name: 'Other Starter', position: 'QB' }, p9: { full_name: 'Benched', position: 'QB' } },
 }
 
@@ -88,4 +89,17 @@ it('opens the live box score from an unplayed fixture', async () => {
   expect(within(dialog).getByText('Benched')).toBeInTheDocument()
   // Nothing has been played, so both sides head at 0.00 — no stale or invented score.
   expect(within(dialog).getAllByText('0.00').length).toBeGreaterThan(0)
+})
+
+it('badges the week being played Live, and the rest Upcoming', async () => {
+  renderMatchups()
+  const week2 = await week2Section()
+  // Week 2 is in progress per Sleeper's clock; only completed weeks are written to the data files,
+  // so without this it would read "Upcoming" like the weeks that genuinely haven't started.
+  await waitFor(() => expect(within(week2).getByText('Live')).toBeInTheDocument())
+  expect(within(week2).queryByText('Upcoming')).not.toBeInTheDocument()
+
+  const week3 = screen.getByText(/^Week 3$/).closest('section') as HTMLElement
+  expect(within(week3).getByText('Upcoming')).toBeInTheDocument()
+  expect(within(week3).queryByText('Live')).not.toBeInTheDocument()
 })

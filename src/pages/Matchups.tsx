@@ -3,7 +3,8 @@ import type { Game, ScheduledGame, SeasonData } from '@/data'
 import { nameForYear } from '@/config'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
-import { gamesByWeek, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
+import { useNflState } from '@/hooks/useNflState'
+import { gamesByWeek, liveWeekFor, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { FixtureCard, MatchupCard } from '@/components/MatchupCard'
 import { LineupModal } from '@/components/LineupModal'
@@ -40,11 +41,14 @@ const WeekHeading = ({ children }: { children: React.ReactNode }) => (
 function UpcomingWeeks({
   weeks,
   year,
+  liveWeek,
   onOpen,
   subtitle,
 }: {
   weeks: ReturnType<typeof upcomingFixtures>
   year: string
+  /** The week being played right now, if this is the live season — badged Live rather than Upcoming. */
+  liveWeek?: number
   onOpen?: (fixture: ScheduledGame) => void
   subtitle?: (memberId: string) => string | undefined
 }) {
@@ -53,7 +57,12 @@ function UpcomingWeeks({
       {weeks.map(({ week, fixtures }) => (
         <section key={`upcoming-${week}`}>
           <WeekHeading>
-            Week {week} <span className="text-[10px] font-semibold text-muted">Upcoming</span>
+            Week {week}{' '}
+            {week === liveWeek ? (
+              <span className="text-[10px] font-semibold text-accent">Live</span>
+            ) : (
+              <span className="text-[10px] font-semibold text-muted">Upcoming</span>
+            )}
           </WeekHeading>
           <div className="grid gap-3 sm:grid-cols-2">
             {fixtures.map((fixture, i) => (
@@ -72,7 +81,7 @@ function UpcomingWeeks({
   )
 }
 
-function MatchupsContent({ season, year, member }: { season: SeasonData; year: string; member: string }) {
+function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonData; year: string; member: string; liveWeek?: number }) {
   const weeks = useMemo(() => gamesByWeek(season), [season])
   const shown = useMemo(() => weeksFor(weeks, member), [weeks, member])
   // A season being played has a published fixture list, so the weeks still to come are shown rather
@@ -126,6 +135,7 @@ function MatchupsContent({ season, year, member }: { season: SeasonData; year: s
       <UpcomingWeeks
         weeks={upcoming}
         year={year}
+        liveWeek={liveWeek}
         subtitle={fixtureSubtitle}
         onOpen={liveLeagueId ? setOpenFixture : undefined}
       />
@@ -146,6 +156,10 @@ function MatchupsContent({ season, year, member }: { season: SeasonData; year: s
 export function Matchups() {
   const { years, year, tier, setYear, setTier, season, loading, error } = useSeasonView()
   const [member, setMember] = useUrlState('member', '')
+  // Sleeper's clock, so the week actually being played reads Live rather than Upcoming. Only asked
+  // for when the season on screen could be the live one; an archive year never pays for the call.
+  const nflState = useNflState(season?.era === 'sleeper')
+  const liveWeek = liveWeekFor(year, nflState.data)
 
   // Members of the SELECTED season only, by their name that year. Selecting one filters the games.
   const memberOptions = useMemo(
@@ -179,7 +193,7 @@ export function Matchups() {
       )}
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage error={error} />}
-      {season && <MatchupsContent season={season} year={year} member={activeMember} />}
+      {season && <MatchupsContent season={season} year={year} member={activeMember} liveWeek={liveWeek} />}
     </div>
   )
 }

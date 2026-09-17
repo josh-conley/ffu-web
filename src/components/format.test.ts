@@ -1,10 +1,36 @@
-import { draftDateTime, ordinal } from './format'
+import { draftDateTime, ordinal, recordLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
     expect([1, 2, 3, 4, 9].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '9th'])
     expect([11, 12, 13].map(ordinal)).toEqual(['11th', '12th', '13th'])
     expect([21, 22, 23, 101].map(ordinal)).toEqual(['21st', '22nd', '23rd', '101st'])
+  })
+})
+
+describe('recordLabel', () => {
+  it('shows ties only when there are any', () => {
+    expect(recordLabel({ wins: 7, losses: 6, ties: 0 })).toBe('7-6')
+    expect(recordLabel({ wins: 7, losses: 6, ties: 1 })).toBe('7-6-1')
+  })
+})
+
+describe('shortPlayerName', () => {
+  it('reduces the first name to an initial', () => {
+    expect(shortPlayerName('Christian McCaffrey')).toBe('C. McCaffrey')
+  })
+
+  it('keeps everything after the first name, suffixes included', () => {
+    expect(shortPlayerName('Marvin Harrison Jr.')).toBe('M. Harrison Jr.')
+  })
+
+  it('leaves a single-word name alone (team defenses, mononyms)', () => {
+    expect(shortPlayerName('Bengals')).toBe('Bengals')
+    expect(shortPlayerName('SF')).toBe('SF')
+  })
+
+  it('is unfazed by stray whitespace', () => {
+    expect(shortPlayerName('  Puka  Nacua ')).toBe('P. Nacua')
   })
 })
 

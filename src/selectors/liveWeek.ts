@@ -54,6 +54,18 @@ export function homeLiveSection(now: Date = new Date()): 'standings' | 'matchups
 }
 
 /**
+ * The week of `year` being played right now, or undefined when none is — the season shown isn't the
+ * one Sleeper is reporting, it's the offseason or playoffs, or kickoff hasn't happened yet. Lets a
+ * page tell the week in progress apart from the weeks merely still to come: both are unplayed as far
+ * as the data files go (only completed weeks are written), but only one is live.
+ */
+export function liveWeekFor(year: string, state: NflState | undefined, now: number = Date.now()): number | undefined {
+  if (!state || state.year !== year || state.seasonType !== 'regular') return undefined
+  if (!seasonHasStarted(state, now)) return undefined
+  return state.week
+}
+
+/**
  * Has the season Sleeper is reporting actually kicked off?
  *
  * `season_type` alone is not the answer: Sleeper flips it to `regular` the moment the preseason

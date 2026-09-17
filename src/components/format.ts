@@ -14,6 +14,18 @@ export function recordLabel(record: { wins: number; losses: number; ties: number
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
 }
 
+/**
+ * A player's name with the first name reduced to an initial: "Christian McCaffrey" → "C. McCaffrey".
+ * For narrow screens, where a box score has two names side by side and the full pair doesn't fit —
+ * an initial keeps the part that identifies the player instead of truncating mid-surname. Anything
+ * without a space (a team defense, a mononym) is left exactly as it is.
+ */
+export function shortPlayerName(name: string): string {
+  const [first, ...rest] = name.trim().split(/\s+/)
+  if (rest.length === 0 || !first) return name
+  return `${first[0]}. ${rest.join(' ')}`
+}
+
 const DRAFT_DATE = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 const DRAFT_TIME = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 
