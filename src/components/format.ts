@@ -8,6 +8,12 @@ export function ordinal(n: number): string {
   return `${n}${SUFFIX[(v - 20) % 10] ?? SUFFIX[v] ?? SUFFIX[0]}`
 }
 
+/** A team's record, e.g. "7-6" or "7-6-1" — ties shown only when there are any. */
+export function recordLabel(record: { wins: number; losses: number; ties: number }): string {
+  const { wins, losses, ties } = record
+  return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
+}
+
 const DRAFT_DATE = new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 const DRAFT_TIME = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 

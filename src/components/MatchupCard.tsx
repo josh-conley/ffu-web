@@ -44,23 +44,42 @@ export function MatchupCard({ game, year, onOpen, subtitle }: { game: Game; year
 }
 
 /**
- * A matchup that hasn't been played: the two teams, no scores. Dashed and muted so it reads as a
- * fixture rather than a nil-nil result — the whole point is that there is nothing to report yet.
+ * A matchup that hasn't been played: the two teams and their records, no scores. Dashed and muted so
+ * it reads as a fixture rather than a nil-nil result — the whole point is that there is nothing to
+ * report yet. Clickable wherever lineups can be fetched live (`onOpen`), which is how you see who a
+ * manager is starting this week before the games count.
  */
-export function FixtureCard({ fixture, year }: { fixture: ScheduledGame; year: string }) {
-  return (
-    <div className="block w-full border border-dashed border-border bg-surface/60 p-3 text-left">
-      <div className="space-y-1">
-        {fixture.memberIds.map((memberId) => (
-          <div key={memberId} className="flex items-center justify-between gap-2 border-l-2 border-transparent pl-2 text-muted">
-            <span className="flex items-center gap-2 truncate">
-              <TeamLogo ffuId={memberId} size={24} />
-              <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
-            </span>
-            <span className="font-mono text-xs tabular-nums" aria-label="not yet played">—</span>
-          </div>
-        ))}
-      </div>
+export function FixtureCard({
+  fixture,
+  year,
+  onOpen,
+  subtitle,
+}: {
+  fixture: ScheduledGame
+  year: string
+  onOpen?: () => void
+  subtitle?: (memberId: string) => string | undefined
+}) {
+  const body = (
+    <div className="space-y-1">
+      {fixture.memberIds.map((memberId) => (
+        <div key={memberId} className="flex items-center justify-between gap-2 border-l-2 border-transparent pl-2 text-muted">
+          <span className="flex items-center gap-2 truncate">
+            <TeamLogo ffuId={memberId} size={24} />
+            <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
+            {subtitle?.(memberId) && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle(memberId)}</span>}
+          </span>
+          <span className="font-mono text-xs tabular-nums" aria-label="not yet played">—</span>
+        </div>
+      ))}
     </div>
+  )
+  const base = 'block w-full border border-dashed border-border bg-surface/60 p-3 text-left'
+  if (!onOpen) return <div className={base}>{body}</div>
+  return (
+    <button type="button" onClick={onOpen} className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}>
+      {body}
+      <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">View lineups →</span>
+    </button>
   )
 }

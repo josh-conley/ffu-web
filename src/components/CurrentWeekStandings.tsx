@@ -4,13 +4,9 @@ import { nameForYear } from '@/config'
 import type { LiveSeasonData } from '@/data'
 import { standingsThroughPreviousWeek, type LiveStandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
+import { recordLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
-
-function recordLabel(row: LiveStandingRow): string {
-  const { wins, losses, ties } = row.totals
-  return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
-}
 
 function buildColumns(year: string): Column<LiveStandingRow>[] {
   return [
@@ -26,7 +22,7 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
         </span>
       ),
     },
-    { key: 'record', header: 'Record', sortValue: (r) => r.totals.winPct, render: (r) => recordLabel(r) },
+    { key: 'record', header: 'Record', sortValue: (r) => r.totals.winPct, render: (r) => recordLabel(r.totals) },
     {
       key: 'pf',
       header: 'PF',

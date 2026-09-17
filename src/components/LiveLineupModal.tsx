@@ -1,12 +1,33 @@
 import { useEffect, useRef } from 'react'
-import type { Game } from '@/data'
 import { useLiveBoxScore } from '@/hooks/useLiveBoxScore'
+import { starterPoints } from '@/selectors'
 import { BoxScore, type BoxScoreSide } from './BoxScore'
 import { LoadingSpinner } from './LoadingSpinner'
 
-/** Live counterpart to LineupModal.tsx — same BoxScore body, sourced from Sleeper at click time
- *  (the static lineups file this normally reads doesn't exist yet for an in-progress season). */
-export function LiveLineupModal({ leagueId, year, game, onClose }: { leagueId: string; year: string; game: Game; onClose: () => void }) {
+/**
+ * Live counterpart to LineupModal.tsx — same BoxScore body, sourced from Sleeper at click time
+ * (the static lineups file this normally reads doesn't exist yet for an in-progress season).
+ *
+ * Takes a week and two members rather than a Game, because the useful cases include weeks that
+ * aren't games yet: the one being played, and the ones still to come, where Sleeper knows the
+ * lineups but there is no result to read. `scoreOf` supplies the score to head each side with when
+ * a game does exist; without it the starters' own total stands in (0.00 before kickoff).
+ */
+export function LiveLineupModal({
+  leagueId,
+  year,
+  week,
+  memberIds,
+  scoreOf,
+  onClose,
+}: {
+  leagueId: string
+  year: string
+  week: number
+  memberIds: [string, string]
+  scoreOf?: (memberId: string) => number | undefined
+  onClose: () => void
+}) {
   const closeRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     closeRef.current?.focus()
@@ -15,12 +36,10 @@ export function LiveLineupModal({ leagueId, year, game, onClose }: { leagueId: s
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const [p0, p1] = game.participants
-  const memberIds: [string, string] = [p0?.memberId ?? '', p1?.memberId ?? '']
-  const { data, loading } = useLiveBoxScore(leagueId, game.week, memberIds, true)
+  const { data, loading } = useLiveBoxScore(leagueId, week, memberIds, true)
 
   const sides: BoxScoreSide[] = data
-    ? data.teams.map((lineup) => ({ memberId: lineup.memberId, score: game.participants.find((p) => p.memberId === lineup.memberId)?.score ?? 0, lineup }))
+    ? data.teams.map((lineup) => ({ memberId: lineup.memberId, score: scoreOf?.(lineup.memberId) ?? starterPoints(lineup), lineup }))
     : []
   const [sideA, sideB] = sides
 
@@ -28,7 +47,7 @@ export function LiveLineupModal({ leagueId, year, game, onClose }: { leagueId: s
     <div role="dialog" aria-modal="true" aria-label="Game lineups" onClick={onClose} className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
       <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-3xl overflow-auto border border-border bg-surface shadow-xl">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-accent px-4 py-2.5 text-accent-fg">
-          <span className="text-sm font-bold uppercase tracking-wide">Week {game.week} · Live</span>
+          <span className="text-sm font-bold uppercase tracking-wide">Week {week} · Live</span>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded px-2 text-lg leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text">✕</button>
         </header>
         {loading ? (

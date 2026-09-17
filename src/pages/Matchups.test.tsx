@@ -107,3 +107,4 @@ it('opens on the season being played and lists its fixtures before any are playe
   // Scores are shown as em-dashes, never as 0.00 — nothing has been played.
   expect(screen.queryByText('0.00')).not.toBeInTheDocument()
 })
+

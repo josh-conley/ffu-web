@@ -1,5 +1,5 @@
 import type { LineupPlayer, SeasonLineups, TeamLineup } from '@/data'
-import { benchByPoints, gameLineups } from './lineups'
+import { benchByPoints, gameLineups, starterPoints } from './lineups'
 
 const player = (playerId: string, points: number): LineupPlayer => ({ playerId, points })
 
@@ -34,6 +34,22 @@ describe('gameLineups', () => {
 
   it('drops memberIds that have no lineup that week', () => {
     expect(gameLineups(lineups, 1, ['a', 'missing']).map((t) => t.memberId)).toEqual(['a'])
+  })
+})
+
+describe('starterPoints', () => {
+  it('totals the starters only, never the bench', () => {
+    const team = { memberId: 'a', starters: [{ playerId: '1', points: 12.34 }, { playerId: '2', points: 7.2 }], bench: [{ playerId: '3', points: 99 }] }
+    expect(starterPoints(team)).toBe(19.54)
+  })
+
+  it('is 0 for a week nobody has played yet', () => {
+    expect(starterPoints({ memberId: 'a', starters: [{ playerId: '1', points: 0 }], bench: [] })).toBe(0)
+  })
+
+  it('rounds to cents rather than carrying float dust', () => {
+    const team = { memberId: 'a', starters: [{ playerId: '1', points: 0.1 }, { playerId: '2', points: 0.2 }], bench: [] }
+    expect(starterPoints(team)).toBe(0.3)
   })
 })
 

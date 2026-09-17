@@ -126,7 +126,16 @@ export function Overview() {
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
         <ChampionsByLeague years={years} champions={champions} />
       </section>
-      {open && <LiveLineupModal leagueId={open.leagueId} year={open.year} game={open.game} onClose={() => setOpen(null)} />}
+      {open && (
+        <LiveLineupModal
+          leagueId={open.leagueId}
+          year={open.year}
+          week={open.game.week}
+          memberIds={open.game.participants.map((p) => p.memberId) as [string, string]}
+          scoreOf={(memberId) => open.game.participants.find((p) => p.memberId === memberId)?.score}
+          onClose={() => setOpen(null)}
+        />
+      )}
     </div>
   )
 }
