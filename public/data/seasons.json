@@ -166,7 +166,7 @@
       "year": "2026",
       "era": "sleeper",
       "hasDivisions": true,
-      "hasGames": false,
+      "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
@@ -176,7 +176,7 @@
       "year": "2026",
       "era": "sleeper",
       "hasDivisions": true,
-      "hasGames": false,
+      "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
@@ -186,7 +186,7 @@
       "year": "2026",
       "era": "sleeper",
       "hasDivisions": true,
-      "hasGames": false,
+      "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
       "hasLineups": false
