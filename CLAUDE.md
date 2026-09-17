@@ -115,7 +115,11 @@ the `auto/requests` branch (autonomous Discord-request pipeline). `new.ffunion.c
 **Next / open:** optional UPR-progression line chart (All-Time horserace + Members view);
 confirm ffu-035/ffu-048 (in the registry but never appear in data) belong; a couple owner first-names
 (ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
-weeks (15–17), static lineup backfill. 2026-readiness checklist lives in `ai-docs/TODO.md`.
+weeks (15–17). 2026-readiness checklist lives in `ai-docs/TODO.md`.
+
+**Weekly data refresh:** `.github/workflows/refresh-season.yml` (Tuesdays, Sep–Dec) runs
+refresh-season → backfill-drafts → backfill-lineups for the live year, gates it, commits and
+starts the deploy. It replaced a claude.ai routine on 2026-09-17; details in `ai-docs/TODO.md`.
 
 ## ai-docs/
 Ops/planning docs that aren't app source live here (kept out of the repo root to cut clutter):

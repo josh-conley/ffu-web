@@ -222,13 +222,21 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       only**: the second run is a safety net for Sleeper rolling its week late and no-ops if the
       first committed; January is excluded because the script defaults to the calendar year and
       refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
-      Flow: refresh-season → backfill-drafts → `scripts/check-season-refresh.mjs` (the judgment the
+      Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
+      → `scripts/check-season-refresh.mjs` (the judgment the
       routine's prompt used to carry, now code: fails on a changed/removed completed score or any
       file outside `public/data/<year>/`, warns in the job summary if the schedule changed; pure
       diff in `scripts/lib/seasonDiff.mjs`, unit-tested) → typecheck/lint/test → commit as
       github-actions[bot] + push → `gh workflow run deploy.yml`. That last step is required: a push
       made with `GITHUB_TOKEN` does not trigger other workflows, so `deploy.yml`'s `on: push` never
       fires for the bot's commit.
+- [x] **Lineups land weekly too (2026-09-17).** The refresh wrote games but never lineups, so every
+      2026 game opened the Matchups modal on "Lineups aren't available for this game".
+      `backfill-lineups.mjs` narrowed to one year used to be a *trial* that skipped players.json and
+      the manifest; it now merges the players it saw into players.json (replacing it from a subset
+      would drop everyone the other seasons resolve) and sets `hasLineups` for what it wrote, so
+      completed seasons are untouched and reruns are byte-identical. Its own check — starter sums
+      vs the stored game score — passed for all three tiers in week 1.
 - [ ] **Next preseason:** update `LIVE_LEAGUE_IDS` before the first September Tuesday, or the Action
       fails red (which is the reminder). NB GitHub disables scheduled workflows after 60 days with
       no repo activity — if the repo is quiet all offseason, re-enable it in the Actions tab.
