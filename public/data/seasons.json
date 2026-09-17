@@ -169,7 +169,7 @@
       "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "MASTERS",
@@ -179,7 +179,7 @@
       "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     },
     {
       "tier": "NATIONAL",
@@ -189,7 +189,7 @@
       "hasGames": true,
       "hasSchedule": true,
       "hasDraft": true,
-      "hasLineups": false
+      "hasLineups": true
     }
   ]
 }
