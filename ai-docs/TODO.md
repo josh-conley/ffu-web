@@ -206,35 +206,32 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       `games: []` and fills in weekly. 2026 is in `src/config/seasons.ts`. See
       `ai-docs/DECISIONS.md` for the `hasBeenPlayed` invariant this required and the five guards
       that hang off it.
-- [ ] **First real games land Tue 2026-09-15** via the routine. Sanity-check Standings/Stats then:
-      that is when 2026 starts counting toward career records and becomes the default season.
-      **It didn't (found 2026-09-17).** Both 09-15 runs fired and reported success, but the cloud
-      environment's egress allowlist blocks `api.sleeper.app` (`403 Host not in allowlist`), so
-      nothing was fetched. Week 1 was refreshed by hand. **Open: add `api.sleeper.app` to the
-      routine environment's network allowlist** or every Tuesday fails the same way.
-      Even with network, week 1 would have stopped at the gates: four tests pinned counts over the
-      live data (Stats row count, Matchups "Upcoming" count, Minutemen tenure) and one exposed a
-      real bug — `upcomingRosters` compared 2026 against itself once it had games, wiping every
-      Promoted/Relegated/New tag on the home page. All fixed; the tests now derive from the data.
-- [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 10,14 * * 2` —
-      Tuesdays 6am ET, with a second pass at 10am. The second run is a safety net, not a duplicate:
-      the script derives the last completed week from Sleeper's own `state.week`, so if Sleeper
-      hasn't rolled its week over by 6am the just-finished week would otherwise wait a full seven
-      days. Re-running costs nothing — both scripts are idempotent and produce no diff when there
-      is nothing new, so the second pass commits only if the first found nothing. It runs the script, checks
-      the diff touches only `public/data`, runs all three gates, and commits + pushes to `main` only
-      if they pass; it reports "no change" and commits nothing otherwise. It deliberately does NOT
-      edit `src/config/seasons.ts` — it just reports that the year still needs adding.
-      https://claude.ai/code/routines/trig_01Uj2kArjPCPNQ43h9py8hBP
-      Prompt refreshed 2026-09-09 after the season file gained `schedule`/`hasGames` and the drafts
-      backfill landed: it now runs `npm run backfill-drafts` too (a no-op once the drafts are on
-      disk, so it matters next preseason), watches for a changed `schedule` and for the week
-      `hasGames` flips, and no longer chases the seasons.ts note, which 2026 no longer prints.
-      **Re-read that prompt whenever these scripts change** — it describes their behaviour, so it
-      goes stale silently.
-      NB the cron is fixed UTC, so both runs shift an hour earlier (5am/9am ET) when the clocks
-      change on 1 Nov 2026 — still comfortably before anyone looks. Move to `0 11,15 * * 2` if the
-      original hours are ever wanted back mid-season.
+- [x] **First real games landed — by hand, 2026-09-17.** Both 09-15 runs of the claude.ai routine
+      fired and reported success, but its cloud environment's egress allowlist blocks
+      `api.sleeper.app` (`403 Host not in allowlist`), so nothing was fetched. Even with network,
+      week 1 would have stopped at the gates: three tests pinned counts over the live data (Stats
+      row count, Matchups "Upcoming" count, Minutemen tenure) and one exposed a real bug —
+      `upcomingRosters` compared 2026 against itself once it had games, wiping every
+      Promoted/Relegated/New tag on the home page. All fixed; those tests now derive from the data.
+- [x] **Weekly refresh is a GitHub Action (2026-09-17)** — `.github/workflows/refresh-season.yml`,
+      replacing the claude.ai routine (`trig_01Uj2kArjPCPNQ43h9py8hBP`, now **disabled**; delete it
+      once the Action has had a good Tuesday). Why: the job is fixed steps, a failure should be a
+      red ✗ + email rather than a "successful" AI session, runners reach Sleeper with no allowlist,
+      and the schedule + steps live in the repo instead of a prompt that went stale silently.
+      Tuesdays 10:00 + 14:00 UTC (6am/10am ET; an hour earlier after 1 Nov), **September–December
+      only**: the second run is a safety net for Sleeper rolling its week late and no-ops if the
+      first committed; January is excluded because the script defaults to the calendar year and
+      refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
+      Flow: refresh-season → backfill-drafts → `scripts/check-season-refresh.mjs` (the judgment the
+      routine's prompt used to carry, now code: fails on a changed/removed completed score or any
+      file outside `public/data/<year>/`, warns in the job summary if the schedule changed; pure
+      diff in `scripts/lib/seasonDiff.mjs`, unit-tested) → typecheck/lint/test → commit as
+      github-actions[bot] + push → `gh workflow run deploy.yml`. That last step is required: a push
+      made with `GITHUB_TOKEN` does not trigger other workflows, so `deploy.yml`'s `on: push` never
+      fires for the bot's commit.
+- [ ] **Next preseason:** update `LIVE_LEAGUE_IDS` before the first September Tuesday, or the Action
+      fails red (which is the reminder). NB GitHub disables scheduled workflows after 60 days with
+      no repo activity — if the repo is quiet all offseason, re-enable it in the Actions tab.
 - [ ] Playoffs (weeks 15–17) are still out of scope: the script writes regular-season games only,
       reading each league's own `playoff_week_start`. January's backfill remains the thing that
       makes a season complete — final placements, promotions/relegations, playoff brackets.

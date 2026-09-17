@@ -1,0 +1,81 @@
+name: Refresh live season
+
+# Writes the season being played into public/data every Tuesday, so Standings, Matchups, Stats and
+# every other page see the week that just finished. Replaces the claude.ai cloud routine that did
+# this until 2026-09-17: the job is fixed steps, a failure should be a red ✗ + email rather than a
+# "successful" session, and GitHub's runners can reach api.sleeper.app without an allowlist.
+#
+# Flow: refresh from Sleeper → check-season-refresh (fails on changed completed scores or stray
+# files) → typecheck/lint/test → commit + push → start the deploy.
+#
+# Schedule: Tuesdays 10:00 and 14:00 UTC (6am/10am ET; an hour earlier after the clocks change),
+# September–December. The second run is a safety net for Sleeper rolling its week over late, and
+# is a no-op when the first run already committed. The months stop at December because the script
+# defaults to the calendar year and refuses any year that isn't live — a January run would fail —
+# and the regular season (all this writes) is over by mid-December anyway.
+on:
+  schedule:
+    - cron: '0 10,14 * 9-12 2'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # push the data commit
+  actions: write # start deploy.yml (see the last step)
+
+concurrency:
+  group: refresh-season
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run refresh-season
+
+      - run: npm run backfill-drafts
+
+      - id: check
+        run: node scripts/check-season-refresh.mjs
+
+      # The gates run only when there is something to commit. Some tests read the real data files,
+      # so they must pass against the refreshed data, not just the committed data.
+      - if: steps.check.outputs.changed == 'true'
+        run: npm run typecheck
+
+      - if: steps.check.outputs.changed == 'true'
+        run: npm run lint
+
+      - if: steps.check.outputs.changed == 'true'
+        run: npm test
+
+      - name: Commit and push
+        if: steps.check.outputs.changed == 'true'
+        env:
+          MESSAGE: ${{ steps.check.outputs.message }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data
+          git commit -m "$MESSAGE"
+          # Someone may have pushed while this ran; the commit only touches public/data, so rebasing
+          # onto it is safe.
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      # A push made with GITHUB_TOKEN deliberately does not trigger other workflows, so deploy.yml's
+      # `on: push` never fires for this commit. Start it explicitly instead.
+      - name: Deploy
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
