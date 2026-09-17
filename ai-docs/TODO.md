@@ -208,6 +208,14 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       that hang off it.
 - [ ] **First real games land Tue 2026-09-15** via the routine. Sanity-check Standings/Stats then:
       that is when 2026 starts counting toward career records and becomes the default season.
+      **It didn't (found 2026-09-17).** Both 09-15 runs fired and reported success, but the cloud
+      environment's egress allowlist blocks `api.sleeper.app` (`403 Host not in allowlist`), so
+      nothing was fetched. Week 1 was refreshed by hand. **Open: add `api.sleeper.app` to the
+      routine environment's network allowlist** or every Tuesday fails the same way.
+      Even with network, week 1 would have stopped at the gates: four tests pinned counts over the
+      live data (Stats row count, Matchups "Upcoming" count, Minutemen tenure) and one exposed a
+      real bug — `upcomingRosters` compared 2026 against itself once it had games, wiping every
+      Promoted/Relegated/New tag on the home page. All fixed; the tests now derive from the data.
 - [x] **Scheduled (2026-09-09).** Cloud routine "FFU weekly season refresh", `0 10,14 * * 2` —
       Tuesdays 6am ET, with a second pass at 10am. The second run is a safety net, not a duplicate:
       the script derives the last completed week from Sleeper's own `state.week`, so if Sleeper

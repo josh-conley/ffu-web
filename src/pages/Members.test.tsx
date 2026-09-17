@@ -41,8 +41,12 @@ it('shows a member detail with derived debut year + owner', async () => {
   // Header heading (not the directory link)
   await waitFor(() => expect(screen.getByRole('heading', { name: 'The Minutemen' })).toBeInTheDocument())
   expect(screen.getByText('Season History')).toBeInTheDocument()
-  expect(screen.getByText(/Josh · 2018–2025/)).toBeInTheDocument() // owner (first-name only) + derived tenure
-  expect(screen.getByText(/2018–2025 · 8 seasons/)).toBeInTheDocument() // derived tenure
+  // The Minutemen have played every season, so their tenure runs to the newest one with games —
+  // derived, because the season in progress joins it the week its first games land.
+  const manifest = FILES['/data/seasons.json'] as { seasons: { year: string; hasGames?: boolean }[] }
+  const lastYear = Math.max(...manifest.seasons.filter((s) => s.hasGames !== false).map((s) => Number(s.year)))
+  expect(screen.getByText(new RegExp(`Josh · 2018–${lastYear}`))).toBeInTheDocument() // owner (first-name only) + derived tenure
+  expect(screen.getByText(new RegExp(`2018–${lastYear} · ${lastYear - 2017} seasons`))).toBeInTheDocument() // derived tenure
 })
 
 it('shows a head-to-head comparison when ?vs is set', async () => {

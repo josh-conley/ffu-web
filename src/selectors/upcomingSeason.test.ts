@@ -86,6 +86,16 @@ describe('upcomingRosters', () => {
     expect(premier).toMatchObject({ openSlots: 10, unregistered: 1 })
   })
 
+  it('ignores the season the rosters are for once it is under way', () => {
+    // Week 1 of 2026 is in: the season now counts as played, but it is the one being lined up for,
+    // not the one anyone arrived from.
+    const underway = [...seasons, season('2026', 'PREMIER', ['stayer', 'riser', 'bigriser', 'lifer'])]
+    const [premier] = upcomingRosters(underway, [roster('PREMIER', ['stayer', 'riser', 'bigriser', 'lifer'])])
+    const of = (id: string) => premier!.teams.find((t) => t.memberId === id)!
+    expect(of('riser')).toMatchObject({ movement: 'promoted', fromYear: '2025', tierStreak: 0 })
+    expect(of('lifer')).toMatchObject({ movement: 'stayed', tierStreak: 2, tiers: ['PREMIER', 'PREMIER'] })
+  })
+
   it('returns nothing when there is no completed season to compare against', () => {
     expect(upcomingRosters([], [roster('PREMIER', ['stayer'])])).toEqual([])
   })

@@ -11,6 +11,26 @@ const FILES: Record<string, unknown> = {
   '/data/2026/premier.json': premier2026,
 }
 
+// 2026 as it stood before week 1: the real fixtures, but no results. Built from the live file rather
+// than read from it directly, because the weekly refresh fills that file in and this test is about
+// the preseason state specifically.
+const PRESEASON_FILES: Record<string, unknown> = {
+  ...FILES,
+  '/data/seasons.json': {
+    ...manifest,
+    seasons: manifest.seasons.map((s) => (s.year === '2026' ? { ...s, hasGames: false } : s)),
+  },
+  '/data/2026/premier.json': {
+    ...premier2026,
+    games: [],
+    teams: premier2026.teams.map((t) => ({
+      ...t,
+      record: { wins: 0, losses: 0, ties: 0 },
+      points: { for: 0, against: 0 },
+    })),
+  },
+}
+
 afterEach(() => vi.unstubAllGlobals())
 
 it('renders week sections with matchup cards for a completed season', async () => {
@@ -62,7 +82,7 @@ it('offers a member filter scoped to the selected season', async () => {
 
 it('opens on the season being played and lists its fixtures before any are played', async () => {
   vi.stubGlobal('fetch', (url: string) => {
-    const body = FILES[url]
+    const body = PRESEASON_FILES[url]
     return Promise.resolve(
       body === undefined
         ? ({ ok: false, status: 404, json: async () => ({}) } as Response)

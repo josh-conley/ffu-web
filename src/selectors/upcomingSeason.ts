@@ -97,13 +97,16 @@ function movementFor(tier: Tier, priorYear: string, last: LastSeason | undefined
  * compare against, since every movement label would be meaningless.
  */
 export function upcomingRosters(seasons: SeasonData[], rosters: LeagueRosterSummary[]): UpcomingRoster[] {
-  // The last season actually PLAYED — not simply the newest on file. The season these rosters are
-  // FOR now has a file of its own from the day its leagues were created, so comparing against the
-  // newest year would compare it with itself and report all 36 managers as having "stayed".
-  const years = seasons.filter(hasBeenPlayed).map((s) => Number(s.year))
-  if (years.length === 0) return []
-  const priorYear = String(Math.max(...years))
-  const careers = careerStats(seasons)
+  // Every roster describes the same season. Compare against what was played BEFORE it — not simply
+  // the newest played season on file: once the season these rosters are for has finished week 1 it
+  // counts as played itself, and comparing it with itself reports all 36 managers as having
+  // "stayed" and adds it to every career trail on top of the hollow "upcoming" dot.
+  const year = rosters[0]?.year
+  if (year === undefined) return []
+  const before = seasons.filter((s) => Number(s.year) < Number(year) && hasBeenPlayed(s))
+  if (before.length === 0) return []
+  const priorYear = String(Math.max(...before.map((s) => Number(s.year))))
+  const careers = careerStats(before)
 
   return rosters.map((roster) => ({
     tier: roster.tier,
