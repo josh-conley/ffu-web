@@ -70,6 +70,37 @@ it('ignores a ?week= that has not been played and falls back to the latest', asy
   expect(screen.getByText(/Week \d+ — Top Scores/)).toBeInTheDocument()
 })
 
+describe('the FFUN layout', () => {
+  it('shows the same numbers as the standard one, in the newsletter\'s bands', async () => {
+    renderPage('/around-the-union?layout=ffun')
+    await ready()
+    // The section headings and the race TABLE are gone — that is the vertical space being saved.
+    expect(screen.queryByText(/Top Scores/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    // ...but all three leagues' figures are still on the strip.
+    // Scoped to the footer strip — a league name also appears on the podium above it.
+    const strip = within(screen.getByText('Avg Game / Total League Points').parentElement!)
+    for (const league of ['Premier', 'Masters', 'National']) expect(strip.getByText(league)).toBeInTheDocument()
+    // Each league carries both figures: average, then total.
+    expect(strip.getAllByText(/^[\d,]+\.\d+$/)).toHaveLength(6)
+  })
+
+  it('is reachable from the toggle and lands in the URL', async () => {
+    renderPage()
+    await ready()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'FFUN' }))
+    await waitFor(() => expect(screen.queryByRole('table')).not.toBeInTheDocument())
+    expect(screen.getByText('Avg Game / Total League Points')).toBeInTheDocument()
+  })
+
+  it('falls back to standard for an unknown layout', async () => {
+    renderPage('/around-the-union?layout=nonsense')
+    await ready()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+  })
+})
+
 it('lets an author step back to an earlier week when more than one has been played', async () => {
   renderPage()
   await ready()

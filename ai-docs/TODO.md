@@ -263,6 +263,16 @@ page teaser while a season is live.
 - [x] League totals read the STORED Points For, the same source `selectors/standings.ts` uses, so
       the table is always the sum of the Standings page. Ranked by total points; ties share a rank,
       as do tied scores on the podium (everyone level with 3rd makes it).
+- [x] **FFUN layout added 2026-09-17**, at the commissioner's request ("save on vertical spacing
+      / a hidden screenshot mode"). `?layout=ffun` (toggle on the page, in the URL so he can
+      bookmark it) folds the panel into the newsletter's own horizontal bands — leader beside its
+      runners-up, then one footer strip carrying all three leagues as paired chips (avg in the solid
+      tier color, total in the soft one). Roughly a third the height of the standard view. Not
+      hidden: a visible toggle is discoverable and costs nothing, and the standard view is still the
+      better one to READ on the site. The page intro paragraph was dropped at the same time.
+      NB the newsletter leaves those chips unlabelled and lets color carry the league; ours keeps a
+      short label, since color alone as the sole encoding fails anyone who can't separate gold from
+      red.
 - [ ] **Worth confirming with the commissioner**: the screenshot he sent is an END-of-season panel
       (168 team-games), so "Total League Points" there is a full-season figure. This page reports
       season-to-date, which is what makes it useful in week 6 — say if he wants anything else.
