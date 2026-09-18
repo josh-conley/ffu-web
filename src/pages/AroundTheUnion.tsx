@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import {
@@ -8,6 +8,7 @@ import {
   topScoresForWeek,
 } from '@/selectors'
 import { AroundTheUnionBoard, type BoardLayout } from '@/components/AroundTheUnionBoard'
+import { CopyImageButton } from '@/components/CopyImageButton'
 import { SELECT, segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -32,6 +33,8 @@ const LAYOUTS: [BoardLayout, string][] = [
  */
 export function AroundTheUnion() {
   const { data: seasons, loading, error } = useAllSeasons()
+  // The capture target. On the WRAPPER, not the board, so the ref survives a layout switch.
+  const panel = useRef<HTMLDivElement>(null)
   const [weekParam, setWeek] = useUrlState('week', '')
   // In the URL so the commissioner can bookmark the layout he actually screenshots.
   const [layoutParam, setLayout] = useUrlState('layout', 'standard')
@@ -77,12 +80,15 @@ export function AroundTheUnion() {
             ))}
           </div>
         </div>
+        <CopyImageButton targetRef={panel} filename={`around-the-union-${year ?? 'season'}-week-${week ?? ''}.png`} />
       </div>
 
       {year === undefined ? (
         <ErrorMessage error="No season has been played yet." />
       ) : (
-        <AroundTheUnionBoard year={year} week={week} scores={scores} race={race} layout={layout} />
+        <div ref={panel}>
+          <AroundTheUnionBoard year={year} week={week} scores={scores} race={race} layout={layout} />
+        </div>
       )}
     </div>
   )

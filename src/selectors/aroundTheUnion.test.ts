@@ -165,15 +165,25 @@ describe('against the real 2026 season files', () => {
 
 describe('unionHighlight (the home page teaser)', () => {
   const seasons = [
-    season('PREMIER', [game(1, ['a', 150], ['b', 90]), game(2, ['a', 111], ['b', 105])]),
-    season('MASTERS', [game(1, ['c', 200], ['d', 90]), game(2, ['c', 120], ['d', 190])]),
+    season(
+      'PREMIER',
+      [game(1, ['a', 150], ['b', 90]), game(2, ['a', 111], ['b', 105])],
+      [team('a', 2, 0, 261), team('b', 0, 2, 195)],
+    ),
+    season(
+      'MASTERS',
+      [game(1, ['c', 200], ['d', 90]), game(2, ['c', 120], ['d', 190])],
+      [team('c', 2, 0, 320), team('d', 0, 2, 280)],
+    ),
   ]
 
-  it('leads with the top score of the LATEST completed week', () => {
+  it('carries the LATEST completed week — its podium and the league race', () => {
     const highlight = unionHighlight(seasons, '2026')
     expect(highlight?.week).toBe(2)
-    expect(highlight?.leader.memberId).toBe('d')
-    expect(highlight?.leader.score).toBe(190)
+    expect(highlight?.scores[0]?.memberId).toBe('d')
+    expect(highlight?.scores[0]?.score).toBe(190)
+    // The race is season-to-date, so it spans both weeks, not just the one on the podium.
+    expect(highlight?.race.map((r) => r.tier)).toEqual(['MASTERS', 'PREMIER'])
   })
 
   it('is null in the offseason — the latest played season is not the live one', () => {

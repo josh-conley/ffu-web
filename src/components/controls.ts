@@ -16,3 +16,10 @@ export function segButton(active: boolean): string {
     ? `${base} border-accent bg-accent text-accent-fg`
     : `${base} border-border bg-surface text-muted hover:bg-surface-2 hover:text-text`
 }
+
+/**
+ * Standalone action button (e.g. "Copy image") — bordered like a select rather than filled like a
+ * segmented toggle, so an action doesn't read as a selected state. Same 44px tap target.
+ */
+export const BUTTON =
+  'inline-flex min-h-11 items-center gap-2 border border-border bg-surface px-3 py-1.5 text-sm font-bold uppercase tracking-wide text-text shadow-sm transition-colors hover:bg-surface-2 disabled:cursor-progress disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0'

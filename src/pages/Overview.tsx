@@ -7,7 +7,7 @@ import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
 import { homeLiveSection, unionHighlight, upcomingRosters, upcomingYear } from '@/selectors'
-import { AroundTheUnionTeaser } from '@/components/AroundTheUnionTeaser'
+import { HomeUnionPanel } from '@/components/HomeUnionPanel'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
@@ -90,7 +90,7 @@ export function Overview() {
   const { rosters } = useLeagueRosters(nextYear)
   const { schedules: draftSchedules } = useDraftSchedules(nextYear)
   const upcoming = useMemo(() => upcomingRosters(allSeasons, rosters), [allSeasons, rosters])
-  const teaser = useMemo(() => unionHighlight(allSeasons, nextYear), [allSeasons, nextYear])
+  const union = useMemo(() => unionHighlight(allSeasons, nextYear), [allSeasons, nextYear])
   const latestChampions: LatestChampion[] = useMemo(
     () =>
       latest
@@ -115,13 +115,13 @@ export function Overview() {
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
       <CupBanner />
+      <HomeUnionPanel highlight={union} />
       {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
           resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
           keeps the section headings from rendering over an empty (or permanently failed) grid. */}
       {liveTiers.length > 0 && (
         <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
-      <AroundTheUnionTeaser highlight={teaser} />
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
       {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}

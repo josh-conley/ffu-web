@@ -276,9 +276,17 @@ page teaser while a season is live.
 - [ ] **Worth confirming with the commissioner**: the screenshot he sent is an END-of-season panel
       (168 team-games), so "Total League Points" there is a full-season figure. This page reports
       season-to-date, which is what makes it useful in week 6 — say if he wants anything else.
-- [ ] Not built, offered and declined: a "Download PNG" button. He is happy screenshotting; the
-      win he asked for was not retyping the numbers. Easy to add later (a DOM-to-image library at a
-      fixed render width) if the capture ever needs to be identical week to week.
+- [x] **Copy as image (2026-09-17)** — asked for after all, as a clipboard copy rather than the
+      download that was first offered. "Copy image" beside the layout toggle renders the panel at 2x
+      via `html-to-image` (the one new runtime dependency; dynamically imported so it stays out of
+      every other page's bundle) and writes a PNG to the clipboard. What is copied is what is on
+      screen, the viewer's THEME included — switch to light before copying if the FFUN page is
+      light. Falls back to downloading the PNG where a browser won't take an image on the clipboard,
+      and says which it did, since silently claiming "Copied" sends the author to an empty
+      clipboard. Verified end to end in Chrome.
+- [x] **The FFUN panel is on the home page too (2026-09-17)**, directly under the FFU Cup banner —
+      it replaced the one-line teaser, which the condensed layout made unnecessary. Reader's view
+      only: the week picker and the copy button stay on `/around-the-union`, with a link down to it.
 - [ ] Possible follow-ups nobody has asked for: the week's biggest blowout / closest game, and the
       high-score payout standings themselves once the 2026 prize schedule lands (`prizes.ts` still
       has an empty `tiers` for 2026 — separate item above).

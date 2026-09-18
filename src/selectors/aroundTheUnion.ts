@@ -129,16 +129,18 @@ export function aroundTheUnionYear(seasons: SeasonData[]): string | undefined {
 export interface UnionHighlight {
   year: string
   week: number
-  /** The top score of that week — the one number the newsletter leads with. */
-  leader: WeekScore
+  /** That week's podium, highest first. */
+  scores: WeekScore[]
+  race: LeaguePointsRow[]
 }
 
 /**
- * The home page's teaser: the best score of the most recently completed week.
+ * Everything the home page's Around the Union panel needs, for the most recently completed week.
  *
  * Null unless the season it comes from is the one being PLAYED (`liveYear`, per LIVE_LEAGUE_IDS).
  * In the offseason the latest completed week is last January's, and a front-door panel shouting
- * about a week that finished months ago reads as a stale page rather than a live league.
+ * about a week that finished months ago reads as a stale site rather than a live league — the
+ * dedicated page still has it.
  */
 export function unionHighlight(seasons: SeasonData[], liveYear: string | undefined): UnionHighlight | null {
   const year = aroundTheUnionYear(seasons)
@@ -146,6 +148,6 @@ export function unionHighlight(seasons: SeasonData[], liveYear: string | undefin
   const yearSeasons = seasons.filter((s) => s.year === year)
   const week = completedUnionWeeks(yearSeasons).at(-1)
   if (week === undefined) return null
-  const leader = topScoresForWeek(yearSeasons, week, 1)[0]
-  return leader === undefined ? null : { year, week, leader }
+  const scores = topScoresForWeek(yearSeasons, week)
+  return scores.length === 0 ? null : { year, week, scores, race: leaguePointsRace(yearSeasons) }
 }
