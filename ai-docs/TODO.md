@@ -244,6 +244,35 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       reading each league's own `playoff_week_start`. January's backfill remains the thing that
       makes a season complete — final placements, promotions/relegations, playoff brackets.
 
+## Around the Union — new page
+
+Built 2026-09-17 at the commissioner's request: the FFUN newsletter's page-2 staple, which he has
+been updating by hand for years. Route `/around-the-union`, in the Stats & More menu, plus a home
+page teaser while a season is live.
+
+- [x] **Two blocks, both derived.** The week's top 3 scores across all three leagues, and each
+      league's total points + avg per team-game, ranked. Pure selector
+      (`src/selectors/aroundTheUnion.ts`), no network — it reads the static season files the Tuesday
+      refresh Action already writes, so a week appears here the morning it finishes and the numbers
+      can never disagree with Standings or Matchups.
+- [x] **Built for capture**, which is the actual ask: the panel is one self-contained bordered unit
+      with its own titled header, and every control sits outside it so a screenshot of just the
+      panel needs no cropping and explains itself on page 2.
+- [x] A week counts only when EVERY league has played it (the intersection of the tiers, not the
+      union). A half-written Tuesday must not publish a "top 3" drawn from a partial field.
+- [x] League totals read the STORED Points For, the same source `selectors/standings.ts` uses, so
+      the table is always the sum of the Standings page. Ranked by total points; ties share a rank,
+      as do tied scores on the podium (everyone level with 3rd makes it).
+- [ ] **Worth confirming with the commissioner**: the screenshot he sent is an END-of-season panel
+      (168 team-games), so "Total League Points" there is a full-season figure. This page reports
+      season-to-date, which is what makes it useful in week 6 — say if he wants anything else.
+- [ ] Not built, offered and declined: a "Download PNG" button. He is happy screenshotting; the
+      win he asked for was not retyping the numbers. Easy to add later (a DOM-to-image library at a
+      fixed render width) if the capture ever needs to be identical week to week.
+- [ ] Possible follow-ups nobody has asked for: the week's biggest blowout / closest game, and the
+      high-score payout standings themselves once the 2026 prize schedule lands (`prizes.ts` still
+      has an empty `tiers` for 2026 — separate item above).
+
 ## Milestone Watch — new page
 
 Built 2026-09-09. Route `/milestones`, in the Stats & More menu. Pure selector

@@ -87,7 +87,9 @@ npm run validate   # per-game migration diff harness
 Standings, Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
 Members (directory/detail/compare), **FFU Cup** (route `/cup` — the 36-team cross-league knockout;
 tabbed Bracket / Format & Rules, the bracket being an empty outline until the season's draw is held),
-and **Stats** (route `/stats`,
+**Around the Union** (route `/around-the-union` — the FFUN newsletter's page-2 panel: last
+completed week's top 3 scorers across all leagues + the league points/PPG race, framed as one
+screenshot-ready block), and **Stats** (route `/stats`,
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
 reorder, full-bleed/sticky Team column, FA icons). All gates green.
 
