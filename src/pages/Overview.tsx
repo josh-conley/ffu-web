@@ -6,7 +6,8 @@ import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { homeLiveSection, upcomingRosters, upcomingYear } from '@/selectors'
+import { homeLiveSection, unionHighlight, upcomingRosters, upcomingYear } from '@/selectors'
+import { AroundTheUnionTeaser } from '@/components/AroundTheUnionTeaser'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import { CurrentWeekMatchups, type OpenGame } from '@/components/CurrentWeekMatchups'
@@ -61,6 +62,8 @@ function LiveSection({
 
 export function Overview() {
   const { data: seasons, loading, error } = useAllSeasons()
+  // One nullable-unwrap for the whole page: every selector below takes the same array.
+  const allSeasons = useMemo(() => seasons ?? [], [seasons])
   const liveWeek = useLiveWeek()
   const [open, setOpen] = useState<OpenGame | null>(null)
   // Years that have a CHAMPION, which is not the same as years with data. The season being played
@@ -71,22 +74,23 @@ export function Overview() {
   const { years, champions } = useMemo(() => {
     const champions = new Map<string, string>() // `${year}|${tier}` -> memberId
     const yearSet = new Set<string>()
-    for (const s of seasons ?? []) {
+    for (const s of allSeasons) {
       const id = championOf(s)
       if (!id) continue
       yearSet.add(s.year)
       champions.set(`${s.year}|${s.tier}`, id)
     }
     return { years: [...yearSet].sort().reverse(), champions }
-  }, [seasons])
+  }, [allSeasons])
 
   const latest = years[0]
   // The season being played, from config — not `latest + 1`, which skips past it once it has a
   // data file of its own (see upcomingYear).
-  const nextYear = upcomingYear(seasons ?? [])
+  const nextYear = upcomingYear(allSeasons)
   const { rosters } = useLeagueRosters(nextYear)
   const { schedules: draftSchedules } = useDraftSchedules(nextYear)
-  const upcoming = useMemo(() => upcomingRosters(seasons ?? [], rosters), [seasons, rosters])
+  const upcoming = useMemo(() => upcomingRosters(allSeasons, rosters), [allSeasons, rosters])
+  const teaser = useMemo(() => unionHighlight(allSeasons, nextYear), [allSeasons, nextYear])
   const latestChampions: LatestChampion[] = useMemo(
     () =>
       latest
@@ -117,6 +121,7 @@ export function Overview() {
       {liveTiers.length > 0 && (
         <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
+      <AroundTheUnionTeaser highlight={teaser} />
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
       {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}

@@ -49,6 +49,7 @@ export const NAV: readonly NavEntry[] = [
       // make the page indistinguishable from its own heading.
       { to: '/stats', label: 'All-Time', end: false },
       { to: '/records', label: 'Records', end: false },
+      { to: '/around-the-union', label: 'Around the Union', end: false },
       { to: '/milestones', label: 'Milestones', end: false },
       { to: '/builds', label: 'Builds', end: false },
       { to: '/adp-comparison', label: 'Compare ADP', end: false },
