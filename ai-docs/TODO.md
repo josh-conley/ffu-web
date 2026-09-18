@@ -342,6 +342,14 @@ Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to t
       value. Stored rather than read live because ADP is a market that keeps drifting after the
       drafts are over — the file is a dated record of the board the drafts were made against, which
       is why the script refuses to overwrite without `--force`.
+- [x] **Round filter (2026-09-17)** — a two-knob slider setting a round RANGE (`?round=3-7`),
+      alongside League/Team/Position. Added as a new `span` filter type in the shared
+      `useFilters`/`FilterBar` layer rather than a page-local control, so any other view can take one.
+      The existing two-knob slider (the Builds page's year range) was lifted out of
+      `RosterBuildControls` into `src/components/DualRangeSlider.tsx` and both now share it.
+      Reach/value rows filter on their own pick's round; a board row survives if ANY of the leagues
+      that took the player did so in the span, matching how League and Team already behave there.
+      A span covering the whole draft clears itself from the URL so it doesn't count as active.
 - [ ] The projections endpoint is undocumented, so treat a shape change as expected someday. The
       script fails loudly rather than writing a file of nulls. If it breaks, `adp_ppr`, `adp_std`
       and `adp_2qb` are in the same payload.

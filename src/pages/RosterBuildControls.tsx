@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { FILTER_POSITIONS } from '@/selectors'
 import { SELECT, segButton } from '@/components/controls'
+import { DualRangeSlider } from '@/components/DualRangeSlider'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
 
@@ -30,30 +31,6 @@ function RangeSlider({ label, value, min, max, valueLabel, onChange }: { label: 
       <div className="flex h-11 items-center gap-3 md:h-auto">
         <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} className="w-32 accent-accent sm:w-40" />
         <span className="w-14 shrink-0 text-sm font-bold tabular-nums">{valueLabel}</span>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Two-knob range slider: two range inputs overlaid on one track (fill between the thumbs). Inputs
- * are pointer-transparent except their thumbs (see `.range-dual` in index.css), so both knobs stay
- * draggable. The thumbs clamp against each other so `from` can never pass `to`.
- */
-function DualRangeSlider({ label, min, max, from, to, onFrom, onTo, format }: { label: string; min: number; max: number; from: number; to: number; onFrom: (n: number) => void; onTo: (n: number) => void; format: (n: number) => string }) {
-  const span = Math.max(1, max - min)
-  const pct = (n: number) => ((n - min) / span) * 100
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</span>
-      <div className="flex h-11 items-center gap-3 md:h-auto">
-        <div className="relative h-4 w-36 sm:w-44">
-          <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 bg-surface-2" />
-          <div className="absolute top-1/2 h-1 -translate-y-1/2 bg-accent" style={{ left: `${pct(from)}%`, right: `${100 - pct(to)}%` }} />
-          <input type="range" min={min} max={max} value={from} aria-label={`${label} from`} onChange={(e) => onFrom(Math.min(Number(e.target.value), to))} className="range-dual absolute inset-0 h-full w-full" />
-          <input type="range" min={min} max={max} value={to} aria-label={`${label} to`} onChange={(e) => onTo(Math.max(Number(e.target.value), from))} className="range-dual absolute inset-0 h-full w-full" />
-        </div>
-        <span className="w-24 shrink-0 text-sm font-bold tabular-nums">{format(from)} – {format(to)}</span>
       </div>
     </div>
   )

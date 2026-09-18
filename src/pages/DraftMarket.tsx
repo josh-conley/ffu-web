@@ -4,11 +4,12 @@ import { LIVE_LEAGUE_IDS, nameForYear } from '@/config'
 import type { Tier } from '@/config'
 import { useAdp, useYearDrafts } from '@/hooks/useYearDrafts'
 import { useUrlState } from '@/hooks/useUrlState'
-import { applyFilters, useFilters, type FilterDef } from '@/hooks/useFilters'
+import { applyFilters, inSpan, useFilters, type FilterDef } from '@/hooks/useFilters'
 import {
   biggestReaches,
   biggestValues,
   marketPositions,
+  marketRounds,
   marketTeams,
   pickComparisons,
   playerMarkets,
@@ -51,23 +52,29 @@ const tierLabel = (tier: Tier) => LEAGUE_STYLES[tier].label
  * board row is a player up to three leagues took, so they ask whether ANY of those picks matches.
  * Keeping both here means the labels and options are written once and can't drift apart.
  */
-function filterDefs(teams: ReturnType<typeof marketTeams>, positions: string[], year: string) {
+function filterDefs(teams: ReturnType<typeof marketTeams>, positions: string[], rounds: number, year: string) {
   const leagueOptions = TIER_PRESTIGE.map((tier) => ({ value: tier, label: tierLabel(tier) }))
   const teamOptions = teams.map(({ memberId, tier }) => ({
     value: memberId,
     label: `${nameForYear(memberId, year) ?? memberId} · ${tierLabel(tier)}`,
   }))
   const positionOptions = positions.map((p) => ({ value: p, label: p }))
+  // Shared by both def sets so the two tables can never disagree about what "rounds 3-7" means.
+  const round = { key: 'round', label: 'Rounds', type: 'span', min: 1, max: rounds, format: (n: number) => `R${n}` } as const
 
   const comparison: FilterDef<PickComparison>[] = [
     { key: 'league', label: 'League', options: leagueOptions, predicate: (c, v) => c.tier === v },
     { key: 'team', label: 'Team', options: teamOptions, predicate: (c, v) => c.memberId === v },
     { key: 'pos', label: 'Position', options: positionOptions, predicate: (c, v) => c.player.position === v },
+    { ...round, predicate: (c, v) => inSpan(c.round, v) },
   ]
   const board: FilterDef<PlayerMarket>[] = [
     { key: 'league', label: 'League', options: leagueOptions, predicate: (m, v) => m.picks.some((p) => p.tier === v) },
     { key: 'team', label: 'Team', options: teamOptions, predicate: (m, v) => m.picks.some((p) => p.memberId === v) },
     { key: 'pos', label: 'Position', options: positionOptions, predicate: (m, v) => m.player.position === v },
+    // A board row is one player up to three leagues took, and they can go in different rounds — so
+    // it survives if ANY of those picks falls in the span, the rule League and Team already use.
+    { ...round, predicate: (m, v) => m.picks.some((p) => inSpan(p.round, v)) },
   ]
   return { comparison, board }
 }
@@ -106,7 +113,7 @@ export function DraftMarket() {
   const markets = useMemo(() => playerMarkets(drafts), [drafts])
   const comparisons = useMemo(() => pickComparisons(markets, adp), [markets, adp])
   const defs = useMemo(
-    () => filterDefs(marketTeams(drafts), marketPositions(markets), YEAR),
+    () => filterDefs(marketTeams(drafts), marketPositions(markets), marketRounds(drafts), YEAR),
     [drafts, markets],
   )
 

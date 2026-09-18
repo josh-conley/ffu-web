@@ -1,5 +1,6 @@
-import type { FilterDef } from '@/hooks/useFilters'
+import { parseSpan, spanValue, type FilterDef } from '@/hooks/useFilters'
 import { SELECT, segButton } from './controls'
+import { DualRangeSlider } from './DualRangeSlider'
 
 /** Dropdown control for a select filter. */
 function SelectControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { options: unknown }>; value: string; onChange: (v: string) => void }) {
@@ -46,6 +47,28 @@ function RangeControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, 
   )
 }
 
+/**
+ * Two-knob control for a span filter — "Rounds 3 – 7". An empty value means the whole range, so a
+ * fresh page shows both knobs at the ends and the filter counts as inactive; dragging back to the
+ * ends clears it again rather than leaving a no-op filter in the URL and on the Clear count.
+ */
+function SpanControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'span' }>; value: string; onChange: (v: string) => void }) {
+  const [from, to] = parseSpan(value) ?? [def.min, def.max]
+  const set = (lo: number, hi: number) => onChange(spanValue(lo, hi, def.min, def.max))
+  return (
+    <DualRangeSlider
+      label={def.label}
+      min={def.min}
+      max={def.max}
+      from={Math.max(from, def.min)}
+      to={Math.min(to, def.max)}
+      onFrom={(n) => set(n, to)}
+      onTo={(n) => set(from, n)}
+      format={def.format ?? String}
+    />
+  )
+}
+
 /** Renders a row of controls from FilterDefs (selects + range sliders) + a Clear when any are
  *  active. Presentational — state lives in useFilters. Reused by any filtered view. */
 export function FilterBar<T>({
@@ -69,6 +92,10 @@ export function FilterBar<T>({
       {defs.map((def) =>
         def.type === 'toggle' ? (
           <ToggleControl key={def.key} def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
+        ) : def.type === 'span' ? (
+          // Outside the <label> wrapper the others use: a span filter is two inputs, and one label
+          // cannot point at both.
+          <SpanControl key={def.key} def={def} value={values[def.key] ?? ''} onChange={(v) => onChange(def.key, v)} />
         ) : (
           <label key={def.key} className="flex flex-col gap-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">{def.label}</span>

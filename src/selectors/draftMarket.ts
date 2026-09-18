@@ -153,6 +153,19 @@ export function marketTeams(drafts: DraftData[]): MarketTeam[] {
   )
 }
 
+/**
+ * How many rounds the drafts ran — the round filter's upper end.
+ *
+ * Read from each draft's configured `rounds` rather than from the deepest pick, so the slider covers
+ * the whole board even when a filter has already narrowed what is on screen. Falls back to the
+ * deepest round actually picked if a draft ever arrives without the setting.
+ */
+export function marketRounds(drafts: DraftData[]): number {
+  const configured = Math.max(0, ...drafts.map((d) => d.rounds ?? 0))
+  if (configured > 0) return configured
+  return Math.max(1, ...drafts.flatMap((d) => d.picks.map((p) => p.round)))
+}
+
 /** Positions present across the drafts, in canonical order — for the page's filter. */
 const POS_ORDER = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
 export function marketPositions(markets: PlayerMarket[]): string[] {

@@ -124,3 +124,51 @@ it('keeps a player on the board when a filtered league drafted them, wherever el
     expect(headers.some((h) => h.startsWith(label))).toBe(true)
   }
 })
+
+describe('the round filter', () => {
+  // 12 teams per league, so round R covers overall picks (R-1)*12+1 .. R*12.
+  const TEAMS = 12
+  const picksIn = (heading: string) =>
+    within(sectionFor(heading))
+      .getAllByRole('row')
+      .slice(1)
+      .map((r) => Number(within(r).getAllByRole('cell')[2]!.textContent!.replace('#', '')))
+
+  it('narrows the reach/value lists to picks made inside the span', async () => {
+    renderAt('/adp-comparison?round=3-5')
+    await ready()
+    for (const heading of ['Biggest Reaches', 'Biggest Values']) {
+      const picks = picksIn(heading)
+      expect(picks.length).toBeGreaterThan(0)
+      for (const overall of picks) {
+        expect(overall).toBeGreaterThan(2 * TEAMS)
+        expect(overall).toBeLessThanOrEqual(5 * TEAMS)
+      }
+    }
+  })
+
+  it('leaves the lists alone when the span covers the whole draft', async () => {
+    const { unmount } = renderAt('/adp-comparison?round=1-15')
+    await ready()
+    const wide = picksIn('Biggest Reaches').length
+    unmount()
+    renderAt()
+    await ready()
+    expect(picksIn('Biggest Reaches')).toHaveLength(wide)
+  })
+
+  it('offers both knobs, labelled by end', async () => {
+    renderAt()
+    await ready()
+    expect(screen.getByLabelText('Rounds from')).toBeInTheDocument()
+    expect(screen.getByLabelText('Rounds to')).toBeInTheDocument()
+  })
+
+  it('keeps a board row when ANY league took the player in the span', async () => {
+    // A player two leagues took in different rounds belongs on the board for either one.
+    renderAt('/adp-comparison?round=1-1')
+    await ready()
+    const rows = within(sectionFor('Every Player')).getAllByRole('row').slice(1)
+    expect(rows.length).toBeGreaterThanOrEqual(TEAMS)
+  })
+})

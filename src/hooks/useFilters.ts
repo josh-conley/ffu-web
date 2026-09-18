@@ -32,12 +32,47 @@ export interface RangeFilter<T> extends BaseFilter<T> {
   step?: number
 }
 
+/**
+ * Two-ended range filter — "between LO and HI". Inactive (shows all) when the span is the whole
+ * range, which is also when the value is cleared from the URL so it doesn't count as active.
+ *
+ * The value is stored as `"lo-hi"`. A def's predicate reads it with `inSpan`, so a row that holds
+ * its number somewhere unusual (a board row whose picks each have one) stays free to say how.
+ */
+export interface SpanFilter<T> extends BaseFilter<T> {
+  type: 'span'
+  min: number
+  max: number
+  /** Renders each end, e.g. `(n) => `R${n}``. Defaults to the bare number. */
+  format?: (n: number) => string
+}
+
 /** Checkbox filter — on/off. Active value is '1'; the predicate decides what "on" keeps. */
 export interface ToggleFilter<T> extends BaseFilter<T> {
   type: 'toggle'
 }
 
-export type FilterDef<T> = SelectFilter<T> | RangeFilter<T> | ToggleFilter<T>
+export type FilterDef<T> = SelectFilter<T> | RangeFilter<T> | SpanFilter<T> | ToggleFilter<T>
+
+/** `"3-7"` → `[3, 7]`. Undefined for anything that isn't a well-formed span. */
+export function parseSpan(value: string): [number, number] | undefined {
+  const [lo, hi] = value.split('-').map(Number)
+  if (lo === undefined || hi === undefined || !Number.isFinite(lo) || !Number.isFinite(hi) || lo > hi) return undefined
+  return [lo, hi]
+}
+
+/** Is `n` inside the span `value` encodes? An unparseable value keeps the row, so a hand-edited URL
+ *  degrades to "no filter" rather than to an empty table. */
+export function inSpan(n: number, value: string): boolean {
+  const span = parseSpan(value)
+  if (span === undefined) return true
+  return n >= span[0] && n <= span[1]
+}
+
+/** The value a span filter should carry, or '' when it spans everything and is therefore off. */
+export function spanValue(lo: number, hi: number, min: number, max: number): string {
+  return lo <= min && hi >= max ? '' : `${lo}-${hi}`
+}
 
 /** Pure filter application — every active filter must pass (AND). Inactive (empty) filters pass. */
 export function applyFilters<T>(defs: FilterDef<T>[], values: Record<string, string>, rows: T[]): T[] {
