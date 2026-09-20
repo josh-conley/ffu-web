@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { calculateUpr, seasonUpr } from './upr'
+import { UPR_MIN_WEEKS, calculateUpr, seasonUpr } from './upr'
 import premier2024 from '../../public/data/2024/premier.json'
 
 describe('calculateUpr', () => {
@@ -24,5 +24,34 @@ describe('seasonUpr', () => {
     const upr = seasonUpr(season)
     expect(upr.size).toBe(season.teams.length)
     for (const value of upr.values()) expect(value).toBeGreaterThan(0)
+  })
+
+  // A rating built on a team's high and low says nothing until a few weeks exist to draw them from.
+  const youngSeason = (weeks: number): SeasonData =>
+    ({
+      year: '2026',
+      tier: 'PREMIER',
+      era: 'sleeper',
+      teams: [],
+      games: Array.from({ length: weeks }, (_, i) => ({
+        week: i + 1,
+        isPlayoff: false,
+        participants: [
+          { memberId: 'a', score: 120 + i },
+          { memberId: 'b', score: 90 + i },
+        ],
+      })),
+    }) as unknown as SeasonData
+
+  it(`withholds every rating until week ${UPR_MIN_WEEKS}`, () => {
+    for (let weeks = 0; weeks < UPR_MIN_WEEKS; weeks++) {
+      expect(seasonUpr(youngSeason(weeks)).size).toBe(0)
+    }
+  })
+
+  it(`rates the season once ${UPR_MIN_WEEKS} weeks are in the book`, () => {
+    const upr = seasonUpr(youngSeason(UPR_MIN_WEEKS))
+    expect(upr.size).toBe(2)
+    expect(upr.get('a')).toBeGreaterThan(upr.get('b')!)
   })
 })

@@ -25,9 +25,19 @@ export interface UnionStandingRow {
 type Unranked = Omit<UnionStandingRow, 'rank'>
 
 /** UPR desc; then the per-league tiebreak chain, so equal ratings still land in a stable order. */
-function compare(a: Unranked, b: Unranked): number {
+function byUprThenRecord(a: Unranked, b: Unranked): number {
   if (a.upr !== b.upr) return b.upr - a.upr
   if (a.winPct !== b.winPct) return b.winPct - a.winPct
+  return b.team.points.for - a.team.points.for
+}
+
+/**
+ * The pre-UPR fallback: each league's placement first, points for as the tiebreak. The three
+ * leaders sit together at the top, then the three seconds, and so on — a roundup of where the
+ * leagues stand, rather than a cross-league rating the season hasn't earned the right to state yet.
+ */
+function byLeagueRankThenPoints(a: Unranked, b: Unranked): number {
+  if (a.leagueRank !== b.leagueRank) return a.leagueRank - b.leagueRank
   return b.team.points.for - a.team.points.for
 }
 
@@ -42,18 +52,35 @@ function rowsFor(season: SeasonData): Unranked[] {
   }))
 }
 
+/** Ties share a rank on whatever the table is ACTUALLY ranked by — a tiebreak that exists only to
+ *  stabilise the sort shouldn't silently separate two equal teams. */
+function tied(a: UnionStandingRow | undefined, b: Unranked, byUpr: boolean): boolean {
+  if (a === undefined) return true
+  if (byUpr) return a.upr === b.upr
+  return a.leagueRank === b.leagueRank && a.team.points.for === b.team.points.for
+}
+
 /**
  * Every team in the given seasons (one year's tiers), ranked together.
  *
- * Ties share a rank on UPR alone — the same rule the league tables use for their own key, rather
- * than letting a tiebreak that exists only to stabilise the sort silently separate two equal teams.
+ * Before the season has earned a UPR (see `UPR_MIN_WEEKS`), it ranks on league placement with
+ * points for as the tiebreak instead — a young Union table still reads as standings rather than as
+ * 36 teams tied for first.
  */
 export function unionStandings(seasons: SeasonData[]): UnionStandingRow[] {
-  const sorted = seasons.flatMap(rowsFor).sort(compare)
+  const rows = seasons.flatMap(rowsFor)
+  const byUpr = rows.some((row) => row.upr > 0)
+  const sorted = rows.sort(byUpr ? byUprThenRecord : byLeagueRankThenPoints)
+  const ranked: UnionStandingRow[] = []
   let rank = 1
-  return sorted.map((row, i) => {
-    const prev = sorted[i - 1]
-    if (prev !== undefined && prev.upr !== row.upr) rank = i + 1
-    return { ...row, rank }
+  sorted.forEach((row, i) => {
+    if (!tied(ranked[i - 1], row, byUpr)) rank = i + 1
+    ranked.push({ ...row, rank })
   })
+  return ranked
+}
+
+/** Whether the rows are ranked by UPR, or are still falling back to record (pre-`UPR_MIN_WEEKS`). */
+export function rankedByUpr(rows: UnionStandingRow[]): boolean {
+  return rows.some((row) => row.upr > 0)
 }

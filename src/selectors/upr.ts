@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { regularSeasonTotals } from './games'
+import { regularSeasonTotals, regularSeasonWeeksPlayed } from './games'
 
 // Unified Power Rating. Formula ported verbatim from the old upr-calculator.ts — keep exactly:
 //   ((avg × 6) + ((high + low) × 2) + (winPct × 400)) / 10
@@ -22,9 +22,25 @@ export function calculateUpr({ wins, losses, ties, average, high, low }: UprInpu
   return Math.round(upr * 100) / 100
 }
 
-/** UPR per member for a season. */
+/**
+ * Weeks a season needs before its UPR means anything.
+ *
+ * Two of the formula's three inputs are a team's high and its low, so after one week they ARE that
+ * week's score and the rating is just a re-scaled box score; the win% term swings 400 points on a
+ * single result. Four weeks is where the league has always considered the picture to have settled,
+ * and it is the point the commissioner asked for.
+ */
+export const UPR_MIN_WEEKS = 4
+
+/**
+ * UPR per member for a season — EMPTY until the season has `UPR_MIN_WEEKS` weeks in the book, so a
+ * young season contributes no rating anywhere rather than a misleading one. Every backfilled season
+ * is complete, so only the season in progress is ever withheld. Callers render a missing rating as
+ * "—" or drop the column; see `UprNote`.
+ */
 export function seasonUpr(season: SeasonData): Map<string, number> {
   const result = new Map<string, number>()
+  if (regularSeasonWeeksPlayed(season) < UPR_MIN_WEEKS) return result
   for (const [id, t] of regularSeasonTotals(season)) {
     result.set(id, calculateUpr(t))
   }

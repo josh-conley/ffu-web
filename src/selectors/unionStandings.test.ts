@@ -1,6 +1,7 @@
 import type { Tier } from '@/config/types'
 import type { Game, SeasonData, SeasonTeam } from '@/data'
-import { unionStandings } from './unionStandings'
+import { UPR_MIN_WEEKS } from './upr'
+import { rankedByUpr, unionStandings } from './unionStandings'
 import premier2025 from '../../public/data/2025/premier.json'
 import masters2025 from '../../public/data/2025/masters.json'
 import national2025 from '../../public/data/2025/national.json'
@@ -26,16 +27,20 @@ const season = (tier: Tier, games: Game[], teams: SeasonTeam[]): SeasonData =>
   ({ year: '2025', tier, era: 'sleeper', games, teams }) as unknown as SeasonData
 
 describe('unionStandings', () => {
-  // Two leagues, two teams each. National's winner outscores everyone; Premier's loses every game.
+  // Two leagues, two teams each, played out far enough to earn a UPR (see UPR_MIN_WEEKS).
+  // National's winner outscores everyone; Premier's loses every week.
+  const weeks = (a: string, b: string, aScore: number, bScore: number): Game[] =>
+    Array.from({ length: UPR_MIN_WEEKS }, (_, i) => game(i + 1, [a, aScore + i], [b, bScore - i]))
+
   const premier = season(
     'PREMIER',
-    [game(1, ['p-win', 120], ['p-lose', 80]), game(2, ['p-win', 118], ['p-lose', 82])],
-    [team('p-win', 2, 0, 238), team('p-lose', 0, 2, 162)],
+    weeks('p-win', 'p-lose', 120, 80),
+    [team('p-win', 4, 0, 486), team('p-lose', 0, 4, 314)],
   )
   const national = season(
     'NATIONAL',
-    [game(1, ['n-win', 160], ['n-lose', 90]), game(2, ['n-win', 155], ['n-lose', 95])],
-    [team('n-win', 2, 0, 315), team('n-lose', 0, 2, 185)],
+    weeks('n-win', 'n-lose', 160, 90),
+    [team('n-win', 4, 0, 646), team('n-lose', 0, 4, 354)],
   )
 
   it('ranks every team across the leagues by UPR', () => {
@@ -59,8 +64,13 @@ describe('unionStandings', () => {
   it('shares a rank between teams with equal UPR', () => {
     const twin = season(
       'MASTERS',
-      [game(1, ['m-a', 120], ['m-b', 80]), game(2, ['m-b', 120], ['m-a', 80])],
-      [team('m-a', 1, 1, 200), team('m-b', 1, 1, 200)],
+      [
+        game(1, ['m-a', 120], ['m-b', 80]),
+        game(2, ['m-b', 120], ['m-a', 80]),
+        game(3, ['m-a', 120], ['m-b', 80]),
+        game(4, ['m-b', 120], ['m-a', 80]),
+      ],
+      [team('m-a', 2, 2, 400), team('m-b', 2, 2, 400)],
     )
     const rows = unionStandings([twin])
     expect(rows[0]!.upr).toBe(rows[1]!.upr)
@@ -73,5 +83,35 @@ describe('unionStandings', () => {
     expect(new Set(rows.map((r) => r.team.memberId)).size).toBe(36)
     expect(rows.map((r) => r.upr)).toEqual([...rows.map((r) => r.upr)].sort((a, b) => b - a))
     expect(rows.map((r) => r.tier)).toContain('MASTERS')
+  })
+})
+
+describe('unionStandings before the season has earned a UPR', () => {
+  // One week in: every rating is withheld, so the table falls back to league placement.
+  const young = (tier: Tier, ids: [string, number][]): SeasonData =>
+    season(
+      tier,
+      [game(1, [ids[0]![0], ids[0]![1]], [ids[1]![0], ids[1]![1]])],
+      [team(ids[0]![0], 1, 0, ids[0]![1]), team(ids[1]![0], 0, 1, ids[1]![1])],
+    )
+
+  const seasons = [
+    young('PREMIER', [['p1', 100], ['p2', 60]]),
+    young('MASTERS', [['m1', 140], ['m2', 70]]),
+    young('NATIONAL', [['n1', 120], ['n2', 65]]),
+  ]
+
+  it('withholds the rating', () => {
+    const rows = unionStandings(seasons)
+    expect(rows.every((r) => r.upr === 0)).toBe(true)
+    expect(rankedByUpr(rows)).toBe(false)
+  })
+
+  it('ranks on league placement, with points for as the tiebreak', () => {
+    const rows = unionStandings(seasons)
+    // Each league's leader first (most points among them leading), then each league's second.
+    expect(rows.map((r) => r.team.memberId)).toEqual(['m1', 'n1', 'p1', 'm2', 'n2', 'p2'])
+    expect(rows.map((r) => r.leagueRank)).toEqual([1, 1, 1, 2, 2, 2])
+    expect(rows.map((r) => r.rank)).toEqual([1, 2, 3, 4, 5, 6])
   })
 })

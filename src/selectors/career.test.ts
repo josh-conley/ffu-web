@@ -95,9 +95,13 @@ describe('careerUpr (mean of per-season UPRs)', () => {
     {
       schemaVersion: 1, tier: 'PREMIER', year: '2020', era: 'sleeper', platformLeagueId: 'x',
       teams: [],
+      // Weeks 3-4 repeat weeks 1-2: a season needs UPR_MIN_WEEKS before it is rated, and repeating
+      // the pair leaves the average, high, low and win% — every UPR input — exactly where they were.
       games: [
         { week: 1, isPlayoff: false, participants: [{ memberId: 'x', score: 110 }, { memberId: 'y', score: 90 }] },
         { week: 2, isPlayoff: false, participants: [{ memberId: 'x', score: 100 }, { memberId: 'y', score: 105 }] },
+        { week: 3, isPlayoff: false, participants: [{ memberId: 'x', score: 110 }, { memberId: 'y', score: 90 }] },
+        { week: 4, isPlayoff: false, participants: [{ memberId: 'x', score: 100 }, { memberId: 'y', score: 105 }] },
       ],
     },
     {
@@ -106,6 +110,8 @@ describe('careerUpr (mean of per-season UPRs)', () => {
       games: [
         { week: 1, isPlayoff: false, participants: [{ memberId: 'x', score: 130 }, { memberId: 'y', score: 120 }] },
         { week: 2, isPlayoff: false, participants: [{ memberId: 'x', score: 70 }, { memberId: 'y', score: 60 }] },
+        { week: 3, isPlayoff: false, participants: [{ memberId: 'x', score: 130 }, { memberId: 'y', score: 120 }] },
+        { week: 4, isPlayoff: false, participants: [{ memberId: 'x', score: 70 }, { memberId: 'y', score: 60 }] },
       ],
     },
   ]

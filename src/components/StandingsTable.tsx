@@ -5,6 +5,8 @@ import { DataTable, type Column } from './DataTable'
 import { recordLabel } from './format'
 import { TeamLogo } from './TeamLogo'
 
+/** `upr` is empty until the season has earned a rating (see `seasonUpr`), and the column goes with
+ *  it — a column of em-dashes says less than its absence, which the page explains once. */
 function buildColumns(upr: Map<string, number>, year: string): Column<StandingRow>[] {
   const num = (key: string, header: string, get: (r: StandingRow) => number, fmt: (n: number) => string, title?: string): Column<StandingRow> => ({
     key, header, align: 'right', title, sortValue: get, render: (r) => fmt(get(r)),
@@ -26,7 +28,9 @@ function buildColumns(upr: Map<string, number>, year: string): Column<StandingRo
     num('pf', 'PF', (r) => r.team.points.for, (n) => n.toFixed(2), 'Points For'),
     num('pa', 'PA', (r) => r.team.points.against, (n) => n.toFixed(2), 'Points Against'),
     num('winpct', 'Win%', (r) => r.winPct, (n) => `${(n * 100).toFixed(1)}%`),
-    num('upr', 'UPR', (r) => upr.get(r.team.memberId) ?? 0, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking'),
+    ...(upr.size > 0
+      ? [num('upr', 'UPR', (r) => upr.get(r.team.memberId) ?? 0, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking')]
+      : []),
   ]
 }
 

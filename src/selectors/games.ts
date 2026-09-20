@@ -120,6 +120,11 @@ export function regularSeasonTotals(season: Pick<SeasonData, 'games'>): Map<stri
   return totals
 }
 
+/** Distinct regular-season weeks with results recorded — a season's progress, in weeks. */
+export function regularSeasonWeeksPlayed(season: Pick<SeasonData, 'games'>): number {
+  return new Set(season.games.filter((g) => !g.isPlayoff).map((g) => g.week)).size
+}
+
 export interface WeekRecord {
   wins: number
   losses: number

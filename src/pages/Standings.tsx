@@ -3,11 +3,12 @@ import type { SeasonData } from '@/data'
 import { useYearSeasons } from '@/hooks/useLeagueData'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
-import { finalStandings, seasonUpr, standingsByDivision, unionStandings } from '@/selectors'
+import { finalStandings, rankedByUpr, seasonUpr, standingsByDivision, unionStandings } from '@/selectors'
 import { segButton } from '@/components/controls'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { StandingsTable } from '@/components/StandingsTable'
 import { UnionStandingsTable } from '@/components/UnionStandingsTable'
+import { UprNote } from '@/components/UprNote'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -29,6 +30,7 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
             Overall
           </button>
         </div>
+        {upr.size === 0 && <UprNote />}
         {showDivisions ? (
           divisions.map((group) => (
             <section key={group.division.id}>
@@ -45,20 +47,31 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
       </div>
     )
   }
-  return <StandingsTable rows={flat} upr={upr} year={year} />
+  return (
+    <div className="space-y-2">
+      {upr.size === 0 && <UprNote />}
+      <StandingsTable rows={flat} upr={upr} year={year} />
+    </div>
+  )
 }
 
 /**
- * The whole Union in one table, ranked by UPR (see `unionStandings`). Divisions don't appear here:
- * they belong to a single league, and this view is explicitly the one that ignores league lines.
+ * The whole Union in one table (see `unionStandings`). Divisions don't appear here: they belong to
+ * a single league, and this view is explicitly the one that ignores league lines.
  */
 function UnionContent({ seasons, year }: { seasons: SeasonData[]; year: string }) {
   const rows = useMemo(() => unionStandings(seasons), [seasons])
+  const byUpr = rankedByUpr(rows)
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted">
-        All {rows.length} teams, ranked by UPR — the rating that compares across leagues. Sort any column to re-rank.
+        All {rows.length} teams,{' '}
+        {byUpr
+          ? 'ranked by UPR — the rating that compares across leagues'
+          : 'ranked by where they sit in their own league, then points for'}
+        . Sort any column to re-rank.
       </p>
+      {!byUpr && <UprNote />}
       <UnionStandingsTable rows={rows} year={year} />
     </div>
   )

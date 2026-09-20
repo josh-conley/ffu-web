@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { nameForYear } from '@/config'
-import type { UnionStandingRow } from '@/selectors'
+import { rankedByUpr, type UnionStandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
 import { recordLabel } from './format'
 import { LeagueBadge } from './LeagueBadge'
@@ -14,7 +14,7 @@ import { TeamLogo } from './TeamLogo'
  * that league gives the team) and the default order is UPR, not placement. Keeping them apart beats
  * threading a flag through the one that every league page renders.
  */
-function buildColumns(year: string): Column<UnionStandingRow>[] {
+function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] {
   const num = (
     key: string,
     header: string,
@@ -27,7 +27,7 @@ function buildColumns(year: string): Column<UnionStandingRow>[] {
     {
       key: 'rank',
       header: 'Rank',
-      title: 'Placement across all three leagues, by UPR',
+      title: byUpr ? 'Placement across all three leagues, by UPR' : 'Placement across all three leagues, by record',
       sortValue: (r) => r.rank,
       render: (r) => <span className="font-semibold">{r.rank}</span>,
     },
@@ -45,20 +45,25 @@ function buildColumns(year: string): Column<UnionStandingRow>[] {
     {
       key: 'league',
       header: 'League',
-      // Sorted in prestige order (Premier → National), which is what a reader means by "by league".
-      sortValue: (r) => TIER_PRESTIGE.indexOf(r.tier),
-      render: (r) => <LeagueBadge tier={r.tier} />,
+      title: "The team's league, and its placement in that league's own table",
+      // Prestige order (Premier → National) then placement inside the league — what a reader means
+      // by "sort by league". The placement rides in the badge rather than taking a column of its
+      // own: it only has meaning next to the league it belongs to.
+      sortValue: (r) => TIER_PRESTIGE.indexOf(r.tier) * 100 + r.leagueRank,
+      render: (r) => <LeagueBadge tier={r.tier} rank={r.leagueRank} />,
     },
-    num('leagueRank', 'In Lg', (r) => r.leagueRank, (n) => String(n), 'Placement within its own league'),
     { key: 'record', header: 'Record', sortValue: (r) => r.winPct, render: (r) => recordLabel(r.team.record) },
     num('pf', 'PF', (r) => r.team.points.for, (n) => n.toFixed(2), 'Points For'),
     num('pa', 'PA', (r) => r.team.points.against, (n) => n.toFixed(2), 'Points Against'),
-    num('upr', 'UPR', (r) => r.upr, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking — the cross-league rating'),
+    ...(byUpr
+      ? [num('upr', 'UPR', (r) => r.upr, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking — the cross-league rating')]
+      : []),
   ]
 }
 
 export function UnionStandingsTable({ rows, year }: { rows: UnionStandingRow[]; year: string }) {
-  const columns = useMemo(() => buildColumns(year), [year])
+  const byUpr = rankedByUpr(rows)
+  const columns = useMemo(() => buildColumns(year, byUpr), [year, byUpr])
   return (
     <DataTable
       columns={columns}

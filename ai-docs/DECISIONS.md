@@ -353,3 +353,22 @@ in `SEASONS` is no longer the test for "already backfilled", since the season in
 registered there from the day its file lands. `hasGames` is absent on every migrated row and reads
 as true, so nothing about the backfilled years changes. Verified: adding the 2026 shell changed
 zero career rows, recorded zero finishes and awarded zero pennants.
+
+## 2026-09-19 — UPR is withheld until four weeks are played
+
+**Decision.** `seasonUpr` returns an EMPTY map for a season with fewer than `UPR_MIN_WEEKS` (4)
+regular-season weeks in the book. Callers drop the column rather than print a placeholder, and the
+Standings pages explain the absence once via `UprNote`.
+
+**Why.** Two of the formula's three inputs are a team's high and its low, so after week 1 they ARE
+that week's score and UPR is a re-scaled box score; the win% term alone swings 400 points on one
+result. Publishing that invites the league to argue about a number that means nothing yet. Four
+weeks is the commissioner's call and matches where the league has always considered the picture to
+have settled.
+
+**Consequences.** The rule lives in the selector, so every consumer inherits it — Standings, the
+Union view, `careerUpr` (a young season contributes no rating to a career average rather than a
+misleading one) and the draft-build views. Every backfilled season is complete, so only the season
+in progress is ever withheld; no historical number moves. The Union table can't rank on a rating it
+doesn't have, so before week 4 it ranks on league placement with points for as the tiebreak — the
+three leaders together, then the three seconds — and says so above the table.
