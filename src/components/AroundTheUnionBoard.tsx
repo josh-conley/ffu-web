@@ -1,6 +1,7 @@
 import type { LeaguePointsRow, WeekScore } from '@/selectors'
 import { AroundTheUnionCompact } from './AroundTheUnionCompact'
 import { LeaguePointsRace } from './LeaguePointsRace'
+import { RecapPanel } from './recap/RecapPanel'
 import { TopWeekScorers } from './TopWeekScorers'
 
 /**
@@ -37,27 +38,29 @@ export function AroundTheUnionBoard({
   scores,
   race,
   layout,
+  copyFilename,
 }: {
   year: string
   week: number | undefined
   scores: WeekScore[]
   race: LeaguePointsRow[]
   layout: BoardLayout
+  /** Set on the author's page, where the block is copied; absent on the home page's read-only copy. */
+  copyFilename?: string
 }) {
   const compact = layout === 'ffun'
   return (
-    <section className="border border-border bg-surface-2/40 shadow-sm">
-      <header
-        className={`flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bg-accent text-accent-fg ${compact ? 'px-3 py-1.5' : 'px-4 py-2'}`}
-      >
-        <h2 className={`font-extrabold uppercase tracking-widest ${compact ? 'text-xs' : 'text-sm'}`}>Around the Union</h2>
-        <span className="font-mono text-xs font-bold tabular-nums">{week ? `${year} · Week ${week}` : year}</span>
-      </header>
+    <RecapPanel
+      title="Around the Union"
+      meta={week ? `${year} · Week ${week}` : year}
+      compact={compact}
+      copyFilename={copyFilename}
+    >
       {compact ? (
         <AroundTheUnionCompact year={year} scores={scores} race={race} />
       ) : (
         <StandardBody year={year} week={week} scores={scores} race={race} />
       )}
-    </section>
+    </RecapPanel>
   )
 }

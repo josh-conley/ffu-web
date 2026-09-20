@@ -109,3 +109,26 @@ it('lets an author step back to an earlier week when more than one has been play
   await userEvent.selectOptions(picker, '1')
   await waitFor(() => expect(screen.getByText('Week 1 — Top Scores')).toBeInTheDocument())
 })
+
+it('reports the bottom of the week and the four matchup stories', async () => {
+  renderPage()
+  await ready()
+  expect(screen.getByText('Bottom of the Barrel')).toBeInTheDocument()
+  expect(screen.getByText('Week in Review')).toBeInTheDocument()
+  expect(screen.getByText('Biggest Blowout')).toBeInTheDocument()
+  expect(screen.getByText('Closest Call')).toBeInTheDocument()
+  expect(screen.getByText('Hard-Luck Loss')).toBeInTheDocument()
+  expect(screen.getByText('Luckiest Win')).toBeInTheDocument()
+})
+
+it('gives every block its own copy button in the FFUN layout only', async () => {
+  const { unmount } = renderPage()
+  await ready()
+  // The standard layout is the reading view — nothing to copy.
+  expect(screen.queryAllByRole('button', { name: /copy the panel/i })).toHaveLength(0)
+  unmount()
+
+  renderPage('/around-the-union?layout=ffun')
+  await ready()
+  await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i })).toHaveLength(3))
+})

@@ -61,13 +61,8 @@ export function latestUnionWeek(seasons: SeasonData[]): number | undefined {
   return completedUnionWeeks(seasons).at(-1)
 }
 
-/**
- * The week's highest scores across every league, highest first.
- *
- * Ranked on score alone with no per-league quota: the whole point of the block is that one league
- * can sweep the podium, which is the hype the payout tracking is for.
- */
-export function topScoresForWeek(seasons: SeasonData[], week: number, limit = 3): WeekScore[] {
+/** Every team's score in one week, across all the leagues given, unranked. */
+function weekEntries(seasons: SeasonData[], week: number): Omit<WeekScore, 'rank'>[] {
   const scores: Omit<WeekScore, 'rank'>[] = []
   for (const season of seasons) {
     for (const game of regularSeason(season)) {
@@ -78,17 +73,40 @@ export function topScoresForWeek(seasons: SeasonData[], week: number, limit = 3)
       scores.push({ memberId: b.memberId, tier: season.tier, week, score: b.score, opponentId: a.memberId, opponentScore: a.score })
     }
   }
-  scores.sort((x, y) => y.score - x.score)
+  return scores
+}
 
+/**
+ * Rank an already-sorted week and cut it to `limit`, keeping everyone tied with the last
+ * qualifying score rather than cutting a podium mid-tie — shared by both ends of the week.
+ */
+function podium(sorted: Omit<WeekScore, 'rank'>[], limit: number): WeekScore[] {
   const ranked: WeekScore[] = []
-  scores.forEach((entry, i) => {
-    const prev = scores[i - 1]
+  sorted.forEach((entry, i) => {
+    const prev = sorted[i - 1]
     const rank = prev !== undefined && prev.score === entry.score ? (ranked[i - 1]?.rank ?? i + 1) : i + 1
     ranked.push({ ...entry, rank })
   })
-  // Keep everyone tied with the last qualifying score rather than cutting the podium mid-tie.
-  const cutoff = ranked[limit - 1]?.score
-  return cutoff === undefined ? ranked : ranked.filter((r) => r.score >= cutoff)
+  const cutoff = ranked[limit - 1]
+  return cutoff === undefined ? ranked : ranked.filter((r) => r.rank <= cutoff.rank)
+}
+
+/**
+ * The week's highest scores across every league, highest first.
+ *
+ * Ranked on score alone with no per-league quota: the whole point of the block is that one league
+ * can sweep the podium, which is the hype the payout tracking is for.
+ */
+export function topScoresForWeek(seasons: SeasonData[], week: number, limit = 3): WeekScore[] {
+  return podium(weekEntries(seasons, week).sort((x, y) => y.score - x.score), limit)
+}
+
+/**
+ * The week's LOWEST scores, lowest first — the same podium read from the other end, so `rank` 1 is
+ * the worst score of the week rather than the best.
+ */
+export function bottomScoresForWeek(seasons: SeasonData[], week: number, limit = 3): WeekScore[] {
+  return podium(weekEntries(seasons, week).sort((x, y) => x.score - y.score), limit)
 }
 
 /**

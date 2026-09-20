@@ -1,25 +1,20 @@
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import {
   aroundTheUnionYear,
+  bottomScoresForWeek,
   completedUnionWeeks,
   leaguePointsRace,
   topScoresForWeek,
+  weekNotes,
 } from '@/selectors'
 import { AroundTheUnionBoard, type BoardLayout } from '@/components/AroundTheUnionBoard'
-import { CopyImageButton } from '@/components/CopyImageButton'
+import { WeekLowScores } from '@/components/recap/WeekLowScores'
+import { WeekStories } from '@/components/recap/WeekStories'
 import { SELECT, segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
-
-/**
- * How wide the capture box is per layout. The FFUN one shrinks to its content: the widest band is
- * the league ticker, so the panel ends just past the last total rather than running on with dead
- * space, and the same 8.5in of newsletter column then buys a taller, more legible block. Only the
- * capture is sized this way — the home page's copy of the panel still spans the page.
- */
-const CAPTURE_WIDTH: Record<BoardLayout, string> = { standard: '', ffun: 'w-fit' }
 
 /** Label per layout — "FFUN" is the condensed one, named after where it ends up. */
 const LAYOUTS: [BoardLayout, string][] = [
@@ -41,8 +36,6 @@ const LAYOUTS: [BoardLayout, string][] = [
  */
 export function AroundTheUnion() {
   const { data: seasons, loading, error } = useAllSeasons()
-  // The capture target. On the WRAPPER, not the board, so the ref survives a layout switch.
-  const panel = useRef<HTMLDivElement>(null)
   const [weekParam, setWeek] = useUrlState('week', '')
   // In the URL so the commissioner can bookmark the layout he actually screenshots.
   const [layoutParam, setLayout] = useUrlState('layout', 'standard')
@@ -55,7 +48,13 @@ export function AroundTheUnion() {
   // what an author wants every Tuesday.
   const week = weeks.includes(Number(weekParam)) ? Number(weekParam) : weeks.at(-1)
   const scores = useMemo(() => (week === undefined ? [] : topScoresForWeek(yearSeasons, week)), [yearSeasons, week])
+  const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
+  const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
   const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
+  // Only the FFUN layout is copied — the standard one is the reading view. One file name per block,
+  // so a folder of downloads says which is which.
+  const capture = (block: string) =>
+    layout === 'ffun' ? `ffu-${block}-${year ?? 'season'}-week-${week ?? ''}.png` : undefined
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -88,14 +87,34 @@ export function AroundTheUnion() {
             ))}
           </div>
         </div>
-        <CopyImageButton targetRef={panel} filename={`around-the-union-${year ?? 'season'}-week-${week ?? ''}.png`} />
       </div>
 
       {year === undefined ? (
         <ErrorMessage error="No season has been played yet." />
       ) : (
-        <div ref={panel} className={CAPTURE_WIDTH[layout]}>
-          <AroundTheUnionBoard year={year} week={week} scores={scores} race={race} layout={layout} />
+        <div className="space-y-8">
+          <AroundTheUnionBoard
+            year={year}
+            week={week}
+            scores={scores}
+            race={race}
+            layout={layout}
+            copyFilename={capture('around-the-union')}
+          />
+          <WeekLowScores
+            scores={lows}
+            year={year}
+            week={week}
+            compact={layout === 'ffun'}
+            copyFilename={capture('bottom-of-the-barrel')}
+          />
+          <WeekStories
+            notes={notes}
+            year={year}
+            week={week}
+            compact={layout === 'ffun'}
+            copyFilename={capture('week-in-review')}
+          />
         </div>
       )}
     </div>
