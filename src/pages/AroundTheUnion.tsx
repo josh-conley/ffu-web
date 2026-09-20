@@ -13,6 +13,14 @@ import { SELECT, segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
+/**
+ * How wide the capture box is per layout. The FFUN one shrinks to its content: the widest band is
+ * the league ticker, so the panel ends just past the last total rather than running on with dead
+ * space, and the same 8.5in of newsletter column then buys a taller, more legible block. Only the
+ * capture is sized this way — the home page's copy of the panel still spans the page.
+ */
+const CAPTURE_WIDTH: Record<BoardLayout, string> = { standard: '', ffun: 'w-fit' }
+
 /** Label per layout — "FFUN" is the condensed one, named after where it ends up. */
 const LAYOUTS: [BoardLayout, string][] = [
   ['standard', 'Standard'],
@@ -86,7 +94,7 @@ export function AroundTheUnion() {
       {year === undefined ? (
         <ErrorMessage error="No season has been played yet." />
       ) : (
-        <div ref={panel}>
+        <div ref={panel} className={CAPTURE_WIDTH[layout]}>
           <AroundTheUnionBoard year={year} week={week} scores={scores} race={race} layout={layout} />
         </div>
       )}

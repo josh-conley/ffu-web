@@ -19,14 +19,14 @@ const POINTS = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximu
 function Leader({ score, year }: { score: WeekScore; year: string }) {
   const style = LEAGUE_STYLES[score.tier]
   return (
-    <div className={`flex min-w-0 items-center gap-3 px-3 py-2 sm:flex-1 ${style.solidHeader}`}>
-      <FaTrophy className="shrink-0 text-xl" aria-hidden />
-      <TeamLogo ffuId={score.memberId} size={34} />
+    <div className={`flex min-w-0 items-center gap-3 px-3 py-2.5 sm:flex-1 ${style.solidHeader}`}>
+      <FaTrophy className="shrink-0 text-2xl" aria-hidden />
+      <TeamLogo ffuId={score.memberId} size={40} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-base font-extrabold uppercase leading-tight tracking-tight sm:text-lg">
+        <div className="truncate text-lg font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
           {nameForYear(score.memberId, year) ?? score.memberId}
         </div>
-        <div className="font-mono text-xs font-bold leading-tight opacity-90">
+        <div className="font-mono text-sm font-bold leading-tight opacity-90">
           {score.score.toFixed(2)} · {style.label}
         </div>
       </div>
@@ -39,12 +39,12 @@ function Leader({ score, year }: { score: WeekScore; year: string }) {
 function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
   const style = LEAGUE_STYLES[score.tier]
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-2 px-3 py-1.5">
-      <span aria-hidden className={`h-5 w-1 shrink-0 ${style.dot}`} />
-      <TeamLogo ffuId={score.memberId} size={22} />
-      <span className="truncate text-sm font-bold leading-tight">{nameForYear(score.memberId, year) ?? score.memberId}</span>
-      <span className="ml-auto shrink-0 font-mono text-sm font-bold tabular-nums">{score.score.toFixed(2)}</span>
-      <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
+    <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-2 px-3 py-2.5">
+      <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
+      <TeamLogo ffuId={score.memberId} size={26} />
+      <span className="truncate text-base font-bold leading-tight">{nameForYear(score.memberId, year) ?? score.memberId}</span>
+      <span className="ml-auto shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
+      <span className={`shrink-0 text-[11px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
     </div>
   )
 }
@@ -59,7 +59,7 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
  */
 function LeagueStrip({ race }: { race: LeaguePointsRow[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface px-3 py-1.5">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface px-3 py-2">
       <span className="text-[10px] font-bold uppercase leading-tight tracking-widest text-muted">
         Avg Game / Total League Points
       </span>

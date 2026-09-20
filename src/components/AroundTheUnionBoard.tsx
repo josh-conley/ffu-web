@@ -48,7 +48,7 @@ export function AroundTheUnionBoard({
   return (
     <section className="border border-border bg-surface-2/40 shadow-sm">
       <header
-        className={`flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bg-accent text-accent-fg ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}
+        className={`flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bg-accent text-accent-fg ${compact ? 'px-3 py-1.5' : 'px-4 py-2'}`}
       >
         <h2 className={`font-extrabold uppercase tracking-widest ${compact ? 'text-xs' : 'text-sm'}`}>Around the Union</h2>
         <span className="font-mono text-xs font-bold tabular-nums">{week ? `${year} · Week ${week}` : year}</span>
