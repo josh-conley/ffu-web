@@ -12,7 +12,7 @@ describe('beltWatch', () => {
     expect(watch).not.toBeNull()
     expect(watch!.holderId).toMatch(/^ffu-/)
     expect(watch!.defenses).toBeGreaterThanOrEqual(0)
-    expect(watch!.weeksHeld).toBeGreaterThanOrEqual(0)
+    expect(watch!.weeksHeld).toBeGreaterThanOrEqual(1)
   })
 
   it('carries the title game of the week asked about', () => {

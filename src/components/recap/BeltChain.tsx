@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import { FaEllipsis } from 'react-icons/fa6'
 import { getMember } from '@/config'
+import { plural } from '@/lib/plural'
 import type { LinealReign } from '@/selectors'
 import { TeamLogo } from '../TeamLogo'
 
@@ -15,14 +16,13 @@ import { TeamLogo } from '../TeamLogo'
  */
 
 const abbr = (memberId: string) => getMember(memberId)?.abbreviation ?? memberId
-const weeks = (n: number) => `${n} wk${n === 1 ? '' : 's'}`
 
 function Holder({ reign }: { reign: LinealReign }) {
   return (
     <li className={`flex shrink-0 flex-col items-center gap-1 px-2 py-1 ${reign.current ? 'bg-accent/10' : ''}`}>
       <TeamLogo ffuId={reign.championId} size={36} />
       <span className="font-mono text-[11px] font-bold uppercase leading-none">{abbr(reign.championId)}</span>
-      <span className="font-mono text-[10px] leading-none tabular-nums text-muted">{weeks(reign.weeksHeld)}</span>
+      <span className="font-mono text-[10px] leading-none tabular-nums text-muted">{plural(reign.weeksHeld, 'wk')}</span>
     </li>
   )
 }

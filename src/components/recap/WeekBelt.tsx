@@ -1,6 +1,7 @@
 import { FaChessKing } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
 import { nameForYear } from '@/config'
+import { plural } from '@/lib/plural'
 import type { BeltWatch } from '@/selectors'
 import { TeamLogo } from '../TeamLogo'
 import { BeltChain } from './BeltChain'
@@ -27,7 +28,7 @@ function Headline({ watch, year }: { watch: BeltWatch; year: string }) {
           {name(watch.holderId, year)}
         </div>
         <div className="font-mono text-xs font-bold leading-tight opacity-90">
-          {changed ? `Took it from ${name(watch.tookItFrom!, year)}` : `${watch.defenses} defenses · ${watch.weeksHeld} weeks`}
+          {changed ? `Took it from ${name(watch.tookItFrom!, year)}` : `${plural(watch.defenses, 'defense')} · ${plural(watch.weeksHeld, 'week')}`}
         </div>
       </div>
     </div>
@@ -84,7 +85,7 @@ export function WeekBelt({
         <BeltChain chain={watch.chain} truncated={watch.truncated} />
         {!compact && (
           <div className="bg-surface px-3 py-2 text-sm text-muted">
-            {watch.defenses} defenses over {watch.weeksHeld} weeks ·{' '}
+            {plural(watch.defenses, 'defense')} over {plural(watch.weeksHeld, 'week')} ·{' '}
             <Link to="/lineal" className="font-semibold text-text underline-offset-2 hover:underline">
               the full lineage
             </Link>

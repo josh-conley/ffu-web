@@ -120,8 +120,17 @@ describe('linealHistory', () => {
       [game(1, 'B', 100, 'C', 90), game(2, 'A', 80, 'C', 95), game(3, 'C', 70, 'B', 60)],
     )
     const { reigns } = linealHistory([origin, next])
-    expect(reigns[0]?.weeksHeld).toBe(2)
-    expect(reigns[1]?.weeksHeld).toBe(1) // 2019 w2 → the last week in the data
+    // Inclusive of the week it was won in: A held it across 2018 w3, 2019 w1 and 2019 w2.
+    expect(reigns[0]?.weeksHeld).toBe(3)
+    expect(reigns[1]?.weeksHeld).toBe(2) // 2019 w2 → the last week in the data
+  })
+
+  it('never reports a reign of no weeks at all, even one won in the latest week', () => {
+    // C takes it in the last week in the data: they have still held the belt for a week.
+    const next = season('2019', 'PREMIER', [team('A'), team('C')], [game(1, 'A', 60, 'C', 90)])
+    const { reigns } = linealHistory([origin, next])
+    expect(reigns.at(-1)).toMatchObject({ championId: 'C', current: true, weeksHeld: 1 })
+    expect(reigns.every((r) => r.weeksHeld >= 1)).toBe(true)
   })
 
   it('returns an empty lineage when no champion has been crowned yet', () => {
@@ -145,7 +154,7 @@ describe('linealHolderTotals', () => {
     const a = totals.find((t) => t.memberId === 'A')
 
     expect(reigns.map((r) => r.championId)).toEqual(['A', 'B', 'A', 'C'])
-    expect(a).toMatchObject({ reigns: 2, weeksHeld: 2, longestReign: 1, current: false })
+    expect(a).toMatchObject({ reigns: 2, weeksHeld: 4, longestReign: 2, current: false })
     expect(a?.firstWon).toMatchObject({ year: '2018', week: 3 })
     expect(totals.find((t) => t.memberId === 'C')?.current).toBe(true)
   })

@@ -54,10 +54,15 @@ export interface LinealReign {
   defenses: number
   titleGames: LinealTitleGame[]
   /**
-   * League weeks elapsed while holding it — counted over the league's own week slots (every
+   * League weeks in which they held the belt — counted over the league's own week slots (every
    * distinct year+week in the data), not the calendar, which the data doesn't carry. Weeks the
    * holder sat out count (playoff byes, eliminations, a whole season away); an offseason is a
    * single gap between slots, so this measures football weeks held, not real time.
+   *
+   * The count is INCLUSIVE of the week they won it, so the minimum is 1 — you cannot take the
+   * belt and hold it for no time at all. The trade is that a handover week counts for both the
+   * team that lost it and the team that took it, so reigns sum to slightly more than the number
+   * of weeks played. That's the honest reading: both of them held it that week.
    */
   weeksHeld: number
   /** Still holding it at the end of the available data. */
@@ -179,7 +184,7 @@ function applyWeeksHeld(reigns: LinealReign[], slots: Map<string, number>): void
   for (const reign of reigns) {
     const from = slots.get(`${reign.wonAt.year}|${reign.wonAt.week}`) ?? 0
     const to = reign.lostAt === null ? last : (slots.get(`${reign.lostAt.year}|${reign.lostAt.week}`) ?? from)
-    reign.weeksHeld = Math.max(0, to - from)
+    reign.weeksHeld = Math.max(0, to - from) + 1
   }
 }
 
