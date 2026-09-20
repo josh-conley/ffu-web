@@ -6,7 +6,9 @@ import { WeekScoreChip, WeekScoreRow } from './WeekScoreRow'
  * The other end of the week: the three lowest scores in the Union.
  *
  * Deliberately the same shape as the top-scores block rather than a softened version of it — the
- * league has always published both, and a recap that only prints the winners isn't the FFUN.
+ * league has always published both, and a recap that only prints the winners isn't the FFUN. The
+ * ranks count from the top of the field (36th, 35th, 34th), so the block can't be misread as a
+ * podium.
  */
 export function WeekLowScores({
   scores,
@@ -23,7 +25,7 @@ export function WeekLowScores({
 }) {
   return (
     <RecapPanel
-      title="Bottom of the Barrel"
+      title="Lowest Scores"
       meta={week ? `${year} · Week ${week}` : year}
       compact={compact}
       copyFilename={copyFilename}

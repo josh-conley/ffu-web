@@ -1,6 +1,13 @@
 import type { Tier } from '@/config/types'
 import type { Game, SeasonData, SeasonTeam } from '@/data'
-import { completedUnionWeeks, latestUnionWeek, leaguePointsRace, topScoresForWeek, unionHighlight } from './aroundTheUnion'
+import {
+  bottomScoresForWeek,
+  completedUnionWeeks,
+  latestUnionWeek,
+  leaguePointsRace,
+  topScoresForWeek,
+  unionHighlight,
+} from './aroundTheUnion'
 import premier2026 from '../../public/data/2026/premier.json'
 import masters2026 from '../../public/data/2026/masters.json'
 import national2026 from '../../public/data/2026/national.json'
@@ -97,6 +104,46 @@ describe('topScoresForWeek', () => {
   it('excludes playoff games', () => {
     const withPlayoff = [season('PREMIER', [game(15, ['a', 200], ['b', 90], true), game(15, ['c', 110], ['d', 100])])]
     expect(topScoresForWeek(withPlayoff, 15).map((t) => t.memberId)).toEqual(['c', 'd'])
+  })
+})
+
+describe('bottomScoresForWeek', () => {
+  const seasons = [
+    season('PREMIER', [game(1, ['a', 150], ['b', 90])]),
+    season('MASTERS', [game(1, ['c', 140], ['d', 130])]),
+    season('NATIONAL', [game(1, ['e', 160], ['f', 70])]),
+  ]
+
+  it('lists the worst scores first but ranks them from the top of the field', () => {
+    const lows = bottomScoresForWeek(seasons, 1)
+    // Six teams played, so the worst score of the week is 6th — not 1st.
+    expect(lows.map((l) => [l.memberId, l.rank])).toEqual([
+      ['f', 6],
+      ['b', 5],
+      ['d', 4],
+    ])
+  })
+
+  it('keeps everyone tied at the cutoff rather than cutting the tie', () => {
+    const tied = [
+      season('PREMIER', [game(1, ['a', 150], ['b', 80])]),
+      season('MASTERS', [game(1, ['c', 80], ['d', 80])]),
+      season('NATIONAL', [game(1, ['e', 160], ['f', 80])]),
+    ]
+    // Four teams share the week's low score; all four make the block, all on the same rank.
+    expect(bottomScoresForWeek(tied, 1).map((l) => l.rank)).toEqual([3, 3, 3, 3])
+  })
+
+  it('returns the whole field when fewer teams played than the limit', () => {
+    const thin = [season('PREMIER', [game(1, ['a', 100], ['b', 90])])]
+    expect(bottomScoresForWeek(thin, 1).map((l) => [l.memberId, l.rank])).toEqual([
+      ['b', 2],
+      ['a', 1],
+    ])
+  })
+
+  it('has nothing to report for a week nobody played', () => {
+    expect(bottomScoresForWeek(seasons, 9)).toEqual([])
   })
 })
 

@@ -19,7 +19,7 @@ export interface WeekScore {
   tier: Tier
   week: number
   score: number
-  /** Competition rank within the week across ALL leagues — ties share a rank (1, 2, 2, 4). */
+  /** Competition rank within the week across ALL leagues, best score first — ties share a rank. */
   rank: number
   /** The opponent they put it up against, for context in the callout. */
   opponentId: string
@@ -76,19 +76,15 @@ function weekEntries(seasons: SeasonData[], week: number): Omit<WeekScore, 'rank
   return scores
 }
 
-/**
- * Rank an already-sorted week and cut it to `limit`, keeping everyone tied with the last
- * qualifying score rather than cutting a podium mid-tie — shared by both ends of the week.
- */
-function podium(sorted: Omit<WeekScore, 'rank'>[], limit: number): WeekScore[] {
-  const ranked: WeekScore[] = []
+/** Competition-rank a week already sorted best-first; ties share a rank (1, 2, 2, 4). */
+function ranked(sorted: Omit<WeekScore, 'rank'>[]): WeekScore[] {
+  const rows: WeekScore[] = []
   sorted.forEach((entry, i) => {
     const prev = sorted[i - 1]
-    const rank = prev !== undefined && prev.score === entry.score ? (ranked[i - 1]?.rank ?? i + 1) : i + 1
-    ranked.push({ ...entry, rank })
+    const rank = prev !== undefined && prev.score === entry.score ? (rows[i - 1]?.rank ?? i + 1) : i + 1
+    rows.push({ ...entry, rank })
   })
-  const cutoff = ranked[limit - 1]
-  return cutoff === undefined ? ranked : ranked.filter((r) => r.rank <= cutoff.rank)
+  return rows
 }
 
 /**
@@ -98,15 +94,24 @@ function podium(sorted: Omit<WeekScore, 'rank'>[], limit: number): WeekScore[] {
  * can sweep the podium, which is the hype the payout tracking is for.
  */
 export function topScoresForWeek(seasons: SeasonData[], week: number, limit = 3): WeekScore[] {
-  return podium(weekEntries(seasons, week).sort((x, y) => y.score - x.score), limit)
+  const rows = ranked(weekEntries(seasons, week).sort((x, y) => y.score - x.score))
+  const cutoff = rows[limit - 1]
+  return cutoff === undefined ? rows : rows.filter((r) => r.rank <= cutoff.rank)
 }
 
 /**
- * The week's LOWEST scores, lowest first — the same podium read from the other end, so `rank` 1 is
- * the worst score of the week rather than the best.
+ * The week's LOWEST scores, lowest first.
+ *
+ * Ranked from the TOP of the field like every other block, so the worst score in a 36-team week
+ * reads "36th" rather than "1st" — a low-score list numbered 1, 2, 3 looks like a podium, which is
+ * exactly the wrong thing for the block to imply. That means ranking the whole week and keeping
+ * the tail, rather than sorting the other way and counting up.
  */
 export function bottomScoresForWeek(seasons: SeasonData[], week: number, limit = 3): WeekScore[] {
-  return podium(weekEntries(seasons, week).sort((x, y) => x.score - y.score), limit)
+  const rows = ranked(weekEntries(seasons, week).sort((x, y) => y.score - x.score))
+  const cutoff = rows[rows.length - limit]
+  const kept = cutoff === undefined ? rows : rows.filter((r) => r.rank >= cutoff.rank)
+  return kept.reverse()
 }
 
 /**

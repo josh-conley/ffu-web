@@ -118,7 +118,7 @@ it('lets an author step back to an earlier week when more than one has been play
 it('reports the bottom of the week and the four matchup stories', async () => {
   renderPage()
   await ready()
-  expect(screen.getByText('Bottom of the Barrel')).toBeInTheDocument()
+  expect(screen.getByText('Lowest Scores')).toBeInTheDocument()
   expect(screen.getByText('Week in Review')).toBeInTheDocument()
   expect(screen.getByText('Biggest Blowout')).toBeInTheDocument()
   expect(screen.getByText('Closest Call')).toBeInTheDocument()

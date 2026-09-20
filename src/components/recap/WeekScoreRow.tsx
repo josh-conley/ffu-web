@@ -8,13 +8,13 @@ import { ordinal } from '../format'
  * One team's week, as a row: where it placed, who it was, and what it scored.
  *
  * Shared by both ends of the week — the top scorers' runners-up and the low-score block read
- * identically, and `rank` already counts from whichever end its selector ranked.
+ * identically, since `rank` counts from the best score of the week at both ends (1st … 36th).
  */
 export function WeekScoreRow({ score, year }: { score: WeekScore; year: string }) {
   const style = LEAGUE_STYLES[score.tier]
   return (
     <div className={`flex items-center gap-3 border-l-4 ${style.border} bg-surface px-3 py-2 shadow-sm`}>
-      <span className="w-6 shrink-0 text-center font-mono text-sm font-bold tabular-nums text-muted">
+      <span className="w-9 shrink-0 text-center font-mono text-sm font-bold tabular-nums text-muted">
         {ordinal(score.rank)}
       </span>
       <TeamLogo ffuId={score.memberId} size={28} />

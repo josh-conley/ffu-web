@@ -89,7 +89,7 @@ function WeekBlocks({
         layout={layout}
         copyFilename={capture('around-the-union')}
       />
-      <WeekLowScores {...common} scores={lows} copyFilename={capture('bottom-of-the-barrel')} />
+      <WeekLowScores {...common} scores={lows} copyFilename={capture('lowest-scores')} />
       <WeekStories {...common} notes={notes} copyFilename={capture('week-in-review')} />
       <WeekStreaks
         {...common}
