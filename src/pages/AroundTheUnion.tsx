@@ -1,17 +1,23 @@
 import { useMemo } from 'react'
+import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import {
+  activeStreaks,
   aroundTheUnionYear,
   bottomScoresForWeek,
   completedUnionWeeks,
   leaguePointsRace,
+  longestStreaks,
   topScoresForWeek,
+  weekMovers,
   weekNotes,
 } from '@/selectors'
 import { AroundTheUnionBoard, type BoardLayout } from '@/components/AroundTheUnionBoard'
 import { WeekLowScores } from '@/components/recap/WeekLowScores'
+import { WeekMovers } from '@/components/recap/WeekMovers'
 import { WeekStories } from '@/components/recap/WeekStories'
+import { WeekStreaks } from '@/components/recap/WeekStreaks'
 import { SELECT, segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -23,12 +29,70 @@ const LAYOUTS: [BoardLayout, string][] = [
 ]
 
 /**
+ * The week's blocks, in the order the newsletter reads them: the anchor panel, then the scores,
+ * then form.
+ *
+ * Every block is derived here and presented there — the components take rows and know nothing
+ * about seasons. Only the FFUN layout gets file names, and a file name is what makes a block
+ * copyable (see RecapPanel); the standard layout is the reading view.
+ */
+function WeekBlocks({
+  yearSeasons,
+  year,
+  week,
+  layout,
+}: {
+  yearSeasons: SeasonData[]
+  year: string
+  week: number | undefined
+  layout: BoardLayout
+}) {
+  const compact = layout === 'ffun'
+  const scores = useMemo(() => (week === undefined ? [] : topScoresForWeek(yearSeasons, week)), [yearSeasons, week])
+  const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
+  const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
+  const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
+  const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
+  const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
+
+  // One file name per block, so a folder of downloads says which is which.
+  const capture = (block: string) => (compact ? `ffu-${block}-${year}-week-${week ?? ''}.png` : undefined)
+  const common = { year, week, compact }
+
+  return (
+    <div className="space-y-8">
+      <AroundTheUnionBoard
+        year={year}
+        week={week}
+        scores={scores}
+        race={race}
+        layout={layout}
+        copyFilename={capture('around-the-union')}
+      />
+      <WeekLowScores {...common} scores={lows} copyFilename={capture('bottom-of-the-barrel')} />
+      <WeekStories {...common} notes={notes} copyFilename={capture('week-in-review')} />
+      <WeekStreaks
+        {...common}
+        hot={longestStreaks(streaks, 'W')}
+        cold={longestStreaks(streaks, 'L')}
+        copyFilename={capture('hot-and-cold')}
+      />
+      <WeekMovers
+        {...common}
+        risers={movers.filter((m) => m.delta > 0).slice(0, 3)}
+        fallers={movers.filter((m) => m.delta < 0).slice(-3).reverse()}
+        copyFilename={capture('risers-and-fallers')}
+      />
+    </div>
+  )
+}
+
+/**
  * Around the Union — the FFUN's page-2 staple, derived instead of retyped.
  *
- * Built for CAPTURE: the block below is one self-contained bordered unit an author can screenshot
- * straight into the newsletter. Everything on the page outside it is a control, so it stays out of
- * the crop. The FFUN layout condenses it to the newsletter's own horizontal bands, for the short
- * slot it has to fit on page 2.
+ * Built for CAPTURE: each block below is a self-contained bordered unit with its own copy button,
+ * so an author takes the two or three that fit that week's room in the newsletter. Everything
+ * outside the blocks is a control, and stays out of the crop.
  *
  * Reports on completed weeks only, from the static season files — the week in progress belongs to
  * the home page's This Week section, which is live and moves under you. That also means the week
@@ -47,14 +111,6 @@ export function AroundTheUnion() {
   // The URL wins only if it names a week we actually have; otherwise open on the latest, which is
   // what an author wants every Tuesday.
   const week = weeks.includes(Number(weekParam)) ? Number(weekParam) : weeks.at(-1)
-  const scores = useMemo(() => (week === undefined ? [] : topScoresForWeek(yearSeasons, week)), [yearSeasons, week])
-  const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
-  const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
-  const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
-  // Only the FFUN layout is copied — the standard one is the reading view. One file name per block,
-  // so a folder of downloads says which is which.
-  const capture = (block: string) =>
-    layout === 'ffun' ? `ffu-${block}-${year ?? 'season'}-week-${week ?? ''}.png` : undefined
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -92,30 +148,7 @@ export function AroundTheUnion() {
       {year === undefined ? (
         <ErrorMessage error="No season has been played yet." />
       ) : (
-        <div className="space-y-8">
-          <AroundTheUnionBoard
-            year={year}
-            week={week}
-            scores={scores}
-            race={race}
-            layout={layout}
-            copyFilename={capture('around-the-union')}
-          />
-          <WeekLowScores
-            scores={lows}
-            year={year}
-            week={week}
-            compact={layout === 'ffun'}
-            copyFilename={capture('bottom-of-the-barrel')}
-          />
-          <WeekStories
-            notes={notes}
-            year={year}
-            week={week}
-            compact={layout === 'ffun'}
-            copyFilename={capture('week-in-review')}
-          />
-        </div>
+        <WeekBlocks yearSeasons={yearSeasons} year={year} week={week} layout={layout} />
       )}
     </div>
   )

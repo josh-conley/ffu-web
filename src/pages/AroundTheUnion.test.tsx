@@ -117,7 +117,7 @@ it('reports the bottom of the week and the four matchup stories', async () => {
   expect(screen.getByText('Week in Review')).toBeInTheDocument()
   expect(screen.getByText('Biggest Blowout')).toBeInTheDocument()
   expect(screen.getByText('Closest Call')).toBeInTheDocument()
-  expect(screen.getByText('Hard-Luck Loss')).toBeInTheDocument()
+  expect(screen.getByText('Tough Loss')).toBeInTheDocument()
   expect(screen.getByText('Luckiest Win')).toBeInTheDocument()
 })
 
@@ -130,5 +130,14 @@ it('gives every block its own copy button in the FFUN layout only', async () => 
 
   renderPage('/around-the-union?layout=ffun')
   await ready()
-  await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i })).toHaveLength(3))
+  await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i })).toHaveLength(5))
+})
+
+it('reports form: active runs and moves in the table', async () => {
+  renderPage()
+  await ready()
+  expect(screen.getByText('Hot & Cold')).toBeInTheDocument()
+  expect(screen.getByText('Winning runs')).toBeInTheDocument()
+  expect(screen.getByText('Losing runs')).toBeInTheDocument()
+  expect(screen.getByText('Risers & Fallers')).toBeInTheDocument()
 })
