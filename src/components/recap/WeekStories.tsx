@@ -23,8 +23,8 @@ interface Story {
 const STORIES: Story[] = [
   { key: 'blowout', label: 'Biggest Blowout', blurb: 'Widest margin of the week' },
   { key: 'nailbiter', label: 'Closest Call', blurb: 'Narrowest margin of the week' },
-  { key: 'unluckiestLoss', label: 'Unluckiest Loss', blurb: 'Highest score that still lost' },
-  { key: 'luckiestWin', label: 'Luckiest Win', blurb: 'Lowest score that still won' },
+  { key: 'unluckiestLoss', label: 'Highest Scoring Loss', blurb: 'Most points scored in a defeat' },
+  { key: 'luckiestWin', label: 'Lowest Scoring Win', blurb: 'Fewest points that were still enough' },
 ]
 
 const name = (memberId: string, year: string) => nameForYear(memberId, year) ?? memberId

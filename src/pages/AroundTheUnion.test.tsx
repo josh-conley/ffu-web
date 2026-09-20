@@ -122,8 +122,8 @@ it('reports the bottom of the week and the four matchup stories', async () => {
   expect(screen.getByText('Week in Review')).toBeInTheDocument()
   expect(screen.getByText('Biggest Blowout')).toBeInTheDocument()
   expect(screen.getByText('Closest Call')).toBeInTheDocument()
-  expect(screen.getByText('Unluckiest Loss')).toBeInTheDocument()
-  expect(screen.getByText('Luckiest Win')).toBeInTheDocument()
+  expect(screen.getByText('Highest Scoring Loss')).toBeInTheDocument()
+  expect(screen.getByText('Lowest Scoring Win')).toBeInTheDocument()
 })
 
 it('gives every block its own copy button in the FFUN layout only', async () => {
