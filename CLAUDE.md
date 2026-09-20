@@ -84,7 +84,8 @@ npm run validate   # per-game migration diff harness
 
 ## Status
 **Build complete through Phase 4** (all phases 0–4 done; styling overhaul done). Pages live: Overview,
-Standings, Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
+Standings (per league, plus a **Union** scope — `?scope=union`, all 36 teams of a year in one
+UPR-ranked table), Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
 Members (directory/detail/compare), **FFU Cup** (route `/cup` — the 36-team cross-league knockout;
 tabbed Bracket / Format & Rules, the bracket being an empty outline until the season's draw is held),
 **Around the Union** (route `/around-the-union` — the FFUN newsletter's page-2 panel: last

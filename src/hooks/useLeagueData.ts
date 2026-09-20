@@ -25,6 +25,21 @@ export function useAllSeasons() {
   }
 }
 
+/** Every tier's season file for ONE year (the Standings page's Union view of all 36 teams). */
+export function useYearSeasons(year: string, enabled = true) {
+  const { data: manifest, loading, error } = useSeasons()
+  const all = useAsyncData(
+    `year-seasons:${year}`,
+    () => Promise.all((manifest ?? []).filter((s) => s.year === year).map((s) => provider.getSeason(s.tier, s.year))),
+    enabled && manifest !== undefined,
+  )
+  return {
+    data: all.data,
+    loading: loading || (enabled && manifest !== undefined && all.loading),
+    error: error ?? all.error,
+  }
+}
+
 export function useSeason(tier: Tier, year: string, enabled = true) {
   return useAsyncData(`season:${tier}:${year}`, () => provider.getSeason(tier, year), enabled)
 }
