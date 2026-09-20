@@ -86,6 +86,25 @@ export function useAllLineups() {
   }
 }
 
+/** Every tier's lineups for ONE year — the recap's player blocks, which read a single week. */
+export function useYearLineups(year: string, enabled = true) {
+  const { data: manifest, loading, error } = useSeasons()
+  const all = useAsyncData(
+    `year-lineups:${year}`,
+    async () => {
+      const sources = (manifest ?? []).filter((s) => s.year === year && s.hasLineups)
+      const loaded = await Promise.all(sources.map((s) => provider.getLineups(s.tier, s.year)))
+      return loaded.filter((l): l is SeasonLineups => l !== null)
+    },
+    enabled && manifest !== undefined,
+  )
+  return {
+    data: all.data,
+    loading: loading || (enabled && manifest !== undefined && all.loading),
+    error: error ?? all.error,
+  }
+}
+
 /** A season's lineups (lazy — only fetched when `enabled`, e.g. once a lineup modal opens). */
 export function useLineups(tier: Tier, year: string, enabled = true) {
   return useAsyncData(`lineups:${tier}:${year}`, () => provider.getLineups(tier, year), enabled)

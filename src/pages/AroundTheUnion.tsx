@@ -1,14 +1,16 @@
 import { useMemo } from 'react'
-import type { SeasonData } from '@/data'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import type { PlayerMap, SeasonData, SeasonLineups } from '@/data'
+import { useAllSeasons, usePlayers, useYearLineups } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import {
   activeStreaks,
   aroundTheUnionYear,
+  benchRegrets,
   bottomScoresForWeek,
   completedUnionWeeks,
   leaguePointsRace,
   longestStreaks,
+  playersOfWeek,
   topScoresForWeek,
   weekMovers,
   weekNotes,
@@ -16,6 +18,7 @@ import {
 import { AroundTheUnionBoard, type BoardLayout } from '@/components/AroundTheUnionBoard'
 import { WeekLowScores } from '@/components/recap/WeekLowScores'
 import { WeekMovers } from '@/components/recap/WeekMovers'
+import { WeekBenchRegrets, WeekPlayerHighs } from '@/components/recap/WeekPlayers'
 import { WeekStories } from '@/components/recap/WeekStories'
 import { WeekStreaks } from '@/components/recap/WeekStreaks'
 import { SELECT, segButton } from '@/components/controls'
@@ -29,8 +32,46 @@ const LAYOUTS: [BoardLayout, string][] = [
 ]
 
 /**
+ * The player blocks, which need the week's lineups and the player reference — files the rest of the
+ * page doesn't load. They render nothing at all until both arrive, rather than flashing an empty
+ * block: a season without lineups on file simply has no player half to its recap.
+ */
+function PlayerBlocks({
+  lineups,
+  players,
+  year,
+  week,
+  compact,
+  capture,
+}: {
+  lineups: SeasonLineups[] | undefined
+  players: PlayerMap | undefined
+  year: string
+  week: number | undefined
+  compact: boolean
+  capture: (block: string) => string | undefined
+}) {
+  const highs = useMemo(
+    () => (lineups === undefined || players === undefined || week === undefined ? [] : playersOfWeek(lineups, players, week)),
+    [lineups, players, week],
+  )
+  const regrets = useMemo(
+    () => (lineups === undefined || players === undefined || week === undefined ? [] : benchRegrets(lineups, players, week)),
+    [lineups, players, week],
+  )
+  if (highs.length === 0 && regrets.length === 0) return null
+  const common = { year, week, compact }
+  return (
+    <>
+      <WeekPlayerHighs {...common} players={highs} copyFilename={capture('players-of-the-week')} />
+      <WeekBenchRegrets {...common} regrets={regrets} copyFilename={capture('left-on-the-bench')} />
+    </>
+  )
+}
+
+/**
  * The week's blocks, in the order the newsletter reads them: the anchor panel, then the scores,
- * then form.
+ * then form, then the players.
  *
  * Every block is derived here and presented there — the components take rows and know nothing
  * about seasons. Only the FFUN layout gets file names, and a file name is what makes a block
@@ -48,6 +89,8 @@ function WeekBlocks({
   layout: BoardLayout
 }) {
   const compact = layout === 'ffun'
+  const { data: lineups } = useYearLineups(year)
+  const { data: players } = usePlayers()
   const scores = useMemo(() => (week === undefined ? [] : topScoresForWeek(yearSeasons, week)), [yearSeasons, week])
   const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
   const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
@@ -83,6 +126,7 @@ function WeekBlocks({
         fallers={movers.filter((m) => m.delta < 0).slice(-3).reverse()}
         copyFilename={capture('risers-and-fallers')}
       />
+      <PlayerBlocks lineups={lineups} players={players} year={year} week={week} compact={compact} capture={capture} />
     </div>
   )
 }

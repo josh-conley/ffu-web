@@ -7,16 +7,21 @@ const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, i
 const FILES: Record<string, unknown> = {}
 for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../public', '')] = mod
 
-afterEach(() => vi.unstubAllGlobals())
-
-function renderPage(entry = '/around-the-union') {
+// Stubbed for the WHOLE file rather than per test: the provider caches one promise per path, so a
+// fetch still in flight when a test tore the stub down would reject and poison every later test
+// that wanted the same file (the lineups, which arrive after the page's first paint).
+beforeAll(() =>
   vi.stubGlobal('fetch', (url: string) =>
     Promise.resolve(
       FILES[url] === undefined
         ? ({ ok: false, status: 404, json: async () => ({}) } as Response)
         : ({ ok: true, status: 200, json: async () => FILES[url] } as Response),
     ),
-  )
+  ),
+)
+afterAll(() => vi.unstubAllGlobals())
+
+function renderPage(entry = '/around-the-union') {
   return render(
     <MemoryRouter initialEntries={[entry]}>
       <AroundTheUnion />
@@ -140,4 +145,11 @@ it('reports form: active runs and moves in the table', async () => {
   expect(screen.getByText('Winning runs')).toBeInTheDocument()
   expect(screen.getByText('Losing runs')).toBeInTheDocument()
   expect(screen.getByText('Risers & Fallers')).toBeInTheDocument()
+})
+
+it('reports the week at player level when lineups are on file', async () => {
+  renderPage()
+  await ready()
+  await waitFor(() => expect(screen.getByText('Players of the Week')).toBeInTheDocument())
+  expect(screen.getByText('Left on the Bench')).toBeInTheDocument()
 })
