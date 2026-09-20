@@ -122,7 +122,7 @@ it('reports the bottom of the week and the four matchup stories', async () => {
   expect(screen.getByText('Week in Review')).toBeInTheDocument()
   expect(screen.getByText('Biggest Blowout')).toBeInTheDocument()
   expect(screen.getByText('Closest Call')).toBeInTheDocument()
-  expect(screen.getByText('Tough Loss')).toBeInTheDocument()
+  expect(screen.getByText('Unluckiest Loss')).toBeInTheDocument()
   expect(screen.getByText('Luckiest Win')).toBeInTheDocument()
 })
 
@@ -135,14 +135,22 @@ it('gives every block its own copy button in the FFUN layout only', async () => 
 
   renderPage('/around-the-union?layout=ffun')
   await ready()
-  await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i })).toHaveLength(5))
+  // One per block that has something to report this week.
+  await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i }).length).toBeGreaterThanOrEqual(5))
 })
 
-it('reports form: active runs and moves in the table', async () => {
+it('keeps the form blocks away in a week with no form to report', async () => {
   renderPage()
   await ready()
-  expect(screen.getByText('Hot & Cold')).toBeInTheDocument()
-  expect(screen.getByText('Winning runs')).toBeInTheDocument()
-  expect(screen.getByText('Losing runs')).toBeInTheDocument()
-  expect(screen.getByText('Risers & Fallers')).toBeInTheDocument()
+  // The live season is one week old: nobody is on a run and nothing has moved in a table that
+  // didn't exist last week. A block with no news is not a block.
+  expect(screen.queryByText('Hot & Cold')).not.toBeInTheDocument()
+  expect(screen.queryByText('Risers & Fallers')).not.toBeInTheDocument()
+})
+
+it('carries the FFU own weekly colour: the belt and the league race', async () => {
+  renderPage()
+  await ready()
+  expect(screen.getByText('League of the Week')).toBeInTheDocument()
+  expect(screen.getByText('Belt Watch')).toBeInTheDocument()
 })

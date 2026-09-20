@@ -1,6 +1,6 @@
 import type { Tier } from '@/config/types'
 import type { Game, SeasonData } from '@/data'
-import { weekMatchups, weekNotes } from './weekRecap'
+import { leagueWeekScoring, weekMatchups, weekNotes } from './weekRecap'
 
 const game = (week: number, a: [string, number], b: [string, number], isPlayoff = false): Game => ({
   week,
@@ -73,5 +73,23 @@ describe('weekNotes', () => {
 
   it('reports nothing for a week that has not been played', () => {
     expect(weekNotes(seasons, 9)).toMatchObject({ blowout: undefined, nailbiter: undefined, ties: [] })
+  })
+})
+
+describe('leagueWeekScoring', () => {
+  it('ranks the leagues by what they scored that week', () => {
+    const rows = leagueWeekScoring(seasons, 1)
+    // Premier: 160+60+100.5+100 = 420.5 over 4 team-games. Masters: 95+90+151+150 = 486 over 4.
+    expect(rows.map((r) => [r.tier, r.rank])).toEqual([
+      ['MASTERS', 1],
+      ['PREMIER', 2],
+    ])
+    expect(rows[0]!.total).toBeCloseTo(486, 5)
+    expect(rows[0]!.average).toBeCloseTo(121.5, 5)
+  })
+
+  it('leaves out a league that did not play that week', () => {
+    // Only Premier has a week 2 game in this fixture.
+    expect(leagueWeekScoring(seasons, 2).map((r) => r.tier)).toEqual(['PREMIER'])
   })
 })

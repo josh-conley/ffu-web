@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { FaArrowTrendUp, FaCoins, FaFireFlameCurved, FaShieldHalved } from 'react-icons/fa6'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import {
   MILESTONES,
@@ -9,22 +8,10 @@ import {
   milestoneWatch,
   type MilestoneCategory,
 } from '@/selectors'
+import { MILESTONE_META as META } from '@/components/milestones'
 import { MilestoneTable, RecentlyReached } from '@/components/MilestoneTable'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
-
-interface CategoryMeta {
-  label: string
-  blurb: string
-  icon: React.ReactNode
-}
-
-const META: Record<MilestoneCategory, CategoryMeta> = {
-  pointsFor: { label: 'Points Scored', blurb: 'Career points for, across every league.', icon: <FaArrowTrendUp aria-hidden /> },
-  wins: { label: 'Career Wins', blurb: 'Regular season and playoffs, all leagues.', icon: <FaFireFlameCurved aria-hidden /> },
-  earnings: { label: 'Career Earnings', blurb: 'Every prize won, including cross-league prizing.', icon: <FaCoins aria-hidden /> },
-  pointsAgainst: { label: 'Points Against', blurb: 'The other kind of milestone.', icon: <FaShieldHalved aria-hidden /> },
-}
 
 function CategorySection({
   category,

@@ -70,6 +70,8 @@ export function WeekMovers({
   compact: boolean
   copyFilename?: string
 }) {
+  // Nothing has moved in week 1 — there was no table before it (see weekMovers).
+  if (risers.length === 0 && fallers.length === 0) return null
   return (
     <RecapPanel
       title="Risers & Fallers"

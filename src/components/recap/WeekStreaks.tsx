@@ -50,7 +50,7 @@ function Column({ title, icon, streaks, year }: { title: string; icon: React.Rea
         {title}
       </div>
       {streaks.length === 0 ? (
-        <p className="px-3 py-2 text-sm text-muted">Nobody yet.</p>
+        <p className="px-3 py-2 text-sm text-muted">Nobody on a run.</p>
       ) : (
         streaks.map((streak) => <StreakRow key={`${streak.tier}-${streak.memberId}`} streak={streak} year={year} />)
       )}
@@ -73,6 +73,9 @@ export function WeekStreaks({
   compact: boolean
   copyFilename?: string
 }) {
+  // Week 1 has no runs and nothing to say about form: the block stays away rather than printing
+  // "nobody yet" twice, which is not something the newsletter would ever paste.
+  if (hot.length === 0 && cold.length === 0) return null
   return (
     <RecapPanel
       title="Hot & Cold"

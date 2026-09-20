@@ -23,7 +23,7 @@ interface Story {
 const STORIES: Story[] = [
   { key: 'blowout', label: 'Biggest Blowout', blurb: 'Widest margin of the week' },
   { key: 'nailbiter', label: 'Closest Call', blurb: 'Narrowest margin of the week' },
-  { key: 'unluckiestLoss', label: 'Tough Loss', blurb: 'Highest score that still lost' },
+  { key: 'unluckiestLoss', label: 'Unluckiest Loss', blurb: 'Highest score that still lost' },
   { key: 'luckiestWin', label: 'Luckiest Win', blurb: 'Lowest score that still won' },
 ]
 

@@ -2,16 +2,8 @@ import { useMemo } from 'react'
 import { getMember } from '@/config'
 import type { MilestoneCategory, MilestoneStanding } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
+import { MILESTONE_FORMAT as FORMAT } from './milestones'
 import { TeamLogo } from './TeamLogo'
-
-// How each category's numbers read. Kept beside the table rather than in the selector: the
-// thresholds are facts, but "$1,500" vs "1,500.00" is a display choice.
-const FORMAT: Record<MilestoneCategory, (n: number) => string> = {
-  pointsFor: (n) => n.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-  pointsAgainst: (n) => n.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-  wins: (n) => String(Math.round(n)),
-  earnings: (n) => `$${Math.round(n).toLocaleString('en-US')}`,
-}
 
 const teamName = (memberId: string) => getMember(memberId)?.name ?? memberId
 
