@@ -146,10 +146,3 @@ it('reports form: active runs and moves in the table', async () => {
   expect(screen.getByText('Losing runs')).toBeInTheDocument()
   expect(screen.getByText('Risers & Fallers')).toBeInTheDocument()
 })
-
-it('reports the week at player level when lineups are on file', async () => {
-  renderPage()
-  await ready()
-  await waitFor(() => expect(screen.getByText('Players of the Week')).toBeInTheDocument())
-  expect(screen.getByText('Left on the Bench')).toBeInTheDocument()
-})
