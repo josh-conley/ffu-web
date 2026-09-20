@@ -9,7 +9,6 @@ import {
   bottomScoresForWeek,
   completedUnionWeeks,
   leaguePointsRace,
-  leagueWeekScoring,
   longestStreaks,
   milestoneStandings,
   milestoneWatch,
@@ -20,7 +19,6 @@ import {
 } from '@/selectors'
 import { AroundTheUnionBoard, type BoardLayout } from '@/components/AroundTheUnionBoard'
 import { WeekBelt } from '@/components/recap/WeekBelt'
-import { WeekLeagues } from '@/components/recap/WeekLeagues'
 import { WeekLowScores } from '@/components/recap/WeekLowScores'
 import { WeekMilestones } from '@/components/recap/WeekMilestones'
 import { WeekMovers } from '@/components/recap/WeekMovers'
@@ -44,9 +42,9 @@ const LAYOUTS: [BoardLayout, string][] = [
  * about seasons. Only the FFUN layout gets file names, and a file name is what makes a block
  * copyable (see RecapPanel); the standard layout is the reading view.
  */
-/** The three closest career marks, whatever category they're in — the newsletter prints a couple,
- *  not a table per category (that's the Milestones page). */
-function closestMilestones(seasons: SeasonData[], limit = 3): MilestoneStanding[] {
+/** The closest career marks, whatever category they're in — a short list, not a table per category
+ *  (that's the Milestones page). */
+function closestMilestones(seasons: SeasonData[], limit = 5): MilestoneStanding[] {
   return [...milestoneWatch(milestoneStandings(seasons)).values()]
     .flat()
     .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0))
@@ -74,7 +72,6 @@ function WeekBlocks({
   const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
   const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
   const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
-  const leagues = useMemo(() => leagueWeekScoring(yearSeasons, week ?? 0), [yearSeasons, week])
   const belt = useMemo(() => (week === undefined ? null : beltWatch(seasons, year, week)), [seasons, year, week])
   const milestones = useMemo(() => closestMilestones(seasons), [seasons])
 
@@ -106,7 +103,6 @@ function WeekBlocks({
         fallers={movers.filter((m) => m.delta < 0).slice(-3).reverse()}
         copyFilename={capture('risers-and-fallers')}
       />
-      <WeekLeagues {...common} rows={leagues} copyFilename={capture('league-of-the-week')} />
       <WeekBelt {...common} watch={belt} copyFilename={capture('belt-watch')} />
       <WeekMilestones {...common} rows={milestones} copyFilename={capture('milestone-watch')} />
     </div>

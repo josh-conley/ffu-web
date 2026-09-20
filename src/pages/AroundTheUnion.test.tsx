@@ -148,9 +148,9 @@ it('keeps the form blocks away in a week with no form to report', async () => {
   expect(screen.queryByText('Risers & Fallers')).not.toBeInTheDocument()
 })
 
-it('carries the FFU own weekly colour: the belt and the league race', async () => {
+it('carries the FFU own weekly colour: the belt, and the marks about to fall', async () => {
   renderPage()
   await ready()
-  expect(screen.getByText('League of the Week')).toBeInTheDocument()
   expect(screen.getByText('Belt Watch')).toBeInTheDocument()
+  expect(screen.getByText('Milestone Watch')).toBeInTheDocument()
 })

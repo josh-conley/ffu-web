@@ -92,35 +92,3 @@ export function weekNotes(seasons: SeasonData[], week: number): WeekNotes {
     ties: games.filter((g) => g.tied),
   }
 }
-
-export interface LeagueWeekScoring {
-  tier: Tier
-  /** Every point the league scored in the week. */
-  total: number
-  /** Points per team-game that week — the leagues play the same number, but this keeps the
-   *  comparison honest in a week where one league is short a game. */
-  average: number
-  /** Rank by total, highest first; ties share a rank. */
-  rank: number
-}
-
-/**
- * League against league for ONE week — the weekly counterpart to the season-long points race the
- * main panel carries, and the line the FFUN uses to needle whichever tier had a quiet Sunday.
- */
-export function leagueWeekScoring(seasons: SeasonData[], week: number): LeagueWeekScoring[] {
-  const rows = seasons
-    .map((season) => {
-      const games = season.games.filter((g) => !g.isPlayoff && g.week === week)
-      const total = games.reduce((sum, g) => sum + g.participants.reduce((s, p) => s + p.score, 0), 0)
-      const teamGames = games.length * 2
-      return { tier: season.tier, total, average: teamGames > 0 ? total / teamGames : 0, rank: 0 }
-    })
-    .filter((row) => row.average > 0)
-    .sort((a, b) => b.total - a.total)
-  rows.forEach((row, i) => {
-    const prev = rows[i - 1]
-    row.rank = prev !== undefined && prev.total === row.total ? prev.rank : i + 1
-  })
-  return rows
-}
