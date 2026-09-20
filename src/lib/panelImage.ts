@@ -18,8 +18,14 @@ async function renderPng(el: HTMLElement): Promise<Blob> {
   // Imported on demand: the renderer is the largest thing this page touches and only this button
   // needs it, so it stays out of the main bundle and off every other page's load.
   const { toBlob } = await import('html-to-image')
+  const box = el.getBoundingClientRect()
   const blob = await toBlob(el, {
     pixelRatio: PIXEL_RATIO,
+    // Sized from the REAL box, rounded up. Left alone, html-to-image measures with clientWidth /
+    // clientHeight, which round a fractional layout box DOWN — on a panel sized to its own content
+    // (the FFUN layout) that shaves the last pixel column off the capture.
+    width: Math.ceil(box.width),
+    height: Math.ceil(box.height),
     // The panel's own background is semi-transparent over the page's. Paint the page background
     // behind it so the PNG is opaque — a transparent one pasted into a light document would show
     // white through a dark panel.

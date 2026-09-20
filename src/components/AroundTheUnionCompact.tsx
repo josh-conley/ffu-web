@@ -53,20 +53,26 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
  * All three leagues on one line: the newsletter's "Avg Game / Total League Points" footer, down to
  * the paired chips — average in the solid tier color, total in its soft one.
  *
+ * This band is what sets the captured panel's width, so from `sm` up it may NOT wrap: the copy
+ * renders a clone of the DOM whose layout is re-run with slightly different font metrics, and with
+ * wrapping allowed a hair of extra width drops National onto a second line the PNG then crops. The
+ * chips never shrink either — they are the numbers — and the trailing padding leaves a few pixels
+ * for the clone to be wider in. A phone still wraps, where the panel is narrower than its content.
+ *
  * The newsletter leaves those chips unlabelled and lets the colors speak. Here they keep a short
  * league label: color alone is the sole encoding otherwise, which fails anyone who can't separate
  * gold from red, and the page has to work on screen as well as in the crop.
  */
 function LeagueStrip({ race }: { race: LeaguePointsRow[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface px-3 py-2">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface py-2 pl-3 pr-5 sm:flex-nowrap">
       <span className="text-[10px] font-bold uppercase leading-tight tracking-widest text-muted">
         Avg Game / Total League Points
       </span>
       {race.map((row) => {
         const style = LEAGUE_STYLES[row.tier]
         return (
-          <span key={row.tier} className="flex items-center gap-1 whitespace-nowrap">
+          <span key={row.tier} className="flex shrink-0 items-center gap-1 whitespace-nowrap">
             <span className={`text-[10px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
             <span className={`px-1.5 py-0.5 font-mono text-sm font-bold tabular-nums ${style.solidHeader}`}>
               {row.averageGame.toFixed(2)}
