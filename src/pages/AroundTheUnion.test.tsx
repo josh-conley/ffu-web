@@ -151,6 +151,10 @@ it('keeps the form blocks away in a week with no form to report', async () => {
 it('carries the FFU own weekly colour: the belt, and the marks about to fall', async () => {
   renderPage()
   await ready()
-  expect(screen.getByText('Belt Watch')).toBeInTheDocument()
+  expect(screen.getByText('Lineal Champ — Belt Watch')).toBeInTheDocument()
+  // The belt's chain of custody: the handovers that led to today's holder, with the scores.
+  const chain = screen.getByRole('list', { name: 'Belt chain of custody' })
+  expect(within(chain).getAllByRole('listitem').length).toBeGreaterThan(1)
+  expect(within(chain).getAllByText(/^\d+ wks?$/).length).toBeGreaterThan(0)
   expect(screen.getByText('Milestone Watch')).toBeInTheDocument()
 })

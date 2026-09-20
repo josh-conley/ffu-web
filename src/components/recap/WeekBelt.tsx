@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { nameForYear } from '@/config'
 import type { BeltWatch } from '@/selectors'
 import { TeamLogo } from '../TeamLogo'
+import { BeltChain } from './BeltChain'
 import { RecapPanel } from './RecapPanel'
 
 /**
@@ -72,7 +73,7 @@ export function WeekBelt({
   if (watch === null) return null
   return (
     <RecapPanel
-      title="Belt Watch"
+      title="Lineal Champ — Belt Watch"
       meta={week ? `${year} · Week ${week}` : year}
       compact={compact}
       copyFilename={copyFilename}
@@ -80,6 +81,7 @@ export function WeekBelt({
       <div className="flex flex-col gap-px bg-border">
         <Headline watch={watch} year={year} />
         <Bout watch={watch} year={year} />
+        <BeltChain chain={watch.chain} truncated={watch.truncated} />
         {!compact && (
           <div className="bg-surface px-3 py-2 text-sm text-muted">
             {watch.defenses} defenses over {watch.weeksHeld} weeks ·{' '}

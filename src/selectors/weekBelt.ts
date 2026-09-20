@@ -1,5 +1,8 @@
 import type { SeasonData } from '@/data'
-import { linealHistory, type LinealTitleGame } from './lineal'
+import { linealHistory, type LinealReign, type LinealTitleGame } from './lineal'
+
+/** How far back the belt's chain of custody is shown — enough to read a story, short enough to fit. */
+const CHAIN_LENGTH = 5
 
 /**
  * The belt, as of one week — the recap item nobody else's league can print.
@@ -18,6 +21,14 @@ export interface BeltWatch {
   bout: LinealTitleGame | undefined
   /** Who it was taken from, when it changed hands in this week. */
   tookItFrom: string | undefined
+  /**
+   * The last few reigns, oldest first, ending with the current holder — the chain of custody.
+   * Each link carries what won it (`wonBout`) and how long it was held, so the block can show how
+   * the belt travelled rather than only where it sits.
+   */
+  chain: LinealReign[]
+  /** True when the lineage runs back further than the chain shows. */
+  truncated: boolean
 }
 
 /**
@@ -40,5 +51,13 @@ export function beltWatch(seasons: SeasonData[], year: string, week: number): Be
   const tookItFrom =
     reign.wonAt.year === year && reign.wonAt.week === week && reign.wonFrom !== null ? reign.wonFrom : undefined
 
-  return { holderId: currentChampionId, defenses: reign.defenses, weeksHeld: reign.weeksHeld, bout, tookItFrom }
+  return {
+    holderId: currentChampionId,
+    defenses: reign.defenses,
+    weeksHeld: reign.weeksHeld,
+    bout,
+    tookItFrom,
+    chain: reigns.slice(-CHAIN_LENGTH),
+    truncated: reigns.length > CHAIN_LENGTH,
+  }
 }

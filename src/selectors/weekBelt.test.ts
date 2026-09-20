@@ -1,4 +1,5 @@
 import type { SeasonData } from '@/data'
+import { linealHistory } from './lineal'
 import { beltWatch } from './weekBelt'
 import premier2018 from '../../public/data/2018/premier.json'
 import premier2019 from '../../public/data/2019/premier.json'
@@ -24,6 +25,31 @@ describe('beltWatch', () => {
 
   it('has no bout for a week the holder did not play', () => {
     expect(beltWatch(seasons, '2019', 99)?.bout).toBeUndefined()
+  })
+
+  it('ends the chain of custody with the current holder', () => {
+    const watch = beltWatch(seasons, '2019', 1)!
+    expect(watch.chain.length).toBeGreaterThan(0)
+    expect(watch.chain.length).toBeLessThanOrEqual(5)
+    expect(watch.chain.at(-1)!.championId).toBe(watch.holderId)
+    expect(watch.chain.at(-1)!.current).toBe(true)
+    // Oldest first, and each link carries the score that won it.
+    expect(watch.chain.map((r) => r.order)).toEqual([...watch.chain.map((r) => r.order)].sort((a, b) => a - b))
+    expect(watch.chain.at(-1)!.wonBout.score).toBeGreaterThan(0)
+  })
+
+  it('links each holder to the one it took the belt from', () => {
+    const watch = beltWatch(seasons, '2019', 1)!
+    for (const [i, reign] of watch.chain.entries()) {
+      if (i === 0) continue
+      expect(reign.wonFrom).toBe(watch.chain[i - 1]!.championId)
+    }
+  })
+
+  it('flags a lineage longer than the chain it shows', () => {
+    const watch = beltWatch(seasons, '2019', 1)!
+    const total = linealHistory(seasons).reigns.length
+    expect(watch.truncated).toBe(total > watch.chain.length)
   })
 
   it('reports nothing when there is no lineage to build', () => {
