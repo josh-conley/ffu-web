@@ -12,6 +12,11 @@ import { TeamLogo } from './TeamLogo'
  * Three bands where the standard view takes a screenful — leader beside its runners-up, then one
  * strip carrying all three leagues. The section headings go too: the newsletter's own page supplies
  * that context, so repeating it inside the screenshot just costs rows.
+ *
+ * Type steps down below `sm` throughout. The bands sit side by side from `sm` up and stack on a
+ * phone, where a name has the width of a handset rather than half a panel — at the newsletter's
+ * sizes the longer team names truncate. Every size here is therefore a mobile size with an `sm:`
+ * override carrying the capture's own, so the screenshot is untouched.
  */
 
 const POINTS = new Intl.NumberFormat('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
@@ -23,10 +28,10 @@ function Leader({ score, year }: { score: WeekScore; year: string }) {
       <FaTrophy className="shrink-0 text-2xl" aria-hidden />
       <TeamLogo ffuId={score.memberId} size={40} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-lg font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
+        <div className="truncate text-base font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
           {nameForYear(score.memberId, year) ?? score.memberId}
         </div>
-        <div className="font-mono text-sm font-bold leading-tight opacity-90">
+        <div className="font-mono text-xs font-bold leading-tight opacity-90 sm:text-sm">
           {score.score.toFixed(2)} · {style.label}
         </div>
       </div>
@@ -42,9 +47,9 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
     <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-2 px-3 py-2.5">
       <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
       <TeamLogo ffuId={score.memberId} size={26} />
-      <span className="truncate text-base font-bold leading-tight">{nameForYear(score.memberId, year) ?? score.memberId}</span>
-      <span className="ml-auto shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
-      <span className={`shrink-0 text-[11px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
+      <span className="truncate text-sm font-bold leading-tight sm:text-base">{nameForYear(score.memberId, year) ?? score.memberId}</span>
+      <span className="ml-auto shrink-0 font-mono text-sm font-bold tabular-nums sm:text-base">{score.score.toFixed(2)}</span>
+      <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider sm:text-[11px] ${style.text}`}>{style.label}</span>
     </div>
   )
 }
