@@ -8,17 +8,16 @@ import { recordLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
 
-/**
- * Three of these sit side by side on the home page, inside a container that is barely 320px per
- * column on a laptop and narrower still on a phone — so this table is built to FIT (see DataTable's
- * `fit`) rather than to scroll. Nothing here is ever reached by scrolling sideways.
- *
- * That width is why the record and the two points totals sit UNDER the team name in muted type
- * rather than in columns of their own: two columns leave the name most of the table, so it reads on
- * one line, and the numbers stay attached to the team they belong to. It is a standings SUMMARY —
- * the Standings page is where the rest of the columns (Win%, UPR) and sorting live, so the headers
- * here are labels rather than buttons.
- */
+// Three of these sit side by side on the home page, inside a container that is barely 320px per
+// column on a laptop and narrower still on a phone — so this table is built to FIT (see DataTable's
+// `fit`) rather than to scroll. Nothing here is ever reached by scrolling sideways.
+//
+// That width is why the record and the two points totals sit UNDER the team name in muted type
+// rather than in columns of their own: two columns leave the name most of the table, so it reads on
+// one line, and the numbers stay attached to the team they belong to. It is a standings SUMMARY —
+// the Standings page is where the rest of the columns (Win%, UPR) and sorting live, so the headers
+// here are labels rather than buttons.
+
 /** The run a team is on, in the league's own shorthand: 2W, 3L. Absent unless there is one, so a
  *  team that just split its last two says nothing rather than "0". */
 function StreakTag({ streak }: { streak: LiveStandingRow['streak'] }) {
