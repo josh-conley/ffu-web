@@ -372,3 +372,26 @@ misleading one) and the draft-build views. Every backfilled season is complete, 
 in progress is ever withheld; no historical number moves. The Union table can't rank on a rating it
 doesn't have, so before week 4 it ranks on league placement with points for as the tiebreak — the
 three leaders together, then the three seconds — and says so above the table.
+
+## 2026-09-22 — a test that reads the live data files must hold in ANY week
+
+**Decision.** Any test that reads `public/data/<live year>/*.json` may only assert things that stay
+true as the season advances. Behaviour that is true of one particular week — "no form to report
+yet", "week 2 hasn't been played" — is either derived into a fixture inside the test (filter the
+real file down, recompute the records) or moved down to the component that owns the rule and driven
+by props.
+
+**Why.** The Tuesday refresh Action runs `npm test` against the data it just fetched, on purpose:
+some tests read the real files, so they have to pass against the refreshed data rather than the
+committed data. That makes every week-specific assertion a scheduled failure with a date on it. It
+happened on the job's first real run (2026-09-22): refresh, drafts, lineups, the check script,
+typecheck and lint all passed, and `npm test` went red because two tests still believed the season
+was one week old. The data was perfectly good; it just didn't get committed, so the site stayed a
+week behind until someone looked.
+
+**Consequences.** `MatchupsFixtures.test.tsx` derives a week-1-only season from the live file (the
+idiom `Matchups.test.tsx` already used for its preseason state), and the empty-block rule is tested
+in `components/recap/WeekStreaks.test.tsx` / `WeekMovers.test.tsx` instead of on the page.
+`AroundTheUnion.test.tsx` carries a header note stating the invariant for whoever adds the next
+assertion. Checked by replaying the real 2026 schedule out to week 14 in a scratch copy and running
+the suite against it — worth repeating after any new live-data test.
