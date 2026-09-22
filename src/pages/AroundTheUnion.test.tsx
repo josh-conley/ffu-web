@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { AroundTheUnion } from './AroundTheUnion'
 
+// Renders against the LIVE data files, so every assertion here must hold in ANY week: the Tuesday
+// refresh moves them on, and a test pinned to "week 1, no form yet" takes the scheduled job red on
+// data that is perfectly good. Behaviour that is only true in a particular week belongs in a
+// component test with its own props (see components/recap/WeekStreaks.test.tsx).
 const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
 const FILES: Record<string, unknown> = {}
 for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../public', '')] = mod
@@ -137,15 +141,6 @@ it('gives every block its own copy button in the FFUN layout only', async () => 
   await ready()
   // One per block that has something to report this week.
   await waitFor(() => expect(screen.getAllByRole('button', { name: /copy the panel/i }).length).toBeGreaterThanOrEqual(5))
-})
-
-it('keeps the form blocks away in a week with no form to report', async () => {
-  renderPage()
-  await ready()
-  // The live season is one week old: nobody is on a run and nothing has moved in a table that
-  // didn't exist last week. A block with no news is not a block.
-  expect(screen.queryByText('Hot & Cold')).not.toBeInTheDocument()
-  expect(screen.queryByText('Risers & Fallers')).not.toBeInTheDocument()
 })
 
 it('carries the FFU own weekly colour: the belt, and the marks about to fall', async () => {

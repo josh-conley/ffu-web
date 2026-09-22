@@ -5,14 +5,40 @@ import manifest from '../../public/data/seasons.json'
 import premier2026 from '../../public/data/2026/premier.json'
 import players from '../../public/data/players.json'
 
-// The season being PLAYED: weeks already banked plus fixtures still to come. Separate from
+// The season being PLAYED: a week already banked plus the fixtures still to come. Separate from
 // Matchups.test.tsx because the data provider caches by path in module scope, and that file's
 // preseason test caches a 2026 with no games — vitest gives each test FILE its own module registry,
 // so the two can't tread on each other here.
 
+// 2026 as it stood after week 1: the real week-1 results, every later week still a fixture.
+//
+// DERIVED from the live file, never read straight out of it. The Tuesday refresh Action keeps
+// filling that file in, and this test is about how an unplayed fixture renders — not about which
+// week the league has actually reached. Reading the file directly made the suite fail on the first
+// refresh that landed week 2 (the fixtures it asserts on had become results), which took the
+// scheduled job red on data that was perfectly good.
+const week1 = premier2026.games.filter((g) => g.week === 1)
+
+/** One team's record and points after week 1 alone — the stored totals count the whole season. */
+function afterWeekOne(team: (typeof premier2026.teams)[number]) {
+  const game = week1.find((g) => g.participants.some((p) => p.memberId === team.memberId))
+  const mine = game?.participants.find((p) => p.memberId === team.memberId)
+  const theirs = game?.participants.find((p) => p.memberId !== team.memberId)
+  if (mine === undefined || theirs === undefined) return team
+  return {
+    ...team,
+    record: {
+      wins: mine.score > theirs.score ? 1 : 0,
+      losses: mine.score < theirs.score ? 1 : 0,
+      ties: mine.score === theirs.score ? 1 : 0,
+    },
+    points: { for: mine.score, against: theirs.score },
+  }
+}
+
 const FILES: Record<string, unknown> = {
   '/data/seasons.json': manifest,
-  '/data/2026/premier.json': premier2026,
+  '/data/2026/premier.json': { ...premier2026, games: week1, teams: premier2026.teams.map(afterWeekOne) },
   // The live box score resolves names from the static player map first, hitting Sleeper's directory
   // only for ids it lacks (here: the made-up ones below).
   '/data/players.json': players,
