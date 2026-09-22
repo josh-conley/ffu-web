@@ -1,5 +1,5 @@
 import type { Tier } from '@/config'
-import type { SeasonData } from '@/data'
+import type { Game, SeasonData } from '@/data'
 import { isTie, winnerOf } from './games'
 
 /**
@@ -29,11 +29,9 @@ interface Result {
 }
 
 /** Each member's results in one league, oldest first, up to and including `throughWeek`. */
-function resultsByMember(season: SeasonData, throughWeek: number): Map<string, Result[]> {
+function resultsByMember(allGames: Game[], throughWeek: number): Map<string, Result[]> {
   const byMember = new Map<string, Result[]>()
-  const games = season.games
-    .filter((g) => !g.isPlayoff && g.week <= throughWeek)
-    .sort((a, b) => a.week - b.week)
+  const games = allGames.filter((g) => !g.isPlayoff && g.week <= throughWeek).sort((a, b) => a.week - b.week)
 
   for (const game of games) {
     const winner = winnerOf(game)
@@ -61,18 +59,35 @@ function currentStreak(memberId: string, tier: Tier, results: Result[]): Streak 
   return { memberId, tier, kind: last.outcome, length, fromWeek: first.week, gamesPlayed: results.length }
 }
 
+/** A run of one is a game, not a streak — the length at which form is worth reporting. */
+export const MIN_STREAK = 2
+
+/**
+ * Everyone's current run in ONE league, keyed by member — every length, including one.
+ *
+ * Takes games rather than a season so the live path can use it too: the home page's standings read
+ * a `LiveSeasonData`, which carries the same games without being a `SeasonData` (see liveWeek.ts).
+ */
+export function currentStreaks(games: Game[], tier: Tier, throughWeek: number): Map<string, Streak> {
+  const byMember = new Map<string, Streak>()
+  for (const [memberId, results] of resultsByMember(games, throughWeek)) {
+    const streak = currentStreak(memberId, tier, results)
+    if (streak !== undefined) byMember.set(memberId, streak)
+  }
+  return byMember
+}
+
 /**
  * Every active run of two or more, longest first — a single result is a game, not a streak.
  *
  * Ties inside the run are impossible by construction (they end it), so a length here is always a
  * genuine unbroken sequence.
  */
-export function activeStreaks(seasons: SeasonData[], throughWeek: number, minimum = 2): Streak[] {
+export function activeStreaks(seasons: SeasonData[], throughWeek: number, minimum = MIN_STREAK): Streak[] {
   const streaks: Streak[] = []
   for (const season of seasons) {
-    for (const [memberId, results] of resultsByMember(season, throughWeek)) {
-      const streak = currentStreak(memberId, season.tier, results)
-      if (streak !== undefined && streak.length >= minimum) streaks.push(streak)
+    for (const streak of currentStreaks(season.games, season.tier, throughWeek).values()) {
+      if (streak.length >= minimum) streaks.push(streak)
     }
   }
   return streaks.sort((a, b) => b.length - a.length || b.gamesPlayed - a.gamesPlayed)

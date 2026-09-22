@@ -11,14 +11,30 @@ import { TeamLogo } from './TeamLogo'
 /**
  * Three of these sit side by side on the home page, inside a container that is barely 320px per
  * column on a laptop and narrower still on a phone — so this table is built to FIT (see DataTable's
- * `fit`) rather than to scroll. Every column is on screen at every width; the only thing that gives
- * is the team name, which wraps to a second line instead of being cut off or pushing the table wide.
+ * `fit`) rather than to scroll. Nothing here is ever reached by scrolling sideways.
  *
- * Hence the abbreviated headers and the fixed widths below: each number column is given exactly what
- * its widest value needs ("12", "10-2-1", "1600.25") at `fit`'s type size, and the name column keeps
- * everything left over — which at the tightest width (three across on a laptop, ~320px each) is
- * enough for all but the longest few names in the league.
+ * That width is why the record and the two points totals sit UNDER the team name in muted type
+ * rather than in columns of their own: two columns leave the name most of the table, so it reads on
+ * one line, and the numbers stay attached to the team they belong to. It is a standings SUMMARY —
+ * the Standings page is where the rest of the columns (Win%, UPR) and sorting live, so the headers
+ * here are labels rather than buttons.
  */
+/** The run a team is on, in the league's own shorthand: 2W, 3L. Absent unless there is one, so a
+ *  team that just split its last two says nothing rather than "0". */
+function StreakTag({ streak }: { streak: LiveStandingRow['streak'] }) {
+  if (streak === undefined) return null
+  const won = streak.kind === 'W'
+  return (
+    <span
+      title={`${streak.length} straight ${won ? 'wins' : 'losses'}, since week ${streak.fromWeek}`}
+      className={`shrink-0 font-bold tabular-nums ${won ? 'text-positive' : 'text-negative'}`}
+    >
+      {streak.length}
+      {streak.kind}
+    </span>
+  )
+}
+
 function buildColumns(year: string): Column<LiveStandingRow>[] {
   return [
     {
@@ -26,37 +42,27 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
       header: '#',
       title: 'Position',
       width: '2.25rem',
-      sortValue: (r) => r.rank,
       render: (r) => <span className="font-semibold tabular-nums">{r.rank}</span>,
     },
     {
       key: 'team',
       header: 'Team',
-      sortValue: (r) => nameForYear(r.totals.memberId, year) ?? r.totals.memberId,
       render: (r) => (
-        <span className="flex items-center gap-1.5">
-          <TeamLogo ffuId={r.totals.memberId} size={20} />
-          <span className="min-w-0 font-semibold leading-tight">{nameForYear(r.totals.memberId, year) ?? r.totals.memberId}</span>
+        <span className="flex items-center gap-2">
+          <TeamLogo ffuId={r.totals.memberId} size={26} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold leading-tight">
+              {nameForYear(r.totals.memberId, year) ?? r.totals.memberId}
+            </span>
+            {/* Record, then both points columns — labelled, since the sub-line has no header to
+                explain which number is which. */}
+            <span className="block leading-tight text-muted tabular-nums">
+              {recordLabel(r.totals)} · {r.totals.pointsFor.toFixed(2)} PF · {r.totals.pointsAgainst.toFixed(2)} PA
+            </span>
+          </span>
+          <StreakTag streak={r.streak} />
         </span>
       ),
-    },
-    {
-      key: 'record',
-      header: 'W-L',
-      title: 'Record',
-      align: 'right',
-      width: '3.25rem',
-      sortValue: (r) => r.totals.winPct,
-      render: (r) => <span className="tabular-nums">{recordLabel(r.totals)}</span>,
-    },
-    {
-      key: 'pf',
-      header: 'PF',
-      align: 'right',
-      title: 'Points For',
-      width: '4rem',
-      sortValue: (r) => r.totals.pointsFor,
-      render: (r) => <span className="tabular-nums">{r.totals.pointsFor.toFixed(2)}</span>,
     },
   ]
 }
@@ -76,7 +82,6 @@ export function CurrentWeekStandings({ tier, data }: { tier: Tier; data: LiveSea
       columns={columns}
       rows={standingsThroughPreviousWeek(data)}
       getRowKey={(r) => r.totals.memberId}
-      initialSort={{ key: 'rank', dir: 'asc' }}
       headerClassName={LEAGUE_STYLES[tier].solidHeader}
       fit
     />

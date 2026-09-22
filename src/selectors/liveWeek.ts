@@ -1,5 +1,6 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
 import { emptyTotals, regularSeasonTotals, type TeamTotals } from './games'
+import { MIN_STREAK, currentStreaks, type Streak } from './weekForm'
 
 /** This week's games — may carry live/in-progress scores. */
 export function currentWeekMatchups(data: LiveSeasonData): Game[] {
@@ -9,6 +10,9 @@ export function currentWeekMatchups(data: LiveSeasonData): Game[] {
 export interface LiveStandingRow {
   totals: TeamTotals
   rank: number
+  /** The run they are on, once it is worth reporting (`MIN_STREAK`); absent otherwise. Same
+   *  definition the recap's Hot & Cold block uses, so the two can never disagree. */
+  streak?: Streak
 }
 
 /** Two rows share a rank when winPct AND pointsFor are equal (mirrors selectors/standings.ts). */
@@ -22,8 +26,9 @@ function tiedWithPrevious(a: TeamTotals, b: TeamTotals): boolean {
  * gets a row, all zeros, rather than being omitted.
  */
 export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStandingRow[] {
-  const completed = { games: data.games.filter((g) => g.week < data.currentWeek) }
-  const totals = regularSeasonTotals(completed)
+  const games = data.games.filter((g) => g.week < data.currentWeek)
+  const totals = regularSeasonTotals({ games })
+  const streaks = currentStreaks(games, data.tier, data.currentWeek - 1)
   const sorted = data.memberIds
     .map((memberId) => totals.get(memberId) ?? emptyTotals(memberId))
     .sort((a, b) => (b.winPct !== a.winPct ? b.winPct - a.winPct : b.pointsFor - a.pointsFor))
@@ -33,7 +38,8 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStanding
   sorted.forEach((t, i) => {
     const prev = sorted[i - 1]
     if (prev !== undefined && !tiedWithPrevious(t, prev)) rank = i + 1
-    rows.push({ totals: t, rank })
+    const streak = streaks.get(t.memberId)
+    rows.push(streak !== undefined && streak.length >= MIN_STREAK ? { totals: t, rank, streak } : { totals: t, rank })
   })
   return rows
 }

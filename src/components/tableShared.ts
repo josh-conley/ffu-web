@@ -28,7 +28,7 @@ export const TD_BASE = 'px-3 py-2'
 // `fit` tables give every pixel of padding back to the one column that needs it (the team name),
 // so they run tighter than a table that can afford to scroll.
 export const TH_DENSE = 'px-2 py-2 font-bold uppercase tracking-wider'
-export const TD_DENSE = 'px-2 py-1.5'
+export const TD_DENSE = 'px-2 py-1.5 align-middle'
 export const TEXT_ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' } as const
 export const JUSTIFY = { left: '', right: 'justify-end', center: 'justify-center' } as const
 

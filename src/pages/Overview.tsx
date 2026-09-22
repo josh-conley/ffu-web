@@ -123,7 +123,10 @@ export function Overview() {
         <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
-      {nextYear && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
+      {/* Next season's signups, but only out of season: once a week has been played the live block
+          above lists the same 36 teams with actual results against their names, which makes a card
+          of who is in each league redundant. It comes back the moment the season is over. */}
+      {nextYear && liveTiers.length === 0 && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>
