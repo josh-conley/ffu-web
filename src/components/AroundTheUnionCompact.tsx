@@ -57,7 +57,13 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
  * renders a clone of the DOM whose layout is re-run with slightly different font metrics, and with
  * wrapping allowed a hair of extra width drops National onto a second line the PNG then crops. The
  * chips never shrink either — they are the numbers — and the trailing padding leaves a few pixels
- * for the clone to be wider in. A phone still wraps, where the panel is narrower than its content.
+ * for the clone to be wider in.
+ *
+ * A phone can't hold that line — three labelled pairs need roughly twice a handset's width — so
+ * below `sm` it becomes a row per league instead of a wrapped queue of chips: label hard left,
+ * numbers hard right. Letting them wrap left-aligned instead started each league at whatever column
+ * the previous one happened to end at, which read as three ragged fragments rather than three
+ * leagues. Justified, every league's numbers finish on the same edge and the labels start on it.
  *
  * The newsletter leaves those chips unlabelled and lets the colors speak. Here they keep a short
  * league label: color alone is the sole encoding otherwise, which fails anyone who can't separate
@@ -65,20 +71,24 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
  */
 function LeagueStrip({ race }: { race: LeaguePointsRow[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-surface py-2 pl-3 pr-5 sm:flex-nowrap">
+    <div className="flex flex-col gap-1 bg-surface py-2 pl-3 pr-5 sm:flex-row sm:flex-nowrap sm:items-center sm:gap-x-3 sm:gap-y-1">
       <span className="text-[10px] font-bold uppercase leading-tight tracking-widest text-muted">
         Avg Game / Total League Points
       </span>
       {race.map((row) => {
         const style = LEAGUE_STYLES[row.tier]
         return (
-          <span key={row.tier} className="flex shrink-0 items-center gap-1 whitespace-nowrap">
+          <span key={row.tier} className="flex items-center justify-between gap-1 whitespace-nowrap sm:shrink-0 sm:justify-start">
             <span className={`text-[10px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
-            <span className={`px-1.5 py-0.5 font-mono text-sm font-bold tabular-nums ${style.solidHeader}`}>
-              {row.averageGame.toFixed(2)}
-            </span>
-            <span className={`px-1.5 py-0.5 font-mono text-sm font-bold tabular-nums ${style.badge}`}>
-              {POINTS.format(row.totalPoints)}
+            {/* The pair travels together: on a phone it is what gets pushed to the right edge, and
+                from `sm` up the wrapper is inert — same gap, same order, same single line. */}
+            <span className="flex items-center gap-1">
+              <span className={`px-1.5 py-0.5 font-mono text-sm font-bold tabular-nums ${style.solidHeader}`}>
+                {row.averageGame.toFixed(2)}
+              </span>
+              <span className={`px-1.5 py-0.5 font-mono text-sm font-bold tabular-nums ${style.badge}`}>
+                {POINTS.format(row.totalPoints)}
+              </span>
             </span>
           </span>
         )
