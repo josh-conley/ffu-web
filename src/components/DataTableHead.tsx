@@ -3,7 +3,7 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { JUSTIFY, TEXT_ALIGN, TH_BASE, stickyCell, type Column, type SortState } from './tableShared'
+import { JUSTIFY, TEXT_ALIGN, TH_BASE, TH_DENSE, stickyCell, type Column, type SortState } from './tableShared'
 
 // The table header, in two flavors: a plain row, or (when `reorder` is given) a drag-to-reorder row
 // powered by dnd-kit — horizontal-axis only, keyboard-operable, with the locked column left static.
@@ -23,6 +23,16 @@ interface HeadProps<T> {
   reorder?: ReorderConfig
   /** Overrides the default `bg-accent text-accent-fg` (e.g. a tier's solidHeader pairing). */
   headerClassName?: string
+  /** Tighter cells, for a table that has to fit its container (see DataTable's `fit`). */
+  dense?: boolean
+}
+
+interface ThProps<T> {
+  col: Column<T>
+  sticky: string
+  sort?: SortState
+  onToggleSort: (c: Column<T>) => void
+  dense?: boolean
 }
 
 const ariaSort = (active: boolean, dir?: 'asc' | 'desc') => (active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined)
@@ -44,15 +54,15 @@ function headInner<T>(col: Column<T>, sort: SortState | undefined, onToggleSort:
   )
 }
 
-function PlainTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; sticky: string; sort?: SortState; onToggleSort: (c: Column<T>) => void }) {
+function PlainTh<T>({ col, sticky, sort, onToggleSort, dense }: ThProps<T>) {
   return (
-    <th scope="col" title={col.title} className={`${TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']}`} aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}>
+    <th scope="col" title={col.title} className={`${dense ? TH_DENSE : TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']}`} aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}>
       {headInner(col, sort, onToggleSort)}
     </th>
   )
 }
 
-function SortableTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; sticky: string; sort?: SortState; onToggleSort: (c: Column<T>) => void }) {
+function SortableTh<T>({ col, sticky, sort, onToggleSort, dense }: ThProps<T>) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: col.key })
   const style = { transform: CSS.Translate.toString(transform), transition }
   return (
@@ -61,7 +71,7 @@ function SortableTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; st
       style={style}
       scope="col"
       title={col.title}
-      className={`${TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']} cursor-grab touch-none ${isDragging ? 'z-20 opacity-70' : ''}`}
+      className={`${dense ? TH_DENSE : TH_BASE} ${sticky} ${TEXT_ALIGN[col.align ?? 'left']} cursor-grab touch-none ${isDragging ? 'z-20 opacity-70' : ''}`}
       aria-sort={ariaSort(sort?.key === col.key, sort?.dir)}
       {...attributes}
       {...listeners}
@@ -74,7 +84,7 @@ function SortableTh<T>({ col, sticky, sort, onToggleSort }: { col: Column<T>; st
   )
 }
 
-function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder }: HeadProps<T> & { reorder: ReorderConfig }) {
+function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder, dense }: HeadProps<T> & { reorder: ReorderConfig }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -93,9 +103,9 @@ function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder
           {columns.map((col, i) => {
             const sticky = stickyCell(stickyFirstColumn, i, true)
             return col.key === reorder.lockedKey ? (
-              <PlainTh key={col.key} col={col} sticky={sticky} sort={sort} onToggleSort={onToggleSort} />
+              <PlainTh key={col.key} col={col} sticky={sticky} sort={sort} onToggleSort={onToggleSort} dense={dense} />
             ) : (
-              <SortableTh key={col.key} col={col} sticky={sticky} sort={sort} onToggleSort={onToggleSort} />
+              <SortableTh key={col.key} col={col} sticky={sticky} sort={sort} onToggleSort={onToggleSort} dense={dense} />
             )
           })}
         </tr>
@@ -105,7 +115,7 @@ function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder
 }
 
 export function DataTableHead<T>(props: HeadProps<T>) {
-  const { columns, sort, onToggleSort, stickyFirstColumn, reorder, headerClassName } = props
+  const { columns, sort, onToggleSort, stickyFirstColumn, reorder, headerClassName, dense } = props
   return (
     <thead className={headerClassName ?? 'bg-accent text-accent-fg'}>
       {reorder ? (
@@ -113,7 +123,7 @@ export function DataTableHead<T>(props: HeadProps<T>) {
       ) : (
         <tr>
           {columns.map((col, i) => (
-            <PlainTh key={col.key} col={col} sticky={stickyCell(stickyFirstColumn, i, true)} sort={sort} onToggleSort={onToggleSort} />
+            <PlainTh key={col.key} col={col} sticky={stickyCell(stickyFirstColumn, i, true)} sort={sort} onToggleSort={onToggleSort} dense={dense} />
           ))}
         </tr>
       )}

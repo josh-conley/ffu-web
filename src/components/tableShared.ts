@@ -12,6 +12,8 @@ export interface Column<T> {
   align?: 'left' | 'right' | 'center'
   /** Tooltip on the header (e.g. expanding an abbreviation like "PF"). */
   title?: string
+  /** `fit` tables only: a fixed CSS width for this column. Columns without one share what's left. */
+  width?: string
 }
 
 export interface SortState {
@@ -23,6 +25,10 @@ export interface SortState {
 // whole header (bg + text) in one place and every <th> just inherits it.
 export const TH_BASE = 'px-3 py-2.5 font-bold uppercase tracking-wider'
 export const TD_BASE = 'px-3 py-2'
+// `fit` tables give every pixel of padding back to the one column that needs it (the team name),
+// so they run tighter than a table that can afford to scroll.
+export const TH_DENSE = 'px-2 py-2 font-bold uppercase tracking-wider'
+export const TD_DENSE = 'px-2 py-1.5'
 export const TEXT_ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' } as const
 export const JUSTIFY = { left: '', right: 'justify-end', center: 'justify-center' } as const
 
