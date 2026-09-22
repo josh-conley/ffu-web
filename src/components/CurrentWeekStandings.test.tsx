@@ -33,14 +33,21 @@ it('puts the record and both points totals under the team name', () => {
   expect(screen.getByText('1-1 · 200.65 PF · 208.60 PA')).toBeInTheDocument()
 })
 
-it('reads as labels, not controls — nothing here sorts', () => {
+it('names the league across the top instead of labelling the columns', () => {
+  render(<CurrentWeekStandings tier="MASTERS" data={season(3)} />)
+  const [heading, ...rest] = screen.getAllByRole('columnheader')
+  expect(rest).toHaveLength(0)
+  expect(heading).toHaveTextContent('Masters')
+  // It stands for both columns, so every cell under it is announced as this league's.
+  expect(heading).toHaveAttribute('colspan', '2')
+  expect(heading).toHaveAttribute('scope', 'colgroup')
+})
+
+it('reads as a label, not a control — nothing here sorts', () => {
   render(<CurrentWeekStandings tier="PREMIER" data={season(3)} />)
-  const headers = screen.getAllByRole('columnheader')
-  expect(headers.map((h) => h.textContent)).toEqual(['#', 'Team'])
-  for (const header of headers) {
-    expect(header.querySelector('button')).toBeNull()
-    expect(header).not.toHaveAttribute('aria-sort')
-  }
+  const heading = screen.getByRole('columnheader')
+  expect(heading.querySelector('button')).toBeNull()
+  expect(heading).not.toHaveAttribute('aria-sort')
 })
 
 it('flags a run of two or more, and stays quiet otherwise', () => {

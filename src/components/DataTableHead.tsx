@@ -25,6 +25,8 @@ interface HeadProps<T> {
   headerClassName?: string
   /** Tighter cells, for a table that has to fit its container (see DataTable's `fit`). */
   dense?: boolean
+  /** Replaces the per-column headers with one band naming the table (see DataTable's `heading`). */
+  heading?: string
 }
 
 interface ThProps<T> {
@@ -115,10 +117,18 @@ function ReorderRow<T>({ columns, sort, onToggleSort, stickyFirstColumn, reorder
 }
 
 export function DataTableHead<T>(props: HeadProps<T>) {
-  const { columns, sort, onToggleSort, stickyFirstColumn, reorder, headerClassName, dense } = props
+  const { columns, sort, onToggleSort, stickyFirstColumn, reorder, headerClassName, dense, heading } = props
   return (
     <thead className={headerClassName ?? 'bg-accent text-accent-fg'}>
-      {reorder ? (
+      {heading !== undefined ? (
+        // One band across the table instead of a label per column: `scope="colgroup"` so a screen
+        // reader still announces it for every cell under it.
+        <tr>
+          <th scope="colgroup" colSpan={columns.length} className={`${dense ? TH_DENSE : TH_BASE} text-left`}>
+            {heading}
+          </th>
+        </tr>
+      ) : reorder ? (
         <ReorderRow {...props} reorder={reorder} />
       ) : (
         <tr>

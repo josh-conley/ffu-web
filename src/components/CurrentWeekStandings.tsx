@@ -15,8 +15,14 @@ import { TeamLogo } from './TeamLogo'
 // That width is why the record and the two points totals sit UNDER the team name in muted type
 // rather than in columns of their own: two columns leave the name most of the table, so it reads on
 // one line, and the numbers stay attached to the team they belong to. It is a standings SUMMARY —
-// the Standings page is where the rest of the columns (Win%, UPR) and sorting live, so the headers
-// here are labels rather than buttons.
+// the Standings page is where the rest of the columns (Win%, UPR) and sorting live, so nothing here
+// sorts.
+//
+// The coloured band across the top names the LEAGUE instead of the columns, and replaces them:
+// three of these sit in a row with only the tier colour saying which was which, while "# / Team"
+// told a reader nothing the rows didn't. It spans both columns as a `colgroup` header, so a screen
+// reader announces the league for every cell under it. The columns keep their `header` strings —
+// they are what comes back if the band is ever dropped.
 
 /** The run a team is on, in the league's own shorthand: 2W, 3L. Absent unless there is one, so a
  *  team that just split its last two says nothing rather than "0". */
@@ -38,8 +44,7 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
   return [
     {
       key: 'rank',
-      header: '#',
-      title: 'Position',
+      header: 'Position',
       width: '2.25rem',
       render: (r) => <span className="font-semibold tabular-nums">{r.rank}</span>,
     },
@@ -82,6 +87,7 @@ export function CurrentWeekStandings({ tier, data }: { tier: Tier; data: LiveSea
       rows={standingsThroughPreviousWeek(data)}
       getRowKey={(r) => r.totals.memberId}
       headerClassName={LEAGUE_STYLES[tier].solidHeader}
+      heading={LEAGUE_STYLES[tier].label}
       fit
     />
   )

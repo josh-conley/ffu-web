@@ -132,6 +132,7 @@ export function DataTable<T>({
   fit = false,
   reorder,
   headerClassName,
+  heading,
   onRowClick,
   selectedRowKey,
   expandedRowKey,
@@ -158,6 +159,12 @@ export function DataTable<T>({
   reorder?: ReorderConfig
   /** Overrides the header's default accent color (e.g. a tier's solidHeader pairing). */
   headerClassName?: string
+  /**
+   * Names the table in one band across the top, in place of the per-column headers. For a table
+   * whose columns explain themselves and whose IDENTITY is the useful label — the home page's
+   * standings, where "# / Team" says less than "Premier" (see CurrentWeekStandings).
+   */
+  heading?: string
   /** Makes rows clickable (button semantics + keyboard) — e.g. to drill into a row's detail. */
   onRowClick?: (row: T) => void
   /** Key of the currently selected row (highlighted); pair with `onRowClick`. */
@@ -191,7 +198,7 @@ export function DataTable<T>({
         <div className={frame.box}>
           <table className={frame.table}>
             {fit && <ColGroup columns={columns} />}
-            <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn && !fit} reorder={reorder} headerClassName={headerClassName} dense={fit} />
+            <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn && !fit} reorder={reorder} headerClassName={headerClassName} dense={fit} heading={heading} />
             <tbody className="divide-y divide-border">
               {pageRows.map((row, i) => {
                 const key = getRowKey(row, i)
