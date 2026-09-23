@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { headToHead } from './headToHead'
+import { headToHead, seriesStanding } from './headToHead'
 
 const mk = (year: string, games: SeasonData['games']): SeasonData => ({
   schemaVersion: 1, tier: 'PREMIER', year, era: 'sleeper', platformLeagueId: 'x', teams: [], games,
@@ -37,5 +37,23 @@ describe('headToHead', () => {
   it('ignores games where the pair did not meet', () => {
     expect(headToHead(seasons, 'a', 'c').meetings).toHaveLength(1)
     expect(headToHead(seasons, 'b', 'c').meetings).toHaveLength(0)
+  })
+})
+
+describe('seriesStanding', () => {
+  it('names the leader and puts their wins first, whichever side asked', () => {
+    const expected = { meetings: 3, leaderId: 'a', leaderWins: 2, trailerWins: 0, ties: 1 }
+    expect(seriesStanding(headToHead(seasons, 'a', 'b'))).toEqual(expected)
+    expect(seriesStanding(headToHead(seasons, 'b', 'a'))).toEqual(expected)
+  })
+
+  it('has no leader when the series is level', () => {
+    const level = mk('2025', [{ week: 2, isPlayoff: false, participants: [{ memberId: 'a', score: 80 }, { memberId: 'c', score: 70 }] }])
+    const s = seriesStanding(headToHead([...seasons, level], 'a', 'c'))
+    expect(s).toEqual({ meetings: 2, leaderWins: 1, trailerWins: 1, ties: 0 })
+  })
+
+  it('has no leader and no meetings for teams that have never played', () => {
+    expect(seriesStanding(headToHead(seasons, 'b', 'c'))).toEqual({ meetings: 0, leaderWins: 0, trailerWins: 0, ties: 0 })
   })
 })

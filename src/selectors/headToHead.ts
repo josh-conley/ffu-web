@@ -56,3 +56,27 @@ export function headToHead(seasons: SeasonData[], memberId: string, opponentId: 
 
   return record
 }
+
+/** Who leads an all-time series, phrased leader-first for a one-line tag ("STA leads 5–4"). */
+export interface SeriesStanding {
+  meetings: number
+  /** Undefined when the series is level (including never having met). */
+  leaderId?: string
+  leaderWins: number
+  trailerWins: number
+  ties: number
+}
+
+export function seriesStanding(record: H2HRecord): SeriesStanding {
+  const { wins, losses, ties } = record
+  const meetings = wins + losses + ties
+  if (wins === losses) return { meetings, leaderWins: wins, trailerWins: losses, ties }
+  const memberLeads = wins > losses
+  return {
+    meetings,
+    leaderId: memberLeads ? record.memberId : record.opponentId,
+    leaderWins: Math.max(wins, losses),
+    trailerWins: Math.min(wins, losses),
+    ties,
+  }
+}
