@@ -1,12 +1,10 @@
 import { useMemo } from 'react'
 import { FaArrowsLeftRight } from 'react-icons/fa6'
-import { useAllLineups, useCareerData, usePlayers } from '@/hooks/useLeagueData'
+import { useAllTimeStats } from '@/hooks/useAllTimeStats'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { useManagedColumns } from '@/hooks/useManagedColumns'
-import { careerEfficiency, careerStats, careerUpr, careerWinnings, type CareerEfficiency, type CareerStats } from '@/selectors'
-import type { Tier } from '@/config'
-import type { SeasonData, Tournament } from '@/data'
+import type { CareerStats } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
 import { StatDefs } from '@/components/StatDefs'
@@ -38,41 +36,14 @@ const EFFICIENCY_DEFS = (
   />
 )
 
-// Winnings are computed over the FULL season set (cross-union/cross-league prizes compare across
-// every tier), then scoped: 'ALL' shows the career total, a league shows only that tier's share.
-function useScopedWinnings(seasons: SeasonData[] | undefined, tournaments: Tournament[], league: string): Map<string, number> {
-  const all = useMemo(() => careerWinnings(seasons ?? [], tournaments), [seasons, tournaments])
-  return useMemo(() => {
-    const scoped = new Map<string, number>()
-    for (const [id, w] of all) scoped.set(id, league === 'ALL' ? w.total : (w.byTier[league as Tier] ?? 0))
-    return scoped
-  }, [all, league])
-}
-
 /** Whether anything (scope, filters, columns) has been customized from the defaults. */
 const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
   p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
 
 export function AllTimeStats() {
-  const { seasons, tournaments, loading, error } = useCareerData()
-  // League scopes the underlying seasons, so the table shows stats earned WITHIN that tier (not
-  // all-time stats for anyone who happened to play it once). 'ALL' = full career across tiers.
+  // League scopes the underlying seasons (see useAllTimeStats). 'ALL' = full career across tiers.
   const [league, setLeague] = useUrlState('league', 'ALL')
-  const scoped = useMemo(
-    () => (seasons ? (league === 'ALL' ? seasons : seasons.filter((s) => s.tier === league)) : undefined),
-    [seasons, league],
-  )
-  const careers = useMemo(() => (scoped ? [...careerStats(scoped).values()] : []), [scoped])
-  const upr = useMemo(() => (scoped ? careerUpr(scoped) : new Map<string, number>()), [scoped])
-  // Lineup efficiency comes from the (Sleeper-era) lineup files, scoped by the same league filter.
-  const lineups = useAllLineups()
-  const players = usePlayers()
-  const eff = useMemo(() => {
-    if (!lineups.data || !players.data) return new Map<string, CareerEfficiency>()
-    const scopedLineups = league === 'ALL' ? lineups.data : lineups.data.filter((l) => l.tier === league)
-    return careerEfficiency(scopedLineups, players.data)
-  }, [lineups.data, players.data, league])
-  const winnings = useScopedWinnings(seasons, tournaments, league)
+  const { loaded, careers, active, upr, eff, winnings, loading, error } = useAllTimeStats(league)
   const columns = useMemo(() => buildColumns(upr, eff, winnings), [upr, eff, winnings])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
@@ -80,21 +51,19 @@ export function AllTimeStats() {
   const filterDefs = useMemo<FilterDef<CareerStats>[]>(() => {
     const maxSeasons = Math.max(1, ...careers.map((c) => c.seasons))
     return [
-      // isActive is relative to the scope: "in the latest season" of the selected league (or overall).
-      { key: 'active', label: 'Active only', type: 'toggle', predicate: (c) => c.isActive },
+      // A current member of the union, whatever the scope: from the FULL season set, not `scoped`.
+      { key: 'active', label: 'Active only', type: 'toggle', predicate: (c) => active.has(c.memberId) },
       { key: 'minSeasons', label: 'Min Seasons', type: 'range', min: 1, max: maxSeasons, predicate: (c, v) => c.seasons >= Number(v) },
     ]
-  }, [careers])
+  }, [careers, active])
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
 
   // One control to restore defaults: league scope, filters (active + slider), column show/hide + order.
   const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league })
   const resetAll = () => { setLeague('ALL'); clear(); resetVisibility(); resetOrder() }
 
-  // Lineups/players gate the spinner (no dash→value flash) but not errors: if they fail, the
-  // efficiency columns degrade to dashes and the core career table still renders.
-  if (loading || lineups.loading || players.loading) return <LoadingSpinner />
-  if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
+  if (loading) return <LoadingSpinner />
+  if (error || !loaded) return <ErrorMessage error={error ?? 'No data'} />
 
   const scopeLabel = league === 'ALL' ? 'all-time, across every league' : `within ${LEAGUE_STYLES[league as keyof typeof LEAGUE_STYLES]?.label ?? league} only`
 

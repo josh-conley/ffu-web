@@ -228,6 +228,16 @@ export function careerFor(seasons: SeasonData[], memberId: string): CareerStats 
   return careerStats(seasons).get(memberId)
 }
 
+/**
+ * Members of the union NOW: everyone who played the latest season, in any league. Always pass the
+ * FULL season set. A CareerStats built from a scoped set (one league, a span of years) has an
+ * `isActive` that only means "played the last season in that scope", which is how "Premier, Active
+ * only" used to drop a current National member with Premier seasons behind them.
+ */
+export function activeMemberIds(seasons: SeasonData[]): Set<string> {
+  return new Set([...careerStats(seasons).values()].filter((c) => c.isActive).map((c) => c.memberId))
+}
+
 /** The league an active member is in this (latest) season — undefined for past members. */
 export function currentLeague(c: CareerStats): Tier | undefined {
   if (!c.isActive || c.lastYear === null) return undefined

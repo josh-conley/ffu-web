@@ -1,6 +1,6 @@
 import type { LeagueRosterSummary, SeasonData } from '@/data'
 import type { Tier } from '@/config/types'
-import { careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague, membersById } from './career'
+import { activeMemberIds, careerStats, careerFor, careerUpr, championshipTitles, currentLeague, membersByLeague, membersById } from './career'
 import { divisionWinnerIds } from './standings'
 import premier2024 from '../../public/data/2024/premier.json'
 
@@ -228,5 +228,19 @@ describe('a season that exists but has not been played', () => {
   it('awards no division pennant when every team is tied on nothing', () => {
     // All teams 0-0-0 and 0 points tie for first, so without a guard the whole league wins one.
     expect(divisionWinnerIds(shell).size).toBe(0)
+  })
+})
+
+describe('activeMemberIds', () => {
+  const played = (tier: Tier, year: string, ids: string[]) =>
+    ({
+      schemaVersion: 1, tier, year, era: 'sleeper', platformLeagueId: 'x',
+      teams: ids.map((memberId) => ({ memberId, record: { wins: 1, losses: 0, ties: 0 }, points: { for: 1, against: 1 }, finalPlacement: 1, promoted: false, relegated: false })),
+      games: [],
+    }) as SeasonData
+
+  it('is everyone in the latest season, whichever league they are in', () => {
+    const seasons = [played('PREMIER', '2024', ['up', 'gone']), played('PREMIER', '2025', ['stay']), played('NATIONAL', '2025', ['up'])]
+    expect(activeMemberIds(seasons)).toEqual(new Set(['stay', 'up']))
   })
 })
