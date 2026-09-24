@@ -11,7 +11,7 @@ import { seasonUpr } from './upr'
 // bracket (top 6 of 12 — a 50% baseline).
 
 /** Canonical position order for stable build keys/labels; anything unknown sorts after, alpha. */
-export const BUILD_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'] as const
+const BUILD_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'] as const
 export type BuildPosition = (typeof BUILD_POSITIONS)[number]
 
 /** The positions a user can filter a build by (K/DEF are almost never drafted early — omitted). */

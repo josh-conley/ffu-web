@@ -7,6 +7,12 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ## 2026-08-21 — The draw announcer speaks in phrase tokens, not sentences
 
+> **Removed 2026-09-23.** No real voice materialised, so the parked pipeline was deleted as one unit,
+> as planned below (`announcer.ts`, `clipVoice.ts`, `announceClips.mjs`, `generate-draw-vo.mjs`,
+> `public/audio/draw/` — 1 MB of placeholder clips that shipped with every deploy). To revive it,
+> restore those paths from the parent of the removal commit (`git log --diff-filter=D -- src/lib/announcer.ts`);
+> the design notes below still apply.
+
 **Context.** The commissioner wants the streamed draw announced aloud, in the style of a game
 announcer. Browser `speechSynthesis` is free and instant but sounds like a satnav; a hype voice
 really needs pre-generated audio clips.

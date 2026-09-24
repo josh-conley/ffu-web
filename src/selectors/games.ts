@@ -1,4 +1,4 @@
-import type { Game, GameParticipant, ScheduledGame, SeasonData } from '@/data'
+import type { Game, ScheduledGame, SeasonData } from '@/data'
 
 // Per-game derivations + regular-season aggregation. This is the base "derive winners/records/
 // margins from symmetric participants" layer — winner is NEVER stored, always computed here.
@@ -38,10 +38,6 @@ export function marginOf(game: Game): number {
 
 export function scoreFor(game: Game, memberId: string): number | undefined {
   return game.participants.find((p) => p.memberId === memberId)?.score
-}
-
-export function opponentOf(game: Game, memberId: string): GameParticipant | undefined {
-  return game.participants.find((p) => p.memberId !== memberId)
 }
 
 export interface TeamTotals {

@@ -13,7 +13,7 @@
  * and then crawled for two seconds. This one holds pace for roughly the first 60%, then decelerates
  * over the last 40%, which is how a real wheel behaves.
  */
-export const REEL_CURVE = { x1: 0.6, y1: 0.78, x2: 0.5, y2: 1 } as const
+const REEL_CURVE = { x1: 0.6, y1: 0.78, x2: 0.5, y2: 1 } as const
 export const REEL_EASING_CSS = `cubic-bezier(${REEL_CURVE.x1}, ${REEL_CURVE.y1}, ${REEL_CURVE.x2}, ${REEL_CURVE.y2})`
 
 /** A cubic Bézier component with fixed endpoints 0 and 1, evaluated at parameter `t`. */

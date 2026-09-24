@@ -16,7 +16,3 @@ export function regularSeasonWeeks(era: Era): number[] {
   const firstPlayoffWeek = Math.min(...playoffWeeks(era))
   return Array.from({ length: firstPlayoffWeek - 1 }, (_, i) => i + 1)
 }
-
-export function isPlayoffWeek(week: number, era: Era): boolean {
-  return playoffWeeks(era).includes(week)
-}

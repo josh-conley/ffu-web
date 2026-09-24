@@ -52,7 +52,7 @@ export function teamGameRecords(seasons: SeasonData[]): TeamGameRecord[] {
 }
 
 /** One record per game (matchup level). */
-export function matchupRecords(seasons: SeasonData[]): MatchupRecord[] {
+function matchupRecords(seasons: SeasonData[]): MatchupRecord[] {
   const out: MatchupRecord[] = []
   for (const season of seasons) {
     for (const game of season.games) {

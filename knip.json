@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": ["src/lib/*.d.mts"],
+  "entry": ["public/sw.js", "scripts/*.mjs"],
+  "ignoreExportsUsedInFile": true,
+  "include": ["files", "exports", "dependencies", "unlisted", "binaries"]
+}

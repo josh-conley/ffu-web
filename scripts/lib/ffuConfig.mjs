@@ -21,7 +21,7 @@ export const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 export const writeJson = (path, data) => writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`)
 
 /** Extract `export const NAME…= [ … ];` / `= { … }` from TS source and evaluate it as a literal. */
-export function evalLiteral(src, name, open, close) {
+function evalLiteral(src, name, open, close) {
   const re = new RegExp(`export const ${name}\\b[^=]*=\\s*(\\${open}[\\s\\S]*?\\n\\${close})`)
   const match = src.match(re)
   if (!match) throw new Error(`Could not find ${name} in config`)

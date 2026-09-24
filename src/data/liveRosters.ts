@@ -18,7 +18,7 @@ interface SleeperRosterOwner {
  * claimed but omitted from `memberIds` (warned, not thrown) — the same forgiving treatment
  * fetchRosterMap gives, so a brand-new manager can't blank the section.
  */
-export async function fetchLeagueRoster(tier: Tier, year: string, leagueId: string): Promise<LeagueRosterSummary> {
+async function fetchLeagueRoster(tier: Tier, year: string, leagueId: string): Promise<LeagueRosterSummary> {
   const rosters = await sleeperGet<SleeperRosterOwner[]>(`/league/${leagueId}/rosters`)
   if (!Array.isArray(rosters)) throw new Error(`Sleeper league/${leagueId}/rosters: not an array`)
 

@@ -57,7 +57,7 @@ export interface SeasonPrizeSchedule {
   cup?: CupPrizeSchedule
 }
 
-export const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {
+const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {
   // 2018–2020 share one schedule (ESPN era: Premier + National only — Masters began 2022). Both tiers
   // ran four divisions — Premier: Diamond/Platinum/Gold/Silver, National: Bronze/Copper/Brass/Nickel —
   // and both are now in the migrated data (backfilled from the espn-api export), so `divisionChamp`

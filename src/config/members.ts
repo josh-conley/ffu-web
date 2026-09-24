@@ -6,8 +6,8 @@ import type { Member } from './types'
  * appear downstream. Team Dogecoin is merged onto ffu-031 (both Sleeper accounts in
  * platformIds.sleeper), confirmed with user.
  *
- * TODO(owners): owners[] is stubbed empty pending real names (first + last initial per ffuId).
- * Owners are display-only; season data never references them.
+ * owners[] links each team to its manager(s) in owners.ts. Owners are display-only; season data
+ * never references them. (Two first names are still TBD there: owner-019, owner-033.)
  */
 export const MEMBERS: Member[] = [
   { ffuId: 'ffu-001', name: 'The Stallions', abbreviation: 'STA', historicalNames: { '2020': 'The Stallions' }, owners: [{ ownerId: 'owner-001', role: 'primary' }], platformIds: { sleeper: ['331590801261883392'], espn: ['stallions'] } },

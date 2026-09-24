@@ -2,7 +2,7 @@
 // process exits — everything here is a function of its arguments, so it is unit-tested in
 // sleeperSeason.test.mjs and scripts/refresh-live-season.mjs is left holding only fetch + write.
 
-export const round2 = (n) => Math.round(n * 100) / 100
+const round2 = (n) => Math.round(n * 100) / 100
 
 /** roster_id → ffuId. Throws on an unmapped owner: a silently missing team would corrupt the file. */
 export function rosterMapOf(rosters, members, tier) {
