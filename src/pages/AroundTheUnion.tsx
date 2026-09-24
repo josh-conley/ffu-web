@@ -10,8 +10,10 @@ import {
   completedUnionWeeks,
   leaguePointsRace,
   longestStreaks,
+  milestonesReachedInWeek,
   milestoneStandings,
   milestoneWatch,
+  seasonsThroughWeek,
   topScoresForWeek,
   weekMovers,
   weekNotes,
@@ -73,7 +75,13 @@ function WeekBlocks({
   const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
   const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
   const belt = useMemo(() => (week === undefined ? null : beltWatch(seasons, year, week)), [seasons, year, week])
-  const milestones = useMemo(() => closestMilestones(seasons), [seasons])
+  // Both as of the week on show, so an author browsing back to week 5 sees week 5's milestone news
+  // and week 5's watch list, not today's.
+  const milestones = useMemo(
+    () => closestMilestones(week === undefined ? seasons : seasonsThroughWeek(seasons, year, week)),
+    [seasons, year, week],
+  )
+  const reached = useMemo(() => (week === undefined ? [] : milestonesReachedInWeek(seasons, year, week)), [seasons, year, week])
 
   // One file name per block, so a folder of downloads says which is which.
   const capture = (block: string) => (compact ? `ffu-${block}-${year}-week-${week ?? ''}.png` : undefined)
@@ -104,7 +112,7 @@ function WeekBlocks({
         copyFilename={capture('risers-and-fallers')}
       />
       <WeekBelt {...common} watch={belt} copyFilename={capture('belt-watch')} />
-      <WeekMilestones {...common} rows={milestones} copyFilename={capture('milestone-watch')} />
+      <WeekMilestones {...common} reached={reached} rows={milestones} copyFilename={capture('milestone-watch')} />
     </div>
   )
 }

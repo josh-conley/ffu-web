@@ -1,17 +1,20 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { FaFlagCheckered, FaHourglassHalf } from 'react-icons/fa6'
 import { getMember } from '@/config'
-import type { MilestoneStanding } from '@/selectors'
+import type { MilestoneReached, MilestoneStanding } from '@/selectors'
 import { MILESTONE_FORMAT, MILESTONE_META } from '../milestones'
+import { MilestoneReachedRow } from '../MilestoneReachedRow'
 import { TeamLogo } from '../TeamLogo'
 import { RecapPanel } from './RecapPanel'
 
 /**
- * Career marks about to fall.
+ * Career marks that just fell, and the ones about to.
  *
- * The one block here that isn't about the week: a milestone is a career thing, and the reason it
- * belongs in a weekly recap is that it is the only warning anyone gets before it happens. Members
- * are shown closest-first, by what's left rather than by percentage, because "84 points away" is
- * the sentence the newsletter prints.
+ * The reached list is the week's news — a milestone that falls stops being "watched", and without
+ * it would vanish the very week the newsletter wants to write it up. The watch list is the only
+ * warning anyone gets before one happens; it runs closest-first, by what's left rather than by
+ * percentage, because "84 points away" is the sentence the newsletter prints.
  */
 
 const teamName = (memberId: string) => getMember(memberId)?.name ?? memberId
@@ -37,20 +40,34 @@ function Row({ row }: { row: MilestoneStanding }) {
   )
 }
 
+function Group({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-px">
+      <div className="flex items-center gap-2 bg-surface px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-muted">
+        {icon}
+        {title}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export function WeekMilestones({
+  reached,
   rows,
   year,
   week,
   compact,
   copyFilename,
 }: {
+  reached: MilestoneReached[]
   rows: MilestoneStanding[]
   year: string
   week: number | undefined
   compact: boolean
   copyFilename?: string
 }) {
-  if (rows.length === 0) return null
+  if (reached.length === 0 && rows.length === 0) return null
   return (
     <RecapPanel
       title="Milestone Watch"
@@ -59,9 +76,20 @@ export function WeekMilestones({
       copyFilename={copyFilename}
     >
       <div className="flex flex-col gap-px bg-border">
-        {rows.map((row) => (
-          <Row key={`${row.memberId}-${row.category}`} row={row} />
-        ))}
+        {reached.length > 0 && (
+          <Group title={week ? `Reached in week ${week}` : 'Reached'} icon={<FaFlagCheckered className="text-notable" aria-hidden />}>
+            {reached.map((r) => (
+              <MilestoneReachedRow key={`${r.memberId}-${r.category}-${r.milestone}`} reached={r} />
+            ))}
+          </Group>
+        )}
+        {rows.length > 0 && (
+          <Group title="Closing in" icon={<FaHourglassHalf aria-hidden />}>
+            {rows.map((row) => (
+              <Row key={`${row.memberId}-${row.category}`} row={row} />
+            ))}
+          </Group>
+        )}
         {!compact && (
           <div className="bg-surface px-3 py-2 text-sm text-muted">
             <Link to="/milestones" className="font-semibold text-text underline-offset-2 hover:underline">

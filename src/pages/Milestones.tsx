@@ -4,12 +4,16 @@ import {
   MILESTONES,
   MILESTONE_CATEGORIES,
   WATCH_THRESHOLD,
+  milestoneNewsWeek,
+  milestonesReachedInWeek,
   milestoneStandings,
   milestoneWatch,
   type MilestoneCategory,
+  type MilestoneReached,
 } from '@/selectors'
 import { MILESTONE_META as META } from '@/components/milestones'
 import { MilestoneTable, RecentlyReached } from '@/components/MilestoneTable'
+import { MilestoneReachedRow } from '@/components/MilestoneReachedRow'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -46,6 +50,25 @@ function CategorySection({
   )
 }
 
+/** The latest week's fallen milestones — up top, because a member who has just passed one has
+ *  left the watch tables below and this is the only place they would still show. */
+function JustReached({ year, week, reached }: { year: string; week: number; reached: MilestoneReached[] }) {
+  if (reached.length === 0) return null
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-bold uppercase tracking-widest text-text">
+        Reached in Week {week}
+        <span className="ml-2 font-normal text-muted">{year}</span>
+      </h2>
+      <div className="grid gap-px border border-border bg-border shadow-sm sm:grid-cols-2">
+        {reached.map((r) => (
+          <MilestoneReachedRow key={`${r.memberId}-${r.category}-${r.milestone}`} reached={r} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 /**
  * Milestone Watch — who is closing in on a career milestone.
  *
@@ -57,6 +80,11 @@ export function Milestones() {
   const { data: seasons, loading, error } = useAllSeasons()
   const standings = useMemo(() => (seasons ? milestoneStandings(seasons) : []), [seasons])
   const watch = useMemo(() => milestoneWatch(standings), [standings])
+  const news = useMemo(() => (seasons ? milestoneNewsWeek(seasons) : undefined), [seasons])
+  const reached = useMemo(
+    () => (seasons && news ? milestonesReachedInWeek(seasons, news.year, news.week) : []),
+    [seasons, news],
+  )
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -71,6 +99,7 @@ export function Milestones() {
           list is teams with something to play for now, not everyone above a line.
         </p>
       </div>
+      {news && <JustReached year={news.year} week={news.week} reached={reached} />}
       {MILESTONE_CATEGORIES.map((category) => (
         <CategorySection key={category} category={category} rows={watch.get(category) ?? []} all={standings} />
       ))}

@@ -23,13 +23,14 @@ function renderPage() {
   )
 }
 
-const sectionFor = (heading: string) => screen.getByText(heading).closest('section') as HTMLElement
+// By heading, not text: a category's label also appears on any milestone reached this week.
+const sectionFor = (heading: string) => screen.getByRole('heading', { name: heading }).closest('section') as HTMLElement
 
 it('lists a section per category', async () => {
   renderPage()
   await waitFor(() => expect(screen.getByText('Milestone Watch')).toBeInTheDocument())
   for (const heading of ['Points Scored', 'Career Wins', 'Career Earnings', 'Points Against']) {
-    expect(screen.getByText(heading)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument()
   }
 })
 

@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { bandFor, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
+import { bandFor, milestoneNewsWeek, milestonesReachedInWeek, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
 
 describe('bandFor', () => {
   const points = MILESTONES.pointsFor // 10k / 15k / 20k / 25k
@@ -81,5 +81,54 @@ describe('milestoneWatch', () => {
   it('takes the cutoff as an argument so the page can be tuned without touching the rule', () => {
     expect(milestoneWatch([standing('far', 20)], 0.3).get('wins')!.map((r) => r.memberId)).toEqual(['far'])
     expect(WATCH_THRESHOLD).toBe(0.75)
+  })
+})
+
+describe('milestonesReachedInWeek', () => {
+  // Years with no prize schedule, so earnings stay out of it. 'a' carries 9,900 points and 49 wins
+  // into 2031; week 1 is worth 150 points and a win, week 2 another 150 and a win.
+  const past = season('2030', [team('a', 49, 9_900), team('b', 5, 1_000)])
+  const game = (week: number) => ({
+    week, isPlayoff: false,
+    participants: [{ memberId: 'a', score: 150 }, { memberId: 'b', score: 100 }],
+  })
+  const current: SeasonData = {
+    schemaVersion: 1, tier: 'PREMIER', year: '2031', era: 'sleeper', platformLeagueId: 'x',
+    teams: [
+      { memberId: 'a', record: { wins: 2, losses: 0, ties: 0 }, points: { for: 300, against: 200 }, promoted: false, relegated: false },
+      { memberId: 'b', record: { wins: 0, losses: 2, ties: 0 }, points: { for: 200, against: 300 }, promoted: false, relegated: false },
+    ],
+    games: [game(1), game(2)],
+  }
+  const seasons = [past, current]
+
+  it('reports each threshold crossed during the week, with the total it ended on', () => {
+    expect(milestonesReachedInWeek(seasons, '2031', 1)).toEqual([
+      { memberId: 'a', category: 'pointsFor', milestone: 10_000, value: 10_050 },
+      { memberId: 'a', category: 'wins', milestone: 50, value: 50 },
+      // Landing exactly on a milestone counts as reaching it (9,900 against + 100).
+      { memberId: 'a', category: 'pointsAgainst', milestone: 10_000, value: 10_000 },
+    ])
+  })
+
+  it('drops a milestone once a later week is the one being reported', () => {
+    expect(milestonesReachedInWeek(seasons, '2031', 2)).toEqual([])
+  })
+})
+
+describe('milestoneNewsWeek', () => {
+  const withGames = (weeks: [number, boolean][]): SeasonData => ({
+    schemaVersion: 1, tier: 'PREMIER', year: '2031', era: 'sleeper', platformLeagueId: 'x', teams: [],
+    games: weeks.map(([week, isPlayoff]) => ({
+      week, isPlayoff, participants: [{ memberId: 'a', score: 1 }, { memberId: 'b', score: 0 }],
+    })),
+  })
+
+  it('is the latest completed week while nothing has been played since', () => {
+    expect(milestoneNewsWeek([withGames([[1, false], [2, false]])])).toEqual({ year: '2031', week: 2 })
+  })
+
+  it('retires the last regular-season week once the playoffs start', () => {
+    expect(milestoneNewsWeek([withGames([[14, false], [15, true]])])).toBeUndefined()
   })
 })

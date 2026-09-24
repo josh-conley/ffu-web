@@ -402,3 +402,26 @@ in `components/recap/WeekStreaks.test.tsx` / `WeekMovers.test.tsx` instead of on
 `AroundTheUnion.test.tsx` carries a header note stating the invariant for whoever adds the next
 assertion. Checked by replaying the real 2026 schedule out to week 14 in a scratch copy and running
 the suite against it — worth repeating after any new live-data test.
+
+## 2026-09-24 — a milestone stays up for the week after it falls
+
+**Decision.** A milestone reached in week N is shown, as "Reached in Week N", until week N+1's
+data lands, then drops off. Around the Union shows the reached list for whichever week is selected;
+the Milestones page (not week-framed) shows it for `milestoneNewsWeek`, which is the latest
+completed week for as long as nothing has been played since, so the first playoff games retire
+week 14's list rather than it lingering all offseason.
+
+**Why.** The watch list tracks the *next* milestone, so the week one falls the member simply
+vanished from it, which is exactly the week the FFUN wants to write it up.
+
+**How.** `seasonsThroughWeek` rewinds the seasons to the end of any week (dropping later games,
+subtracting what they added to Sleeper's stored totals, and withdrawing final placings), and
+"reached" is plain career totals before vs after, via the same `totalsFor` as everything else.
+No per-week milestone state is stored.
+
+**Known limitation.** Earnings mid-season include provisional season prizes (points leader,
+highest floor, etc. go to whoever leads *now*; see `prizes.ts`), so an earnings milestone can
+"fall" in a week because a member took the lead, and un-fall later. This predates this change,
+because career earnings on Stats/Members behave the same way mid-season. Playoff results only
+reach career totals via the final placing at season's end, so milestones won in the playoffs
+never show as reached in a week.

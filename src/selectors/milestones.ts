@@ -1,6 +1,8 @@
 import type { SeasonData } from '@/data'
+import { aroundTheUnionYear, latestUnionWeek } from './aroundTheUnion'
 import { careerStats } from './career'
 import { careerWinnings } from './prizes'
+import { seasonsThroughWeek } from './throughWeek'
 
 // Career milestones — the "Milestone Watch" page. Thresholds are the commissioner's; everything
 // else here is derived from the same career totals the Stats page uses, so a member's milestone
@@ -149,4 +151,56 @@ export function milestoneWatch(
     out.set(category, rows)
   }
   return out
+}
+
+export interface MilestoneReached {
+  memberId: string
+  category: MilestoneCategory
+  milestone: number
+  /** The career total at the end of the week, which may be past the milestone. */
+  value: number
+}
+
+/**
+ * Milestones passed during `week` of `year`: every threshold a career total was below when the
+ * week began and at or above when it ended.
+ *
+ * Without this a milestone simply vanishes the week it falls — the member moves on to watching the
+ * next one — which is exactly when the newsletter wants to write about it. Callers show the result
+ * for the latest completed week, so a milestone stays up for the week after it is reached and
+ * drops off when the next week lands. Largest milestones first within each category.
+ */
+export function milestonesReachedInWeek(seasons: SeasonData[], year: string, week: number): MilestoneReached[] {
+  const before = totalsFor(seasonsThroughWeek(seasons, year, week - 1))
+  const after = totalsFor(seasonsThroughWeek(seasons, year, week))
+  const out: MilestoneReached[] = []
+  for (const category of MILESTONE_CATEGORIES) {
+    const reached: MilestoneReached[] = []
+    for (const [memberId, totals] of after) {
+      const was = before.get(memberId)?.[category] ?? 0
+      const value = valueOf(totals, category)
+      for (const milestone of MILESTONES[category]) {
+        if (was < milestone && milestone <= value) reached.push({ memberId, category, milestone, value })
+      }
+    }
+    out.push(...reached.sort((a, b) => b.milestone - a.milestone || b.value - a.value))
+  }
+  return out
+}
+
+/**
+ * The week whose milestones are still news, for a view that isn't framed on a week of its own:
+ * the latest week completed across the union, for as long as nothing has been played since.
+ *
+ * "Nothing played since" is what retires it. Week to week that is simply the next week landing,
+ * but once the regular season is over the latest completed week stays week 14 for good — so the
+ * first playoff games, not next August, are what take its milestones down.
+ */
+export function milestoneNewsWeek(seasons: SeasonData[]): { year: string; week: number } | undefined {
+  const year = aroundTheUnionYear(seasons)
+  if (year === undefined) return undefined
+  const yearSeasons = seasons.filter((s) => s.year === year)
+  const week = latestUnionWeek(yearSeasons)
+  const lastPlayed = Math.max(0, ...yearSeasons.flatMap((s) => s.games.map((g) => g.week)))
+  return week !== undefined && week === lastPlayed ? { year, week } : undefined
 }
