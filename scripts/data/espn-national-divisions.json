@@ -1,0 +1,320 @@
+{
+  "2018": {
+    "Bronze": [
+      {
+        "rank": 1,
+        "team_name": "CreamOfTheCrop Macho Men",
+        "wins": 8,
+        "losses": 5,
+        "ties": 0,
+        "points_for": 1464.7
+      },
+      {
+        "rank": 2,
+        "team_name": "Gingy Flame",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1384.25
+      },
+      {
+        "rank": 3,
+        "team_name": "Team Painter Pick 6",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1361.6
+      }
+    ],
+    "Copper": [
+      {
+        "rank": 1,
+        "team_name": "Goat  Emoji",
+        "wins": 8,
+        "losses": 5,
+        "ties": 0,
+        "points_for": 1428.5
+      },
+      {
+        "rank": 2,
+        "team_name": "Great Team Name",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1497.3
+      },
+      {
+        "rank": 3,
+        "team_name": "Team Team Casa",
+        "wins": 4,
+        "losses": 9,
+        "ties": 0,
+        "points_for": 1502.3
+      }
+    ],
+    "Brass": [
+      {
+        "rank": 1,
+        "team_name": "Oklahoma Banana Bread",
+        "wins": 9,
+        "losses": 4,
+        "ties": 0,
+        "points_for": 1553.25
+      },
+      {
+        "rank": 2,
+        "team_name": "Stark Direwolves",
+        "wins": 8,
+        "losses": 5,
+        "ties": 0,
+        "points_for": 1613.8
+      },
+      {
+        "rank": 3,
+        "team_name": "Team Black Death",
+        "wins": 3,
+        "losses": 10,
+        "ties": 0,
+        "points_for": 1329.7
+      }
+    ],
+    "Nickel": [
+      {
+        "rank": 1,
+        "team_name": "The Well Done Stakes",
+        "wins": 12,
+        "losses": 1,
+        "ties": 0,
+        "points_for": 1703.2
+      },
+      {
+        "rank": 2,
+        "team_name": "Team Dogecoin",
+        "wins": 6,
+        "losses": 7,
+        "ties": 0,
+        "points_for": 1408.7
+      },
+      {
+        "rank": 3,
+        "team_name": "Speedway's  Ritual Cog",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1401.3
+      }
+    ]
+  },
+  "2019": {
+    "Bronze": [
+      {
+        "rank": 1,
+        "team_name": "Naptown Makos",
+        "wins": 10,
+        "losses": 3,
+        "ties": 0,
+        "points_for": 1463.8
+      },
+      {
+        "rank": 2,
+        "team_name": "The  Losers",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1541.7
+      },
+      {
+        "rank": 3,
+        "team_name": "Gingy Flame",
+        "wins": 4,
+        "losses": 9,
+        "ties": 0,
+        "points_for": 1321.85
+      }
+    ],
+    "Copper": [
+      {
+        "rank": 1,
+        "team_name": "Currier Island Raging Rhinos",
+        "wins": 9,
+        "losses": 4,
+        "ties": 0,
+        "points_for": 1561.15
+      },
+      {
+        "rank": 2,
+        "team_name": "Team Black Death",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1605.5
+      },
+      {
+        "rank": 3,
+        "team_name": "Team Pancake",
+        "wins": 4,
+        "losses": 9,
+        "ties": 0,
+        "points_for": 1272.35
+      }
+    ],
+    "Brass": [
+      {
+        "rank": 1,
+        "team_name": "Team Painter Pick 6",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1499.75
+      },
+      {
+        "rank": 2,
+        "team_name": "Speedway's  Ritual Cog",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1315.4
+      },
+      {
+        "rank": 3,
+        "team_name": "Great Team Name",
+        "wins": 6,
+        "losses": 7,
+        "ties": 0,
+        "points_for": 1494.3
+      }
+    ],
+    "Nickel": [
+      {
+        "rank": 1,
+        "team_name": "Indianapolis Aztecs",
+        "wins": 10,
+        "losses": 3,
+        "ties": 0,
+        "points_for": 1441.7
+      },
+      {
+        "rank": 2,
+        "team_name": "Elm Street Skywalkers",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1415.2
+      },
+      {
+        "rank": 3,
+        "team_name": "El Guapo Puto",
+        "wins": 2,
+        "losses": 11,
+        "ties": 0,
+        "points_for": 1161.15
+      }
+    ]
+  },
+  "2020": {
+    "Bronze": [
+      {
+        "rank": 1,
+        "team_name": "Great Team Name",
+        "wins": 9,
+        "losses": 4,
+        "ties": 0,
+        "points_for": 1592.6
+      },
+      {
+        "rank": 2,
+        "team_name": "Always Sunny in Camdelphia ",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1403.05
+      },
+      {
+        "rank": 3,
+        "team_name": "Brown Town",
+        "wins": 4,
+        "losses": 9,
+        "ties": 0,
+        "points_for": 1370.5
+      }
+    ],
+    "Copper": [
+      {
+        "rank": 1,
+        "team_name": "El Guapo Puto",
+        "wins": 6,
+        "losses": 7,
+        "ties": 0,
+        "points_for": 1445.6
+      },
+      {
+        "rank": 2,
+        "team_name": "Elm Street Skywalkers",
+        "wins": 6,
+        "losses": 7,
+        "ties": 0,
+        "points_for": 1387.2
+      },
+      {
+        "rank": 3,
+        "team_name": "Purple Parade",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1415.3
+      }
+    ],
+    "Brass": [
+      {
+        "rank": 1,
+        "team_name": "Team Pancake",
+        "wins": 8,
+        "losses": 5,
+        "ties": 0,
+        "points_for": 1552.05
+      },
+      {
+        "rank": 2,
+        "team_name": "FFUcked Up",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1424.25
+      },
+      {
+        "rank": 3,
+        "team_name": "Team Black Death",
+        "wins": 5,
+        "losses": 8,
+        "ties": 0,
+        "points_for": 1384.85
+      }
+    ],
+    "Nickel": [
+      {
+        "rank": 1,
+        "team_name": "Frank's Little Beauties",
+        "wins": 9,
+        "losses": 4,
+        "ties": 0,
+        "points_for": 1603.25
+      },
+      {
+        "rank": 2,
+        "team_name": "Big Ten Bandits",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1492.75
+      },
+      {
+        "rank": 3,
+        "team_name": "Johnkshire Cats",
+        "wins": 7,
+        "losses": 6,
+        "ties": 0,
+        "points_for": 1394.65
+      }
+    ]
+  }
+}

@@ -345,14 +345,13 @@ Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to t
 
 ## Housekeeping
 
-- [ ] **Division data for 2018–2024 exists only on one machine.** `backfill-divisions.mjs` (Sleeper
-      2021–2024) and `backfill-espn-divisions.mjs` (ESPN 2018–2020, which needed ESPN cookies) wrote
-      their results into `legacy-source/data/divisions-supplement.json`, and `legacy-source/` is
-      gitignored. `public/data` has the divisions baked in and is committed, so the SITE is safe.
-      But re-running `npm run migrate` from a fresh `legacy-source/` (the README's regeneration
-      recipe) would silently drop those divisions. Options: commit the supplement (and the two
-      small `espn-*-divisions.json` exports) somewhere tracked, or declare the migration retired and
-      make `migrate` refuse to run. Needs a decision, not urgent.
+- [x] **Division sources are tracked (2026-09-23).** The divisions supplement and the two ESPN
+      exports it was built from (which needed ESPN cookies to produce) lived only in gitignored
+      `legacy-source/`, so re-running `npm run migrate` from a fresh snapshot would have silently
+      dropped 2018–2024 divisions. They now live in `scripts/data/` (paths in
+      `scripts/lib/divisionSources.mjs`), and migrate treats the supplement as required instead of
+      falling back to no divisions. Verified by migrating a scratch copy with the old copies removed:
+      divisions match the committed `public/data` in all 23 season files.
 - [ ] Old branches: local `analysis/premier-draft-habits`, `feat/record-book`, `temp/draft-adp-2025`
       are unmerged (1–2 commits each); remote `auto/req-1513019765906608228` and
       `auto/req-1513025624921346048` are June Discord-bot leftovers. Keep or delete?

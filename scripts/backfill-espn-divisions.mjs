@@ -2,15 +2,16 @@
 // capture (the espn-api pull that recorded them post-dates the original migration).
 //
 // Mirrors scripts/backfill-divisions.mjs, but the source is an offline espn-api export rather than
-// the Sleeper API. It only writes the supplement under gitignored legacy-source/; `npm run migrate`
+// the Sleeper API. It only writes the supplement (scripts/data/, checked in); `npm run migrate`
 // then merges it (applyDivisionsSupplement) into public/data + flips hasDivisions — one
-// materializer, no dup. public/data is what's committed, so a fresh clone needs no re-pull.
+// materializer, no dup. The exports it reads are checked in beside it, so a fresh clone needs no
+// re-pull (they needed ESPN cookies to produce).
 //
 // Regenerating an export (needs ESPN cookies; ../espn-api is a sibling repo):
 //   python3 export_league.py --league-id <id> --years 2018 2019 2020 \
 //       --out espn_export/<tier> --espn-s2 "$ESPN_S2" --swid "$SWID"
 //   python3 export_divisions.py --dir espn_export/<tier> \
-//       --out ../ffu-web/legacy-source/data/espn-<tier>-divisions.json
+//       --out ../ffu-web/scripts/data/espn-<tier>-divisions.json
 // League ids: Premier 5523, National 4270.
 //
 // Identity join: the supplement is keyed by legacy userId tokens (resolved to ffuId by migration).
@@ -18,7 +19,7 @@
 // `points_for` — an EXACT, unique key (verified) — and read the token off that row. Team names
 // (which may have drifted) are used only for human-readable output, never for matching.
 //
-// Tier-agnostic: drop an export per tier into legacy-source/data/espn-<tier>-divisions.json and it's
+// Tier-agnostic: drop an export per tier into scripts/data/espn-<tier>-divisions.json and it's
 // picked up automatically (division count + names come from the export, so 3- and 4-division tiers
 // both work). Missing exports are skipped.
 //
@@ -29,10 +30,10 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DIVISIONS_SUPPLEMENT as SUPPLEMENT, espnDivisionsExport } from './lib/divisionSources.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LEGACY = join(ROOT, 'legacy-source', 'data')
-const SUPPLEMENT = join(LEGACY, 'divisions-supplement.json')
 const TIERS = ['PREMIER', 'NATIONAL', 'MASTERS']
 
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
@@ -75,7 +76,7 @@ function run() {
   const supplement = readJson(SUPPLEMENT)
   let written = 0
   for (const tier of TIERS) {
-    const sourcePath = join(LEGACY, `espn-${tier.toLowerCase()}-divisions.json`)
+    const sourcePath = espnDivisionsExport(tier)
     if (!existsSync(sourcePath)) continue
     for (const [year, divisions] of Object.entries(readJson(sourcePath))) {
       const key = `${year}/${tier}`

@@ -9,6 +9,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, realpathSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DIVISIONS_SUPPLEMENT as DIVISIONS_SUPPLEMENT_PATH } from './lib/divisionSources.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LEGACY = join(ROOT, 'legacy-source')
@@ -143,14 +144,11 @@ function buildDivisions(legacy) {
     .sort((a, b) => a.id - b.id)
 }
 
-// Divisions for Sleeper seasons the legacy snapshot missed (it only captured 2025), fetched once
-// from the Sleeper API by scripts/backfill-divisions.mjs and checked in so migration stays offline.
-let DIVISIONS_SUPPLEMENT = {}
-try {
-  DIVISIONS_SUPPLEMENT = JSON.parse(readFileSync(join(LEGACY, 'data', 'divisions-supplement.json'), 'utf8'))
-} catch {
-  /* supplement not generated yet — seasons fall back to legacy-only division data */
-}
+// Divisions for seasons the legacy snapshot missed (it only captured 2025): Sleeper 2021–2024 from
+// backfill-divisions.mjs, ESPN 2018–2020 from backfill-espn-divisions.mjs. Checked in under
+// scripts/data/ so migration stays offline. REQUIRED — a missing file would otherwise rebuild those
+// seasons with no divisions and no error, so let the read throw.
+const DIVISIONS_SUPPLEMENT = JSON.parse(readFileSync(DIVISIONS_SUPPLEMENT_PATH, 'utf8'))
 
 /** Apply supplement divisions (names + per-team divisionId) when legacy carried none. */
 function applyDivisionsSupplement(season) {
