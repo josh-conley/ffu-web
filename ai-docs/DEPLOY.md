@@ -19,8 +19,8 @@ DNS is at **Namecheap**. The apex `A` records point at GitHub's shared Pages IPs
 ```
 Type    Host   Value
 A        @      185.199.108.153  (+ .109/.110/.111.153)
-CNAME    old    josh-conley.github.io
 CNAME    www    josh-conley.github.io   (optional — www → apex)
+CNAME    preview  → the Cloudflare Pages preview project (see PREVIEW-ENVIRONMENT.md)
 ```
 
 > GitHub Pages serves every site from those same shared IPs — DNS does not know which repo.
@@ -38,6 +38,9 @@ CNAME    www    josh-conley.github.io   (optional — www → apex)
 - `public/404.html` is the SPA fallback for BrowserRouter deep links (decoded in `index.html`).
 - `public/CNAME` (`ffunion.com`) is copied into `dist` — kept consistent with the Pages
   custom-domain setting (see gotchas).
+- **Bot commits don't trigger it on their own.** The weekly `refresh-season.yml` pushes with
+  `GITHUB_TOKEN`, which never fires other workflows' `on: push`, so that job dispatches
+  `deploy.yml` explicitly as its last step. Any new bot-committing workflow must do the same.
 
 ## One-time setup (already done — recorded for reproducibility)
 

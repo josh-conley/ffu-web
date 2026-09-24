@@ -1,14 +1,18 @@
 # Autonomous Discord → PR pipeline
 
-The league commissioner posts a request in a Discord channel; a scheduled GitHub Action implements
+The league commissioner posts a request in a Discord channel; a GitHub Action implements
 it with Claude Code, runs the gates, stacks it onto a **single rolling PR** (never auto-merges), and
 replies in Discord with the PR link (✅) or the reason it couldn't (❌). Runs entirely in GitHub's
 cloud — your computer can be off.
 
+**Currently manual-only.** The workflow's `schedule` trigger was removed, so it polls only when run
+from the Actions tab (**Discord site requests → Run workflow**). Add a `schedule:` back to
+`.github/workflows/discord-requests.yml` to make it autonomous again.
+
 ```
 commissioner posts in #channel
         │
-        ▼  (every 15 min, or manual)
+        ▼  (manual: Actions → Run workflow)
 GitHub Action: claim 👀 → Claude implements + commits → gates → stack onto auto/requests → 1 PR
         │
         ▼
@@ -59,7 +63,7 @@ for the 👀 → ✅ + PR link.
 - **PR-first** — changes never merge themselves; you review every PR before it deploys.
 - **Scoped trigger** — only the commissioner's messages in the one channel count.
 - **Hard gate** — a red typecheck/lint/test never produces a PR.
-- **Credential isolation** — the Claude step only receives `ANTHROPIC_API_KEY`; the Discord and
+- **Credential isolation** — the Claude step only receives `CLAUDE_CODE_OAUTH_TOKEN`; the Discord and
   GitHub tokens are confined to the read/report/PR steps, so a prompt-injected request can't leak them.
 - **No staging buffer** — `main` deploys straight to the live apex `ffunion.com`, so a merged PR
   is public immediately. The PR-first rule above is the only thing between a request and production;

@@ -74,8 +74,9 @@ Vitest + Testing Library + jsdom. Hosting: GitHub Pages.
 npm run dev        # Vite dev server (http://localhost:5173)
 npm run build      # tsc -b && vite build
 npm run lint       # eslint
-npm run typecheck  # tsc --noEmit
+npm run typecheck  # tsc -b
 npm test           # vitest
+npm run knip       # unused files/exports/deps (knip.json lists the intentional exceptions)
 npm run migrate    # regenerate public/data from legacy-source (one-time/rare)
 npm run validate   # per-game migration diff harness
 ```
@@ -92,13 +93,16 @@ tabbed Bracket / Format & Rules, the bracket being an empty outline until the se
 completed week's top 3 scorers across all leagues + the league points/PPG race, framed as one
 screenshot-ready block), and **Stats** (route `/stats`,
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
-reorder, full-bleed/sticky Team column, FA icons). All gates green.
+reorder, full-bleed/sticky Team column, FA icons). Also in the Stats & More menu: **Builds**
+(`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), and **ADP
+Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP).
+The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
 
-**Live season (built, dormant):** the home page has a "This Week" section (matchups + standings +
+**Live season (active for 2026):** the home page has a "This Week" section (matchups + standings +
 box scores, fetched client-side from Sleeper via `src/data/liveSleeper.ts` — deliberately a separate
-path from `LeagueDataProvider`, see its header comment). It activates itself once
-`src/config/liveSeason.ts` `LIVE_LEAGUE_IDS` has entries for the year Sleeper reports; empty = zero
-cost, section hidden. Regular season only (wks 1–14); playoffs deferred.
+path from `LeagueDataProvider`, see its header comment). It is on whenever
+`src/config/liveSeason.ts` `LIVE_LEAGUE_IDS` has entries for the year Sleeper reports (2026 does);
+empty = zero cost, section hidden. Regular season only (wks 1–14); playoffs deferred.
 
 **Conventions (enforced):** ESLint caps `max-lines` 300 / `max-lines-per-function` 80 / `complexity` 12 +
 `no-explicit-any`. Gates before any commit: `npm run typecheck && npm run lint && npm test`. **Commit AND

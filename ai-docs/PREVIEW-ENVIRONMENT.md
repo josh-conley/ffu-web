@@ -39,4 +39,4 @@ longer used and can be deleted.)
 - The deploy adds ~1–2 min per request (build + upload); the bot says "ready in ~1 min."
 - Client-side routes (e.g. visiting `/standings` directly) may 404 on Cloudflare without an SPA
   fallback — the root URL + clicking around works; if deep links 404 we'll add a `_redirects` file.
-- Optional later: a prettier `preview.ffunion.com` via a Namecheap CNAME to the project. Cosmetic.
+- `preview.ffunion.com` is the stable custom domain for the project (a Namecheap CNAME to it).

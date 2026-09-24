@@ -1,8 +1,9 @@
 // Backfill divisions for SLEEPER-era seasons whose legacy snapshot predates division capture
 // (the old app only recorded divisions for 2025). Pulls each league's division names + per-roster
 // assignments from the public Sleeper API and:
-//   1. writes legacy-source/data/divisions-supplement.json  (checked in, merged by migrate-to-v2,
-//      so `npm run migrate` reproduces divisions offline without re-fetching)
+//   1. writes legacy-source/data/divisions-supplement.json  (merged by migrate-to-v2, so
+//      `npm run migrate` reproduces divisions offline without re-fetching). NB legacy-source/ is
+//      gitignored: the supplement exists only on the machine that ran this — see ai-docs/TODO.md
 //   2. patches public/data/{year}/{tier}.json in place (divisions + per-team divisionId)
 //   3. flips hasDivisions in public/data/seasons.json
 // Idempotent: seasons that already have divisions are skipped.

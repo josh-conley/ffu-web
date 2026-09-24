@@ -42,8 +42,8 @@ this section is unread by me until you say so, so it's safe to leave half-formed
       division-champ prizes attribute (done 2026-07-27 — pulled from ESPN league 4270 via the
       sibling `espn-api` repo; see the header of `scripts/backfill-espn-divisions.mjs` for the
       reproduction commands). Divisions were the *only* gap vs Premier for those seasons.
-- [ ] Prepare a home page draft announcement section (new — see below)
-- [ ] Spot-check the live "This Week" section once real ids are in, early in Week 1
+- [x] Spot-check the live "This Week" section once real ids are in: in use through week 2 (the
+      commissioner has been working from the live lineup modal)
 
 ## Drafts page — live season
 
@@ -57,16 +57,18 @@ this section is unread by me until you say so, so it's safe to leave half-formed
       player map needed: each pick's `metadata` carries name/position/NFL team inline.
       `useLiveDraftPicks` polls every 12s, pauses while the tab is hidden (refreshing on return),
       and stops once the board is full. Next pick is flagged "on the clock".
-- [ ] Watch the first live draft (Masters, Sun Aug 30) and sanity-check: does `pick_no` stay
-      contiguous with an autopick/queue, and does a traded pick attribute to the acquirer as it does
-      in the backfilled data?
+- [x] `pick_no` stayed contiguous through all three live drafts: checked 2026-09-23 against the
+      backfilled files, 1–180 with no gaps in every tier
+- [ ] Still unverified: does a traded pick attribute to the acquirer, as it does in the older
+      backfilled data? Needs a known 2026 trade to check against
 - [ ] Once 2026 is backfilled, the year moves out of `LIVE_LEAGUE_IDS` into `SEASONS` and the page
       switches to the completed board on its own — no code change
 
 ## Home page — draft announcement section
 
-- [ ] Design + build a section (likely on Overview, near the top) announcing the upcoming/live draft
-      — exact content/timing TBD
+- [ ] **Next preseason:** a proper announcement section (likely on Overview, near the top) for the
+      upcoming/live draft. Content/timing TBD. For 2026 the Upcoming Drafts + 2026 Leagues sections
+      below did the job
 - [x] Draft date + time per tier, live from Sleeper (2026-08-07): `useDraftSchedules` →
       `fetchDraftSchedules` reads `/league/{id}/drafts` and `UpcomingDrafts` renders each tier's
       `start_time` (viewer's timezone, zone named) or TBD when the commissioner hasn't set one.
@@ -150,28 +152,6 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
       for "FFU Cup Winner"
 
-## FFU Cup draw — announcer voice
-
-- [x] Announcer plumbing + clip playback built (2026-08-21): phrase tokens, clip generator, clip
-      playback, browser-speech fallback, tests.
-- [x] **Switched OFF in the live draw** (2026-08-21) — no voice we could produce got near the brief,
-      so `/cup/draw` is silent apart from the wheel. The pipeline is PARKED, not deleted: see the
-      banner at the top of `src/lib/announcer.ts` for how to re-enable it in one place.
-- [ ] **Get a real voice, then switch it back on.** The shipped set is macOS `say` and sounds like a satnav —
-      nothing local gets near a game announcer. Produce the SAME filenames from a neural TTS or a
-      human recording and drop them into `public/audio/draw/`; no code changes.
-      `npm run draw-vo -- --list` prints the exact script (61 lines). Do not clone a real
-      announcer's voice — a generic hype voice gets the energy without the likeness problem.
-- [ ] Settle the phrase set BEFORE recording: currently "{team} versus {team}" plus "First ever
-      meeting!". Adding the league or the seed number means more lines to record.
-- [ ] Optional, ~1hr: a Web Audio broadcast chain (compressor + saturation + short reverb + slight
-      pitch drop) inside `clipVoice`. Flatters any source, so it is not wasted whichever voice
-      lands. Not built — offered and deferred.
-- [ ] Free first step worth trying before commissioning anything: download a macOS Enhanced/Premium
-      voice (System Settings → Accessibility → Spoken Content → Manage Voices), change `VOICE` in
-      `scripts/generate-draw-vo.mjs`, re-run `npm run draw-vo`. Notably better than the compact
-      voice currently shipped.
-
 ## 2026 in-season data — static drafts, and how live the rest of the site gets
 
 Both from the commissioner's list (2026-09-09). They are one question wearing two hats: how much of
@@ -237,6 +217,12 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       would drop everyone the other seasons resolve) and sets `hasLineups` for what it wrote, so
       completed seasons are untouched and reruns are byte-identical. Its own check — starter sums
       vs the stored game score — passed for all three tiers in week 1.
+- [ ] **First scheduled run went red (2026-09-22)** on `npm test`, not on data: two tests assumed
+      the live season was one week old. Fixed the same day in `648c047`, and week 2 was committed by
+      hand. Two things to watch on **2026-09-29**, which is the Action's first real chance at a clean
+      run: (a) only ONE of the two schedules fired that day (the 14:00 UTC one at 14:20; the 10:00
+      run never appeared, as GitHub can drop scheduled runs under load), and (b) the claude.ai
+      routine above still needs deleting once a Tuesday goes green.
 - [ ] **Next preseason:** update `LIVE_LEAGUE_IDS` before the first September Tuesday, or the Action
       fails red (which is the reminder). NB GitHub disables scheduled workflows after 60 days with
       no repo activity — if the repo is quiet all offseason, re-enable it in the Actions tab.
@@ -356,6 +342,23 @@ Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to t
 - [ ] Not built, offered: per-manager summaries (who reached most / found the most value across
       their whole board), and keeping the page for past seasons — that needs an ADP snapshot per
       year, which we only have from 2026 on.
+
+## Housekeeping
+
+- [ ] **Division data for 2018–2024 exists only on one machine.** `backfill-divisions.mjs` (Sleeper
+      2021–2024) and `backfill-espn-divisions.mjs` (ESPN 2018–2020, which needed ESPN cookies) wrote
+      their results into `legacy-source/data/divisions-supplement.json`, and `legacy-source/` is
+      gitignored. `public/data` has the divisions baked in and is committed, so the SITE is safe.
+      But re-running `npm run migrate` from a fresh `legacy-source/` (the README's regeneration
+      recipe) would silently drop those divisions. Options: commit the supplement (and the two
+      small `espn-*-divisions.json` exports) somewhere tracked, or declare the migration retired and
+      make `migrate` refuse to run. Needs a decision, not urgent.
+- [ ] Old branches: local `analysis/premier-draft-habits`, `feat/record-book`, `temp/draft-adp-2025`
+      are unmerged (1–2 commits each); remote `auto/req-1513019765906608228` and
+      `auto/req-1513025624921346048` are June Discord-bot leftovers. Keep or delete?
+- [ ] `actions/checkout` + `setup-node` bumped v4 → v5 (2026-09-23) for the Node 20 deprecation
+      warning. `deploy-pages@v4` / `upload-pages-artifact@v3` may carry the same warning; check the
+      next deploy's annotations and bump those if so.
 
 ## Deferred / not blocking Week 1
 
