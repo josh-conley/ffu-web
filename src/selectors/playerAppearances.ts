@@ -16,6 +16,8 @@ export interface PlayerAppearance {
   started: boolean
   /** The team-week was a playoff game. */
   isPlayoff: boolean
+  /** The team-week was its league's championship final — and how it went. Absent otherwise. */
+  titleGame?: 'won' | 'lost'
 }
 
 /** Every player's name + position, falling back to the raw id for anyone the map doesn't know. */
@@ -26,34 +28,56 @@ export function playerRef(players: PlayerMap, playerId: string): { name: string;
 
 const seasonKey = (tier: Tier, year: string) => `${tier}:${year}`
 
-/** `week:memberId` for every playoff team-week, per season — so a lineup week can say what it was. */
-function playoffTeamWeeks(seasons: SeasonData[]): Map<string, Set<string>> {
-  const out = new Map<string, Set<string>>()
+interface SeasonWeeks {
+  /** `week:memberId` for every playoff team-week. */
+  playoff: Set<string>
+  /** `week:memberId` of the championship final's two sides → how each came out. */
+  final: Map<string, 'won' | 'lost'>
+}
+
+/**
+ * The championship final: the champion's last championship-bracket game. Only a DECIDED season has
+ * one, so a season still being played never mistakes a semifinal for the final.
+ */
+function championshipFinal(season: SeasonData) {
+  const champ = season.teams.find((t) => t.finalPlacement === 1)?.memberId
+  if (!champ) return undefined
+  const games = season.games.filter((g) => g.isPlayoff && g.bracket === 'championship' && g.participants.some((p) => p.memberId === champ))
+  const final = games.reduce<(typeof games)[number] | undefined>((best, g) => (!best || g.week > best.week ? g : best), undefined)
+  return final && { champ, game: final }
+}
+
+/** Per season, which team-weeks were playoff games and which were the title game. */
+function seasonWeeks(seasons: SeasonData[]): Map<string, SeasonWeeks> {
+  const out = new Map<string, SeasonWeeks>()
   for (const s of seasons) {
-    const weeks = new Set<string>()
-    for (const g of s.games) {
-      if (!g.isPlayoff) continue
-      for (const p of g.participants) weeks.add(`${g.week}:${p.memberId}`)
-    }
-    out.set(seasonKey(s.tier, s.year), weeks)
+    const playoff = new Set<string>()
+    for (const g of s.games) if (g.isPlayoff) for (const p of g.participants) playoff.add(`${g.week}:${p.memberId}`)
+    const final = new Map<string, 'won' | 'lost'>()
+    const decided = championshipFinal(s)
+    if (decided) for (const p of decided.game.participants) final.set(`${decided.game.week}:${p.memberId}`, p.memberId === decided.champ ? 'won' : 'lost')
+    out.set(seasonKey(s.tier, s.year), { playoff, final })
   }
   return out
 }
 
 /** Flattens every lineup file into one row per player per team-week (starters and bench). */
 export function playerAppearances(lineups: SeasonLineups[], seasons: SeasonData[]): PlayerAppearance[] {
-  const playoffs = playoffTeamWeeks(seasons)
+  const bySeason = seasonWeeks(seasons)
   const out: PlayerAppearance[] = []
   for (const season of lineups) {
-    const playoffWeeks = playoffs.get(seasonKey(season.tier, season.year))
+    const weeks = bySeason.get(seasonKey(season.tier, season.year))
     for (const wk of season.weeks) {
       for (const team of wk.teams) {
+        const key = `${wk.week}:${team.memberId}`
+        const titleGame = weeks?.final.get(key)
         const base = {
           year: season.year,
           tier: season.tier,
           week: wk.week,
           memberId: team.memberId,
-          isPlayoff: playoffWeeks?.has(`${wk.week}:${team.memberId}`) ?? false,
+          isPlayoff: weeks?.playoff.has(key) ?? false,
+          ...(titleGame && { titleGame }),
         }
         for (const p of team.starters) out.push({ ...base, playerId: p.playerId, points: p.points, started: true })
         for (const p of team.bench) out.push({ ...base, playerId: p.playerId, points: p.points, started: false })
@@ -81,9 +105,15 @@ export interface PlayerSummary {
   managers: number
   /** Distinct seasons he was on an FFU roster. */
   seasons: number
+  /** Championship finals he STARTED in, won or lost. */
+  titleGames: number
+  /** ...and how many of those his team won. */
+  titlesWon: number
 }
 
 interface Tally {
+  titleGames: number
+  titlesWon: number
   starts: number
   points: number
   best: number
@@ -99,7 +129,7 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
   for (const a of appearances) {
     let t = byPlayer.get(a.playerId)
     if (!t) {
-      t = { starts: 0, points: 0, best: 0, rosteredWeeks: 0, managers: new Set(), seasons: new Set() }
+      t = { titleGames: 0, titlesWon: 0, starts: 0, points: 0, best: 0, rosteredWeeks: 0, managers: new Set(), seasons: new Set() }
       byPlayer.set(a.playerId, t)
     }
     t.rosteredWeeks++
@@ -109,6 +139,8 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
     t.points += a.points
     t.best = Math.max(t.best, a.points)
     t.managers.add(a.memberId)
+    if (a.titleGame) t.titleGames++
+    if (a.titleGame === 'won') t.titlesWon++
   }
   return byPlayer
 }
@@ -126,6 +158,8 @@ export function playerSummaries(appearances: PlayerAppearance[], players: Player
       rosteredWeeks: t.rosteredWeeks,
       managers: t.managers.size,
       seasons: t.seasons.size,
+      titleGames: t.titleGames,
+      titlesWon: t.titlesWon,
     }))
     .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name))
 }

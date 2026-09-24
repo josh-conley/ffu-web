@@ -1,8 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { Players } from './Players'
-import { PlayerDetail } from './PlayerDetail'
 import { nameForYear } from '@/config'
 
 // Reads the real public/data files, which the Tuesday refresh rewrites. Every assertion here must
@@ -15,7 +14,7 @@ for (const [path, mod] of Object.entries(modules)) FILES[path.replace('../../pub
 
 afterEach(() => vi.unstubAllGlobals())
 
-function renderAt(path: string) {
+function renderPage() {
   vi.stubGlobal('fetch', (url: string) =>
     Promise.resolve(
       FILES[url] === undefined
@@ -24,11 +23,8 @@ function renderAt(path: string) {
     ),
   )
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/players" element={<Players />} />
-        <Route path="/players/:playerId" element={<PlayerDetail />} />
-      </Routes>
+    <MemoryRouter>
+      <Players />
     </MemoryRouter>,
   )
 }
@@ -39,46 +35,60 @@ const itemWith = (section: string, parts: string[]) =>
     .getAllByRole('listitem')
     .filter((li) => parts.every((p) => li.textContent?.includes(p)))
 
+// Clickable rows take a button role, so the body rows are found by element rather than by role.
+const bodyRows = () => [...document.querySelectorAll<HTMLElement>('tbody tr')]
+
 const points = (row: HTMLElement) => Number(within(row).getAllByRole('cell')[1]!.textContent)
 
-describe('Players index', () => {
+async function ready() {
+  renderPage()
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Players' })).toBeInTheDocument())
+}
+
+/** Searches for one player and opens his row. */
+async function open(name: string) {
+  await userEvent.type(screen.getByRole('searchbox'), name)
+  const [row] = screen.getAllByRole('button', { name: new RegExp(name, 'i') })
+  await userEvent.click(row!)
+}
+
+describe('Players table', () => {
   it('ranks players by the points they scored in FFU lineups', async () => {
-    renderAt('/players')
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Players' })).toBeInTheDocument())
-    const rows = screen.getAllByRole('row').slice(1)
+    await ready()
+    const rows = bodyRows()
     expect(rows.length).toBe(50) // first page
     const pts = rows.map(points)
     expect(pts).toEqual([...pts].sort((a, b) => b - a))
   })
 
   it('searches by name, ignoring case and punctuation', async () => {
-    renderAt('/players')
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Players' })).toBeInTheDocument())
+    await ready()
     await userEvent.type(screen.getByRole('searchbox'), 'justin jeff')
-    const rows = screen.getAllByRole('row').slice(1)
+    const rows = bodyRows()
     expect(rows).toHaveLength(1)
-    expect(within(rows[0]!).getByRole('link', { name: /Justin Jefferson/ })).toHaveAttribute('href', '/players/6794')
+    expect(rows[0]).toHaveTextContent('Justin Jefferson')
   })
-})
 
-describe('Player detail', () => {
-  it("shows where he was drafted, from the completed seasons' boards", async () => {
-    renderAt('/players/6794')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /Justin Jefferson/ })).toBeInTheDocument())
+  it('opens a row in place with where he was drafted', async () => {
+    await ready()
+    await open('justin jefferson')
     // The 2023 Premier draft opened with him.
     expect(itemWith('Drafted', ['2023', 'Premier', 'Rd 1 · #1'])).toHaveLength(1)
   })
 
-  it('credits the titles he started in', async () => {
+  it('lists the title games he started in, with how they went', async () => {
+    await ready()
     // Bucky Irving started for the 2024 Premier champion in the final.
-    renderAt('/players/11584')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /Bucky Irving/ })).toBeInTheDocument())
+    await open('bucky irving')
     const champion = nameForYear('ffu-009', '2024')!
-    expect(itemWith('Championships', ['2024', 'Premier', champion, '26.00 in the final'])).toHaveLength(1)
+    expect(itemWith('Title Games', ['2024', 'Premier', champion, '26.00', 'Won'])).toHaveLength(1)
   })
 
-  it('says so for a player FFU never rostered', async () => {
-    renderAt('/players/not-a-player')
-    await waitFor(() => expect(screen.getByText(/No FFU team has rostered this player/)).toBeInTheDocument())
+  it('closes the row when it is clicked again', async () => {
+    await ready()
+    await open('bucky irving')
+    expect(screen.getByRole('heading', { name: 'Title Games' })).toBeInTheDocument()
+    await userEvent.click(screen.getAllByRole('button', { name: /bucky irving/i })[0]!)
+    expect(screen.queryByRole('heading', { name: 'Title Games' })).not.toBeInTheDocument()
   })
 })

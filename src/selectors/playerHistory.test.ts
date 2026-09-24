@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { DraftData, Game, PlayerMap, SeasonData, SeasonLineups, SeasonTeam, TeamLineup } from '@/data'
 import { playerAppearances, playerSummaries } from './playerAppearances'
-import { playerDrafts, playerHistory, playerTitles } from './playerHistory'
+import { playerDrafts, playerHistory, playerTitleGames } from './playerHistory'
 
 const PLAYERS: PlayerMap = {
   p1: { name: 'Star Back', position: 'RB' },
@@ -67,18 +67,25 @@ const APPEARANCES = playerAppearances(LINEUPS, SEASONS)
 describe('playerAppearances', () => {
   it('flattens starters and bench, marking playoff team-weeks', () => {
     const final = APPEARANCES.find((a) => a.playerId === 'p1' && a.week === 15)
-    expect(final).toMatchObject({ year: '2024', memberId: 'a', started: true, isPlayoff: true, points: 31.5 })
+    expect(final).toMatchObject({ year: '2024', memberId: 'a', started: true, isPlayoff: true, points: 31.5, titleGame: 'won' })
+    expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 15)).toMatchObject({ titleGame: 'lost' })
     expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 1)).toMatchObject({ started: false, isPlayoff: false })
+    expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 1)?.titleGame).toBeUndefined()
+  })
+
+  it('marks no final in a season without a champion yet — a semifinal is not the final', () => {
+    const live = { ...SEASONS[0]!, teams: SEASONS[0]!.teams.map((t) => ({ ...t, finalPlacement: undefined })) }
+    expect(playerAppearances(LINEUPS, [live]).some((a) => a.titleGame)).toBe(false)
   })
 })
 
 describe('playerSummaries', () => {
   it('counts only started weeks toward points, but every rostered week and season', () => {
     const [top, second] = playerSummaries(APPEARANCES, PLAYERS)
-    expect(top).toMatchObject({ playerId: 'p1', name: 'Star Back', starts: 3, points: 59.5, best: 31.5, managers: 2, seasons: 2 })
+    expect(top).toMatchObject({ playerId: 'p1', name: 'Star Back', starts: 3, points: 59.5, best: 31.5, managers: 2, seasons: 2, titleGames: 1, titlesWon: 1 })
     expect(top?.avg).toBeCloseTo(19.83, 2)
     // p2: benched once (3 pts don't count), started once for 12.
-    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, rosteredWeeks: 2, managers: 1 })
+    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, rosteredWeeks: 2, managers: 1, titleGames: 1, titlesWon: 0 })
   })
 
   it('falls back to the raw id for a player the map does not know', () => {
@@ -87,7 +94,7 @@ describe('playerSummaries', () => {
 })
 
 describe('playerHistory', () => {
-  const history = playerHistory('p1', APPEARANCES, SEASONS, [])
+  const history = playerHistory('p1', APPEARANCES, [])
 
   it('groups by manager, most FFU points first', () => {
     expect(history.managers.map((m) => [m.memberId, m.points, m.years])).toEqual([
@@ -96,30 +103,28 @@ describe('playerHistory', () => {
     ])
   })
 
-  it('lists seasons newest first', () => {
-    expect(history.seasons.map((s) => `${s.year}:${s.memberId}`)).toEqual(['2025:b', '2024:a'])
-  })
-
   it('keeps his best started weeks, flagging playoff games', () => {
     expect(history.topWeeks[0]).toMatchObject({ week: 15, points: 31.5, isPlayoff: true })
   })
 
   it('returns empty lists for a player FFU never rostered', () => {
-    expect(playerHistory('nobody', APPEARANCES, SEASONS, [])).toEqual({ managers: [], seasons: [], drafts: [], titles: [], topWeeks: [] })
+    expect(playerHistory('nobody', APPEARANCES, [])).toEqual({ managers: [], drafts: [], titleGames: [], topWeeks: [] })
   })
 })
 
-describe('playerTitles', () => {
-  it('credits a title only when he started for the champion in the final', () => {
-    const p1 = APPEARANCES.filter((a) => a.playerId === 'p1')
-    expect(playerTitles(p1, SEASONS)).toEqual([{ year: '2024', tier: 'PREMIER', memberId: 'a', points: 31.5 }])
-    // p2 started in the final too, but for the losing side.
-    expect(playerTitles(APPEARANCES.filter((a) => a.playerId === 'p2'), SEASONS)).toEqual([])
+describe('playerTitleGames', () => {
+  it('lists every final he started in, won or lost', () => {
+    const of = (id: string) => playerTitleGames(APPEARANCES.filter((a) => a.playerId === id))
+    expect(of('p1')).toEqual([{ year: '2024', tier: 'PREMIER', memberId: 'a', points: 31.5, won: true }])
+    expect(of('p2')).toEqual([{ year: '2024', tier: 'PREMIER', memberId: 'b', points: 12, won: false }])
   })
 
-  it('ignores a season with no champion yet', () => {
-    const live = season('2026', [game(15, 'a', 'b', true, 'championship')])
-    expect(playerTitles(APPEARANCES, [live])).toEqual([])
+  it("doesn't count a final he sat on the bench for", () => {
+    const benched = LINEUPS.map((l) => ({
+      ...l,
+      weeks: l.weeks.map((w) => (w.week === 15 ? { ...w, teams: [lu('a', [['x', 1]], [['p1', 31.5]]), lu('b', [['p2', 12]])] } : w)),
+    }))
+    expect(playerTitleGames(playerAppearances(benched, SEASONS).filter((a) => a.playerId === 'p1'))).toEqual([])
   })
 })
 

@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { usePlayerData } from '@/hooks/usePlayerData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
-import { playerAppearances, playerSummaries, type PlayerSummary } from '@/selectors'
+import { playerAppearances, playerHistory, playerSummaries, type PlayerSummary } from '@/selectors'
 import { PlayerIndexTable } from '@/components/players/PlayerIndexTable'
+import { PlayerDetailPanel } from '@/components/players/PlayerDetailPanel'
 import { FilterBar } from '@/components/FilterBar'
 import { SELECT } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -21,14 +22,15 @@ const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').repl
 
 /**
  * Players — every NFL player who has been on an FFU roster, ranked by the points he scored in FFU
- * starting lineups. Each links to his FFU history. Lineups exist from 2021, so this is the Sleeper era.
+ * starting lineups. A row opens in place to show his FFU history. Lineups exist from 2021, so this
+ * is the Sleeper era.
  */
 export function Players() {
-  const { lineups, players, seasons, loading, error } = usePlayerData()
-  const summaries = useMemo(
-    () => (lineups && players && seasons ? playerSummaries(playerAppearances(lineups, seasons), players) : []),
-    [lineups, players, seasons],
-  )
+  const { lineups, players, seasons, drafts, loading, error } = usePlayerData()
+  const appearances = useMemo(() => (lineups && seasons ? playerAppearances(lineups, seasons) : []), [lineups, seasons])
+  const summaries = useMemo(() => (players ? playerSummaries(appearances, players) : []), [appearances, players])
+  const [openKey, setOpenKey] = useState<string>()
+  const toggle = (r: PlayerSummary) => setOpenKey((k) => (k === r.playerId ? undefined : r.playerId))
   const [query, setQuery] = useUrlState('q', '')
   const { rows, values, setValue, clear, activeCount } = useFilters(FILTERS, summaries)
   const needle = normalize(query)
@@ -43,7 +45,8 @@ export function Players() {
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Players</h1>
         <p className="max-w-2xl text-sm text-muted">
           Every NFL player who has been on an FFU roster since 2021, ranked by the points he scored in FFU starting
-          lineups. Pick one to see who started him, where he was drafted and the titles he played in.
+          lineups. Title Gms counts the championship finals he started in. Click a player for his title games, where
+          he was drafted, his best weeks and who started him.
         </p>
       </div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
@@ -60,7 +63,12 @@ export function Players() {
         <FilterBar defs={FILTERS} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} />
       </div>
       {shown.length > 0 ? (
-        <PlayerIndexTable rows={shown} />
+        <PlayerIndexTable
+          rows={shown}
+          openKey={openKey}
+          onToggle={toggle}
+          renderExpanded={(r) => <PlayerDetailPanel history={playerHistory(r.playerId, appearances, drafts)} />}
+        />
       ) : (
         <p className="border border-dashed border-border bg-surface/60 p-4 text-sm text-muted">No players match.</p>
       )}
