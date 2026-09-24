@@ -4,9 +4,8 @@ import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
-import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { homeLiveSection, unionHighlight, upcomingRosters, upcomingYear } from '@/selectors'
+import { homeLiveSection, unionHighlight, upcomingYear } from '@/selectors'
 import { HomeUnionPanel } from '@/components/HomeUnionPanel'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
@@ -15,7 +14,6 @@ import { CurrentWeekStandings } from '@/components/CurrentWeekStandings'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
 import { CupBanner } from '@/components/CupBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
-import { UpcomingLeagues } from '@/components/UpcomingLeagues'
 import { TIER_PRESTIGE } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -87,9 +85,7 @@ export function Overview() {
   // The season being played, from config — not `latest + 1`, which skips past it once it has a
   // data file of its own (see upcomingYear).
   const nextYear = upcomingYear(allSeasons)
-  const { rosters } = useLeagueRosters(nextYear)
   const { schedules: draftSchedules } = useDraftSchedules(nextYear)
-  const upcoming = useMemo(() => upcomingRosters(allSeasons, rosters), [allSeasons, rosters])
   const union = useMemo(() => unionHighlight(allSeasons, nextYear), [allSeasons, nextYear])
   const latestChampions: LatestChampion[] = useMemo(
     () =>
@@ -123,10 +119,6 @@ export function Overview() {
         <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
-      {/* Next season's signups, but only out of season: once a week has been played the live block
-          above lists the same 36 teams with actual results against their names, which makes a card
-          of who is in each league redundant. It comes back the moment the season is over. */}
-      {nextYear && liveTiers.length === 0 && <UpcomingLeagues year={nextYear} rosters={upcoming} />}
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Champions by Season</h2>

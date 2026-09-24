@@ -199,7 +199,8 @@ every number on Stats and Members until January. Career stats are a record of co
   member with zero completed seasons never enters that map — so a brand-new member (ffu-057,
   ffu-058) has no directory entry or detail page until the backfill. Closing that gap means feeding
   the upcoming rosters into the directory as a "Joining 2026" group; deliberately deferred.
-- The home page shows the upcoming season as a **hollow** tier dot (filled = played, ring = signed
+- The "Leagues" cards (on the home page then; the Members directory since 2026-09-24) show the
+  upcoming season as a **hollow** tier dot (filled = played, ring = signed
   up) and counts forward — "9th season", not "8 seasons" — so nothing implies a season was played.
   When 2026 is backfilled the dot fills in on its own.
 

@@ -28,7 +28,7 @@ this section is unread by me until you say so, so it's safe to leave half-formed
       ffu-057 (YAC Attack) + ffu-058 (Croatian National Team) on 2026-07-28, ffu-059 (Seymour Owls)
       + ffu-060 (Fort Wayne Warthogs) on 2026-08-07; owners owner-057…owner-060 alongside them.
       Re-run the audit if the commissioner swaps anyone in before draft day — an unmapped account
-      shows as "not listed yet" on the draft board and the home page's "2026 Leagues" section, and
+      shows as "not listed yet" on the draft board and the Members page's "2026 Leagues" cards, and
       `npm run draw-cup -- --seed 1 --dry-run` fails loudly on one.
 - [x] Abbreviations corrected per the commissioner (2026-09-09): ffu-060 Fort Wayne Warthogs
       FWW → **HOGS**, ffu-058 Croatian National Team CNT → **CRO**. `abbreviation` is a stored

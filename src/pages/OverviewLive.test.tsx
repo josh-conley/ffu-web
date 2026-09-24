@@ -62,14 +62,3 @@ it('leads with the standings the completed weeks produced', async () => {
   // One row per team, with the record and both points totals under the name (1 win, 1 loss each).
   expect(screen.getAllByText('1-1 · 210.00 PF · 200.00 PA').length).toBe(3)
 })
-
-it('drops the leagues card while the season is being played', async () => {
-  render(
-    <MemoryRouter>
-      <Overview />
-    </MemoryRouter>,
-  )
-  await waitFor(() => expect(screen.getByText(/^Standings/)).toBeInTheDocument())
-  // Who is in which league is exactly what the standings above already say.
-  expect(screen.queryByText(/^20\d\d Leagues$/)).not.toBeInTheDocument()
-})

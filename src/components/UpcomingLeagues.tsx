@@ -9,10 +9,13 @@ import { TeamLogo } from './TeamLogo'
 import { TierDots, Trophies } from './Trophies'
 
 /**
- * Next season's signups, one card per tier: who's in, and how they got there (promoted / relegated
+ * The season's signups, one card per tier: who's in, and how they got there (promoted / relegated
  * / returning / new) versus the last completed season. Movement itself is derived in the
- * `upcomingRosters` selector — this file only decides how each label looks.
+ * `upcomingRosters` selector — this file only decides how each label looks. It is the Members
+ * directory's view of the current leagues, so each row opens that member.
  */
+
+type OnSelect = (memberId: string) => void
 
 interface MovementStyle {
   label: string
@@ -66,20 +69,26 @@ function CareerTrail({ team, tier }: { team: UpcomingTeam; tier: Tier }) {
   )
 }
 
-function TeamRow({ team, year, tier }: { team: UpcomingTeam; year: string; tier: Tier }) {
+function TeamRow({ team, year, tier, onSelect }: { team: UpcomingTeam; year: string; tier: Tier; onSelect: OnSelect }) {
   // Same "First / Co-owner" rendering the Members directory uses; empty when no name is on file.
   const owners = ownerNames(team.memberId).join(' / ')
   return (
-    <li className="flex items-center gap-2 border-t border-border px-3 py-2 first:border-t-0">
-      <TeamLogo ffuId={team.memberId} size={28} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
-          {owners && <span className="shrink-0 text-[11px] text-muted">{owners}</span>}
-          <MovementTag team={team} />
+    <li className="border-t border-border first:border-t-0">
+      <button
+        type="button"
+        onClick={() => onSelect(team.memberId)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <TeamLogo ffuId={team.memberId} size={28} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>
+            {owners && <span className="shrink-0 text-[11px] text-muted">{owners}</span>}
+            <MovementTag team={team} />
+          </div>
+          <CareerTrail team={team} tier={tier} />
         </div>
-        <CareerTrail team={team} tier={tier} />
-      </div>
+      </button>
     </li>
   )
 }
@@ -94,7 +103,7 @@ function RosterFooter({ roster }: { roster: UpcomingRoster }) {
   return <p className="border-t border-border px-3 py-2 text-xs text-muted">{notes.join(' · ')}</p>
 }
 
-function RosterCard({ roster }: { roster: UpcomingRoster }) {
+function RosterCard({ roster, onSelect }: { roster: UpcomingRoster; onSelect: OnSelect }) {
   const style = LEAGUE_STYLES[roster.tier]
   const filled = roster.teams.length + roster.unregistered
   const size = filled + roster.openSlots
@@ -109,7 +118,7 @@ function RosterCard({ roster }: { roster: UpcomingRoster }) {
       </h3>
       <ul>
         {teams.map((team) => (
-          <TeamRow key={team.memberId} team={team} year={roster.year} tier={roster.tier} />
+          <TeamRow key={team.memberId} team={team} year={roster.year} tier={roster.tier} onSelect={onSelect} />
         ))}
       </ul>
       <RosterFooter roster={roster} />
@@ -117,14 +126,14 @@ function RosterCard({ roster }: { roster: UpcomingRoster }) {
   )
 }
 
-export function UpcomingLeagues({ year, rosters }: { year: string; rosters: UpcomingRoster[] }) {
+export function UpcomingLeagues({ year, rosters, onSelect }: { year: string; rosters: UpcomingRoster[]; onSelect: OnSelect }) {
   if (rosters.length === 0) return null
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{year} Leagues</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {rosters.map((roster) => (
-          <RosterCard key={roster.tier} roster={roster} />
+          <RosterCard key={roster.tier} roster={roster} onSelect={onSelect} />
         ))}
       </div>
     </section>

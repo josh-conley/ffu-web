@@ -4,7 +4,7 @@ import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
-import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingYear, type CareerStats } from '@/selectors'
+import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
 import { MemberCompare } from '@/components/MemberCompare'
@@ -67,8 +67,10 @@ export function Members() {
   // The directory groups by who is signed up for the season being played, which Sleeper knows from
   // the day the leagues are created — not by last season's finishes, which strand every promoted or
   // relegated member in the tier they just left and hide anyone who has only just joined.
-  const { rosters } = useLeagueRosters(seasons ? upcomingYear(seasons) : undefined)
+  const year = seasons ? upcomingYear(seasons) : undefined
+  const { rosters } = useLeagueRosters(year)
   const groups = useMemo(() => (seasons ? membersByLeague(seasons, rosters) : undefined), [seasons, rosters])
+  const leagues = useMemo(() => (seasons ? upcomingRosters(seasons, rosters) : []), [seasons, rosters])
   // Looked up from the GROUPS, not from careerStats, so everything the directory shows can be
   // opened — a member in their first season has no career row yet but must still be clickable.
   const careersMap = useMemo(() => (groups ? membersById(groups) : new Map<string, CareerStats>()), [groups])
@@ -100,7 +102,7 @@ export function Members() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Members</h1>
-        <MembersDirectory groups={groups} onSelect={(id) => update({ member: id, vs: '' })} />
+        <MembersDirectory groups={groups} year={year} leagues={leagues} onSelect={(id) => update({ member: id, vs: '' })} />
       </div>
     )
   }

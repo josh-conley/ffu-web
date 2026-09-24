@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { getMember, ownerNames } from '@/config'
-import { championshipTitles, type CareerStats, type MembersByLeague } from '@/selectors'
+import { championshipTitles, type CareerStats, type MembersByLeague, type UpcomingRoster } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
+import { UpcomingLeagues } from './UpcomingLeagues'
 import { Trophies } from './Trophies'
 import { TeamLogo } from './TeamLogo'
 
@@ -44,23 +45,45 @@ function PastRow({ career, onSelect }: { career: CareerStats; onSelect: (id: str
   )
 }
 
-export function MembersDirectory({ groups, onSelect }: { groups: MembersByLeague; onSelect: (ffuId: string) => void }) {
+/** Fallback for when Sleeper's rosters aren't available: the same members, one plain grid per
+ *  tier, without the movement tags and career trails that need the season's signups. */
+function TierGrids({ groups, onSelect }: { groups: MembersByLeague; onSelect: (ffuId: string) => void }) {
+  return groups.current.map(({ tier, members }) => (
+    <section key={tier} className="space-y-3">
+      <h2 className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${LEAGUE_STYLES[tier].solidHeader}`}>
+        {LEAGUE_STYLES[tier].label}
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[...members].sort(byTeamName).map((c) => (
+          <MemberCard key={c.memberId} career={c} onSelect={onSelect} />
+        ))}
+      </div>
+    </section>
+  ))
+}
+
+export function MembersDirectory({
+  groups,
+  year,
+  leagues,
+  onSelect,
+}: {
+  groups: MembersByLeague
+  /** The season being signed up for or played, and its rosters annotated with how each member got
+   *  there. Empty when Sleeper couldn't be read, which drops the directory back to `TierGrids`. */
+  year: string | undefined
+  leagues: UpcomingRoster[]
+  onSelect: (ffuId: string) => void
+}) {
   const past = useMemo(() => [...groups.past].sort(byTeamName), [groups.past])
 
   return (
     <div className="space-y-8">
-      {groups.current.map(({ tier, members }) => (
-        <section key={tier} className="space-y-3">
-          <h2 className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${LEAGUE_STYLES[tier].solidHeader}`}>
-            {LEAGUE_STYLES[tier].label}
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[...members].sort(byTeamName).map((c) => (
-              <MemberCard key={c.memberId} career={c} onSelect={onSelect} />
-            ))}
-          </div>
-        </section>
-      ))}
+      {year && leagues.length > 0 ? (
+        <UpcomingLeagues year={year} rosters={leagues} onSelect={onSelect} />
+      ) : (
+        <TierGrids groups={groups} onSelect={onSelect} />
+      )}
 
       {past.length > 0 && (
         <section className="space-y-3">

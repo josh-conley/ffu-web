@@ -31,49 +31,6 @@ it('renders champions grouped by league', async () => {
   expect(screen.getAllByText(/TBD/).length).toBe(3)
 })
 
-// Sleeper's live roster read for next season. Answers any league rosters call (the ids come from
-// LIVE_LEAGUE_IDS); assumes a season is configured there — if it ever isn't, this section is
-// genuinely gone from the page and the assertions below should be retired with it.
-it('lists next season\'s leagues with how each member got there', async () => {
-  const ROSTERS: Record<string, { roster_id: number; owner_id: string | null }[]> = {
-    // ffu-037 (Head Cow) was Masters in 2025 -> promoted; ffu-023 (Minutemen) was already Premier.
-    PREMIER: [
-      { roster_id: 1, owner_id: '865323291064291328' },
-      { roster_id: 2, owner_id: '84006772809285632' },
-      { roster_id: 3, owner_id: null }, // an unfilled slot
-    ],
-    // ffu-057 (YAC Attack) is a first-time member; ffu-012 dropped from Masters.
-    NATIONAL: [
-      { roster_id: 1, owner_id: '1380233141997809664' },
-      { roster_id: 2, owner_id: '860973514839199744' },
-    ],
-  }
-  const ids = Object.values(LIVE_LEAGUE_IDS).at(-1) as Record<Tier, string>
-  vi.stubGlobal('fetch', (url: string) => {
-    if (url.includes('/drafts')) return ok([])
-    if (url.includes(ids.PREMIER)) return ok(ROSTERS.PREMIER)
-    if (url.includes(ids.NATIONAL)) return ok(ROSTERS.NATIONAL)
-    if (url.includes('/rosters')) return ok([])
-    return FILES[url] === undefined ? notFound() : ok(FILES[url])
-  })
-
-  render(
-    <MemoryRouter>
-      <Overview />
-    </MemoryRouter>,
-  )
-
-  await waitFor(() => expect(screen.getByText(/^20\d\d Leagues$/)).toBeInTheDocument())
-  expect(screen.getByText('Head Cow Always Grazing')).toBeInTheDocument()
-  expect(screen.getByText('Tyler')).toBeInTheDocument() // the owner's name rides along with the team
-  expect(screen.getByText('Promoted')).toBeInTheDocument()
-  expect(screen.getByText('Relegated')).toBeInTheDocument()
-  expect(screen.getByText('New')).toBeInTheDocument()
-  // Members who stayed put get no tag, and unfilled seats are called out.
-  expect(screen.getAllByText('The Minutemen').length).toBeGreaterThan(0) // also a past champion
-  expect(screen.getByText(/1 pending member/)).toBeInTheDocument()
-})
-
 // Draft dates come live from Sleeper (no hand-entered config), so the page must show a date for a
 // league whose draft is set while the others still read TBD.
 it('shows a scheduled draft date and leaves unscheduled leagues TBD', async () => {
