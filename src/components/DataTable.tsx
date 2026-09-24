@@ -81,12 +81,13 @@ function DataRow<T>({
  */
 function frameClasses(fit: boolean, fullBleed: boolean, expandable: boolean) {
   return {
-    // fullBleed: frame breaks out to ~full viewport; inside, the box shrinks to the shown columns
-    // (w-fit) but stays centered with a sensible min width (≈the viewport on phones, else 32rem).
-    outer: fullBleed ? 'mx-[calc(50%-50vw+1rem)]' : '',
+    // fullBleed: frame breaks out to the full viewport on phones (edge to edge, so no side borders)
+    // and to within 1rem of it from sm up; inside, the box shrinks to the shown columns (w-fit)
+    // but stays centered with a sensible min width (the viewport on phones, else 32rem).
+    outer: fullBleed ? 'mx-[calc(50%-50vw)] sm:mx-[calc(50%-50vw+1rem)]' : '',
     // container-type so an expanded row can size to the VISIBLE width (100cqw) and wrap, rather
     // than riding the table's (possibly wider, horizontally-scrolled) width.
-    box: `${fit ? 'overflow-hidden' : 'overflow-x-auto'} border border-border bg-surface shadow-sm ${expandable ? '[container-type:inline-size]' : ''} ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full' : ''}`,
+    box: `${fit ? 'overflow-hidden' : 'overflow-x-auto'} border border-border bg-surface shadow-sm ${expandable ? '[container-type:inline-size]' : ''} ${fullBleed ? 'mx-auto w-fit min-w-[min(100%,32rem)] max-w-full max-sm:border-x-0' : ''}`,
     // fit runs a size down: three of these share one row, and the ~15% more characters per line
     // is the difference between a team name fitting and wrapping.
     table: fit ? 'w-full table-fixed text-xs' : `w-max text-sm ${fullBleed ? '' : 'min-w-full'}`,

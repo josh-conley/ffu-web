@@ -30,7 +30,9 @@ function ToggleControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>,
 function RangeControl<T>({ def, value, onChange }: { def: Extract<FilterDef<T>, { type: 'range' }>; value: string; onChange: (v: string) => void }) {
   const current = value ? Number(value) : def.min
   return (
-    <div className="flex h-11 items-center gap-2 md:h-auto">
+    // 34px at md matches a button's height there (as DualRangeSlider does), so the slider lines up
+    // with a toggle beside it instead of sitting below its middle.
+    <div className="flex h-11 items-center gap-2 md:h-[34px]">
       <input
         type="range"
         aria-label={def.label}

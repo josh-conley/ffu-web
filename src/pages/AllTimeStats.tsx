@@ -21,9 +21,11 @@ const LEAGUE_OPTIONS = [
   ...(['PREMIER', 'MASTERS', 'NATIONAL'] as const).map((t) => ({ value: t, label: LEAGUE_STYLES[t].label })),
 ]
 
+// Plain inline text, not a flex row: in a flex row every run of text becomes its own column, which
+// on a phone split this sentence into three ragged stacks.
 const REORDER_HINT = (
-  <p className="flex items-center gap-1.5 text-xs text-muted">
-    <FaArrowsLeftRight className="shrink-0 text-accent" aria-hidden />
+  <p className="text-xs text-muted">
+    <FaArrowsLeftRight className="mr-1.5 inline align-[-2px] text-accent" aria-hidden />
     Drag the column headers to reorder them, and use the <strong className="text-text">Columns</strong> button to show or hide any column.
   </p>
 )
@@ -77,25 +79,31 @@ export function AllTimeStats() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight">All-Time Stats</h1>
-      <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
-          <select className={`${SELECT} w-full sm:w-44`} value={league} onChange={(e) => setLeague(e.target.value)} aria-label="League">
-            {LEAGUE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </label>
-        <YearRange years={years} fromYear={range.fromYear} toYear={range.toYear} onFrom={range.setFrom} onTo={range.setTo} />
-        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} showClear={false} />
-        <div className="ml-auto flex items-center gap-2">
-          {dirty && (
-            <button type="button" onClick={resetAll} className={segButton(false)}>
-              Reset all
-            </button>
-          )}
-          <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={resetVisibility} onHideAll={hideAll} onResetOrder={resetOrder} orderCustomized={orderCustomized} locked={['team']} />
+      {/* Two rows at every width: scope (League, Years) with the actions, then the filters. On a
+          phone Years drops under League so the actions can stay beside it. */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">League</span>
+            <select className={`${SELECT} w-full sm:w-44`} value={league} onChange={(e) => setLeague(e.target.value)} aria-label="League">
+              {LEAGUE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+          <div className="order-last w-full sm:order-none sm:w-auto">
+            <YearRange years={years} fromYear={range.fromYear} toYear={range.toYear} onFrom={range.setFrom} onTo={range.setTo} />
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            {dirty && (
+              <button type="button" onClick={resetAll} className={segButton(false)}>
+                Reset all
+              </button>
+            )}
+            <ColumnChooser options={columnOptions} hidden={hidden} onToggle={toggle} onReset={resetVisibility} onHideAll={hideAll} onResetOrder={resetOrder} orderCustomized={orderCustomized} locked={['team']} />
+          </div>
         </div>
+        <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} showClear={false} />
       </div>
       {REORDER_HINT}
       {filtered.length === 0 ? (
