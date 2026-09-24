@@ -1,5 +1,6 @@
 import type { Tier } from '@/config/types'
-import type { DraftData, SeasonLineups } from '@/data'
+import { CUP_INAUGURAL_YEAR } from '@/config'
+import type { DraftData, SeasonLineups, Tournament } from '@/data'
 import { provider } from '@/data'
 import { useAsyncData } from './useAsyncData'
 
@@ -94,6 +95,47 @@ export function useLineups(tier: Tier, year: string, enabled = true) {
 /** The shared player id → name/position/team map (one fetch, cached by the provider). */
 export function usePlayers(enabled = true) {
   return useAsyncData('players', () => provider.getPlayers(), enabled)
+}
+
+/**
+ * Every season's FFU Cup, for career views whose prize money includes it. Asks only for the years
+ * from the Cup's first season on, rather than probing every year the manifest lists; a year whose
+ * Cup file isn't published yet simply has none.
+ */
+export function useAllTournaments() {
+  const { data: manifest, loading, error } = useSeasons()
+  const all = useAsyncData(
+    'all-tournaments',
+    async () => {
+      const years = [...new Set((manifest ?? []).map((s) => s.year))].filter((y) => Number(y) >= Number(CUP_INAUGURAL_YEAR))
+      const loaded = await Promise.all(years.map((y) => provider.getTournament(y)))
+      return loaded.filter((t): t is Tournament => t !== null)
+    },
+    manifest !== undefined,
+  )
+  return {
+    data: all.data,
+    loading: loading || (manifest !== undefined && all.loading),
+    error: error ?? all.error,
+  }
+}
+
+const NO_TOURNAMENTS: Tournament[] = []
+
+/**
+ * Every season plus every Cup: what career prize money is computed from (see careerWinnings). One
+ * loading and error for the pair, so a page can never render winnings that are missing their Cup
+ * money while the tournaments are still on their way.
+ */
+export function useCareerData() {
+  const seasons = useAllSeasons()
+  const cups = useAllTournaments()
+  return {
+    seasons: seasons.data,
+    tournaments: cups.data ?? NO_TOURNAMENTS,
+    loading: seasons.loading || cups.loading,
+    error: seasons.error ?? cups.error,
+  }
 }
 
 /** A year's cross-tier tournament (null when none is defined for that year). */

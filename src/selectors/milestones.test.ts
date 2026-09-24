@@ -42,7 +42,7 @@ describe('milestoneStandings', () => {
     season('2025', [team('a', 25, 5_000), team('b', 5, 1_000)]),
   ]
   const forMember = (id: string, category: string) =>
-    milestoneStandings(seasons).find((s) => s.memberId === id && s.category === category)!
+    milestoneStandings(seasons, []).find((s) => s.memberId === id && s.category === category)!
 
   it('sums career totals and finds the next milestone', () => {
     const pf = forMember('a', 'pointsFor')
@@ -104,7 +104,7 @@ describe('milestonesReachedRecently', () => {
   const seasons = [past, current]
 
   it('reports each threshold crossed in week 1 alone, never reaching back a season', () => {
-    expect(milestonesReachedRecently(seasons, '2031', 1)).toEqual([
+    expect(milestonesReachedRecently(seasons, [], '2031', 1)).toEqual([
       { memberId: 'a', category: 'pointsFor', milestone: 10_000, week: 1, value: 10_050 },
       { memberId: 'a', category: 'wins', milestone: 50, week: 1, value: 50 },
       // Landing exactly on a milestone counts as reaching it (9,900 against + 100).
@@ -113,7 +113,7 @@ describe('milestonesReachedRecently', () => {
   })
 
   it('keeps a milestone up for the week after, newest week first, with the total as it stands now', () => {
-    const recent = milestonesReachedRecently(seasons, '2031', 3)
+    const recent = milestonesReachedRecently(seasons, [], '2031', 3)
     expect(recent.map((r) => [r.week, r.memberId, r.category, r.milestone])).toEqual([
       [3, 'b', 'pointsFor', 15_000],
       [2, 'b', 'pointsAgainst', 15_000], // 14,700 against + 150 a week
@@ -122,7 +122,7 @@ describe('milestonesReachedRecently', () => {
   })
 
   it('drops a milestone once it is more than the window old', () => {
-    expect(milestonesReachedRecently(seasons, '2031', 4).map((r) => r.week)).toEqual([3])
+    expect(milestonesReachedRecently(seasons, [], '2031', 4).map((r) => r.week)).toEqual([3])
   })
 })
 

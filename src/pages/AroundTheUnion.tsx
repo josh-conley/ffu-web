@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { SeasonData } from '@/data'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import type { SeasonData, Tournament } from '@/data'
+import { useCareerData } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import {
   activeStreaks,
@@ -46,8 +46,8 @@ const LAYOUTS: [BoardLayout, string][] = [
  */
 /** The closest career marks, whatever category they're in — a short list, not a table per category
  *  (that's the Milestones page). */
-function closestMilestones(seasons: SeasonData[], limit = 5): MilestoneStanding[] {
-  return [...milestoneWatch(milestoneStandings(seasons)).values()]
+function closestMilestones(seasons: SeasonData[], tournaments: Tournament[], limit = 5): MilestoneStanding[] {
+  return [...milestoneWatch(milestoneStandings(seasons, tournaments)).values()]
     .flat()
     .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0))
     .slice(0, limit)
@@ -55,6 +55,7 @@ function closestMilestones(seasons: SeasonData[], limit = 5): MilestoneStanding[
 
 function WeekBlocks({
   seasons,
+  tournaments,
   yearSeasons,
   year,
   week,
@@ -62,6 +63,8 @@ function WeekBlocks({
 }: {
   /** Every season — the belt's lineage and career milestones both run past this year. */
   seasons: SeasonData[]
+  /** Every season's Cup, whose prize money counts toward career earnings milestones. */
+  tournaments: Tournament[]
   yearSeasons: SeasonData[]
   year: string
   week: number | undefined
@@ -78,12 +81,12 @@ function WeekBlocks({
   // Both as of the week on show, so an author browsing back to week 5 sees week 5's milestone news
   // and week 5's watch list, not today's.
   const milestones = useMemo(
-    () => closestMilestones(week === undefined ? seasons : seasonsThroughWeek(seasons, year, week)),
-    [seasons, year, week],
+    () => closestMilestones(week === undefined ? seasons : seasonsThroughWeek(seasons, year, week), tournaments),
+    [seasons, tournaments, year, week],
   )
   const reached = useMemo(
-    () => (week === undefined ? [] : milestonesReachedRecently(seasons, year, week)),
-    [seasons, year, week],
+    () => (week === undefined ? [] : milestonesReachedRecently(seasons, tournaments, year, week)),
+    [seasons, tournaments, year, week],
   )
 
   // One file name per block, so a folder of downloads says which is which.
@@ -132,7 +135,7 @@ function WeekBlocks({
  * lands here when the Tuesday refresh Action commits it, which is the same morning the week ends.
  */
 export function AroundTheUnion() {
-  const { data: seasons, loading, error } = useAllSeasons()
+  const { seasons, tournaments, loading, error } = useCareerData()
   const [weekParam, setWeek] = useUrlState('week', '')
   // In the URL so the commissioner can bookmark the layout he actually screenshots.
   const [layoutParam, setLayout] = useUrlState('layout', 'standard')
@@ -181,7 +184,7 @@ export function AroundTheUnion() {
       {year === undefined ? (
         <ErrorMessage error="No season has been played yet." />
       ) : (
-        <WeekBlocks seasons={seasons} yearSeasons={yearSeasons} year={year} week={week} layout={layout} />
+        <WeekBlocks seasons={seasons} tournaments={tournaments} yearSeasons={yearSeasons} year={year} week={week} layout={layout} />
       )}
     </div>
   )

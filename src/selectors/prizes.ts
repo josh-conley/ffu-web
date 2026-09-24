@@ -1,13 +1,15 @@
 import type { Tier } from '@/config'
-import { getPrizeSchedule, type CrossLeagueSchedule, type CrossUnionSchedule, type CupPrizeSchedule, type CupRoundKey, type TierPrizeSchedule } from '@/config'
-import type { SeasonData } from '@/data'
+import { getPrizeSchedule, isCupRoundKey, type CrossLeagueSchedule, type CrossUnionSchedule, type CupPrizeSchedule, type CupRoundKey, type TierPrizeSchedule } from '@/config'
+import type { SeasonData, Tournament } from '@/data'
 import { regularSeasonComplete, regularSeasonTotals, winnerOf } from './games'
 import { divisionWinnerIds } from './standings'
+import { resolveTournament, type ResolvedRound, type SeasonsByTier } from './tournament'
 
 // Career prize winnings — DERIVED, never stored. The published payout amounts live in config
 // (config/prizes.ts); here we work out WHO won each category from the season's results and multiply
 // through. Cross-union/cross-league prizes compare across every tier in a year, so this operates on
-// the full season set (grouped by year), not one tier in isolation.
+// the full season set (grouped by year), not one tier in isolation. FFU Cup prizes come from the
+// year's tournament, resolved against those same seasons, so they land the week each round is played.
 //
 // Mid-season, only SETTLED money is paid: placements need a final placing, and the season-long
 // categories (division titles, most points, highest floor, highest score in a loss, and the
@@ -175,8 +177,38 @@ function applyCrossLeague(result: Map<string, Winnings>, metrics: TierMetrics[],
   award(result, top.memberIds, top.tier, sched.mostLeaguewidePoints)
 }
 
-/** Career winnings per member across all seasons (years without a published schedule are skipped). */
-export function careerWinnings(seasons: SeasonData[]): Map<string, Winnings> {
+/**
+ * The FFU Cup pays each team that wins a round AND advances out of it, keyed by that round. The
+ * lowest-scoring winner a round sheds (`dropped`) won but did not advance, so is not paid; the
+ * final's winner has nowhere to advance to and is paid the final's amount. A round nobody has
+ * played yet has no winners, so a Cup pays out one round at a time as the weeks land.
+ */
+function applyCup(result: Map<string, Winnings>, tournament: Tournament, seasons: SeasonData[]): void {
+  const amounts = getPrizeSchedule(tournament.year)?.cup
+  if (!amounts) return
+  const seasonsByTier: SeasonsByTier = {}
+  for (const s of seasons) if (s.year === tournament.year) seasonsByTier[s.tier] = s
+  for (const round of resolveTournament(tournament, seasonsByTier).rounds) {
+    const amount = isCupRoundKey(round.key) ? amounts[round.key] : undefined
+    if (amount) for (const side of advancedOutOf(round)) add(result, side.memberId, side.tier, amount)
+  }
+}
+
+/** The teams that won their game in `round` and were not then shed from its winners. */
+function advancedOutOf(round: ResolvedRound): { memberId: string; tier: Tier }[] {
+  const dropped = new Set(round.dropped.map((d) => d.ffuId))
+  return round.matchups.flatMap((m) => {
+    const side = m.winner === m.a.ffuId ? m.a : m.winner === m.b.ffuId ? m.b : undefined
+    return side && !dropped.has(side.ffuId) ? [{ memberId: side.ffuId, tier: side.tier }] : []
+  })
+}
+
+/**
+ * Career winnings per member across all seasons (years without a published schedule are skipped).
+ * `tournaments` is required, not defaulted: a caller that forgot it would quietly under-pay every
+ * Cup winner, which is exactly the kind of wrong number nobody notices.
+ */
+export function careerWinnings(seasons: SeasonData[], tournaments: Tournament[]): Map<string, Winnings> {
   const result = new Map<string, Winnings>()
   const byYear = new Map<string, SeasonData[]>()
   for (const s of seasons) {
@@ -195,6 +227,7 @@ export function careerWinnings(seasons: SeasonData[]): Map<string, Winnings> {
     if (sched.crossUnion) applyCrossUnion(result, metrics, sched.crossUnion)
     if (sched.crossLeague) applyCrossLeague(result, metrics, sched.crossLeague)
   }
+  for (const tournament of tournaments) applyCup(result, tournament, seasons)
   return result
 }
 

@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { FaArrowsLeftRight } from 'react-icons/fa6'
-import { useAllLineups, useAllSeasons, usePlayers } from '@/hooks/useLeagueData'
+import { useAllLineups, useCareerData, usePlayers } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useFilters, type FilterDef } from '@/hooks/useFilters'
 import { useManagedColumns } from '@/hooks/useManagedColumns'
 import { careerEfficiency, careerStats, careerUpr, careerWinnings, type CareerEfficiency, type CareerStats } from '@/selectors'
 import type { Tier } from '@/config'
-import type { SeasonData } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import { DataTable } from '@/components/DataTable'
 import { FilterBar } from '@/components/FilterBar'
 import { StatDefs } from '@/components/StatDefs'
@@ -40,8 +40,8 @@ const EFFICIENCY_DEFS = (
 
 // Winnings are computed over the FULL season set (cross-union/cross-league prizes compare across
 // every tier), then scoped: 'ALL' shows the career total, a league shows only that tier's share.
-function useScopedWinnings(seasons: SeasonData[] | undefined, league: string): Map<string, number> {
-  const all = useMemo(() => careerWinnings(seasons ?? []), [seasons])
+function useScopedWinnings(seasons: SeasonData[] | undefined, tournaments: Tournament[], league: string): Map<string, number> {
+  const all = useMemo(() => careerWinnings(seasons ?? [], tournaments), [seasons, tournaments])
   return useMemo(() => {
     const scoped = new Map<string, number>()
     for (const [id, w] of all) scoped.set(id, league === 'ALL' ? w.total : (w.byTier[league as Tier] ?? 0))
@@ -54,7 +54,7 @@ const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; h
   p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
 
 export function AllTimeStats() {
-  const { data: seasons, loading, error } = useAllSeasons()
+  const { seasons, tournaments, loading, error } = useCareerData()
   // League scopes the underlying seasons, so the table shows stats earned WITHIN that tier (not
   // all-time stats for anyone who happened to play it once). 'ALL' = full career across tiers.
   const [league, setLeague] = useUrlState('league', 'ALL')
@@ -72,7 +72,7 @@ export function AllTimeStats() {
     const scopedLineups = league === 'ALL' ? lineups.data : lineups.data.filter((l) => l.tier === league)
     return careerEfficiency(scopedLineups, players.data)
   }, [lineups.data, players.data, league])
-  const winnings = useScopedWinnings(seasons, league)
+  const winnings = useScopedWinnings(seasons, tournaments, league)
   const columns = useMemo(() => buildColumns(upr, eff, winnings), [upr, eff, winnings])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')

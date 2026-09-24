@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useCareerData } from '@/hooks/useLeagueData'
 import {
   MILESTONES,
   MILESTONE_CATEGORIES,
@@ -77,13 +77,13 @@ function JustReached({ year, reached }: { year: string; reached: MilestoneReache
  * shows, so the two can never disagree; nothing about milestones is stored.
  */
 export function Milestones() {
-  const { data: seasons, loading, error } = useAllSeasons()
-  const standings = useMemo(() => (seasons ? milestoneStandings(seasons) : []), [seasons])
+  const { seasons, tournaments, loading, error } = useCareerData()
+  const standings = useMemo(() => (seasons ? milestoneStandings(seasons, tournaments) : []), [seasons, tournaments])
   const watch = useMemo(() => milestoneWatch(standings), [standings])
   const news = useMemo(() => (seasons ? milestoneNewsWeek(seasons) : undefined), [seasons])
   const reached = useMemo(
-    () => (seasons && news ? milestonesReachedRecently(seasons, news.year, news.week) : []),
-    [seasons, news],
+    () => (seasons && news ? milestonesReachedRecently(seasons, tournaments, news.year, news.week) : []),
+    [seasons, tournaments, news],
   )
 
   if (loading) return <LoadingSpinner />

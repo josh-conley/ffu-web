@@ -1,4 +1,4 @@
-import type { SeasonData } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import { aroundTheUnionYear, latestUnionWeek } from './aroundTheUnion'
 import { careerStats } from './career'
 import { careerWinnings } from './prizes'
@@ -62,9 +62,9 @@ interface CareerTotals {
 }
 
 /** Career totals per member for the seasons given — the four numbers the milestones track. */
-function totalsFor(seasons: SeasonData[]): Map<string, CareerTotals> {
+function totalsFor(seasons: SeasonData[], tournaments: Tournament[]): Map<string, CareerTotals> {
   const careers = careerStats(seasons)
-  const winnings = careerWinnings(seasons)
+  const winnings = careerWinnings(seasons, tournaments)
   const out = new Map<string, CareerTotals>()
   for (const [memberId, c] of careers) {
     out.set(memberId, {
@@ -85,14 +85,14 @@ function totalsFor(seasons: SeasonData[]): Map<string, CareerTotals> {
  * totals then come from exactly the same selectors the rest of the site uses, so "hit 10,000 in
  * 2024" can never drift from the career figure shown beside it. Nine passes over a small dataset.
  */
-function achievementsByYear(seasons: SeasonData[]): Map<string, MilestoneAchievement[]> {
+function achievementsByYear(seasons: SeasonData[], tournaments: Tournament[]): Map<string, MilestoneAchievement[]> {
   const years = [...new Set(seasons.map((s) => s.year))].sort()
   const out = new Map<string, MilestoneAchievement[]>()
   const reached = new Map<string, Set<number>>() // `${memberId}|${category}` -> thresholds seen
 
   for (const year of years) {
     const upTo = seasons.filter((s) => Number(s.year) <= Number(year))
-    for (const [memberId, totals] of totalsFor(upTo)) {
+    for (const [memberId, totals] of totalsFor(upTo, tournaments)) {
       for (const category of MILESTONE_CATEGORIES) {
         const key = `${memberId}|${category}`
         const seen = reached.get(key) ?? new Set<number>()
@@ -117,10 +117,10 @@ export function bandFor(value: number, milestones: number[]): Pick<MilestoneStan
 }
 
 /** Every member's standing in every category. */
-export function milestoneStandings(seasons: SeasonData[]): MilestoneStanding[] {
-  const achievements = achievementsByYear(seasons)
+export function milestoneStandings(seasons: SeasonData[], tournaments: Tournament[]): MilestoneStanding[] {
+  const achievements = achievementsByYear(seasons, tournaments)
   const out: MilestoneStanding[] = []
-  for (const [memberId, totals] of totalsFor(seasons)) {
+  for (const [memberId, totals] of totalsFor(seasons, tournaments)) {
     for (const category of MILESTONE_CATEGORIES) {
       const value = valueOf(totals, category)
       out.push({
@@ -199,10 +199,15 @@ function crossed(
  * latest completed week, so a milestone stays up for that many weeks and then drops off. The window
  * never reaches back into the previous season: week 1 reports week 1 alone.
  */
-export function milestonesReachedRecently(seasons: SeasonData[], year: string, week: number): MilestoneReached[] {
+export function milestonesReachedRecently(
+  seasons: SeasonData[],
+  tournaments: Tournament[],
+  year: string,
+  week: number,
+): MilestoneReached[] {
   const first = Math.max(1, week - RECENT_WEEKS + 1)
   const through = new Map<number, Map<string, CareerTotals>>()
-  for (let w = first - 1; w <= week; w++) through.set(w, totalsFor(seasonsThroughWeek(seasons, year, w)))
+  for (let w = first - 1; w <= week; w++) through.set(w, totalsFor(seasonsThroughWeek(seasons, year, w), tournaments))
   const at = (w: number) => through.get(w) ?? new Map<string, CareerTotals>()
   const out: MilestoneReached[] = []
   for (let w = week; w >= first; w--) out.push(...crossed(at(w - 1), at(w), at(week), w))

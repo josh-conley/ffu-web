@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import type { SeasonData } from '@/data'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import type { SeasonData, Tournament } from '@/data'
+import { useCareerData } from '@/hooks/useLeagueData'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
@@ -17,6 +17,7 @@ function SelectedMember({
   selected,
   opponent,
   seasons,
+  tournaments,
   memberIds,
   vs,
   onBack,
@@ -25,6 +26,7 @@ function SelectedMember({
   selected: CareerStats
   opponent: CareerStats | undefined
   seasons: SeasonData[]
+  tournaments: Tournament[]
   memberIds: string[]
   vs: string
   onBack: () => void
@@ -32,7 +34,7 @@ function SelectedMember({
 }) {
   // Computed here (not in Members) to keep that function under the complexity cap. Career total
   // across every league — the All-Time figure; cross-tier prizes are already summed in.
-  const winnings = useMemo(() => careerWinnings(seasons), [seasons])
+  const winnings = useMemo(() => careerWinnings(seasons, tournaments), [seasons, tournaments])
   const totalFor = (id: string) => winnings.get(id)?.total ?? 0
   return (
     <div className="space-y-6">
@@ -62,7 +64,7 @@ function SelectedMember({
 }
 
 export function Members() {
-  const { data: seasons, loading, error } = useAllSeasons()
+  const { seasons, tournaments, loading, error } = useCareerData()
   const [params, setParams] = useSearchParams()
   // The directory groups by who is signed up for the season being played, which Sleeper knows from
   // the day the leagues are created — not by last season's finishes, which strand every promoted or
@@ -112,6 +114,7 @@ export function Members() {
       selected={selected}
       opponent={vs === '' ? undefined : careersMap.get(vs)}
       seasons={seasons}
+      tournaments={tournaments}
       memberIds={memberIds}
       vs={vs}
       onBack={() => update({ member: '', vs: '' })}
