@@ -4,6 +4,7 @@ import type { SeasonData, Tournament } from '@/data'
 import { useCareerData } from '@/hooks/useLeagueData'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
+import { useUpdateUrlParams } from '@/hooks/useUrlState'
 import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
@@ -65,7 +66,7 @@ function SelectedMember({
 
 export function Members() {
   const { seasons, tournaments, loading, error } = useCareerData()
-  const [params, setParams] = useSearchParams()
+  const [params] = useSearchParams()
   // The directory groups by who is signed up for the season being played, which Sleeper knows from
   // the day the leagues are created — not by last season's finishes, which strand every promoted or
   // relegated member in the tier they just left and hide anyone who has only just joined.
@@ -83,18 +84,9 @@ export function Members() {
   const vs = params.get('vs') ?? ''
   // Opening (or leaving) a member swaps the whole view without a route change — start at the top.
   useScrollToTop(member)
+  const updateParams = useUpdateUrlParams()
   const update = (changes: Record<string, string>) =>
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        for (const [k, v] of Object.entries(changes)) {
-          if (v) next.set(k, v)
-          else next.delete(k)
-        }
-        return next
-      },
-      { replace: true },
-    )
+    updateParams(Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v || null])))
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons || !groups) return <ErrorMessage error={error ?? 'No data'} />

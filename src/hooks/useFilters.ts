@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useUpdateUrlParams } from './useUrlState'
 
 // A small reusable filter layer (Charter DRY): declare typed FilterDefs per view; the hook keeps
 // the active values in the URL (shareable, like the rest of the app) and applies the predicates.
@@ -96,7 +97,8 @@ export interface FilterControls<T> {
 
 /** URL-driven filtering over `rows` for the given `defs`. Memoize `defs` in the caller. */
 export function useFilters<T>(defs: FilterDef<T>[], rows: T[]): FilterControls<T> {
-  const [params, setParams] = useSearchParams()
+  const [params] = useSearchParams()
+  const update = useUpdateUrlParams()
 
   const values = useMemo(() => {
     const v: Record<string, string> = {}
@@ -109,31 +111,9 @@ export function useFilters<T>(defs: FilterDef<T>[], rows: T[]): FilterControls<T
 
   const filtered = useMemo(() => applyFilters(defs, values, rows), [defs, values, rows])
 
-  const setValue = useCallback(
-    (key: string, value: string) => {
-      setParams(
-        (prev) => {
-          const next = new URLSearchParams(prev)
-          if (value) next.set(key, value)
-          else next.delete(key)
-          return next
-        },
-        { replace: true },
-      )
-    },
-    [setParams],
-  )
+  const setValue = useCallback((key: string, value: string) => update({ [key]: value || null }), [update])
 
-  const clear = useCallback(() => {
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        for (const def of defs) next.delete(def.key)
-        return next
-      },
-      { replace: true },
-    )
-  }, [setParams, defs])
+  const clear = useCallback(() => update(Object.fromEntries(defs.map((def) => [def.key, null]))), [update, defs])
 
   return { rows: filtered, values, setValue, clear, activeCount: Object.keys(values).length }
 }

@@ -62,5 +62,16 @@ it('leaves the Union view when a league is picked', async () => {
   await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(37))
   await userEvent.click(screen.getByRole('button', { name: 'Masters' }))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Union' })).toHaveAttribute('aria-pressed', 'false'))
+  // …and lands on the league picked, not back on Premier: leaving the Union and choosing the tier
+  // are two URL writes from one click, and the second used to undo the first.
+  expect(screen.getByRole('button', { name: 'Masters' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getAllByRole('row').length).toBeLessThan(37)
+})
+
+it('switches between leagues', async () => {
+  renderAt('/standings?year=2025')
+  await waitFor(() => expect(screen.getByText('Diamond')).toBeInTheDocument())
+  await userEvent.click(screen.getByRole('button', { name: 'National' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'National' })).toHaveAttribute('aria-pressed', 'true'))
+  expect(screen.queryByText('Diamond')).not.toBeInTheDocument() // Premier's divisions are gone
 })
