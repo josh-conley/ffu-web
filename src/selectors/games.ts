@@ -1,3 +1,4 @@
+import { regularSeasonWeeks } from '@/config'
 import type { Game, ScheduledGame, SeasonData } from '@/data'
 
 // Per-game derivations + regular-season aggregation. This is the base "derive winners/records/
@@ -15,6 +16,21 @@ import type { Game, ScheduledGame, SeasonData } from '@/data'
 export function hasBeenPlayed(season: SeasonData): boolean {
   if (season.games.length > 0) return true
   return season.teams.some((t) => t.record.wins + t.record.losses + t.record.ties > 0)
+}
+
+/**
+ * Is the regular season over? Anything awarded on the WHOLE regular season — a division title, most
+ * points, highest floor — is only decided then; before it, the "winner" is just whoever leads this
+ * week and may not by the next.
+ *
+ * Over once every regular-season week has results. A final placing or a playoff game proves it too,
+ * which is what settles the ESPN-era files that carry records without per-game rows.
+ */
+export function regularSeasonComplete(season: SeasonData): boolean {
+  if (season.teams.some((t) => t.finalPlacement !== undefined)) return true
+  if (season.games.some((g) => g.isPlayoff)) return true
+  const played = new Set(season.games.map((g) => g.week))
+  return regularSeasonWeeks(season.era).every((week) => played.has(week))
 }
 
 export function isTie(game: Game): boolean {

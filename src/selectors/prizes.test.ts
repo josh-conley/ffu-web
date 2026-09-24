@@ -83,6 +83,39 @@ describe('careerWinnings — cross-union + cross-league (2024, two tiers)', () =
   })
 })
 
+describe('careerWinnings — a season still being played', () => {
+  // Two weeks into 2025, two tiers. Only the weekly high scores are settled; the division title,
+  // most points, floor, score-in-loss and every cross-union / cross-league season prize are still
+  // just "who leads right now", so none of them may be paid.
+  const live = (over: Partial<SeasonTeam>) => ({ ...team('x', 0), ...over, finalPlacement: undefined }) as SeasonTeam
+  const premier = season({
+    tier: 'PREMIER' as Tier,
+    year: '2025',
+    divisions: [{ id: 1, name: 'D1' }],
+    teams: [live({ memberId: 'p1', divisionId: 1, record: { wins: 2, losses: 0, ties: 0 } }), live({ memberId: 'p2', divisionId: 1, record: { wins: 0, losses: 2, ties: 0 } })],
+    games: [game(1, 'p1', 150, 'p2', 140), game(2, 'p1', 130, 'p2', 120)],
+  })
+  const national = season({
+    tier: 'NATIONAL' as Tier,
+    year: '2025',
+    teams: [live({ memberId: 'n1' }), live({ memberId: 'n2' })],
+    games: [game(1, 'n1', 100, 'n2', 90), game(2, 'n1', 145, 'n2', 90)],
+  })
+  const w = careerWinnings([premier, national])
+
+  it('pays each week\'s high scores as the weeks land', () => {
+    // p1: Premier weekly high ×2 ($10 each) + union weekly high in week 1 ($10) = 30
+    expect(w.get('p1')?.total).toBe(30)
+    // n1 has the union's best week-2 score (145 > 130); National has no tier weekly prize.
+    expect(w.get('n1')?.total).toBe(10)
+  })
+
+  it('pays nothing decided over the whole regular season', () => {
+    expect(w.has('p2')).toBe(false) // would be $10 cross-league if Premier's points lead counted
+    expect(w.has('n2')).toBe(false)
+  })
+})
+
 describe('cupWinnerPurse', () => {
   const keys = ['r36', 'r18', 'r8', 'r4', 'final'] as const
 

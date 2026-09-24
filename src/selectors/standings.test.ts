@@ -116,6 +116,20 @@ describe('divisionWinnerIds (pennants)', () => {
     expect(divisionWinnerIds({ teams, games: [] } as unknown as SeasonData).size).toBe(0)
   })
 
+  it('awards nobody a pennant while the regular season is still being played', () => {
+    // Leading a division after week 1 is not winning it.
+    const season = {
+      era: 'sleeper',
+      divisions: [{ id: 1, name: 'A' }],
+      teams: [
+        { memberId: 'a', divisionId: 1, record: { wins: 1, losses: 0, ties: 0 }, points: { for: 120, against: 100 }, promoted: false, relegated: false },
+        { memberId: 'b', divisionId: 1, record: { wins: 0, losses: 1, ties: 0 }, points: { for: 100, against: 120 }, promoted: false, relegated: false },
+      ],
+      games: [{ week: 1, isPlayoff: false, participants: [{ memberId: 'a', score: 120 }, { memberId: 'b', score: 100 }] }],
+    } as unknown as SeasonData
+    expect(divisionWinnerIds(season).size).toBe(0)
+  })
+
   it('finds one winner per division in real (backfilled) 2020 National', () => {
     expect(divisionWinnerIds(national2020 as unknown as SeasonData).size).toBe(4)
   })

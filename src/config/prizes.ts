@@ -119,10 +119,15 @@ const PRIZE_SCHEDULES: Record<string, SeasonPrizeSchedule> = {
     crossUnion: { weeklyHighScore: 10, mostPoints: 40, highestFloor: 30, highestScoreInLoss: 30 },
     crossLeague: { mostLeaguewidePoints: 10 },
   },
-  // 2026 carries ONLY the Cup so far. `tiers` is deliberately empty until the commissioner posts
-  // the season's prizes.txt — do not read this entry's existence as "2026 prizes are transcribed".
+  // 2026 repeats 2025's league, cross-union and cross-league amounts, and adds the Cup.
   '2026': {
-    tiers: {},
+    tiers: {
+      PREMIER: { champion: 500, runnerUp: 200, third: 90, divisionChamp: 40, mostPoints: 70, highestFloor: 20, highestScoreInLoss: 20, weeklyHighScore: 10 },
+      MASTERS: { champion: 300, runnerUp: 125, third: 70, divisionChamp: 20, mostPoints: 50, highestFloor: 20, highestScoreInLoss: 20, weeklyHighScore: 5 },
+      NATIONAL: { champion: 200, runnerUp: 90, third: 50, divisionChamp: 20, mostPoints: 40, highestFloor: 20, highestScoreInLoss: 20 },
+    },
+    crossUnion: { weeklyHighScore: 10, mostPoints: 40, highestFloor: 30, highestScoreInLoss: 30 },
+    crossLeague: { mostLeaguewidePoints: 10 },
     // Keyed by the round a team wins to earn it. Note the amendment pays for winning AND advancing,
     // so the Round of 18's lowest-scoring winner — who wins but is eliminated — is not paid.
     cup: { r36: 10, r18: 20, r8: 40, r4: 60, final: 100 },

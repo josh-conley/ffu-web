@@ -1,13 +1,19 @@
 import type { Tier } from '@/config'
 import { getPrizeSchedule, type CrossLeagueSchedule, type CrossUnionSchedule, type CupPrizeSchedule, type CupRoundKey, type TierPrizeSchedule } from '@/config'
 import type { SeasonData } from '@/data'
-import { regularSeasonTotals, winnerOf } from './games'
+import { regularSeasonComplete, regularSeasonTotals, winnerOf } from './games'
 import { divisionWinnerIds } from './standings'
 
 // Career prize winnings — DERIVED, never stored. The published payout amounts live in config
 // (config/prizes.ts); here we work out WHO won each category from the season's results and multiply
 // through. Cross-union/cross-league prizes compare across every tier in a year, so this operates on
 // the full season set (grouped by year), not one tier in isolation.
+//
+// Mid-season, only SETTLED money is paid: placements need a final placing, and the season-long
+// categories (division titles, most points, highest floor, highest score in a loss, and the
+// cross-union / cross-league versions) wait for the regular season to finish — until then their
+// "winner" is just this week's leader. A weekly high score is settled the week it's scored, so it
+// is paid as each week lands; that is what moves career winnings during the season.
 //
 // Tie handling: when teams tie for a category (same high score, same floor, …) every tied team is
 // paid the full amount — mirroring how shared division pennants are credited. Rare; small effect.
@@ -35,7 +41,11 @@ interface TierMetrics {
   weekly: Award[]
   pointsSum: number
   memberIds: string[]
+  /** Regular season over — the season-long categories above are decided, not provisional. */
+  settled: boolean
 }
+
+const NO_AWARD: Award = { memberIds: [], value: -Infinity }
 
 /** Argmax over entries, keeping every tied member. Empty entries → no winners. */
 function maxAward(entries: { memberId: string; value: number }[]): Award {
@@ -84,18 +94,21 @@ function placement(season: SeasonData, rank: number): string | undefined {
 
 function tierMetrics(season: SeasonData): TierMetrics {
   const totals = [...regularSeasonTotals(season).values()]
+  const settled = regularSeasonComplete(season)
+  const seasonLong = (award: () => Award) => (settled ? award() : NO_AWARD)
   return {
     tier: season.tier,
     champion: placement(season, 1),
     runnerUp: placement(season, 2),
     third: placement(season, 3),
     divisionWinners: [...divisionWinnerIds(season)],
-    mostPoints: maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.pointsFor }))),
-    highestFloor: maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.low }))),
-    highestScoreInLoss: scoreInLossAward(season),
+    mostPoints: seasonLong(() => maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.pointsFor })))),
+    highestFloor: seasonLong(() => maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.low })))),
+    highestScoreInLoss: seasonLong(() => scoreInLossAward(season)),
     weekly: weeklyHighs(season),
     pointsSum: totals.reduce((sum, t) => sum + t.pointsFor, 0),
     memberIds: totals.map((t) => t.memberId),
+    settled,
   }
 }
 
@@ -141,9 +154,13 @@ function applyCrossUnion(result: Map<string, Winnings>, metrics: TierMetrics[], 
     if (!amount) return
     for (const id of ids) add(result, id, tierOf.get(id) as Tier, amount)
   }
-  pay(crossWinners(metrics.map((m) => m.mostPoints)), sched.mostPoints)
-  pay(crossWinners(metrics.map((m) => m.highestFloor)), sched.highestFloor)
-  pay(crossWinners(metrics.map((m) => m.highestScoreInLoss)), sched.highestScoreInLoss)
+  // A union-wide best is only decided once EVERY league's season is: with one still running, its
+  // provisional (empty) awards would hand the prize to a finished league by default.
+  if (metrics.every((m) => m.settled)) {
+    pay(crossWinners(metrics.map((m) => m.mostPoints)), sched.mostPoints)
+    pay(crossWinners(metrics.map((m) => m.highestFloor)), sched.highestFloor)
+    pay(crossWinners(metrics.map((m) => m.highestScoreInLoss)), sched.highestScoreInLoss)
+  }
   if (sched.weeklyHighScore) {
     const weeks = Math.max(...metrics.map((m) => m.weekly.length))
     for (let i = 0; i < weeks; i++) {
@@ -153,7 +170,7 @@ function applyCrossUnion(result: Map<string, Winnings>, metrics: TierMetrics[], 
 }
 
 function applyCrossLeague(result: Map<string, Winnings>, metrics: TierMetrics[], sched: CrossLeagueSchedule): void {
-  if (!sched.mostLeaguewidePoints || metrics.length === 0) return
+  if (!sched.mostLeaguewidePoints || metrics.length === 0 || !metrics.every((m) => m.settled)) return
   const top = metrics.reduce((a, b) => (b.pointsSum > a.pointsSum ? b : a))
   award(result, top.memberIds, top.tier, sched.mostLeaguewidePoints)
 }

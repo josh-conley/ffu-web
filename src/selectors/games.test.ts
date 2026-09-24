@@ -1,5 +1,5 @@
 import type { Game, SeasonData } from '@/data'
-import { hasBeenPlayed, isTie, winnerOf, marginOf, scoreFor, regularSeasonTotals, runningRecords } from './games'
+import { hasBeenPlayed, isTie, regularSeasonComplete, winnerOf, marginOf, scoreFor, regularSeasonTotals, runningRecords } from './games'
 
 const game = (aId: string, aScore: number, bId: string, bScore: number, isPlayoff = false): Game => ({
   week: 1,
@@ -105,5 +105,39 @@ describe('hasBeenPlayed', () => {
   it('is true for a stored record with no per-game rows (the ESPN-era migration)', () => {
     const teams = [{ memberId: 'a', record: { wins: 7, losses: 7, ties: 0 }, points: { for: 1, against: 1 }, promoted: false, relegated: false }]
     expect(hasBeenPlayed(shell({ teams }))).toBe(true)
+  })
+})
+
+describe('regularSeasonComplete', () => {
+  const weeks = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ ...game('a', 100, 'b', 90), week: i + 1 }))
+  const shell = (over: Partial<SeasonData> = {}): SeasonData => ({
+    schemaVersion: 1, tier: 'PREMIER', year: '2026', era: 'sleeper', platformLeagueId: 'x',
+    teams: [{ memberId: 'a', record: { wins: 2, losses: 0, ties: 0 }, points: { for: 1, against: 1 }, promoted: false, relegated: false }],
+    games: [],
+    ...over,
+  })
+
+  it('is false while regular-season weeks remain', () => {
+    expect(regularSeasonComplete(shell({ games: weeks(2) }))).toBe(false)
+    expect(regularSeasonComplete(shell({ games: weeks(13) }))).toBe(false)
+  })
+
+  it('is true once every regular-season week has results', () => {
+    expect(regularSeasonComplete(shell({ games: weeks(14) }))).toBe(true)
+  })
+
+  it('is true for a season with a final placing but no per-game rows (the ESPN-era migration)', () => {
+    const teams = [{ memberId: 'a', record: { wins: 7, losses: 7, ties: 0 }, points: { for: 1, against: 1 }, finalPlacement: 1, promoted: false, relegated: false }]
+    expect(regularSeasonComplete(shell({ teams }))).toBe(true)
+  })
+
+  // Division titles and season-long prize money both wait on this, so a finished season it failed
+  // to recognise would quietly lose them.
+  it('recognises every season before the latest as complete', () => {
+    const latest = Math.max(...seasons.map((s) => Number(s.year)))
+    for (const season of seasons.filter((s) => Number(s.year) < latest)) {
+      expect(regularSeasonComplete(season), `${season.year}/${season.tier}`).toBe(true)
+    }
   })
 })

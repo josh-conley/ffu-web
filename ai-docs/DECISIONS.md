@@ -426,3 +426,19 @@ highest floor, etc. go to whoever leads *now*; see `prizes.ts`), so an earnings 
 because career earnings on Stats/Members behave the same way mid-season. Playoff results only
 reach career totals via the final placing at season's end, so milestones won in the playoffs
 never show as reached in a week.
+
+## 2026-09-24 — mid-season, only settled prize money and titles count
+
+**Decision.** Career winnings and division titles for a season still being played only count what
+is already decided. A weekly high score (tier and cross-union) is paid the week it's scored. Division
+titles and the season-long prizes (most points, highest floor, highest score in a loss, and their
+cross-union and cross-league versions) wait for `regularSeasonComplete`. Placements wait for the
+final placing, as before.
+
+**Why.** Before this, the selectors crowned whoever led *this week*. In a live season that credits
+provisional money and pennants that can be taken back a week later, and it shows up on every
+career view (Stats, Members, Milestones). It was invisible until 2026's prize sheet was transcribed,
+because 2026 had no tier prizes configured.
+
+**Checked.** Winnings, tier splits and division titles for 2018–2025 are identical before and after
+the change (every season before the live one counts as complete; `games.test.ts` asserts it).

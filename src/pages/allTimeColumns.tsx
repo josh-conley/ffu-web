@@ -139,7 +139,7 @@ function winningsColumn(winnings: Map<string, number>): Column<CareerStats> {
   return {
     key: 'winnings',
     header: 'Winnings',
-    title: 'Total prize money won: league placements, division titles, most points, weekly high scores, plus cross-union/cross-league prizes. Tracked from 2021 on (ESPN era had no prizes).',
+    title: 'Total prize money won: league placements, division titles, most points, weekly high scores, plus cross-union/cross-league prizes. Tracked from 2021 on (ESPN era had no prizes). During a season, weekly high scores count as each week is played; season-long prizes count once the regular season ends, placements after the playoffs.',
     align: 'right',
     sortValue: (c) => winnings.get(c.memberId) ?? 0,
     render: (c) => {

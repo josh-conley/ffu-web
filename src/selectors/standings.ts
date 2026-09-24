@@ -1,5 +1,5 @@
 import type { Division, SeasonData, SeasonTeam, TeamRecord } from '@/data'
-import { hasBeenPlayed } from './games'
+import { regularSeasonComplete } from './games'
 
 // Regular-season standings: order teams by record for DISPLAY. Uses the STORED (Sleeper)
 // record/points so the table matches what owners see on Sleeper.
@@ -67,15 +67,13 @@ export function finalStandings(season: SeasonData): StandingRow[] {
 /**
  * Regular-season division champions — "pennant" winners: best record in each division by the
  * standings comparator (winPct → pointsFor; an exact tie shares the pennant). Empty set when the
- * season has no divisions (ESPN era).
+ * season has no divisions (ESPN era), and until the regular season is over: leading a division
+ * after week 2 is not winning it, and both callers (career titles, prize money) mean the title.
  */
 export function divisionWinnerIds(season: SeasonData): Set<string> {
   const winners = new Set<string>()
   if (season.divisions === undefined || season.divisions.length === 0) return winners
-  // Nobody leads a division nobody has played in. Without this, a season whose file exists but
-  // whose games haven't started leaves every team tied on 0-0-0 and 0 points, so every one of them
-  // ranks 1st and the whole league is awarded a pennant.
-  if (!hasBeenPlayed(season)) return winners
+  if (!regularSeasonComplete(season)) return winners
   const byDivision = new Map<number, SeasonTeam[]>()
   for (const team of season.teams) {
     if (team.divisionId === undefined) continue
