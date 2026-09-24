@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { bandFor, milestoneNewsWeek, milestonesReachedInWeek, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
+import { bandFor, milestoneNewsWeek, milestonesReachedRecently, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
 
 describe('bandFor', () => {
   const points = MILESTONES.pointsFor // 10k / 15k / 20k / 25k
@@ -84,10 +84,11 @@ describe('milestoneWatch', () => {
   })
 })
 
-describe('milestonesReachedInWeek', () => {
+describe('milestonesReachedRecently', () => {
   // Years with no prize schedule, so earnings stay out of it. 'a' carries 9,900 points and 49 wins
-  // into 2031; week 1 is worth 150 points and a win, week 2 another 150 and a win.
-  const past = season('2030', [team('a', 49, 9_900), team('b', 5, 1_000)])
+  // into 2031, and scores 150 a week; 'b' carries 14,700 points and scores 100 a week, so it passes
+  // 15,000 in week 3.
+  const past = season('2030', [team('a', 49, 9_900), team('b', 5, 14_700)])
   const game = (week: number) => ({
     week, isPlayoff: false,
     participants: [{ memberId: 'a', score: 150 }, { memberId: 'b', score: 100 }],
@@ -95,24 +96,33 @@ describe('milestonesReachedInWeek', () => {
   const current: SeasonData = {
     schemaVersion: 1, tier: 'PREMIER', year: '2031', era: 'sleeper', platformLeagueId: 'x',
     teams: [
-      { memberId: 'a', record: { wins: 2, losses: 0, ties: 0 }, points: { for: 300, against: 200 }, promoted: false, relegated: false },
-      { memberId: 'b', record: { wins: 0, losses: 2, ties: 0 }, points: { for: 200, against: 300 }, promoted: false, relegated: false },
+      { memberId: 'a', record: { wins: 4, losses: 0, ties: 0 }, points: { for: 600, against: 400 }, promoted: false, relegated: false },
+      { memberId: 'b', record: { wins: 0, losses: 4, ties: 0 }, points: { for: 400, against: 600 }, promoted: false, relegated: false },
     ],
-    games: [game(1), game(2)],
+    games: [game(1), game(2), game(3), game(4)],
   }
   const seasons = [past, current]
 
-  it('reports each threshold crossed during the week, with the total it ended on', () => {
-    expect(milestonesReachedInWeek(seasons, '2031', 1)).toEqual([
-      { memberId: 'a', category: 'pointsFor', milestone: 10_000, value: 10_050 },
-      { memberId: 'a', category: 'wins', milestone: 50, value: 50 },
+  it('reports each threshold crossed in week 1 alone, never reaching back a season', () => {
+    expect(milestonesReachedRecently(seasons, '2031', 1)).toEqual([
+      { memberId: 'a', category: 'pointsFor', milestone: 10_000, week: 1, value: 10_050 },
+      { memberId: 'a', category: 'wins', milestone: 50, week: 1, value: 50 },
       // Landing exactly on a milestone counts as reaching it (9,900 against + 100).
-      { memberId: 'a', category: 'pointsAgainst', milestone: 10_000, value: 10_000 },
+      { memberId: 'a', category: 'pointsAgainst', milestone: 10_000, week: 1, value: 10_000 },
     ])
   })
 
-  it('drops a milestone once a later week is the one being reported', () => {
-    expect(milestonesReachedInWeek(seasons, '2031', 2)).toEqual([])
+  it('keeps a milestone up for the week after, newest week first, with the total as it stands now', () => {
+    const recent = milestonesReachedRecently(seasons, '2031', 3)
+    expect(recent.map((r) => [r.week, r.memberId, r.category, r.milestone])).toEqual([
+      [3, 'b', 'pointsFor', 15_000],
+      [2, 'b', 'pointsAgainst', 15_000], // 14,700 against + 150 a week
+    ])
+    expect(recent[1]!.value).toBe(15_150) // as of week 3, not the 15,000 it ended week 2 on
+  })
+
+  it('drops a milestone once it is more than the window old', () => {
+    expect(milestonesReachedRecently(seasons, '2031', 4).map((r) => r.week)).toEqual([3])
   })
 })
 

@@ -153,34 +153,36 @@ export function milestoneWatch(
   return out
 }
 
+/** How many weeks a fallen milestone stays up: the week it fell and the one before it, so a
+ *  newsletter that skipped a week, or writes up the week late, still has it to hand. */
+export const RECENT_WEEKS = 2
+
 export interface MilestoneReached {
   memberId: string
   category: MilestoneCategory
   milestone: number
-  /** The career total at the end of the week, which may be past the milestone. */
+  /** The week of the season it fell in. */
+  week: number
+  /** The career total now — at the end of the latest week asked about — which may be past it. */
   value: number
 }
 
-/**
- * Milestones passed during `week` of `year`: every threshold a career total was below when the
- * week began and at or above when it ended.
- *
- * Without this a milestone simply vanishes the week it falls — the member moves on to watching the
- * next one — which is exactly when the newsletter wants to write about it. Callers show the result
- * for the latest completed week, so a milestone stays up for the week after it is reached and
- * drops off when the next week lands. Largest milestones first within each category.
- */
-export function milestonesReachedInWeek(seasons: SeasonData[], year: string, week: number): MilestoneReached[] {
-  const before = totalsFor(seasonsThroughWeek(seasons, year, week - 1))
-  const after = totalsFor(seasonsThroughWeek(seasons, year, week))
+/** Thresholds a career total was below in `before` and at or above in `after`, largest first
+ *  within each category. `now` supplies the total each one reports. */
+function crossed(
+  before: Map<string, CareerTotals>,
+  after: Map<string, CareerTotals>,
+  now: Map<string, CareerTotals>,
+  week: number,
+): MilestoneReached[] {
   const out: MilestoneReached[] = []
   for (const category of MILESTONE_CATEGORIES) {
     const reached: MilestoneReached[] = []
     for (const [memberId, totals] of after) {
       const was = before.get(memberId)?.[category] ?? 0
-      const value = valueOf(totals, category)
+      const value = now.get(memberId)?.[category] ?? valueOf(totals, category)
       for (const milestone of MILESTONES[category]) {
-        if (was < milestone && milestone <= value) reached.push({ memberId, category, milestone, value })
+        if (was < milestone && milestone <= valueOf(totals, category)) reached.push({ memberId, category, milestone, week, value })
       }
     }
     out.push(...reached.sort((a, b) => b.milestone - a.milestone || b.value - a.value))
@@ -189,8 +191,27 @@ export function milestonesReachedInWeek(seasons: SeasonData[], year: string, wee
 }
 
 /**
- * The week whose milestones are still news, for a view that isn't framed on a week of its own:
- * the latest week completed across the union, for as long as nothing has been played since.
+ * Milestones passed in the RECENT_WEEKS weeks of `year` up to and including `week`, newest week
+ * first: every threshold a career total was below when a week began and at or above when it ended.
+ *
+ * Without this a milestone simply vanishes the week it falls — the member moves on to watching the
+ * next one — which is exactly when the newsletter wants to write about it. Callers ask about the
+ * latest completed week, so a milestone stays up for that many weeks and then drops off. The window
+ * never reaches back into the previous season: week 1 reports week 1 alone.
+ */
+export function milestonesReachedRecently(seasons: SeasonData[], year: string, week: number): MilestoneReached[] {
+  const first = Math.max(1, week - RECENT_WEEKS + 1)
+  const through = new Map<number, Map<string, CareerTotals>>()
+  for (let w = first - 1; w <= week; w++) through.set(w, totalsFor(seasonsThroughWeek(seasons, year, w)))
+  const at = (w: number) => through.get(w) ?? new Map<string, CareerTotals>()
+  const out: MilestoneReached[] = []
+  for (let w = week; w >= first; w--) out.push(...crossed(at(w - 1), at(w), at(week), w))
+  return out
+}
+
+/**
+ * The week whose recent milestones are still news, for a view that isn't framed on a week of its
+ * own: the latest week completed across the union, for as long as nothing has been played since.
  *
  * "Nothing played since" is what retires it. Week to week that is simply the next week landing,
  * but once the regular season is over the latest completed week stays week 14 for good — so the

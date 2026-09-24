@@ -5,7 +5,7 @@ import {
   MILESTONE_CATEGORIES,
   WATCH_THRESHOLD,
   milestoneNewsWeek,
-  milestonesReachedInWeek,
+  milestonesReachedRecently,
   milestoneStandings,
   milestoneWatch,
   type MilestoneCategory,
@@ -50,14 +50,14 @@ function CategorySection({
   )
 }
 
-/** The latest week's fallen milestones — up top, because a member who has just passed one has
- *  left the watch tables below and this is the only place they would still show. */
-function JustReached({ year, week, reached }: { year: string; week: number; reached: MilestoneReached[] }) {
+/** The last couple of weeks' fallen milestones — up top, because a member who has just passed one
+ *  has left the watch tables below and this is the only place they would still show. */
+function JustReached({ year, reached }: { year: string; reached: MilestoneReached[] }) {
   if (reached.length === 0) return null
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-text">
-        Reached in Week {week}
+        Recently Reached
         <span className="ml-2 font-normal text-muted">{year}</span>
       </h2>
       <div className="grid gap-px border border-border bg-border shadow-sm sm:grid-cols-2">
@@ -82,7 +82,7 @@ export function Milestones() {
   const watch = useMemo(() => milestoneWatch(standings), [standings])
   const news = useMemo(() => (seasons ? milestoneNewsWeek(seasons) : undefined), [seasons])
   const reached = useMemo(
-    () => (seasons && news ? milestonesReachedInWeek(seasons, news.year, news.week) : []),
+    () => (seasons && news ? milestonesReachedRecently(seasons, news.year, news.week) : []),
     [seasons, news],
   )
 
@@ -99,7 +99,7 @@ export function Milestones() {
           list is teams with something to play for now, not everyone above a line.
         </p>
       </div>
-      {news && <JustReached year={news.year} week={news.week} reached={reached} />}
+      {news && <JustReached year={news.year} reached={reached} />}
       {MILESTONE_CATEGORIES.map((category) => (
         <CategorySection key={category} category={category} rows={watch.get(category) ?? []} all={standings} />
       ))}

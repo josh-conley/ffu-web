@@ -403,13 +403,14 @@ in `components/recap/WeekStreaks.test.tsx` / `WeekMovers.test.tsx` instead of on
 assertion. Checked by replaying the real 2026 schedule out to week 14 in a scratch copy and running
 the suite against it — worth repeating after any new live-data test.
 
-## 2026-09-24 — a milestone stays up for the week after it falls
+## 2026-09-24 — a milestone stays up for two weeks after it falls
 
-**Decision.** A milestone reached in week N is shown, as "Reached in Week N", until week N+1's
-data lands, then drops off. Around the Union shows the reached list for whichever week is selected;
-the Milestones page (not week-framed) shows it for `milestoneNewsWeek`, which is the latest
-completed week for as long as nothing has been played since, so the first playoff games retire
-week 14's list rather than it lingering all offseason.
+**Decision.** A milestone reached in week N is shown as "Recently reached", tagged Week N, until
+week N+2's data lands, then drops off (`RECENT_WEEKS = 2`, widened from one week the same day so a
+late or skipped newsletter still has it). Around the Union shows the window ending at whichever
+week is selected; the Milestones page (not week-framed) ends it at `milestoneNewsWeek`, which is
+the latest completed week for as long as nothing has been played since, so the first playoff games
+retire the list rather than it lingering all offseason. The window never reaches back a season.
 
 **Why.** The watch list tracks the *next* milestone, so the week one falls the member simply
 vanished from it, which is exactly the week the FFUN wants to write it up.

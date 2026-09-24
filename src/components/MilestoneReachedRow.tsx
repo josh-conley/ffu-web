@@ -19,7 +19,9 @@ export function MilestoneReachedRow({ reached }: { reached: MilestoneReached }) 
       <TeamLogo ffuId={reached.memberId} size={24} />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-bold leading-tight">{teamName(reached.memberId)}</div>
-        <div className="truncate text-[11px] leading-tight text-muted">{MILESTONE_META[reached.category].label}</div>
+        <div className="truncate text-[11px] leading-tight text-muted">
+          {MILESTONE_META[reached.category].label} · Week {reached.week}
+        </div>
       </div>
       <div className="shrink-0 text-right">
         <div className="font-mono text-base font-bold leading-tight tabular-nums text-notable">{format(reached.milestone)}</div>

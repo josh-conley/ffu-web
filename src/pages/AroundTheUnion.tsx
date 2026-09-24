@@ -10,7 +10,7 @@ import {
   completedUnionWeeks,
   leaguePointsRace,
   longestStreaks,
-  milestonesReachedInWeek,
+  milestonesReachedRecently,
   milestoneStandings,
   milestoneWatch,
   seasonsThroughWeek,
@@ -81,7 +81,10 @@ function WeekBlocks({
     () => closestMilestones(week === undefined ? seasons : seasonsThroughWeek(seasons, year, week)),
     [seasons, year, week],
   )
-  const reached = useMemo(() => (week === undefined ? [] : milestonesReachedInWeek(seasons, year, week)), [seasons, year, week])
+  const reached = useMemo(
+    () => (week === undefined ? [] : milestonesReachedRecently(seasons, year, week)),
+    [seasons, year, week],
+  )
 
   // One file name per block, so a folder of downloads says which is which.
   const capture = (block: string) => (compact ? `ffu-${block}-${year}-week-${week ?? ''}.png` : undefined)

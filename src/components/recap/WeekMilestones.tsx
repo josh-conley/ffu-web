@@ -11,8 +11,8 @@ import { RecapPanel } from './RecapPanel'
 /**
  * Career marks that just fell, and the ones about to.
  *
- * The reached list is the week's news — a milestone that falls stops being "watched", and without
- * it would vanish the very week the newsletter wants to write it up. The watch list is the only
+ * The reached list is the news — a milestone that falls stops being "watched", and without it
+ * would vanish the very week the newsletter wants to write it up (see milestonesReachedRecently). The watch list is the only
  * warning anyone gets before one happens; it runs closest-first, by what's left rather than by
  * percentage, because "84 points away" is the sentence the newsletter prints.
  */
@@ -77,7 +77,7 @@ export function WeekMilestones({
     >
       <div className="flex flex-col gap-px bg-border">
         {reached.length > 0 && (
-          <Group title={week ? `Reached in week ${week}` : 'Reached'} icon={<FaFlagCheckered className="text-notable" aria-hidden />}>
+          <Group title="Recently reached" icon={<FaFlagCheckered className="text-notable" aria-hidden />}>
             {reached.map((r) => (
               <MilestoneReachedRow key={`${r.memberId}-${r.category}-${r.milestone}`} reached={r} />
             ))}
