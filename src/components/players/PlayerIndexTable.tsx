@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { FaChevronRight, FaTrophy } from 'react-icons/fa6'
+import { FaChevronRight } from 'react-icons/fa6'
 import type { PlayerSummary } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
 import { posClass } from '../positions'
@@ -14,22 +14,6 @@ const num = (key: keyof PlayerSummary & string, header: string, title: string, f
 })
 
 const pts = (n: number) => n.toFixed(2)
-
-/** Finals started, with the ones his team won beside a trophy — "2 · 🏆1". */
-function TitleGames({ row }: { row: PlayerSummary }) {
-  if (row.titleGames === 0) return <span className="font-mono text-muted">0</span>
-  return (
-    <span className="inline-flex items-center gap-1.5 font-mono tabular-nums">
-      {row.titleGames}
-      {row.titlesWon > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-amber-500" title={`Won ${row.titlesWon}`}>
-          <FaTrophy size={10} aria-hidden />
-          {row.titlesWon}
-        </span>
-      )}
-    </span>
-  )
-}
 
 function columns(openKey: string | undefined): Column<PlayerSummary>[] {
   return [
@@ -46,17 +30,9 @@ function columns(openKey: string | undefined): Column<PlayerSummary>[] {
       sortValue: (r) => r.name,
     },
     num('points', 'FFU Pts', 'Points scored while in an FFU starting lineup', pts),
-    {
-      key: 'titleGames',
-      header: 'Title Gms',
-      title: 'Championship finals he started in (trophy: finals his team won)',
-      align: 'right',
-      render: (r) => <TitleGames row={r} />,
-      sortValue: (r) => r.titleGames * 100 + r.titlesWon,
-    },
-    num('starts', 'Starts', 'Weeks in an FFU starting lineup'),
-    num('avg', 'Avg', 'Points per start', pts),
-    num('best', 'Best', 'His best started week', pts),
+    num('playoffApps', 'Playoffs', 'Playoff runs he started in: team-seasons where he started a championship-bracket game'),
+    num('titleGames', 'Title Gms', 'Championship finals he started in, won or lost'),
+    num('titlesWon', 'Titles', 'Championship finals he started in and his team won'),
     num('managers', 'Teams', 'Different FFU teams that started him'),
     num('seasons', 'Seasons', 'Seasons on an FFU roster'),
   ]

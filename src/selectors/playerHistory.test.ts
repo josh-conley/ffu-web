@@ -82,10 +82,30 @@ describe('playerAppearances', () => {
 describe('playerSummaries', () => {
   it('counts only started weeks toward points, but every rostered week and season', () => {
     const [top, second] = playerSummaries(APPEARANCES, PLAYERS)
-    expect(top).toMatchObject({ playerId: 'p1', name: 'Star Back', starts: 3, points: 59.5, best: 31.5, managers: 2, seasons: 2, titleGames: 1, titlesWon: 1 })
-    expect(top?.avg).toBeCloseTo(19.83, 2)
+    expect(top).toMatchObject({ playerId: 'p1', name: 'Star Back', starts: 3, points: 59.5, managers: 2, seasons: 2 })
     // p2: benched once (3 pts don't count), started once for 12.
-    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, rosteredWeeks: 2, managers: 1, titleGames: 1, titlesWon: 0 })
+    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, rosteredWeeks: 2, managers: 1 })
+  })
+
+  it('counts playoff runs, title games and titles from the games he started', () => {
+    const [p1, p2] = playerSummaries(APPEARANCES, PLAYERS)
+    expect(p1).toMatchObject({ playoffApps: 1, titleGames: 1, titlesWon: 1 })
+    expect(p2).toMatchObject({ playoffApps: 1, titleGames: 1, titlesWon: 0 })
+  })
+
+  it('counts a playoff run once per team-season, however many rounds he started', () => {
+    // A 2024 semifinal (week 14) before the week-15 final: still one run for p1.
+    const semi = [{ ...LINEUPS[0]!, weeks: [...LINEUPS[0]!.weeks, { week: 14, teams: [lu('a', [['p1', 9]]), lu('b', [['p2', 4]])] }] }, LINEUPS[1]!]
+    const withSemi = season('2024', [...SEASONS[0]!.games, game(14, 'a', 'b', true, 'championship')], 'a')
+    const [p1] = playerSummaries(playerAppearances(semi, [withSemi, SEASONS[1]!]), PLAYERS)
+    expect(p1?.playoffApps).toBe(1)
+  })
+
+  it("doesn't count consolation games as the playoffs", () => {
+    const consolation = season('2025', [game(1, 'b', 'a', true, 'consolation')])
+    const apps = playerAppearances(LINEUPS, [SEASONS[0]!, consolation])
+    // p1 started for b in that 2025 consolation game; only his 2024 run counts.
+    expect(playerSummaries(apps, PLAYERS)[0]?.playoffApps).toBe(1)
   })
 
   it('falls back to the raw id for a player the map does not know', () => {

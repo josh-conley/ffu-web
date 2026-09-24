@@ -353,10 +353,14 @@ the site already loads; nothing stored.
       - **Ranked by points** scored in FFU starting lineups (bench points don't count).
       - **Columns:** starts, per-start average, best week, teams that started him, seasons rostered.
       - **Filters:** search (`?q=`, ignores case and punctuation), Position, and "Started only". 50 a page.
-- [x] **Title Gms column**: championship finals he STARTED in, won or lost. The trophy count beside it
-      is the finals his team won.
-      - A final only exists for a DECIDED season (the champion's last championship-bracket game), so a
-        live season's semifinal is never read as the final.
+- [x] **Playoffs / Title Gms / Titles columns** (replaced Starts, Avg and Best the same day, at
+      Josh's request). All three count games he STARTED:
+      - **Playoffs:** team-seasons in which he started at least one championship-bracket game.
+        Consolation, toilet-bowl and placement games don't count: that team missed the playoffs.
+      - **Title Gms:** championship finals, won or lost.
+      - **Titles:** finals his team won.
+      - A final only exists for a DECIDED season (the champion's last championship-bracket game), so
+        a live season's semifinal is never read as the final.
 - [x] **Click a row to expand it in place** (the same pattern as Builds). It shows:
       - his title games, with the result;
       - where he was drafted;

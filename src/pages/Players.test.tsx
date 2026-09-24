@@ -61,6 +61,13 @@ describe('Players table', () => {
     expect(pts).toEqual([...pts].sort((a, b) => b - a))
   })
 
+  it('shows playoff, title-game and title columns in place of the per-start ones', async () => {
+    await ready()
+    const headers = screen.getAllByRole('columnheader').map((h) => h.textContent)
+    for (const h of ['Playoffs', 'Title Gms', 'Titles']) expect(headers).toContain(h)
+    for (const h of ['Starts', 'Avg', 'Best']) expect(headers).not.toContain(h)
+  })
+
   it('searches by name, ignoring case and punctuation', async () => {
     await ready()
     await userEvent.type(screen.getByRole('searchbox'), 'justin jeff')

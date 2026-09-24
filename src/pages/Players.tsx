@@ -45,8 +45,9 @@ export function Players() {
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Players</h1>
         <p className="max-w-2xl text-sm text-muted">
           Every NFL player who has been on an FFU roster since 2021, ranked by the points he scored in FFU starting
-          lineups. Title Gms counts the championship finals he started in. Click a player for his title games, where
-          he was drafted, his best weeks and who started him.
+          lineups. Playoffs counts the playoff runs he started in, Title Gms the championship finals, and Titles the
+          finals his team won. Click a player for his title games, where he was drafted, his best weeks and who
+          started him.
         </p>
       </div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2">

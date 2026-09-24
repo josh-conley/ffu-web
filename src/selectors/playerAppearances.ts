@@ -14,8 +14,10 @@ export interface PlayerAppearance {
   points: number
   /** In the starting lineup (the points counted), rather than on the bench. */
   started: boolean
-  /** The team-week was a playoff game. */
+  /** The team-week was a playoff game (any bracket, consolation and placement games included). */
   isPlayoff: boolean
+  /** The team-week was a championship-bracket playoff game — the playoffs proper. */
+  championshipBracket: boolean
   /** The team-week was its league's championship final — and how it went. Absent otherwise. */
   titleGame?: 'won' | 'lost'
 }
@@ -31,6 +33,8 @@ const seasonKey = (tier: Tier, year: string) => `${tier}:${year}`
 interface SeasonWeeks {
   /** `week:memberId` for every playoff team-week. */
   playoff: Set<string>
+  /** `week:memberId` for every championship-bracket team-week. */
+  bracket: Set<string>
   /** `week:memberId` of the championship final's two sides → how each came out. */
   final: Map<string, 'won' | 'lost'>
 }
@@ -52,11 +56,16 @@ function seasonWeeks(seasons: SeasonData[]): Map<string, SeasonWeeks> {
   const out = new Map<string, SeasonWeeks>()
   for (const s of seasons) {
     const playoff = new Set<string>()
-    for (const g of s.games) if (g.isPlayoff) for (const p of g.participants) playoff.add(`${g.week}:${p.memberId}`)
+    const bracket = new Set<string>()
+    for (const g of s.games) {
+      if (!g.isPlayoff) continue
+      for (const p of g.participants) playoff.add(`${g.week}:${p.memberId}`)
+      if (g.bracket === 'championship') for (const p of g.participants) bracket.add(`${g.week}:${p.memberId}`)
+    }
     const final = new Map<string, 'won' | 'lost'>()
     const decided = championshipFinal(s)
     if (decided) for (const p of decided.game.participants) final.set(`${decided.game.week}:${p.memberId}`, p.memberId === decided.champ ? 'won' : 'lost')
-    out.set(seasonKey(s.tier, s.year), { playoff, final })
+    out.set(seasonKey(s.tier, s.year), { playoff, bracket, final })
   }
   return out
 }
@@ -77,6 +86,7 @@ export function playerAppearances(lineups: SeasonLineups[], seasons: SeasonData[
           week: wk.week,
           memberId: team.memberId,
           isPlayoff: weeks?.playoff.has(key) ?? false,
+          championshipBracket: weeks?.bracket.has(key) ?? false,
           ...(titleGame && { titleGame }),
         }
         for (const p of team.starters) out.push({ ...base, playerId: p.playerId, points: p.points, started: true })
@@ -95,16 +105,17 @@ export interface PlayerSummary {
   starts: number
   /** Points scored while started — the points that counted for an FFU team. */
   points: number
-  /** Points per start (0 when never started). */
-  avg: number
-  /** His best started week. */
-  best: number
   /** Weeks on any FFU roster, started or benched. */
   rosteredWeeks: number
   /** Distinct members who STARTED him at least once. */
   managers: number
   /** Distinct seasons he was on an FFU roster. */
   seasons: number
+  /**
+   * Playoff runs he was part of: team-seasons in which he STARTED at least one championship-bracket
+   * game. Consolation and placement games don't count — that team missed the playoffs.
+   */
+  playoffApps: number
   /** Championship finals he STARTED in, won or lost. */
   titleGames: number
   /** ...and how many of those his team won. */
@@ -112,11 +123,11 @@ export interface PlayerSummary {
 }
 
 interface Tally {
+  playoffRuns: Set<string>
   titleGames: number
   titlesWon: number
   starts: number
   points: number
-  best: number
   rosteredWeeks: number
   managers: Set<string>
   seasons: Set<string>
@@ -129,7 +140,7 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
   for (const a of appearances) {
     let t = byPlayer.get(a.playerId)
     if (!t) {
-      t = { titleGames: 0, titlesWon: 0, starts: 0, points: 0, best: 0, rosteredWeeks: 0, managers: new Set(), seasons: new Set() }
+      t = { playoffRuns: new Set(), titleGames: 0, titlesWon: 0, starts: 0, points: 0, rosteredWeeks: 0, managers: new Set(), seasons: new Set() }
       byPlayer.set(a.playerId, t)
     }
     t.rosteredWeeks++
@@ -137,8 +148,8 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
     if (!a.started) continue
     t.starts++
     t.points += a.points
-    t.best = Math.max(t.best, a.points)
     t.managers.add(a.memberId)
+    if (a.championshipBracket) t.playoffRuns.add(`${a.year}:${a.tier}:${a.memberId}`)
     if (a.titleGame) t.titleGames++
     if (a.titleGame === 'won') t.titlesWon++
   }
@@ -153,11 +164,10 @@ export function playerSummaries(appearances: PlayerAppearance[], players: Player
       ...playerRef(players, playerId),
       starts: t.starts,
       points: round2(t.points),
-      avg: t.starts > 0 ? round2(t.points / t.starts) : 0,
-      best: round2(t.best),
       rosteredWeeks: t.rosteredWeeks,
       managers: t.managers.size,
       seasons: t.seasons.size,
+      playoffApps: t.playoffRuns.size,
       titleGames: t.titleGames,
       titlesWon: t.titlesWon,
     }))
