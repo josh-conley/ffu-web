@@ -343,6 +343,31 @@ Built 2026-09-09. Route `/adp-comparison`, in the Stats & More menu. Pinned to t
       their whole board), and keeping the page for past seasons — that needs an ADP snapshot per
       year, which we only have from 2026 on.
 
+## Players: NFL players through FFU's eyes (new page)
+
+Built 2026-09-24. Route `/players` (index) and `/players/:playerId` (one player), in the Stats &
+More menu. Pure selectors (`src/selectors/playerAppearances.ts`, `playerHistory.ts`) over the lineup
+files, seasons and drafts the site already loads; nothing stored.
+
+- [x] **Index:** every player ever on an FFU roster, ranked by points scored in FFU starting lineups
+      (bench points don't count), with starts, per-start average, best week, teams that started
+      him and seasons rostered. Search (`?q=`, ignores case and punctuation), Position and "Started
+      only" filters, 50 a page.
+- [x] **Player page:**
+      - Headline numbers.
+      - **Championships**: he STARTED for the league champion in its title final. Being on the
+        roster isn't enough.
+      - Where he was drafted.
+      - His five best FFU weeks (playoff games flagged).
+      - Who started him: one row per team, most points first.
+      - Season by season: a traded player gets one row per team.
+- [ ] **Sleeper era only (2021 on)**, because lineups start there. ESPN-era drafts (2018–2020) key
+      players by an ESPN slug (`espn-player-saquon-barkley`), so those picks aren't matched by id.
+      Name-matching them is possible but ambiguous for shared names; not done.
+- [ ] Not built, worth doing: link player names in the box score and on the draft boards to their
+      pages. Live box scores need a guard, because a player new this week has no page until the
+      Tuesday refresh writes his lineup.
+
 ## Housekeeping
 
 - [x] **Division sources are tracked (2026-09-23).** The divisions supplement and the two ESPN

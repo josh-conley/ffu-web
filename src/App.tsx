@@ -13,6 +13,8 @@ import { Milestones } from '@/pages/Milestones'
 import { DraftMarket } from '@/pages/DraftMarket'
 import { AroundTheUnion } from '@/pages/AroundTheUnion'
 import { Cup } from '@/pages/Cup'
+import { Players } from '@/pages/Players'
+import { PlayerDetail } from '@/pages/PlayerDetail'
 import { CupDraw } from '@/pages/CupDraw'
 import { NotFound } from '@/components/NotFound'
 
@@ -36,6 +38,8 @@ export default function App() {
           <Route path="milestones" element={<Milestones />} />
           <Route path="adp-comparison" element={<DraftMarket />} />
           <Route path="around-the-union" element={<AroundTheUnion />} />
+          <Route path="players" element={<Players />} />
+          <Route path="players/:playerId" element={<PlayerDetail />} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           <Route path="cup" element={<Cup />} />

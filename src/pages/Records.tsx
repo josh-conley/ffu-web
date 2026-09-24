@@ -9,6 +9,7 @@ import { FilterBar } from '@/components/FilterBar'
 import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { GameWhen } from '@/components/GameWhen'
+import { TeamCell } from '@/components/TeamCell'
 import { TeamLogo } from '@/components/TeamLogo'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -37,15 +38,6 @@ const MATCHUP_MODES = MODES.filter((m) => m.kind === 'matchup')
 
 function rank<T>(rows: T[]): Ranked<T>[] {
   return rows.map((row, i) => ({ ...row, rank: i + 1 }))
-}
-
-function TeamCell({ ffuId, year }: { ffuId: string; year: string }) {
-  return (
-    <span className="flex items-center gap-2 whitespace-nowrap">
-      <TeamLogo ffuId={ffuId} size={22} />
-      {nameForYear(ffuId, year) ?? ffuId}
-    </span>
-  )
 }
 
 function teamColumns(): Column<Ranked<TeamGameRecord>>[] {
