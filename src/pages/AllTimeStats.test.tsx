@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { getMember } from '@/config'
 import type { SeasonData } from '@/data'
@@ -84,4 +85,27 @@ it('renders the all-time leaderboard with a Career UPR column', async () => {
   expect(screen.getAllByRole('row').length).toBe(playedMembers.size + 1)
   // Efficiency values render as percentages for Sleeper-era members.
   expect(screen.getAllByText(/^\d{2}\.\d%$/).length).toBeGreaterThan(0)
+})
+
+it('limits every stat to a span of years, and Reset all restores the full span', async () => {
+  const inSpan = new Set(
+    Object.entries(FILES)
+      .filter(([path]) => SEASON_FILE.test(path))
+      .map(([, season]) => season as SeasonData)
+      .filter((season) => season.year === '2023' || season.year === '2024')
+      .flatMap((season) => season.teams.map((t) => t.memberId)),
+  )
+  stubFetch()
+  render(
+    <MemoryRouter initialEntries={['/stats?from=2023&to=2024']}>
+      <AllTimeStats />
+    </MemoryRouter>,
+  )
+  await waitFor(() => expect(screen.getByText(/Stats are from 2023 to 2024, across every league/)).toBeInTheDocument())
+  // Only members who played in those two seasons, plus the header.
+  expect(screen.getAllByRole('row').length).toBe(inSpan.size + 1)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Reset all' }))
+  await waitFor(() => expect(screen.getByText(/Stats are all-time, across every league/)).toBeInTheDocument())
+  expect(screen.getAllByRole('row').length).toBe(playedMembers.size + 1)
 })

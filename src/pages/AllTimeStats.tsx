@@ -13,6 +13,7 @@ import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { YearRange } from '@/components/YearRange'
 import { buildColumns } from './allTimeColumns'
 
 const LEAGUE_OPTIONS = [
@@ -37,13 +38,21 @@ const EFFICIENCY_DEFS = (
 )
 
 /** Whether anything (scope, filters, columns) has been customized from the defaults. */
-const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string }) =>
-  p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL'
+const hasCustomizations = (p: { activeCount: number; orderCustomized: boolean; hiddenCount: number; league: string; allYears: boolean }) =>
+  p.activeCount > 0 || p.orderCustomized || p.hiddenCount > 0 || p.league !== 'ALL' || !p.allYears
+
+/** The sentence under the table saying what the numbers cover. */
+function scopeLabel(league: string, range: { fromYear: string; toYear: string; isFull: boolean }): string {
+  const where = league === 'ALL' ? 'across every league' : `within ${LEAGUE_STYLES[league as keyof typeof LEAGUE_STYLES]?.label ?? league} only`
+  if (range.isFull) return `all-time, ${where}`
+  const when = range.fromYear === range.toYear ? `in ${range.fromYear}` : `from ${range.fromYear} to ${range.toYear}`
+  return `${when}, ${where}`
+}
 
 export function AllTimeStats() {
   // League scopes the underlying seasons (see useAllTimeStats). 'ALL' = full career across tiers.
   const [league, setLeague] = useUrlState('league', 'ALL')
-  const { loaded, careers, active, upr, eff, winnings, loading, error } = useAllTimeStats(league)
+  const { loaded, years, range, careers, active, upr, eff, winnings, loading, error } = useAllTimeStats(league)
   const columns = useMemo(() => buildColumns(upr, eff, winnings), [upr, eff, winnings])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
@@ -59,13 +68,11 @@ export function AllTimeStats() {
   const { rows: filtered, values, setValue, clear, activeCount } = useFilters(filterDefs, careers)
 
   // One control to restore defaults: league scope, filters (active + slider), column show/hide + order.
-  const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league })
-  const resetAll = () => { setLeague('ALL'); clear(); resetVisibility(); resetOrder() }
+  const dirty = hasCustomizations({ activeCount, orderCustomized, hiddenCount: hidden.size, league, allYears: range.isFull })
+  const resetAll = () => { setLeague('ALL'); range.reset(); clear(); resetVisibility(); resetOrder() }
 
   if (loading) return <LoadingSpinner />
   if (error || !loaded) return <ErrorMessage error={error ?? 'No data'} />
-
-  const scopeLabel = league === 'ALL' ? 'all-time, across every league' : `within ${LEAGUE_STYLES[league as keyof typeof LEAGUE_STYLES]?.label ?? league} only`
 
   return (
     <div className="space-y-6">
@@ -79,6 +86,7 @@ export function AllTimeStats() {
             ))}
           </select>
         </label>
+        <YearRange years={years} fromYear={range.fromYear} toYear={range.toYear} onFrom={range.setFrom} onTo={range.setTo} />
         <FilterBar defs={filterDefs} values={values} onChange={setValue} onClear={clear} activeCount={activeCount} showClear={false} />
         <div className="ml-auto flex items-center gap-2">
           {dirty && (
@@ -94,7 +102,7 @@ export function AllTimeStats() {
         <p className="text-muted">No members match these filters.</p>
       ) : (
         <DataTable
-          key={league + JSON.stringify(values)}
+          key={`${league}-${range.fromYear}-${range.toYear}-${JSON.stringify(values)}`}
           columns={visibleColumns}
           rows={filtered}
           getRowKey={(c) => c.memberId}
@@ -106,7 +114,7 @@ export function AllTimeStats() {
       )}
       {EFFICIENCY_DEFS}
       <p className="text-sm text-muted">
-        Stats are {scopeLabel}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
+        Stats are {scopeLabel(league, range)}. Playoff Rec uses each season's final placement; Avg UPR is the mean of a
         member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
         colored by league:{' '}
         <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}

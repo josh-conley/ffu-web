@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { FILTER_POSITIONS } from '@/selectors'
 import { SELECT, segButton } from '@/components/controls'
-import { DualRangeSlider } from '@/components/DualRangeSlider'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
+import { YearRange } from '@/components/YearRange'
 
 // All of the Roster Build Stats control UI, split out of the page to keep it under the file/complexity
 // caps. Row 1 = scope (which seasons/teams enter the sample), Row 2 = build definition (how a
@@ -87,22 +87,6 @@ function SlotCheckboxes({ allSlots, selected, onToggle, onAll }: { allSlots: num
         })}
       </div>
     </div>
-  )
-}
-
-/** Year range — a two-knob slider restricting the sample to a span of seasons (the meta shifts). */
-function YearRange({ years, fromYear, toYear, onFrom, onTo }: { years: string[]; fromYear: string; toYear: string; onFrom: (v: string) => void; onTo: (v: string) => void }) {
-  return (
-    <DualRangeSlider
-      label="Years"
-      min={Number(years[0] ?? 0)}
-      max={Number(years.at(-1) ?? 0)}
-      from={Number(fromYear)}
-      to={Number(toYear)}
-      onFrom={(n) => onFrom(String(n))}
-      onTo={(n) => onTo(String(n))}
-      format={String}
-    />
   )
 }
 

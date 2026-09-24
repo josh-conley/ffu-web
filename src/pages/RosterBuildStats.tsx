@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAllDrafts, useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
+import { useYearRange } from '@/hooks/useYearRange'
 import { analyzeBuilds, FILTER_POSITIONS, type BuildStat } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { DraftBuildDetail } from '@/components/DraftBuildDetail'
@@ -12,11 +13,6 @@ import { useSelectedPositions, useSelectedSlots } from './rosterBuildFilters'
 import { buildColumns } from './draftBuildColumns'
 
 const EMPTY_BASELINES = { first: 0, top3: 0, top6: 0, top9: 0, finish: 0, upr: 0 }
-
-/** Year bounds from the from/to params, defaulting to the full span (kept out of the component body). */
-function yearBounds(fromParam: string, toParam: string, years: string[]): [string, string] {
-  return [fromParam || years[0] || '', toParam || years.at(-1) || '']
-}
 
 const EMPTY_MESSAGE = 'No builds meet the minimum team-season count. Lower “Min teams”.'
 
@@ -44,8 +40,6 @@ export function RosterBuildStats() {
   const [minParam, setMin] = useUrlState('min', '10')
   const [posParam, setPos] = useUrlState('pos', FILTER_POSITIONS.join(','))
   const [slotsParam, setSlots] = useUrlState('slots', '')
-  const [fromParam, setFrom] = useUrlState('from', '')
-  const [toParam, setTo] = useUrlState('to', '')
   const threshold = Number(roundsParam)
   const minTeams = Number(minParam)
   const { selected, togglePos, selectAll: selectAllPos } = useSelectedPositions(posParam, setPos)
@@ -53,7 +47,7 @@ export function RosterBuildStats() {
   const [openKey, setOpenKey] = useState<string | undefined>(undefined)
 
   const years = useMemo(() => [...new Set((seasons ?? []).map((s) => s.year))].sort(), [seasons])
-  const [fromYear, toYear] = yearBounds(fromParam, toParam, years)
+  const { fromYear, toYear, setFrom, setTo } = useYearRange(years)
 
   const maxSlot = useMemo(() => Math.max(12, ...(drafts ?? []).flatMap((d) => d.picks.map((p) => p.slot))), [drafts])
   const { allSlots, selected: selectedSlots, toggleSlot, slotFilter, selectAll: selectAllSlots } = useSelectedSlots(slotsParam, setSlots, maxSlot)
