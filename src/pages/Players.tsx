@@ -14,14 +14,13 @@ const POSITIONS = ['QB', 'RB', 'WR', 'TE', 'DEF']
 
 const FILTERS: FilterDef<PlayerSummary>[] = [
   { key: 'pos', label: 'Position', options: POSITIONS.map((p) => ({ value: p, label: p })), predicate: (r, v) => r.position === v },
-  { key: 'started', label: 'Started only', type: 'toggle', predicate: (r) => r.starts > 0 },
 ]
 
 /** Case- and accent-insensitive name match, so "st brown" finds "Amon-Ra St. Brown". */
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/gi, '').toLowerCase()
 
 /**
- * Players — every NFL player who has been on an FFU roster, ranked by the points he scored in FFU
+ * Players — every NFL player an FFU team has started, ranked by the points he scored in FFU
  * starting lineups. A row opens in place to show his FFU history. Lineups exist from 2021, so this
  * is the Sleeper era.
  */
@@ -44,7 +43,7 @@ export function Players() {
       <div className="space-y-2">
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Players</h1>
         <p className="max-w-2xl text-sm text-muted">
-          Every NFL player who has been on an FFU roster since 2021, ranked by the points he scored in FFU starting
+          Every NFL player an FFU team has started since 2021, ranked by the points he scored in FFU starting
           lineups. Playoffs counts the playoff runs he started in, Title Gms the championship finals, and Titles the
           finals his team won. Click a player for his title games, where he was drafted, his best weeks and who
           started him.

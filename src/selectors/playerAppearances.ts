@@ -1,8 +1,9 @@
 import type { Tier } from '@/config'
 import type { PlayerMap, SeasonData, SeasonLineups } from '@/data'
 
-// NFL players through FFU's eyes: every week a player sat on an FFU roster, flattened out of the
-// lineup files. Lineups exist for the Sleeper era only (2021 on), so everything built on this is too.
+// NFL players through FFU's eyes: every week a player was in an FFU starting lineup, flattened out
+// of the lineup files. Benched weeks are left out on purpose — only a start put points on the board,
+// so a player FFU only ever benched doesn't appear at all. Lineups exist for the Sleeper era only (2021 on), so everything built on this is too.
 // Derived on demand, never stored.
 
 export interface PlayerAppearance {
@@ -12,8 +13,6 @@ export interface PlayerAppearance {
   week: number
   memberId: string
   points: number
-  /** In the starting lineup (the points counted), rather than on the bench. */
-  started: boolean
   /** The team-week was a playoff game (any bracket, consolation and placement games included). */
   isPlayoff: boolean
   /** The team-week was a championship-bracket playoff game — the playoffs proper. */
@@ -70,7 +69,7 @@ function seasonWeeks(seasons: SeasonData[]): Map<string, SeasonWeeks> {
   return out
 }
 
-/** Flattens every lineup file into one row per player per team-week (starters and bench). */
+/** Flattens every lineup file into one row per STARTER per team-week. */
 export function playerAppearances(lineups: SeasonLineups[], seasons: SeasonData[]): PlayerAppearance[] {
   const bySeason = seasonWeeks(seasons)
   const out: PlayerAppearance[] = []
@@ -89,8 +88,7 @@ export function playerAppearances(lineups: SeasonLineups[], seasons: SeasonData[
           championshipBracket: weeks?.bracket.has(key) ?? false,
           ...(titleGame && { titleGame }),
         }
-        for (const p of team.starters) out.push({ ...base, playerId: p.playerId, points: p.points, started: true })
-        for (const p of team.bench) out.push({ ...base, playerId: p.playerId, points: p.points, started: false })
+        for (const p of team.starters) out.push({ ...base, playerId: p.playerId, points: p.points })
       }
     }
   }
@@ -103,13 +101,11 @@ export interface PlayerSummary {
   position: string
   /** Weeks he was in a starting lineup. */
   starts: number
-  /** Points scored while started — the points that counted for an FFU team. */
+  /** Points scored in those starts — the points that counted for an FFU team. */
   points: number
-  /** Weeks on any FFU roster, started or benched. */
-  rosteredWeeks: number
-  /** Distinct members who STARTED him at least once. */
+  /** Distinct members who started him. */
   managers: number
-  /** Distinct seasons he was on an FFU roster. */
+  /** Distinct seasons in which he was started. */
   seasons: number
   /**
    * Playoff runs he was part of: team-seasons in which he STARTED at least one championship-bracket
@@ -128,7 +124,6 @@ interface Tally {
   titlesWon: number
   starts: number
   points: number
-  rosteredWeeks: number
   managers: Set<string>
   seasons: Set<string>
 }
@@ -140,12 +135,10 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
   for (const a of appearances) {
     let t = byPlayer.get(a.playerId)
     if (!t) {
-      t = { playoffRuns: new Set(), titleGames: 0, titlesWon: 0, starts: 0, points: 0, rosteredWeeks: 0, managers: new Set(), seasons: new Set() }
+      t = { playoffRuns: new Set(), titleGames: 0, titlesWon: 0, starts: 0, points: 0, managers: new Set(), seasons: new Set() }
       byPlayer.set(a.playerId, t)
     }
-    t.rosteredWeeks++
     t.seasons.add(a.year)
-    if (!a.started) continue
     t.starts++
     t.points += a.points
     t.managers.add(a.memberId)
@@ -156,7 +149,7 @@ function tally(appearances: PlayerAppearance[]): Map<string, Tally> {
   return byPlayer
 }
 
-/** One row per player who was ever on an FFU roster, most FFU points first. */
+/** One row per player FFU has ever started, most FFU points first. */
 export function playerSummaries(appearances: PlayerAppearance[], players: PlayerMap): PlayerSummary[] {
   return [...tally(appearances)]
     .map(([playerId, t]) => ({
@@ -164,7 +157,6 @@ export function playerSummaries(appearances: PlayerAppearance[], players: Player
       ...playerRef(players, playerId),
       starts: t.starts,
       points: round2(t.points),
-      rosteredWeeks: t.rosteredWeeks,
       managers: t.managers.size,
       seasons: t.seasons.size,
       playoffApps: t.playoffRuns.size,

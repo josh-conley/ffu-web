@@ -65,12 +65,23 @@ const SEASONS = [
 const APPEARANCES = playerAppearances(LINEUPS, SEASONS)
 
 describe('playerAppearances', () => {
-  it('flattens starters and bench, marking playoff team-weeks', () => {
+  it('flattens starters, marking playoff team-weeks and the final', () => {
     const final = APPEARANCES.find((a) => a.playerId === 'p1' && a.week === 15)
-    expect(final).toMatchObject({ year: '2024', memberId: 'a', started: true, isPlayoff: true, points: 31.5, titleGame: 'won' })
+    expect(final).toMatchObject({ year: '2024', memberId: 'a', isPlayoff: true, points: 31.5, titleGame: 'won' })
     expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 15)).toMatchObject({ titleGame: 'lost' })
-    expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 1)).toMatchObject({ started: false, isPlayoff: false })
-    expect(APPEARANCES.find((a) => a.playerId === 'p2' && a.week === 1)?.titleGame).toBeUndefined()
+    const regular = APPEARANCES.find((a) => a.playerId === 'x' && a.week === 1)
+    expect(regular?.isPlayoff).toBe(false)
+    expect(regular?.titleGame).toBeUndefined()
+  })
+
+  it('leaves benched weeks out entirely', () => {
+    // p2 sat on b's bench in week 1.
+    expect(APPEARANCES.some((a) => a.playerId === 'p2' && a.week === 1)).toBe(false)
+  })
+
+  it('drops a player FFU only ever benched', () => {
+    const benchOnly = [lineups('2024', [{ week: 1, teams: [lu('a', [['p1', 20]], [['ghost', 30]])] }])]
+    expect(playerSummaries(playerAppearances(benchOnly, SEASONS), PLAYERS).map((s) => s.playerId)).toEqual(['p1'])
   })
 
   it('marks no final in a season without a champion yet — a semifinal is not the final', () => {
@@ -80,11 +91,11 @@ describe('playerAppearances', () => {
 })
 
 describe('playerSummaries', () => {
-  it('counts only started weeks toward points, but every rostered week and season', () => {
+  it('counts points, managers and seasons from his starts only', () => {
     const [top, second] = playerSummaries(APPEARANCES, PLAYERS)
     expect(top).toMatchObject({ playerId: 'p1', name: 'Star Back', starts: 3, points: 59.5, managers: 2, seasons: 2 })
     // p2: benched once (3 pts don't count), started once for 12.
-    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, rosteredWeeks: 2, managers: 1 })
+    expect(second).toMatchObject({ playerId: 'p2', starts: 1, points: 12, managers: 1, seasons: 1 })
   })
 
   it('counts playoff runs, title games and titles from the games he started', () => {

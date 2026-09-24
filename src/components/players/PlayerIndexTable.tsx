@@ -34,11 +34,11 @@ function columns(openKey: string | undefined): Column<PlayerSummary>[] {
     num('titleGames', 'Title Gms', 'Championship finals he started in, won or lost'),
     num('titlesWon', 'Titles', 'Championship finals he started in and his team won'),
     num('managers', 'Teams', 'Different FFU teams that started him'),
-    num('seasons', 'Seasons', 'Seasons on an FFU roster'),
+    num('seasons', 'Seasons', 'Seasons in which an FFU team started him'),
   ]
 }
 
-/** Every player FFU has rostered, most FFU points first. Click a row to open his FFU history. */
+/** Every player FFU has started, most FFU points first. Click a row to open his FFU history. */
 export function PlayerIndexTable({
   rows,
   openKey,

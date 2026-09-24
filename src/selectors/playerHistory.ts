@@ -8,11 +8,10 @@ import type { PlayerAppearance } from './playerAppearances'
 
 export interface ManagerStint {
   memberId: string
-  /** Seasons this member had him on the roster, oldest first. */
+  /** Seasons this member started him, oldest first. */
   years: string[]
   starts: number
-  benchWeeks: number
-  /** Points he scored for this member while started. */
+  /** Points he scored for this member. */
   points: number
 }
 
@@ -57,14 +56,12 @@ function managerStints(mine: PlayerAppearance[]): ManagerStint[] {
   for (const a of mine) {
     let m = byMember.get(a.memberId)
     if (!m) {
-      m = { memberId: a.memberId, years: [], starts: 0, benchWeeks: 0, points: 0 }
+      m = { memberId: a.memberId, years: [], starts: 0, points: 0 }
       byMember.set(a.memberId, m)
     }
     if (!m.years.includes(a.year)) m.years.push(a.year)
-    if (a.started) {
-      m.starts++
-      m.points += a.points
-    } else m.benchWeeks++
+    m.starts++
+    m.points += a.points
   }
   return [...byMember.values()]
     .map((m) => ({ ...m, years: [...m.years].sort(), points: round2(m.points) }))
@@ -86,23 +83,22 @@ export function playerDrafts(playerId: string, drafts: DraftData[]): PlayerDraft
     .sort((a, b) => b.year.localeCompare(a.year) || a.overall - b.overall)
 }
 
-/** Championship finals he STARTED in, won or lost, newest first. */
+/** Championship finals he started in, won or lost, newest first. */
 export function playerTitleGames(mine: PlayerAppearance[]): PlayerTitleGame[] {
   return mine
-    .filter((a) => a.started && a.titleGame)
+    .filter((a) => a.titleGame)
     .map((a) => ({ year: a.year, tier: a.tier, memberId: a.memberId, points: a.points, won: a.titleGame === 'won' }))
     .sort((a, b) => b.year.localeCompare(a.year))
 }
 
 function topWeeks(mine: PlayerAppearance[]): PlayerWeek[] {
-  return mine
-    .filter((a) => a.started)
+  return [...mine]
     .sort((a, b) => b.points - a.points)
     .slice(0, TOP_WEEKS)
     .map(({ year, tier, week, memberId, points, isPlayoff }) => ({ year, tier, week, memberId, points, isPlayoff }))
 }
 
-/** Everything the expanded row shows for one player. Empty lists for a player FFU never rostered. */
+/** Everything the expanded row shows for one player. Empty lists for a player FFU never started. */
 export function playerHistory(playerId: string, appearances: PlayerAppearance[], drafts: DraftData[]): PlayerHistory {
   const mine = appearances.filter((a) => a.playerId === playerId)
   return {

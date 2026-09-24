@@ -352,7 +352,9 @@ the site already loads; nothing stored.
 - [x] **One table, no per-player pages** (changed the same day at Josh's request).
       - **Ranked by points** scored in FFU starting lineups (bench points don't count).
       - **Columns:** starts, per-start average, best week, teams that started him, seasons rostered.
-      - **Filters:** search (`?q=`, ignores case and punctuation), Position, and "Started only". 50 a page.
+      - **Filters:** search (`?q=`, ignores case and punctuation) and Position. 50 a page.
+      - **Starts only** (Josh, 2026-09-24): benched weeks are left out of every number, and a player
+        FFU only ever benched isn't listed. Seasons and Teams count seasons and teams that STARTED him.
 - [x] **Playoffs / Title Gms / Titles columns** (replaced Starts, Avg and Best the same day, at
       Josh's request). All three count games he STARTED:
       - **Playoffs:** team-seasons in which he started at least one championship-bracket game.
