@@ -5,6 +5,8 @@ import type { PlayerLiveStatus } from '@/selectors'
 // they have no game this week (bye) — there's nothing to report. The legend below spells it out.
 
 const LABEL: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = { live: 'Playing now', pre: 'Yet to play', final: 'Played' }
+// The key also names the matching points styling (see liveStatusTone.ts), which the dot's own label doesn't need.
+const KEY: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = { live: 'Playing now (green points)', pre: 'Yet to play (—)', final: 'Played' }
 const STYLE: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = {
   live: 'bg-positive motion-safe:animate-pulse',
   pre: 'border border-muted',
@@ -28,10 +30,9 @@ export function LiveStatusLegend() {
       {(['live', 'pre', 'final'] as const).map((status) => (
         <span key={status} className="flex items-center gap-1.5">
           <Dot status={status} decorative />
-          {LABEL[status]}
+          {KEY[status]}
         </span>
       ))}
-      <span>Proj = points so far + projection for the time left</span>
     </p>
   )
 }

@@ -3,6 +3,7 @@ import type { LineupPlayer, PlayerMap, TeamLineup } from '@/data'
 import { getMember, nameForYear } from '@/config'
 import { benchByPoints, type PlayerLiveStatus } from '@/selectors'
 import { LiveStatusDot } from './LiveStatusDot'
+import { nameTone, pointsText, pointsTone } from './liveStatusTone'
 import { shortPlayerName } from './format'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
@@ -50,31 +51,39 @@ type StatusOf = (playerId: string) => PlayerLiveStatus
 
 const playerLabel = (player: LineupPlayer | undefined, players: PlayerMap) => (player ? players[player.playerId]?.name ?? player.playerId : '')
 
-function PlayerName({ player, players, align, dim, statusOf }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; dim?: boolean; statusOf?: StatusOf }) {
+function PlayerName({ player, players, align, statusOf }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
+  const status = player && statusOf?.(player.playerId)
   // Written left-to-right for the left side; the right side is the same parts mirrored, so the
   // status dot sits on the outer edge on both.
   const parts = [
-    player && <LiveStatusDot key="dot" status={statusOf?.(player.playerId)} />,
+    <LiveStatusDot key="dot" status={status} />,
     <NameParts key="name" full={playerLabel(player, players)} />,
     player?.team && <span key="team" className="shrink-0 text-[10px] text-muted">{player.team}</span>,
   ]
   return (
-    <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${dim ? 'text-muted' : ''}`}>
+    <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${nameTone(status)}`}>
       {align === 'right' ? parts.reverse() : parts}
     </span>
   )
 }
 
-function StarterRows({ slots, a, b, players, winner, statusOf }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; winner: 'a' | 'b' | null; statusOf?: StatusOf }) {
+function PlayerPoints({ player, align, statusOf }: { player?: LineupPlayer; align: 'left' | 'right'; statusOf?: StatusOf }) {
+  const status = player && statusOf?.(player.playerId)
+  return <span className={`font-mono tabular-nums ${align === 'left' ? 'text-right' : ''} ${pointsTone(status)}`}>{pointsText(player?.points ?? 0, status)}</span>
+}
+
+/** Starters row by row. Every player reads at full strength whichever side is winning — the heads
+ *  carry the result; what a player's own styling says is where their game stands (live only). */
+function StarterRows({ slots, a, b, players, statusOf }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; statusOf?: StatusOf }) {
   return (
     <div className={`${COLS} ${ROW_PAD} py-2 text-xs sm:text-sm`}>
       {slots.map((slot, i) => (
         <Fragment key={i}>
-          <PlayerName player={a.starters[i]} players={players} align="left" dim={winner === 'b'} statusOf={statusOf} />
-          <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{fmt(a.starters[i]?.points ?? 0)}</span>
+          <PlayerName player={a.starters[i]} players={players} align="left" statusOf={statusOf} />
+          <PlayerPoints player={a.starters[i]} align="left" statusOf={statusOf} />
           <span className={`justify-self-center rounded px-1 text-[10px] font-bold ${posClass(slot)}`}>{SLOT_LABEL[slot] ?? slot}</span>
-          <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{fmt(b.starters[i]?.points ?? 0)}</span>
-          <PlayerName player={b.starters[i]} players={players} align="right" dim={winner === 'a'} statusOf={statusOf} />
+          <PlayerPoints player={b.starters[i]} align="right" statusOf={statusOf} />
+          <PlayerName player={b.starters[i]} players={players} align="right" statusOf={statusOf} />
         </Fragment>
       ))}
     </div>
@@ -84,14 +93,15 @@ function StarterRows({ slots, a, b, players, winner, statusOf }: { slots: string
 function BenchRow({ p, players, align, statusOf }: { p: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
   const info = players[p.playerId]
   const pos = info?.position ?? '—'
+  const status = statusOf?.(p.playerId)
   return (
     <div className={`flex items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
-      <LiveStatusDot status={statusOf?.(p.playerId)} />
+      <LiveStatusDot status={status} />
       <span className={`shrink-0 rounded px-1 text-[9px] font-bold ${posClass(pos)}`}>{pos}</span>
       <span className={`flex min-w-0 flex-1 ${align === 'right' ? 'justify-end' : ''}`}>
         <NameParts full={info?.name ?? p.playerId} />
       </span>
-      <span className="shrink-0 font-mono tabular-nums">{fmt(p.points)}</span>
+      <span className={`shrink-0 font-mono tabular-nums ${pointsTone(status)}`}>{pointsText(p.points, status)}</span>
     </div>
   )
 }
@@ -125,11 +135,11 @@ function TeamName({ memberId, year }: { memberId: string; year: string }) {
 function Heads({ a, b, year, winner }: { a: BoxScoreSide; b: BoxScoreSide; year: string; winner: 'a' | 'b' | null }) {
   return (
     <div className={`${COLS} ${ROW_PAD} border-b border-border py-2 text-xs font-semibold sm:text-sm`}>
-      <span className={`flex min-w-0 items-center gap-1.5 sm:gap-2 ${winner === 'b' ? 'text-muted' : ''}`}><TeamLogo ffuId={a.memberId} size={22} /><TeamName memberId={a.memberId} year={year} /></span>
+      <span className="flex min-w-0 items-center gap-1.5 sm:gap-2"><TeamLogo ffuId={a.memberId} size={22} /><TeamName memberId={a.memberId} year={year} /></span>
       <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{fmt(a.score)}</span>
       <span className="text-center text-[10px] text-muted">VS</span>
       <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{fmt(b.score)}</span>
-      <span className={`flex min-w-0 items-center justify-end gap-1.5 sm:gap-2 ${winner === 'a' ? 'text-muted' : ''}`}><TeamName memberId={b.memberId} year={year} /><TeamLogo ffuId={b.memberId} size={22} /></span>
+      <span className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2"><TeamName memberId={b.memberId} year={year} /><TeamLogo ffuId={b.memberId} size={22} /></span>
     </div>
   )
 }
@@ -150,7 +160,7 @@ function Projections({ a, b }: { a: BoxScoreSide; b: BoxScoreSide }) {
 }
 
 /** Head-to-head lineups (+ bench): slot label centered + color-coded, scores flanking it, names on the
- *  outer edges. The dimmed side is the loser (by score); ties dim neither. `statusOf` (live only)
+ *  outer edges. Only the losing side's team score is dimmed (ties dim neither). `statusOf` (live only)
  *  marks where each player's NFL game stands. */
 export function BoxScore({
   slots,
@@ -171,7 +181,7 @@ export function BoxScore({
     <>
       <Heads a={a} b={b} year={year} winner={winner} />
       <Projections a={a} b={b} />
-      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} winner={winner} statusOf={statusOf} />
+      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} statusOf={statusOf} />
       <BenchSection a={a.lineup} b={b.lineup} players={players} statusOf={statusOf} />
     </>
   )
