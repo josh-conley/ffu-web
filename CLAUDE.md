@@ -106,10 +106,27 @@ empty = zero cost, section hidden. Regular season only (wks 1–14); playoffs de
 
 **Conventions (enforced):** ESLint caps `max-lines` 300 / `max-lines-per-function` 80 / `complexity` 12 +
 `no-explicit-any`. Gates before any commit: `npm run typecheck && npm run lint && npm test`. **Commit AND
-push after every green change** without being asked. "Push" means **to `main`** (production deploys
-from it): a cloud session that works on its own branch also fast-forwards `main` and pushes it, unless
-the user asks for a PR instead. Dev server is the **user's** on `:5173` — never
+push after every green change** without being asked. Where it goes depends on who you're working for
+(see **Who pushes where** below). Dev server is the **user's** on `:5173` — never
 `pkill vite`; an agent server uses `:5199`.
+
+**Who pushes where:**
+- **Josh (repo owner, GitHub `josh-conley`):** "push" means **to `main`** (production deploys from
+  it). A cloud session on its own branch also fast-forwards `main` and pushes it, unless he asks for
+  a PR instead.
+- **Anyone else (e.g. the commissioner):** never push to `main` directly. Work goes to the rolling
+  **`auto/requests`** branch, which `preview-deploy.yml` puts on **`preview.ffunion.com`** (~1–2 min
+  per push), then into `main` through its rolling PR:
+  1. Start from it: if `origin/auto/requests` has commits not on `main`, build on top of them (they're
+     other pending requests, possibly the Discord bot's); otherwise reset it to `origin/main` first.
+  2. Commit (gates green), push to `auto/requests`, and open the PR `auto/requests` → `main` if one
+     isn't open (the Discord pipeline shares the same PR). Tell them to check preview.ffunion.com.
+  3. Merge only when **they say it looks good**, and only with CI green. Use a **merge commit**,
+     never squash or rebase: after a merge the pipeline sees no commits ahead of `main` and starts
+     fresh, but a squash leaves the old commits "ahead" and they'd be rebuilt on.
+  4. The preview shows everything pending on the branch, not only their change, so merging ships all
+     of it. Say so if the branch has someone else's pending commits.
+- Can't tell whose session this is? Ask before pushing anywhere.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
 the live site and will eyeball/flag issues; only screenshot when they're away or it's genuinely ambiguous,

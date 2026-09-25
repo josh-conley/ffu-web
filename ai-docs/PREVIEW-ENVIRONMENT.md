@@ -40,3 +40,7 @@ longer used and can be deleted.)
 - Client-side routes (e.g. visiting `/standings` directly) may 404 on Cloudflare without an SPA
   fallback — the root URL + clicking around works; if deep links 404 we'll add a `_redirects` file.
 - `preview.ffunion.com` is the stable custom domain for the project (a Namecheap CNAME to it).
+- **Not only the Discord bot:** collaborators' Claude Code sessions (e.g. the commissioner's) push
+  their work to `auto/requests` too and merge it through the same rolling PR once the preview looks
+  right. `preview-deploy.yml` deploys any push to the branch. The rules are in `CLAUDE.md` under
+  "Who pushes where".
