@@ -106,7 +106,9 @@ empty = zero cost, section hidden. Regular season only (wks 1–14); playoffs de
 
 **Conventions (enforced):** ESLint caps `max-lines` 300 / `max-lines-per-function` 80 / `complexity` 12 +
 `no-explicit-any`. Gates before any commit: `npm run typecheck && npm run lint && npm test`. **Commit AND
-push after every green change** without being asked. Dev server is the **user's** on `:5173` — never
+push after every green change** without being asked. "Push" means **to `main`** (production deploys
+from it): a cloud session that works on its own branch also fast-forwards `main` and pushes it, unless
+the user asks for a PR instead. Dev server is the **user's** on `:5173` — never
 `pkill vite`; an agent server uses `:5199`.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
