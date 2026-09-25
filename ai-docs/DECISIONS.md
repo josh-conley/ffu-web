@@ -458,3 +458,18 @@ uses each league's custom rules (first downs, 6.5-pt TDs). A flat PPR figure wou
 **Risk and containment.** Sleeper can change the feed without notice. Everything built on it is
 optional. `useNflWeek` turns a failure into "no data", and the cards and box score then render
 exactly as before. The same feed also fills in live players' NFL teams (`withNflTeams`).
+
+## 2026-09-25 — changes reach production through per-change previews and a CI-gated main
+
+**Decision.** Anything visible on the site goes on its own `preview/<name>` branch with its own PR,
+deployed by `preview-deploy.yml` to `preview-<name>.ffu-web-preview.pages.dev`. A GitHub ruleset on
+`main` requires CI's `verify` check (and an up-to-date branch) before a PR can merge; the repo admin
+bypasses it for docs, tooling and urgent fixes pushed directly. `deploy.yml` also runs the gates
+before publishing, so a direct push that fails them never goes live. `auto/requests` stays the
+Discord bot's rolling branch, kept caught up with `main` by `sync-requests.yml`.
+
+**Why.** A second contributor (the commissioner) now makes changes through his own Claude Code
+sessions. One shared preview branch made every merge ship everyone's pending work at once;
+per-change branches let each change ship on its own, and the ruleset makes "nothing merges red"
+enforced rather than a convention. The operational rules for sessions are in `CLAUDE.md` under
+"Who pushes where".
