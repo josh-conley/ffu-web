@@ -113,21 +113,20 @@ push after every green change** without being asked. Where it goes depends on wh
 **Who pushes where:**
 - **Josh (repo owner, GitHub `josh-conley`):** "push" means **to `main`** (production deploys from
   it). A cloud session on its own branch also fast-forwards `main` and pushes it, unless he asks for
-  a PR instead.
-- **Anyone else (e.g. the commissioner):** never push to `main` directly. Work goes to the rolling
-  **`auto/requests`** branch, which `preview-deploy.yml` puts on **`preview.ffunion.com`** (~1–2 min
-  per push), then into `main` through its rolling PR:
-  1. Start from `origin/auto/requests` as it is. `sync-requests.yml` keeps it caught up with `main`
-     after every deploy, so it is always `main` plus whatever is pending (other requests, possibly the
-     Discord bot's), and the work goes on top. If the sync has failed on a conflict, `main` won't be
-     an ancestor: merge `main` into it first and resolve.
-  2. Commit (gates green), push to `auto/requests`, and open the PR `auto/requests` → `main` if one
-     isn't open (the Discord pipeline shares the same PR). Tell them to check preview.ffunion.com.
-  3. Merge only when **they say it looks good**, and only with CI green. Use a **merge commit**,
-     never squash or rebase, so the branch's history stays that of `main` and the next sync is a
-     plain fast-forward.
-  4. The preview shows everything pending on the branch, not only their change, so merging ships all
-     of it. Say so if the branch has someone else's pending commits.
+  a PR or a preview first, in which case use a preview branch as below.
+- **Anyone else (e.g. the commissioner):** never push to `main` directly. **One change, one branch,
+  one PR**, so each change ships on its own without waiting on anyone else's:
+  1. Branch `preview/<name>` from the latest `origin/main`: a short kebab-case name, 20 characters
+     or fewer (e.g. `preview/playoff-odds`) so Cloudflare doesn't cut it short in the URL.
+  2. Commit (gates green), push, and open a PR into `main`. `preview-deploy.yml` deploys it to
+     **`https://preview-<name>.ffu-web-preview.pages.dev`** in ~1–2 min and posts that URL as the
+     PR's "Preview" check. Give them the link.
+  3. Follow-up tweaks to the same change go on the same branch (the preview updates on each push).
+  4. Merge only when **they say it looks good**, with CI green and the branch up to date: if `main`
+     has moved and conflicts, merge `main` into the branch (never rebase or force-push) and let the
+     preview redeploy first. Use a **merge commit**, then delete the branch.
+- **`auto/requests`** is the Discord bot's rolling branch (served at `preview.ffunion.com`, kept in
+  sync with `main` by `sync-requests.yml`). Sessions don't put their own work there.
 - Can't tell whose session this is? Ask before pushing anywhere.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
@@ -136,7 +135,8 @@ and trust well-tested libraries rather than proving each one visually.
 
 **Deploy:** production is the apex **`ffunion.com`** (GitHub Pages, auto-deploys on push to `main` —
 the cutover from the old `ffu-app` site is done). A Cloudflare preview at `preview.ffunion.com` serves
-the `auto/requests` branch (autonomous Discord-request pipeline). `new.ffunion.com` and
+the `auto/requests` branch (autonomous Discord-request pipeline); each `preview/<name>` branch gets
+its own `preview-<name>.ffu-web-preview.pages.dev` (see Who pushes where). `new.ffunion.com` and
 `old.ffunion.com` are NOT in use — neither resolves; don't cite them as URLs. Details in
 `ai-docs/DEPLOY.md`.
 

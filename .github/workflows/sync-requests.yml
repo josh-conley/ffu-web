@@ -19,9 +19,10 @@ on:
 permissions:
   contents: write # update auto/requests
 
-# Shares preview-deploy.yml's group, so a sync and a session's push never deploy over each other.
+# Shares preview-deploy.yml's group for this branch, so a sync and a push to it never deploy over
+# each other.
 concurrency:
-  group: preview-deploy
+  group: preview-deploy-refs/heads/auto/requests
   cancel-in-progress: false
 
 jobs:
