@@ -114,7 +114,10 @@ export function Overview() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
+      <div>
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
+        <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-muted">Three tiers · Promotion &amp; relegation · Since 2018</p>
+      </div>
       <CupBanner />
       <HomeUnionPanel highlight={union} />
       {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
