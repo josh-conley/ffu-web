@@ -12,12 +12,11 @@ unmaintainable: huge files, duplicated logic, dual IDs everywhere, ad-hoc era br
 correct, and safe — and is deliberate practice in building software *responsibly* with AI tooling.
 
 ## Background docs (don't read wholesale by default)
-The full rebuild plan + historical decisions live at `~/.claude/plans/ffu-rebuild-plan.md` — reference it
-only if you need deep historical context. Per-phase build history lives in `git log`, not here.
-
-The old codebase (source of logic to port + data to migrate) is at `~/Development/ffu-app`, wired in via
-`.claude/settings.local.json` (`permissions.additionalDirectories: ["../ffu-app"]`) — readable every
-session, no `--add-dir` needed.
+Per-phase build history lives in `git log`, not here. Two older sources exist **only on Josh's
+laptop**, and a cloud session (the commissioner's, or Josh's own) has neither, so don't go looking:
+the original rebuild plan (`~/.claude/plans/ffu-rebuild-plan.md`) and the old `ffu-app` codebase
+(`~/Development/ffu-app`, the legacy source `npm run migrate` reads). Everything a change normally
+needs is in this repo; if a task really needs legacy source, say so rather than guessing.
 
 ---
 
@@ -131,7 +130,30 @@ push after every green change** without being asked. Where it goes depends on wh
   on its own branch fast-forwards `main` and pushes it. `deploy.yml` runs the gates before publishing, so a red commit never goes live.
 - **`auto/requests`** is the Discord bot's rolling branch (served at `preview.ffunion.com`, kept in
   sync with `main` by `sync-requests.yml`). Sessions don't put their own work there.
+- **Whose session is it?** Cloud sessions set `git config user.name`/`user.email` from the GitHub
+  account: Josh is `josh-conley` (Josh Conley). Anyone else follows the commissioner's rules. GitHub
+  backs this up: the `main` ruleset (CI's `verify` required) only lets Josh bypass it, so anyone
+  else's direct push to `main` is refused, not silently published.
 - Can't tell whether a change is visible, or whose session this is? Ask before pushing.
+
+**Project preferences** (Josh's standing calls; follow them without being told again):
+- **Gates:** never pipe a gate into a commit (`npm test | tail && git commit` commits a red run,
+  because the chain sees `tail`'s exit code). Run gates bare, or check them in a separate call first.
+- **Effort:** trivial data/config edits (a name, an id, an owner entry) are done directly. No
+  generator scripts or new abstractions for them; the rigor is for logic and architecture.
+- **Data:** for finished seasons, Sleeper's own aggregates (W-L-T, points for/against) are stored as
+  facts and shown as-is, even where they differ by a few points from summing the games. Everything
+  that is *our* notion (UPR, records, H2H, first season, ...) is derived from the games. The old
+  `ffu-app` hand-kept constants were often wrong (e.g. join year for 43 of 63 members): cross-check
+  anything ported from it against the data.
+- **Look:** square corners on tables and new cards/banners (plain `border border-border`). Don't add
+  the angular cut/`decal` motif to new UI; it stays only on `MemberDetail` and `NotFound`, and the
+  nav is motif-free. Keep semantic colors (green winner/Active, the QB/RB/WR position colors).
+  Shared button/select styles live in `src/components/controls.ts`.
+- **Tables stay tables** on a phone: horizontal scroll (a pinned first column is fine), never a
+  stacked-card layout. Two deliberate exceptions: the home page has no horizontal scroll anywhere
+  (`DataTable`'s `fit` mode), and its per-league standings put record and points under the team
+  name. Don't generalise either to the wide pages.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
 the live site and will eyeball/flag issues; only screenshot when they're away or it's genuinely ambiguous,
