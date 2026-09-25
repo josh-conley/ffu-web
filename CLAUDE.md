@@ -117,13 +117,15 @@ push after every green change** without being asked. Where it goes depends on wh
 - **Anyone else (e.g. the commissioner):** never push to `main` directly. Work goes to the rolling
   **`auto/requests`** branch, which `preview-deploy.yml` puts on **`preview.ffunion.com`** (~1–2 min
   per push), then into `main` through its rolling PR:
-  1. Start from it: if `origin/auto/requests` has commits not on `main`, build on top of them (they're
-     other pending requests, possibly the Discord bot's); otherwise reset it to `origin/main` first.
+  1. Start from `origin/auto/requests` as it is. `sync-requests.yml` keeps it caught up with `main`
+     after every deploy, so it is always `main` plus whatever is pending (other requests, possibly the
+     Discord bot's), and the work goes on top. If the sync has failed on a conflict, `main` won't be
+     an ancestor: merge `main` into it first and resolve.
   2. Commit (gates green), push to `auto/requests`, and open the PR `auto/requests` → `main` if one
      isn't open (the Discord pipeline shares the same PR). Tell them to check preview.ffunion.com.
   3. Merge only when **they say it looks good**, and only with CI green. Use a **merge commit**,
-     never squash or rebase: after a merge the pipeline sees no commits ahead of `main` and starts
-     fresh, but a squash leaves the old commits "ahead" and they'd be rebuilt on.
+     never squash or rebase, so the branch's history stays that of `main` and the next sync is a
+     plain fast-forward.
   4. The preview shows everything pending on the branch, not only their change, so merging ships all
      of it. Say so if the branch has someone else's pending commits.
 - Can't tell whose session this is? Ask before pushing anywhere.
