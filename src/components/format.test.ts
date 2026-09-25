@@ -60,8 +60,7 @@ describe('gameNote', () => {
     expect(gameNote({ status: 'live', opponent: '@ BUF' })).toBe('Live @ BUF')
   })
 
-  it('goes back to the schedule once the game is over', () => {
-    expect(gameNote({ status: 'final', kickoff: 1790528400000, opponent: '@ BUF' })).toMatch(/^\w{3} \d{1,2}:\d{2}\s?(AM|PM) @ BUF$/)
-    expect(gameNote({ status: 'final', opponent: '@ BUF' })).toBe('@ BUF')
+  it('says Final then the opponent once the game is over', () => {
+    expect(gameNote({ status: 'final', kickoff: 1790528400000, opponent: '@ BUF' })).toBe('Final @ BUF')
   })
 })
