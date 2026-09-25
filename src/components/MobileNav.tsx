@@ -58,8 +58,12 @@ function NavDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Site navigation"
-        className="absolute right-0 top-0 flex h-full w-64 max-w-[80%] flex-col gap-1 border-l-2 border-accent bg-surface p-4 shadow-xl"
+        className="absolute right-0 top-0 flex h-dvh w-64 max-w-[80%] flex-col gap-1 overflow-y-auto overscroll-contain border-l-2 border-accent bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl [&>*]:shrink-0"
       >
+        {/* The nav outgrew a small phone's screen, so the panel scrolls on its own: sized to the
+            dynamic viewport (h-dvh — what iOS Safari actually shows, not the height behind its
+            toolbars), overscroll-contain so a fling doesn't scroll the page underneath, and
+            shrink-0 children so the column overflows (and scrolls) instead of squashing them. */}
         <button
           type="button"
           onClick={onClose}
@@ -68,8 +72,8 @@ function NavDrawer({
         >
           {CLOSE_ICON}
         </button>
-        {/* Sections stay expanded — the whole nav is ~10 links, so an accordion would add taps
-            without saving meaningful height. */}
+        {/* Sections stay expanded, scrolled rather than collapsed — an accordion would add a tap to
+            every visit for the sake of the rare page near the bottom. */}
         {entries.map((entry) =>
           isGroup(entry) ? (
             <Fragment key={entry.label}>
