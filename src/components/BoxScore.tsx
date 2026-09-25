@@ -67,18 +67,22 @@ const mirrored = <T,>(parts: T[], align: 'left' | 'right') => (align === 'right'
 const TAG = 'shrink-0 whitespace-nowrap text-[10px] text-muted'
 
 /**
- * The player's name, NFL team, and — live, while their game is still to come or on — an inline note
- * on it, all on one row. From `sm` up that's "BUF @MIA · Sun 1:00 PM"; on a phone the note shrinks
- * to "Sun 1p" / "Q3 7:30" and takes the team tag's place. The name is what gives way (truncates).
+ * The player's name with their NFL team beside it, and — live, while their game is still to come or
+ * on — a note on it justified to the opposite end, beside the points: "@MIA · Sun 1:00 PM" from `sm`
+ * up; on a phone just "Sun 1p" / "Q3 7:30", which also drops the team tag for room. Names line up
+ * on the outer edge and notes on the inner one, so both read straight down; the name gives way.
  */
 function NameBlock({ player, players, align, note }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; note?: GameNote | undefined }) {
-  const parts = [
+  const name = [
     <NameParts key="name" full={playerLabel(player, players)} />,
     player?.team && <span key="team" className={`${TAG} ${note ? 'hidden sm:inline' : ''}`}>{player.team}</span>,
+  ]
+  const parts = [
+    <span key="name" className="flex min-w-0 items-center gap-1 sm:gap-1.5">{mirrored(name, align)}</span>,
     note && <span key="note-full" className={`${TAG} hidden sm:inline`}>{note.full}</span>,
     note && <span key="note-short" className={`${TAG} sm:hidden`}>{note.short}</span>,
   ]
-  return <span className="flex min-w-0 items-center gap-1 sm:gap-1.5">{mirrored(parts, align)}</span>
+  return <span className={`flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3 ${note ? 'justify-between' : align === 'right' ? 'justify-end' : ''}`}>{mirrored(parts, align)}</span>
 }
 
 function PlayerName({ player, players, align, liveOf }: { player?: LineupPlayer | null; players: PlayerMap; align: 'left' | 'right'; liveOf?: LiveOf }) {

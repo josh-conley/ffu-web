@@ -29,7 +29,7 @@ export function LineupModalFrame({
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Game lineups" onClick={onClose} className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
-      <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-3xl overflow-auto border border-border bg-surface shadow-xl">
+      <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-5xl overflow-auto border border-border bg-surface shadow-xl">
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-accent px-4 py-2.5 text-accent-fg">
           <span className="flex flex-wrap items-baseline gap-x-2 text-sm font-bold uppercase tracking-wide">
             <span>{title}</span>
