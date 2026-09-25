@@ -114,6 +114,9 @@ export interface TeamLineup {
   starters: (LineupPlayer | null)[]
   /** Rostered but not started (didn't count). */
   bench: LineupPlayer[]
+  /** On injured reserve (not in `bench`). Live lineups only: Sleeper reports a roster's IR as it is
+   *  now, not as it was in a past week, so backfilled seasons have none (their IR sits in `bench`). */
+  reserve?: LineupPlayer[]
 }
 
 export interface WeekLineups {

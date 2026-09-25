@@ -14,7 +14,7 @@ export interface LiveBoxScore {
 }
 
 function allPlayerIds(lineups: LiveLineups): string[] {
-  return lineups.teams.flatMap((t) => [...startedPlayers(t), ...t.bench].map((p) => p.playerId))
+  return lineups.teams.flatMap((t) => [...startedPlayers(t), ...t.bench, ...(t.reserve ?? [])].map((p) => p.playerId))
 }
 
 /**

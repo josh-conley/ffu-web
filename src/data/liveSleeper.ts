@@ -28,14 +28,24 @@ export async function fetchNflState(): Promise<NflState> {
 interface SleeperRoster {
   roster_id: number
   owner_id: string
+  /** Player ids on injured reserve right now. */
+  reserve?: string[] | null
+}
+
+async function fetchRosters(leagueId: string): Promise<SleeperRoster[]> {
+  const rosters = await sleeperGet<SleeperRoster[]>(`/league/${leagueId}/rosters`)
+  if (!Array.isArray(rosters)) throw new Error(`Sleeper league/${leagueId}/rosters: not an array`)
+  return rosters
+}
+
+async function fetchRosterMap(leagueId: string): Promise<Map<number, string>> {
+  return rosterMapOf(await fetchRosters(leagueId))
 }
 
 /** roster_id -> ffuId, via the same config used by scripts/backfill-lineups.mjs (memberBySleeperId).
  *  A roster whose owner isn't in `members.ts` yet is dropped (warned, not thrown) — expected on day
  *  one of a new season before every new member has been added to config. */
-async function fetchRosterMap(leagueId: string): Promise<Map<number, string>> {
-  const rosters = await sleeperGet<SleeperRoster[]>(`/league/${leagueId}/rosters`)
-  if (!Array.isArray(rosters)) throw new Error(`Sleeper league/${leagueId}/rosters: not an array`)
+function rosterMapOf(rosters: SleeperRoster[]): Map<number, string> {
   const map = new Map<number, string>()
   for (const r of rosters) {
     const member = memberBySleeperId(String(r.owner_id))
@@ -129,17 +139,19 @@ function zipStarters(ids: string[], points: number[]): (LineupPlayer | null)[] {
   return ids.map((playerId, i) => (playerId && playerId !== '0' ? { playerId, points: points[i] ?? 0 } : null))
 }
 
-function benchOf(entry: SleeperFullMatchupEntry): LineupPlayer[] {
+/** Everyone rostered but not started, split into the bench proper and injured reserve. */
+function nonStarters(entry: SleeperFullMatchupEntry, reserve: ReadonlySet<string>): Pick<TeamLineup, 'bench' | 'reserve'> {
   const starting = new Set(entry.starters ?? [])
-  return (entry.players ?? [])
+  const rest = (entry.players ?? [])
     .filter((id) => id && id !== '0' && !starting.has(id))
     .map((id) => ({ playerId: id, points: entry.players_points?.[id] ?? 0 }))
+  return { bench: rest.filter((p) => !reserve.has(p.playerId)), reserve: rest.filter((p) => reserve.has(p.playerId)) }
 }
 
-function lineupFor(memberId: string, rosterId: number, entries: SleeperFullMatchupEntry[]): TeamLineup {
+function lineupFor(memberId: string, rosterId: number, entries: SleeperFullMatchupEntry[], reserve: ReadonlySet<string>): TeamLineup {
   const entry = entries.find((e) => e.roster_id === rosterId)
-  if (!entry) return { memberId, starters: [], bench: [] }
-  return { memberId, starters: zipStarters(entry.starters ?? [], entry.starters_points ?? []), bench: benchOf(entry) }
+  if (!entry) return { memberId, starters: [], bench: [], reserve: [] }
+  return { memberId, starters: zipStarters(entry.starters ?? [], entry.starters_points ?? []), ...nonStarters(entry, reserve) }
 }
 
 interface SleeperLeague {
@@ -156,16 +168,19 @@ export interface LiveWeekLineups {
 }
 
 export async function fetchLiveWeekLineups(leagueId: string, week: number): Promise<LiveWeekLineups> {
-  const [rosterMap, league, entries] = await Promise.all([
-    fetchRosterMap(leagueId),
+  const [rosters, league, entries] = await Promise.all([
+    fetchRosters(leagueId),
     sleeperGet<SleeperLeague>(`/league/${leagueId}`),
     sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
   ])
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
+  // IR as it stands NOW (all Sleeper exposes) — right for the week being played and those to come,
+  // which is all a live lineup is ever fetched for.
+  const reserveOf = new Map(rosters.map((r) => [r.roster_id, new Set(r.reserve ?? [])]))
   return {
     slots: (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s)),
     scoring: league.scoring_settings ?? {},
-    teams: [...rosterMap].map(([rosterId, memberId]) => lineupFor(memberId, rosterId, entries)),
+    teams: [...rosterMapOf(rosters)].map(([rosterId, memberId]) => lineupFor(memberId, rosterId, entries, reserveOf.get(rosterId) ?? new Set())),
   }
 }
 
@@ -177,7 +192,7 @@ export interface LiveLineups extends Omit<LiveWeekLineups, 'teams'> {
 export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string]): Promise<LiveLineups> {
   const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week)
   const [m0, m1] = memberIds
-  const lineupOf = (memberId: string) => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [] }
+  const lineupOf = (memberId: string): TeamLineup => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [], reserve: [] }
   return { ...rest, teams: [lineupOf(m0), lineupOf(m1)] }
 }
 

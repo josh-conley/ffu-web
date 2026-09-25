@@ -76,8 +76,16 @@ describe('fetchLiveLineups', () => {
     const data = await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])
     expect(data.slots).toEqual(['QB', 'RB'])
     const [a, b] = data.teams
-    expect(a).toEqual({ memberId: 'ffu-001', starters: [{ playerId: 'p1', points: 60 }, { playerId: 'p2', points: 40.5 }], bench: [{ playerId: 'p3', points: 5 }] })
-    expect(b).toEqual({ memberId: 'ffu-002', starters: [{ playerId: 'p4', points: 90.25 }], bench: [] })
+    expect(a).toEqual({ memberId: 'ffu-001', starters: [{ playerId: 'p1', points: 60 }, { playerId: 'p2', points: 40.5 }], bench: [{ playerId: 'p3', points: 5 }], reserve: [] })
+    expect(b).toEqual({ memberId: 'ffu-002', starters: [{ playerId: 'p4', points: 90.25 }], bench: [], reserve: [] })
+  })
+
+  it('moves a roster\'s injured-reserve players out of the bench into `reserve`', async () => {
+    const withIr = ROSTERS.map((r) => (r.roster_id === 1 ? { ...r, reserve: ['p3'] } : r))
+    vi.stubGlobal('fetch', vi.fn((url: string) => (url.endsWith('/rosters') ? Promise.resolve({ ok: true, status: 200, json: async () => withIr } as Response) : mapFetch(url))))
+    const [a] = (await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).teams
+    expect(a.bench).toEqual([])
+    expect(a.reserve).toEqual([{ playerId: 'p3', points: 5 }])
   })
 
   it('keeps an empty starting slot (Sleeper id "0") as null in its place', async () => {

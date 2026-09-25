@@ -96,5 +96,7 @@ export function withNflTeams(lineup: TeamLineup, projections: Record<string, Pla
     const team = p.team ?? projections[p.playerId]?.team
     return team ? { ...p, team } : p
   }
-  return { ...lineup, starters: lineup.starters.map((p) => p && fill(p)), bench: lineup.bench.map(fill) }
+  const filled: TeamLineup = { ...lineup, starters: lineup.starters.map((p) => p && fill(p)), bench: lineup.bench.map(fill) }
+  if (lineup.reserve) filled.reserve = lineup.reserve.map(fill)
+  return filled
 }

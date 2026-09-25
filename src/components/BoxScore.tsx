@@ -135,14 +135,28 @@ function BenchRow({ p, players, align, liveOf }: { p: LineupPlayer; players: Pla
   )
 }
 
-function BenchSection({ a, b, players, liveOf }: { a: TeamLineup; b: TeamLineup; players: PlayerMap; liveOf?: LiveOf }) {
+/** A labelled strip of both teams' non-starters, side by side (the bench, and injured reserve). */
+function NonStarters({ title, a, b, players, liveOf }: { title: string; a: LineupPlayer[]; b: LineupPlayer[]; players: PlayerMap; liveOf?: LiveOf | undefined }) {
   return (
     <>
-      <div className="border-t border-border bg-surface-2/40 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Bench</div>
+      <div className="border-t border-border bg-surface-2/40 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">{title}</div>
       <div className={`grid grid-cols-2 gap-x-3 sm:gap-x-6 ${ROW_PAD} py-2 text-xs sm:text-sm text-muted`}>
-        <div className="space-y-1">{benchByPoints(a).map((p, i) => <BenchRow key={i} p={p} players={players} align="left" liveOf={liveOf} />)}</div>
-        <div className="space-y-1">{benchByPoints(b).map((p, i) => <BenchRow key={i} p={p} players={players} align="right" liveOf={liveOf} />)}</div>
+        <div className="space-y-1">{a.map((p, i) => <BenchRow key={i} p={p} players={players} align="left" liveOf={liveOf} />)}</div>
+        <div className="space-y-1">{b.map((p, i) => <BenchRow key={i} p={p} players={players} align="right" liveOf={liveOf} />)}</div>
       </div>
+    </>
+  )
+}
+
+/** The bench (best first), then injured reserve beneath it — only when either team has anyone there
+ *  (live lineups only; see TeamLineup.reserve). */
+function BenchSection({ a, b, players, liveOf }: { a: TeamLineup; b: TeamLineup; players: PlayerMap; liveOf?: LiveOf }) {
+  const irA = a.reserve ?? []
+  const irB = b.reserve ?? []
+  return (
+    <>
+      <NonStarters title="Bench" a={benchByPoints(a)} b={benchByPoints(b)} players={players} liveOf={liveOf} />
+      {(irA.length > 0 || irB.length > 0) && <NonStarters title="Injured Reserve" a={irA} b={irB} players={players} liveOf={liveOf} />}
     </>
   )
 }
