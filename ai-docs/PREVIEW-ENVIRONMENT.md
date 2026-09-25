@@ -44,3 +44,7 @@ longer used and can be deleted.)
   their work to `auto/requests` too and merge it through the same rolling PR once the preview looks
   right. `preview-deploy.yml` deploys any push to the branch. The rules are in `CLAUDE.md` under
   "Who pushes where".
+- **Kept in sync with `main`:** `sync-requests.yml` runs after every production deploy. With nothing
+  pending it fast-forwards `auto/requests` to `main`; with requests pending it merges `main` in
+  underneath them. Either way it redeploys the preview, so preview.ffunion.com is always production
+  plus what's pending. A merge conflict fails the run (visible in Actions) and leaves the branch alone.
