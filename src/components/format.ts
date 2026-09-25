@@ -53,7 +53,7 @@ function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): 
 
 /**
  * A live box score's note on a player's NFL game: "Mon 8:15 PM vs PHI" before kickoff (in the
- * VIEWER's timezone, like draftDateTime, but unnamed for space), "Q3 7:30 @BUF" while it's on, and
+ * VIEWER's timezone, like draftDateTime, but unnamed for space), "Q3 7:30 @ BUF" while it's on, and
  * nothing once it's over. The same text on every screen size; only where it sits changes.
  */
 export function gameNote(game: PlayerGame): string | undefined {

@@ -55,12 +55,12 @@ describe('gameNote', () => {
 
   it('gives the quarter and clock then the opponent while it is on', () => {
     expect(gameNote({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })).toBe('Q3 7:30 vs MIA')
-    expect(gameNote({ status: 'live', quarter: 2, clock: '00:00', opponent: '@BUF' })).toBe('Half @BUF')
-    expect(gameNote({ status: 'live', quarter: 5, clock: '04:12', opponent: '@BUF' })).toBe('OT 4:12 @BUF')
-    expect(gameNote({ status: 'live', opponent: '@BUF' })).toBe('Live @BUF')
+    expect(gameNote({ status: 'live', quarter: 2, clock: '00:00', opponent: '@ BUF' })).toBe('Half @ BUF')
+    expect(gameNote({ status: 'live', quarter: 5, clock: '04:12', opponent: '@ BUF' })).toBe('OT 4:12 @ BUF')
+    expect(gameNote({ status: 'live', opponent: '@ BUF' })).toBe('Live @ BUF')
   })
 
   it('gives nothing once the game is over', () => {
-    expect(gameNote({ status: 'final', opponent: '@BUF' })).toBeUndefined()
+    expect(gameNote({ status: 'final', opponent: '@ BUF' })).toBeUndefined()
   })
 })

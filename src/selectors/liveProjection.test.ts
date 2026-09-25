@@ -22,7 +22,7 @@ const ctx: LiveWeekContext = {
 
 describe('playerGame', () => {
   it('names the opponent from the player\'s side, home or away', () => {
-    expect(playerGame('waiting', ctx)).toEqual({ status: 'pre', kickoff: 1790528400000, opponent: '@NYG' })
+    expect(playerGame('waiting', ctx)).toEqual({ status: 'pre', kickoff: 1790528400000, opponent: '@ NYG' })
     expect(playerGame('playing', ctx)).toEqual({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })
   })
 

@@ -28,7 +28,7 @@ function clockFor(playerId: string, ctx: LiveWeekContext): NflGameClock | undefi
 
 /** A player's NFL game this week, seen from their side: who they play, and where it stands. */
 export interface PlayerGame extends Pick<NflGameClock, 'status' | 'kickoff' | 'quarter' | 'clock'> {
-  /** "@BUF" on the road, "vs BUF" at home. */
+  /** "@ BUF" on the road, "vs BUF" at home. */
   opponent: string
 }
 
@@ -38,7 +38,7 @@ export function playerGame(playerId: string, ctx: LiveWeekContext): PlayerGame |
   const game = ctx.games[team]
   if (!game) return undefined
   const { status, kickoff, quarter, clock, home, away } = game
-  const out: PlayerGame = { status, opponent: team === home ? `vs ${away}` : `@${home}` }
+  const out: PlayerGame = { status, opponent: team === home ? `vs ${away}` : `@ ${home}` }
   if (kickoff !== undefined) out.kickoff = kickoff
   if (quarter !== undefined) out.quarter = quarter
   if (clock !== undefined) out.clock = clock

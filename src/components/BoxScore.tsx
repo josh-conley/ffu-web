@@ -50,7 +50,7 @@ export interface BoxScoreSide {
 /** Live box scores only: where a player's NFL game stands, and the note shown under their name. */
 export interface PlayerLiveInfo {
   status: PlayerLiveStatus
-  /** "Mon 8:15 PM vs PHI" / "Q3 7:30 @BUF" while the game is to come or on; undefined once over. */
+  /** "Mon 8:15 PM vs PHI" / "Q3 7:30 @ BUF" while the game is to come or on; undefined once over. */
   note: string | undefined
 }
 type LiveOf = (playerId: string) => PlayerLiveInfo
