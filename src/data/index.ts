@@ -39,7 +39,7 @@ export type {
   NflGameClock,
   PlayerProjection,
 } from './types'
-export { fetchNflState, fetchLiveSeason, fetchLiveLineups, fetchLiveWeekLineups, fetchMissingPlayers } from './liveSleeper'
+export { fetchNflState, fetchLiveSeason, fetchLiveWeeksGames, fetchLiveLineups, fetchLiveWeekLineups, fetchMissingPlayers } from './liveSleeper'
 export { fetchNflWeekGames, fetchWeekProjections } from './liveNfl'
 export { fetchLeagueRosters } from './liveRosters'
 export { fetchDraftSchedules, fetchDraftOrder, fetchDraftPicks } from './liveDrafts'

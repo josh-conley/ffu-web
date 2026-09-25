@@ -4,7 +4,8 @@ import { nameForYear } from '@/config'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useNflState } from '@/hooks/useNflState'
-import { gamesByWeek, liveWeekFor, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
+import { useLiveWeekGames } from '@/hooks/useLiveWeekGames'
+import { gameForFixture, gamesByWeek, liveScoredWeeks, liveWeekFor, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { FixtureCard, MatchupCard } from '@/components/MatchupCard'
 import { LineupModal } from '@/components/LineupModal'
@@ -37,11 +38,28 @@ const WeekHeading = ({ children }: { children: React.ReactNode }) => (
   </h2>
 )
 
-/** Fixtures for the weeks still to come — shown so an in-progress season isn't a blank page. */
+/** A fixture opened for its live box score, with the game it has become if Sleeper has scores yet. */
+interface OpenFixture {
+  fixture: ScheduledGame
+  game?: Game
+}
+
+function WeekBadge({ week, liveWeek }: { week: number; liveWeek?: number }) {
+  if (week === liveWeek) return <span className="text-[10px] font-semibold text-accent">Live</span>
+  // An earlier week still missing from the file is finished, just not yet written by the refresh.
+  if (liveWeek !== undefined && week < liveWeek) return null
+  return <span className="text-[10px] font-semibold text-muted">Upcoming</span>
+}
+
+/**
+ * The weeks not yet in the season file — shown so an in-progress season isn't a blank page. A week
+ * Sleeper already has scores for (the live one) shows them, as a scored card; the rest are fixtures.
+ */
 function UpcomingWeeks({
   weeks,
   year,
   liveWeek,
+  liveGames,
   onOpen,
   subtitle,
 }: {
@@ -49,7 +67,8 @@ function UpcomingWeeks({
   year: string
   /** The week being played right now, if this is the live season — badged Live rather than Upcoming. */
   liveWeek?: number
-  onOpen?: (fixture: ScheduledGame) => void
+  liveGames: readonly Game[]
+  onOpen?: (open: OpenFixture) => void
   subtitle?: (memberId: string) => string | undefined
 }) {
   return (
@@ -57,23 +76,18 @@ function UpcomingWeeks({
       {weeks.map(({ week, fixtures }) => (
         <section key={`upcoming-${week}`}>
           <WeekHeading>
-            Week {week}{' '}
-            {week === liveWeek ? (
-              <span className="text-[10px] font-semibold text-accent">Live</span>
-            ) : (
-              <span className="text-[10px] font-semibold text-muted">Upcoming</span>
-            )}
+            Week {week} <WeekBadge week={week} liveWeek={liveWeek} />
           </WeekHeading>
           <div className="grid gap-3 sm:grid-cols-2">
-            {fixtures.map((fixture, i) => (
-              <FixtureCard
-                key={`${week}-${i}`}
-                fixture={fixture}
-                year={year}
-                subtitle={subtitle}
-                onOpen={onOpen ? () => onOpen(fixture) : undefined}
-              />
-            ))}
+            {fixtures.map((fixture, i) => {
+              const game = gameForFixture(fixture, liveGames)
+              const open = onOpen ? () => onOpen({ fixture, game }) : undefined
+              return game ? (
+                <MatchupCard key={`${week}-${i}`} game={game} year={year} subtitle={subtitle} onOpen={open} />
+              ) : (
+                <FixtureCard key={`${week}-${i}`} fixture={fixture} year={year} subtitle={subtitle} onOpen={open} />
+              )
+            })}
           </div>
         </section>
       ))}
@@ -91,7 +105,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
   const records = useMemo(() => runningRecords(season), [season])
   const seeds = useMemo(() => new Map(regularSeasonStandings(season).map((r) => [r.team.memberId, r.rank])), [season])
   const [open, setOpen] = useState<Game | null>(null)
-  const [openFixture, setOpenFixture] = useState<ScheduledGame | null>(null)
+  const [openFixture, setOpenFixture] = useState<OpenFixture | null>(null)
   // Lineups exist only for the Sleeper era; ESPN-era cards stay non-clickable.
   const hasLineups = season.era === 'sleeper'
   // Each team's record as it stands — the same number for every week still to come, since none of
@@ -106,6 +120,9 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
   // from Sleeper — that is only possible for a season still on Sleeper's books, which is exactly the
   // season that has unplayed weeks left.
   const liveLeagueId = season.era === 'sleeper' ? season.platformLeagueId : undefined
+  // The file only gains a week once it's complete, so the week being played comes from Sleeper.
+  const liveWeeks = useMemo(() => liveScoredWeeks(upcoming, liveWeek), [upcoming, liveWeek])
+  const liveGames = useLiveWeekGames(liveLeagueId, liveWeeks)
 
   const subtitleFor = (game: Game, memberId: string): string | undefined => {
     if (game.isPlayoff) {
@@ -136,6 +153,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
         weeks={upcoming}
         year={year}
         liveWeek={liveWeek}
+        liveGames={liveGames}
         subtitle={fixtureSubtitle}
         onOpen={liveLeagueId ? setOpenFixture : undefined}
       />
@@ -144,8 +162,9 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
         <LiveLineupModal
           leagueId={liveLeagueId}
           year={year}
-          week={openFixture.week}
-          memberIds={openFixture.memberIds as [string, string]}
+          week={openFixture.fixture.week}
+          memberIds={openFixture.fixture.memberIds as [string, string]}
+          scoreOf={(memberId) => openFixture.game?.participants.find((p) => p.memberId === memberId)?.score}
           onClose={() => setOpenFixture(null)}
         />
       )}

@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, homeLiveSection, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
+import { currentWeekMatchups, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -126,5 +126,28 @@ describe('homeLiveSection', () => {
     // Late Monday local is still Monday, not yet the standings day.
     expect(on('2026-09-14T23:59:00')).toBe('matchups')
     expect(on('2026-09-15T00:01:00')).toBe('standings')
+  })
+})
+
+describe('liveScoredWeeks', () => {
+  const unplayed = [{ week: 2 }, { week: 3 }, { week: 4 }]
+  it('takes the unplayed weeks up to and including the live one', () => {
+    expect(liveScoredWeeks(unplayed, 3)).toEqual([2, 3])
+    expect(liveScoredWeeks(unplayed.slice(1), 3)).toEqual([3])
+  })
+  it('is empty when no week is live', () => {
+    expect(liveScoredWeeks(unplayed, undefined)).toEqual([])
+  })
+})
+
+describe('gameForFixture', () => {
+  const games = [game(3, 'a', 40, 'b', 35), game(3, 'c', 10, 'd', 12), game(4, 'b', 0, 'a', 0)]
+  it('finds the game by week and both members, in either order', () => {
+    expect(gameForFixture({ week: 3, memberIds: ['b', 'a'] }, games)).toBe(games[0])
+    expect(gameForFixture({ week: 4, memberIds: ['a', 'b'] }, games)).toBe(games[2])
+  })
+  it('is undefined when Sleeper has no such game', () => {
+    expect(gameForFixture({ week: 3, memberIds: ['a', 'c'] }, games)).toBeUndefined()
+    expect(gameForFixture({ week: 5, memberIds: ['a', 'b'] }, games)).toBeUndefined()
   })
 })

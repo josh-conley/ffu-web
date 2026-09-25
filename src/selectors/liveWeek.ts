@@ -1,4 +1,4 @@
-import type { Game, LiveSeasonData, NflState } from '@/data'
+import type { Game, LiveSeasonData, NflState, ScheduledGame } from '@/data'
 import { emptyTotals, regularSeasonTotals, type TeamTotals } from './games'
 import { MIN_STREAK, currentStreaks, type Streak } from './weekForm'
 
@@ -57,6 +57,21 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStanding
  */
 export function homeLiveSection(now: Date = new Date()): 'standings' | 'matchups' {
   return now.getDay() === 2 ? 'standings' : 'matchups'
+}
+
+/**
+ * The unplayed weeks (as far as the season file goes) that Sleeper already has scores for: every
+ * one up to and including the live week. Normally that's just the live week; the week before joins
+ * it in the gap between Sleeper rolling over on Tuesday and the weekly refresh writing it to the file.
+ */
+export function liveScoredWeeks(unplayed: readonly { week: number }[], liveWeek: number | undefined): number[] {
+  if (liveWeek === undefined) return []
+  return unplayed.map((w) => w.week).filter((week) => week <= liveWeek)
+}
+
+/** The game a fixture turned into, found among `games` by week and both members (either order). */
+export function gameForFixture(fixture: ScheduledGame, games: readonly Game[]): Game | undefined {
+  return games.find((g) => g.week === fixture.week && g.participants.every((p) => fixture.memberIds.includes(p.memberId)))
 }
 
 /**

@@ -8,7 +8,8 @@ import { sleeperGet } from './sleeperApi'
 // NOT part of `LeagueDataProvider`/`getSeason` (see LiveSeasonData in types.ts): that contract and
 // its validator assume a mostly-complete season, which every other page/selector already relies on,
 // so retrofitting it for a partial in-progress season would be a much larger, riskier change than
-// this home-page-only feature needs. This module is additive and used only by useLiveWeek.
+// these live views need. This module is additive: the home page's This Week section, the live box
+// score, and the Matchups page's in-progress week read it; nothing that reads a season file does.
 
 export interface NflState {
   week: number
@@ -116,6 +117,17 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
     memberIds: [...new Set(rosterMap.values())],
     games: gamesByWeek.flat(),
   }
+}
+
+/**
+ * The games of `weeks` as Sleeper has them right now — partial scores while a week is being played.
+ * For a page built on the season file, whose weeks are only written once complete (Matchups), to
+ * fill in the weeks it doesn't have yet.
+ */
+export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[]): Promise<Game[]> {
+  const rosterMap = await fetchRosterMap(leagueId)
+  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap)))
+  return games.flat()
 }
 
 // ── Live box score (fetched lazily, only when a matchup card is clicked) ───────────────────────
