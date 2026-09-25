@@ -65,7 +65,7 @@ function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): 
 export interface GameNote {
   /** From `sm` up, after the name and NFL team: "@MIA · Sun 1:00 PM", "vs NO · Q3 7:30". */
   full: string
-  /** On a phone, in place of the NFL team: "Sun 1p", "Q3 7:30" — no opponent, there's no room. */
+  /** On a phone, on a second line under the name: "Sun 1p", "Q3 7:30" — no opponent, for room. */
   short: string
 }
 
