@@ -29,6 +29,10 @@
   --color-border: #e5e7eb;
   --color-text: #111827;
   --color-muted: #6b7280;
+  /* De-emphasized but still primary content (box-score players on the bench, or whose game is
+     yet to play / over) — muted reads too faded for a column of names on the light surface
+     (#4b5563 on #fff ≈ 7.6:1). Dark mode's muted already reads fine, so dim matches it there. */
+  --color-dim: #4b5563;
 
   /* Positive / negative (e.g. point differential) — green / red, LIGHT defaults. */
   --color-positive: #15803d;
@@ -66,6 +70,7 @@
   --color-border: #34343a;
   --color-text: #f3f4f6;
   --color-muted: #9ca3af;
+  --color-dim: #9ca3af;
 
   /* Brighter green/red/gold for contrast on the dark surface. */
   --color-positive: #4ade80;

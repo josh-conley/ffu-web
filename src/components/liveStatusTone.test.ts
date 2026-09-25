@@ -16,8 +16,8 @@ describe('pointsText', () => {
 describe('pointsTone', () => {
   it('keeps live points at full strength and mutes the rest', () => {
     expect(pointsTone('live')).toBe('')
-    expect(pointsTone('final')).toBe('text-muted')
-    expect(pointsTone('pre')).toBe('text-muted')
+    expect(pointsTone('final')).toBe('text-dim')
+    expect(pointsTone('pre')).toBe('text-dim')
     expect(pointsTone(undefined)).toBe('')
   })
 })

@@ -59,7 +59,7 @@ const playerLabel = (player: LineupPlayer | undefined, players: PlayerMap) => (p
 
 /** A starting slot the manager left empty (`null` in the lineup) — named as such, like Sleeper does. */
 function EmptySlot({ align }: { align: 'left' | 'right' }) {
-  return <span className={`truncate italic text-muted ${align === 'right' ? 'text-right' : ''}`}>Empty</span>
+  return <span className={`truncate italic text-dim ${align === 'right' ? 'text-right' : ''}`}>Empty</span>
 }
 
 /** Mirrors a left-to-right run of parts for the right-hand team, so both read from the outer edge in. */
@@ -104,8 +104,8 @@ function PlayerName({ player, players, align, liveOf }: { player?: LineupPlayer 
 
 function PlayerPoints({ player, align, liveOf }: { player?: LineupPlayer | null; align: 'left' | 'right'; liveOf?: LiveOf }) {
   const status = player ? liveOf?.(player.playerId).status : undefined
-  // An empty slot scores a real zero; muted like the rest of its row.
-  const tone = player === null ? 'text-muted' : pointsTone(status)
+  // An empty slot scores a real zero; dimmed like the rest of its row.
+  const tone = player === null ? 'text-dim' : pointsTone(status)
   return <span className={`font-mono tabular-nums ${align === 'left' ? 'text-right' : ''} ${tone}`}>{pointsText(player?.points ?? 0, status)}</span>
 }
 
@@ -147,7 +147,7 @@ function NonStarters({ title, a, b, players, liveOf }: { title: string; a: Lineu
   return (
     <>
       <div className="border-t border-border bg-surface-2/40 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">{title}</div>
-      <div className={`grid grid-cols-2 gap-x-3 sm:gap-x-6 ${ROW_PAD} py-2 text-xs sm:text-sm text-muted`}>
+      <div className={`grid grid-cols-2 gap-x-3 sm:gap-x-6 ${ROW_PAD} py-2 text-xs sm:text-sm text-dim`}>
         <div className="space-y-1">{a.map((p, i) => <BenchRow key={i} p={p} players={players} align="left" liveOf={liveOf} />)}</div>
         <div className="space-y-1">{b.map((p, i) => <BenchRow key={i} p={p} players={players} align="right" liveOf={liveOf} />)}</div>
       </div>
