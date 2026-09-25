@@ -473,3 +473,13 @@ sessions. One shared preview branch made every merge ship everyone's pending wor
 per-change branches let each change ship on its own, and the ruleset makes "nothing merges red"
 enforced rather than a convention. The operational rules for sessions are in `CLAUDE.md` under
 "Who pushes where".
+
+## 2026-09-25 — previews are approved by telling Claude, not merged from the page
+
+**Decision.** A preview is approved by saying "looks good" in the Claude session that made it; the
+session merges once CI is green. The preview banner only links to the PR as a fallback.
+
+**Why.** Merging from the preview page itself would need a backend (a Cloudflare Worker plus a GitHub
+App for sign-in), since the static site can never hold a GitHub credential. That's real
+infrastructure and a security review to save a message the person is already in position to send.
+Don't re-propose it unless the chat step becomes an actual bottleneck.
