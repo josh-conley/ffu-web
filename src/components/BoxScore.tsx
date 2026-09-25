@@ -4,7 +4,7 @@ import { getMember, nameForYear } from '@/config'
 import { benchByPoints, type PlayerLiveStatus } from '@/selectors'
 import { LiveStatusDot } from './LiveStatusDot'
 import { nameTone, pointsText, pointsTone } from './liveStatusTone'
-import { shortPlayerName } from './format'
+import { shortPlayerName, type GameNote } from './format'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
 
@@ -50,7 +50,7 @@ export interface BoxScoreSide {
 /** Live box scores only: where a player's NFL game stands, and the note shown under their name. */
 export interface PlayerLiveInfo {
   status: PlayerLiveStatus
-  line: string | undefined
+  note: GameNote | undefined
 }
 type LiveOf = (playerId: string) => PlayerLiveInfo
 
@@ -64,18 +64,21 @@ function EmptySlot({ align }: { align: 'left' | 'right' }) {
 /** Mirrors a left-to-right run of parts for the right-hand team, so both read from the outer edge in. */
 const mirrored = <T,>(parts: T[], align: 'left' | 'right') => (align === 'right' ? [...parts].reverse() : parts)
 
-/** The player's name (+ NFL team), and under it the live note on their game when there is one. */
-function NameBlock({ player, players, align, line }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; line?: string | undefined }) {
+const TAG = 'shrink-0 whitespace-nowrap text-[10px] text-muted'
+
+/**
+ * The player's name, NFL team, and — live, while their game is still to come or on — an inline note
+ * on it, all on one row. From `sm` up that's "BUF @MIA · Sun 1:00 PM"; on a phone the note shrinks
+ * to "Sun 1p" / "Q3 7:30" and takes the team tag's place. The name is what gives way (truncates).
+ */
+function NameBlock({ player, players, align, note }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; note?: GameNote | undefined }) {
   const parts = [
     <NameParts key="name" full={playerLabel(player, players)} />,
-    player?.team && <span key="team" className="shrink-0 text-[10px] text-muted">{player.team}</span>,
+    player?.team && <span key="team" className={`${TAG} ${note ? 'hidden sm:inline' : ''}`}>{player.team}</span>,
+    note && <span key="note-full" className={`${TAG} hidden sm:inline`}>{note.full}</span>,
+    note && <span key="note-short" className={`${TAG} sm:hidden`}>{note.short}</span>,
   ]
-  return (
-    <span className={`flex min-w-0 flex-col ${align === 'right' ? 'items-end' : ''}`}>
-      <span className="flex min-w-0 max-w-full items-center gap-1 sm:gap-1.5">{mirrored(parts, align)}</span>
-      {line && <span className="max-w-full truncate text-[10px] leading-tight text-muted">{line}</span>}
-    </span>
-  )
+  return <span className="flex min-w-0 items-center gap-1 sm:gap-1.5">{mirrored(parts, align)}</span>
 }
 
 function PlayerName({ player, players, align, liveOf }: { player?: LineupPlayer | null; players: PlayerMap; align: 'left' | 'right'; liveOf?: LiveOf }) {
@@ -83,7 +86,7 @@ function PlayerName({ player, players, align, liveOf }: { player?: LineupPlayer 
   const live = player && liveOf?.(player.playerId)
   const parts = [
     <LiveStatusDot key="dot" status={live?.status} />,
-    <NameBlock key="name" player={player} players={players} align={align} line={live?.line} />,
+    <NameBlock key="name" player={player} players={players} align={align} note={live?.note} />,
   ]
   return (
     <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${nameTone(live?.status)}`}>
@@ -125,7 +128,7 @@ function BenchRow({ p, players, align, liveOf }: { p: LineupPlayer; players: Pla
       <LiveStatusDot status={live?.status} />
       <span className={`shrink-0 rounded px-1 text-[9px] font-bold ${posClass(pos)}`}>{pos}</span>
       <span className={`flex min-w-0 flex-1 ${align === 'right' ? 'justify-end' : ''}`}>
-        <NameBlock player={p} players={players} align={align} line={live?.line} />
+        <NameBlock player={p} players={players} align={align} note={live?.note} />
       </span>
       <span className={`shrink-0 font-mono tabular-nums ${pointsTone(live?.status)}`}>{pointsText(p.points, live?.status)}</span>
     </div>

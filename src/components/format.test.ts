@@ -1,4 +1,4 @@
-import { draftDateTime, gameLine, ordinal, recordLabel, shortPlayerName } from './format'
+import { draftDateTime, gameNote, ordinal, recordLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
@@ -47,20 +47,22 @@ describe('draftDateTime', () => {
   })
 })
 
-describe('gameLine', () => {
-  it('shows the kickoff (viewer\'s timezone) and opponent before the game', () => {
-    expect(gameLine({ status: 'pre', kickoff: 1790528400000, opponent: '@ NYG' })).toMatch(/^\w{3},? \d{1,2}:\d{2}\s?(AM|PM) @ NYG$/)
-    expect(gameLine({ status: 'pre', opponent: 'vs DAL' })).toBe('vs DAL')
+describe('gameNote', () => {
+  it('gives the opponent + kickoff before the game, and a squeezed kickoff for a phone', () => {
+    const note = gameNote({ status: 'pre', kickoff: 1790528400000, opponent: '@NYG' })
+    expect(note?.full).toMatch(/^@NYG · \w{3},? \d{1,2}:\d{2}\s?(AM|PM)$/)
+    expect(note?.short).toMatch(/^\w{3} \d{1,2}(:\d{2})?[ap]$/)
+    expect(gameNote({ status: 'pre', opponent: 'vs DAL' })).toEqual({ full: 'vs DAL', short: 'vs DAL' })
   })
 
-  it('shows the quarter and clock while it is on', () => {
-    expect(gameLine({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })).toBe('Q3 7:30 vs MIA')
-    expect(gameLine({ status: 'live', quarter: 2, clock: '00:00', opponent: '@ BUF' })).toBe('Half @ BUF')
-    expect(gameLine({ status: 'live', quarter: 5, clock: '04:12', opponent: '@ BUF' })).toBe('OT 4:12 @ BUF')
-    expect(gameLine({ status: 'live', opponent: '@ BUF' })).toBe('Live @ BUF')
+  it('gives the quarter and clock while it is on', () => {
+    expect(gameNote({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })).toEqual({ full: 'vs MIA · Q3 7:30', short: 'Q3 7:30' })
+    expect(gameNote({ status: 'live', quarter: 2, clock: '00:00', opponent: '@BUF' })?.short).toBe('Half')
+    expect(gameNote({ status: 'live', quarter: 5, clock: '04:12', opponent: '@BUF' })?.short).toBe('OT 4:12')
+    expect(gameNote({ status: 'live', opponent: '@BUF' })?.short).toBe('Live')
   })
 
-  it('shows nothing once the game is over', () => {
-    expect(gameLine({ status: 'final', opponent: '@ BUF' })).toBeUndefined()
+  it('gives nothing once the game is over', () => {
+    expect(gameNote({ status: 'final', opponent: '@BUF' })).toBeUndefined()
   })
 })

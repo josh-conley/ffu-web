@@ -2,7 +2,7 @@ import { useLiveBoxScore } from '@/hooks/useLiveBoxScore'
 import { useNflWeek } from '@/hooks/useNflWeek'
 import { type LiveWeekContext, playerGame, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
 import { BoxScore, type BoxScoreSide, type PlayerLiveInfo } from './BoxScore'
-import { gameLine } from './format'
+import { gameNote } from './format'
 import { LineupModalFrame } from './LineupModalFrame'
 import { LiveStatusLegend } from './LiveStatusDot'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -17,7 +17,7 @@ import { LoadingSpinner } from './LoadingSpinner'
  * a game does exist; without it the starters' own total stands in (0.00 before kickoff).
  *
  * Once the NFL week loads (useNflWeek), each player is marked played / playing / yet to play (with
- * their kickoff or game clock and opponent under the name while it's still to come or on), and
+ * their kickoff or game clock and opponent inline while it's still to come or on), and
  * each side gets a projected final score; the same feed supplies each player's NFL team, which the
  * live lineups lack. It loads after the lineups and may not load at all
  * (undocumented feed), so the box score never waits on it.
@@ -44,7 +44,7 @@ export function LiveLineupModal({
     ctx &&
     ((playerId: string): PlayerLiveInfo => {
       const game = playerGame(playerId, ctx)
-      return game ? { status: game.status, line: gameLine(game) } : { status: 'idle', line: undefined }
+      return game ? { status: game.status, note: gameNote(game) } : { status: 'idle', note: undefined }
     })
 
   const sides: BoxScoreSide[] = data
