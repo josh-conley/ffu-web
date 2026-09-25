@@ -17,6 +17,7 @@ on:
 permissions:
   contents: read
   statuses: write # the "Preview" status carrying the URL
+  pull-requests: read # find the branch's PR for the banner link
 
 # One deploy per branch at a time. Queued rather than cancelled: sync-requests.yml joins
 # auto/requests's group and must never be cut off mid-sync. GitHub keeps only the newest queued run,
@@ -36,10 +37,18 @@ jobs:
           node-version: 22
           cache: npm
 
+      # The build carries the branch and its PR's URL, which the site shows as a banner linking
+      # straight to GitHub's Merge button (src/components/PreviewBanner.tsx). Before the PR exists
+      # (first push), the link is a search for it instead.
       - name: Build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
         run: |
+          PR_URL="$(gh pr list --repo "${{ github.repository }}" --head "$BRANCH" --state open --json url --jq '.[0].url // empty' || true)"
+          [ -n "$PR_URL" ] || PR_URL="https://github.com/${{ github.repository }}/pulls?q=is%3Apr+is%3Aopen+head%3A$BRANCH"
           npm ci
-          npm run build
+          VITE_PREVIEW_BRANCH="$BRANCH" VITE_PREVIEW_PR_URL="$PR_URL" npm run build
 
       - name: Deploy to Cloudflare Pages
         id: deploy

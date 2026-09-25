@@ -2,7 +2,8 @@ name: Deploy to GitHub Pages
 
 # Deploys the built site to GitHub Pages on every push to main. The custom domain
 # (ffunion.com — the live apex, post-cutover) is set by public/CNAME, which Vite copies into dist.
-# NOTE: pushing main publishes to PRODUCTION; there is no staging host.
+# NOTE: pushing main publishes to PRODUCTION once the gates below pass. Preview changes first on a
+# preview/<name> branch (see preview-deploy.yml).
 on:
   push:
     branches: [main]
@@ -28,6 +29,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The same gates as CI, before anything is published: a push to main starts CI and this deploy
+      # side by side, so without them a red commit would go live before CI had said so (charter §10).
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
       - run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -106,28 +106,30 @@ empty = zero cost, section hidden. Regular season only (wks 1–14); playoffs de
 
 **Conventions (enforced):** ESLint caps `max-lines` 300 / `max-lines-per-function` 80 / `complexity` 12 +
 `no-explicit-any`. Gates before any commit: `npm run typecheck && npm run lint && npm test`. **Commit AND
-push after every green change** without being asked. Where it goes depends on who you're working for
+push after every green change** without being asked. Where it goes depends on what the change is
 (see **Who pushes where** below). Dev server is the **user's** on `:5173` — never
 `pkill vite`; an agent server uses `:5199`.
 
-**Who pushes where:**
-- **Josh (repo owner, GitHub `josh-conley`):** "push" means **to `main`** (production deploys from
-  it). A cloud session on its own branch also fast-forwards `main` and pushes it, unless he asks for
-  a PR or a preview first, in which case use a preview branch as below.
-- **Anyone else (e.g. the commissioner):** never push to `main` directly. **One change, one branch,
-  one PR**, so each change ships on its own without waiting on anyone else's:
+**Who pushes where** (Josh is the repo owner, GitHub `josh-conley`; the commissioner also works here):
+- **Anything visible on the site** (pages, components, styling, selectors, live-data features): **one
+  change, one branch, one PR**, so each change ships on its own:
   1. Branch `preview/<name>` from the latest `origin/main`: a short kebab-case name, 20 characters
      or fewer (e.g. `preview/playoff-odds`) so Cloudflare doesn't cut it short in the URL.
   2. Commit (gates green), push, and open a PR into `main`. `preview-deploy.yml` deploys it to
      **`https://preview-<name>.ffu-web-preview.pages.dev`** in ~1–2 min and posts that URL as the
-     PR's "Preview" check. Give them the link.
+     PR's "Preview" check. Give them the link. The preview carries a banner linking to its PR, so
+     they can merge from GitHub themselves while looking at it.
   3. Follow-up tweaks to the same change go on the same branch (the preview updates on each push).
-  4. Merge only when **they say it looks good**, with CI green and the branch up to date: if `main`
-     has moved and conflicts, merge `main` into the branch (never rebase or force-push) and let the
-     preview redeploy first. Use a **merge commit**, then delete the branch.
+  4. When they say it looks good (or have merged it themselves): CI green and the branch up to date
+     (if `main` moved and conflicts, merge `main` in, never rebase or force-push, and let the
+     preview redeploy), then merge with a **merge commit** and delete the branch.
+- **Straight to `main`**, no preview: docs (`CLAUDE.md`, `ai-docs/`), workflows and tooling,
+  test-only changes, urgent fixes while the site is broken, or when he says "just ship it". **Josh
+  only**: the commissioner's changes always go through a `preview/` branch and PR. A cloud session
+  on its own branch fast-forwards `main` and pushes it. `deploy.yml` runs the gates before publishing, so a red commit never goes live.
 - **`auto/requests`** is the Discord bot's rolling branch (served at `preview.ffunion.com`, kept in
   sync with `main` by `sync-requests.yml`). Sessions don't put their own work there.
-- Can't tell whose session this is? Ask before pushing anywhere.
+- Can't tell whether a change is visible, or whose session this is? Ask before pushing.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
 the live site and will eyeball/flag issues; only screenshot when they're away or it's genuinely ambiguous,
