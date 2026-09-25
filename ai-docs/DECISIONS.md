@@ -442,3 +442,19 @@ because 2026 had no tier prizes configured.
 
 **Checked.** Winnings, tier splits and division titles for 2018–2025 are identical before and after
 the change (every season before the live one counts as complete; `games.test.ts` asserts it).
+
+## 2026-09-24 — live projections and game status come from Sleeper's undocumented app API
+
+**Decision.** Live box scores mark each player as played / playing / yet to play, and live
+matchups show a projected final score. Both come from `api.sleeper.com` (`/scores/nfl/regular/{year}/{week}`
+and `/projections/nfl/{year}/{week}`). The public v1 API has neither, so this is the feed Sleeper's
+own app reads. A projection is the points scored so far plus the player's projected stat line,
+scored with the league's `scoring_settings`, times the share of regulation still to play. That is
+the full projection before kickoff and nothing once the game ends (`selectors/liveProjection.ts`).
+
+**Why.** No documented source exists, and scoring projected *stats* ourselves means the projection
+uses each league's custom rules (first downs, 6.5-pt TDs). A flat PPR figure would not.
+
+**Risk and containment.** Sleeper can change the feed without notice. Everything built on it is
+optional. `useNflWeek` turns a failure into "no data", and the cards and box score then render
+exactly as before. The same feed also fills in live players' NFL teams (`withNflTeams`).

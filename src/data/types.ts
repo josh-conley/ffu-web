@@ -273,6 +273,22 @@ export interface LiveSeasonData {
   games: Game[]
 }
 
+/** Where one NFL game stands this week (src/data/liveNfl.ts) — what a player's live status is read from. */
+export type NflGameStatus = 'pre' | 'live' | 'final'
+
+export interface NflGameClock {
+  status: NflGameStatus
+  /** Share of regulation still to play, 0–1: 1 before kickoff, 0 once over (overtime counts as 0). */
+  remaining: number
+}
+
+/** One player's projected stat line for a week, and the NFL team they're on that week. */
+export interface PlayerProjection {
+  team?: string
+  /** Raw projected stats (pass_yd, rec, …), scored per league by selectors/liveProjection.ts. */
+  stats: Record<string, number>
+}
+
 /**
  * Who is signed up for one tier of an upcoming/in-progress season (src/data/liveRosters.ts).
  * Narrower than LiveSeasonData on purpose: this is available the moment the leagues exist on

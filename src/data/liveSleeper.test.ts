@@ -1,4 +1,4 @@
-import { fetchLiveLineups, fetchLiveSeason, fetchMissingPlayers, fetchNflState } from './liveSleeper'
+import { fetchLiveLineups, fetchLiveSeason, fetchLiveWeekLineups, fetchMissingPlayers, fetchNflState } from './liveSleeper'
 
 // Real ffu-001/ffu-002 sleeper owner ids from src/config/members.ts; 'owner-unmapped' deliberately
 // isn't in MEMBERS, standing in for a new member not yet added to config (the day-one-of-2026 case).
@@ -19,7 +19,7 @@ const WEEK_1_MATCHUPS = [
 function mapFetch(url: string): Promise<Response> {
   const ok = (body: unknown) => Promise.resolve({ ok: true, status: 200, json: async () => body } as Response)
   if (url.endsWith('/state/nfl')) return ok({ week: 5, season_type: 'regular', season: '2025', season_start_date: '2025-09-04' })
-  if (url.endsWith('/league/lg1')) return ok({ roster_positions: ['QB', 'RB', 'BN', 'BN'] })
+  if (url.endsWith('/league/lg1')) return ok({ roster_positions: ['QB', 'RB', 'BN', 'BN'], scoring_settings: { rec: 0.5 } })
   if (url.endsWith('/league/lg1/rosters')) return ok(ROSTERS)
   if (url.endsWith('/league/lg1/matchups/1')) return ok(WEEK_1_MATCHUPS)
   if (url.endsWith('/league/lg1/matchups/2')) return ok([])
@@ -78,6 +78,18 @@ describe('fetchLiveLineups', () => {
     const [a, b] = data.teams
     expect(a).toEqual({ memberId: 'ffu-001', starters: [{ playerId: 'p1', points: 60 }, { playerId: 'p2', points: 40.5 }], bench: [{ playerId: 'p3', points: 5 }] })
     expect(b).toEqual({ memberId: 'ffu-002', starters: [{ playerId: 'p4', points: 90.25 }], bench: [] })
+  })
+
+  it('carries the league\'s scoring rules for projecting', async () => {
+    expect((await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).scoring).toEqual({ rec: 0.5 })
+  })
+})
+
+describe('fetchLiveWeekLineups', () => {
+  it('returns a lineup for every mapped roster (unmapped ones are dropped)', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const data = await fetchLiveWeekLineups('lg1', 1)
+    expect(data.teams.map((t) => t.memberId)).toEqual(['ffu-001', 'ffu-002'])
   })
 })
 

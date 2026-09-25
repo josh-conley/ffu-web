@@ -111,8 +111,8 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
 // ── Live box score (fetched lazily, only when a matchup card is clicked) ───────────────────────
 // Mirrors scripts/backfill-lineups.mjs's starters/bench zipping, at request time instead of offline.
 // Player NAME resolution intentionally skips the season-accurate NFLverse team lookup that script
-// does (extra CSV fetch, only meaningful for historical box scores) — `team` is left unresolved,
-// which BoxScore already renders fine without.
+// does (extra CSV fetch, only meaningful for historical box scores) — `team` is left unresolved
+// here and filled from the week's projections instead (selectors/liveProjection.ts withNflTeams).
 
 const BENCH_SLOTS = new Set(['BN', 'IR', 'TAXI'])
 
@@ -135,29 +135,49 @@ function benchOf(entry: SleeperFullMatchupEntry): LineupPlayer[] {
     .map((id) => ({ playerId: id, points: entry.players_points?.[id] ?? 0 }))
 }
 
-function lineupFor(memberId: string, rosterId: number | undefined, entries: SleeperFullMatchupEntry[]): TeamLineup {
+function lineupFor(memberId: string, rosterId: number, entries: SleeperFullMatchupEntry[]): TeamLineup {
   const entry = entries.find((e) => e.roster_id === rosterId)
   if (!entry) return { memberId, starters: [], bench: [] }
   return { memberId, starters: zipStarters(entry.starters ?? [], entry.starters_points ?? []), bench: benchOf(entry) }
 }
 
-export interface LiveLineups {
+interface SleeperLeague {
+  roster_positions?: string[]
+  scoring_settings?: Record<string, number>
+}
+
+/** Every mapped team's starters + bench for one week, with the league's slots and scoring rules. */
+export interface LiveWeekLineups {
   slots: string[]
+  /** Points per stat (rec: 0.5, pass_td: 4.1, …) — what turns a projected stat line into points. */
+  scoring: Record<string, number>
+  teams: TeamLineup[]
+}
+
+export async function fetchLiveWeekLineups(leagueId: string, week: number): Promise<LiveWeekLineups> {
+  const [rosterMap, league, entries] = await Promise.all([
+    fetchRosterMap(leagueId),
+    sleeperGet<SleeperLeague>(`/league/${leagueId}`),
+    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
+  ])
+  if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
+  return {
+    slots: (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s)),
+    scoring: league.scoring_settings ?? {},
+    teams: [...rosterMap].map(([rosterId, memberId]) => lineupFor(memberId, rosterId, entries)),
+  }
+}
+
+export interface LiveLineups extends Omit<LiveWeekLineups, 'teams'> {
   teams: [TeamLineup, TeamLineup]
 }
 
 /** Starters + bench for one game (the two named members), for the live box-score modal. */
 export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string]): Promise<LiveLineups> {
-  const [rosterMap, league, entries] = await Promise.all([
-    fetchRosterMap(leagueId),
-    sleeperGet<{ roster_positions?: string[] }>(`/league/${leagueId}`),
-    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
-  ])
-  if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
-  const slots = (league.roster_positions ?? []).filter((s) => !BENCH_SLOTS.has(s))
-  const rosterIdFor = (memberId: string) => [...rosterMap.entries()].find(([, id]) => id === memberId)?.[0]
+  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week)
   const [m0, m1] = memberIds
-  return { slots, teams: [lineupFor(m0, rosterIdFor(m0), entries), lineupFor(m1, rosterIdFor(m1), entries)] }
+  const lineupOf = (memberId: string) => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [] }
+  return { ...rest, teams: [lineupOf(m0), lineupOf(m1)] }
 }
 
 interface RawSleeperPlayer {

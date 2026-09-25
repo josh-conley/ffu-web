@@ -1,7 +1,9 @@
 import { useLiveBoxScore } from '@/hooks/useLiveBoxScore'
-import { starterPoints } from '@/selectors'
+import { useNflWeek } from '@/hooks/useNflWeek'
+import { type LiveWeekContext, playerLiveStatus, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
 import { BoxScore, type BoxScoreSide } from './BoxScore'
 import { LineupModalFrame } from './LineupModalFrame'
+import { LiveStatusLegend } from './LiveStatusDot'
 import { LoadingSpinner } from './LoadingSpinner'
 
 /**
@@ -12,6 +14,11 @@ import { LoadingSpinner } from './LoadingSpinner'
  * aren't games yet: the one being played, and the ones still to come, where Sleeper knows the
  * lineups but there is no result to read. `scoreOf` supplies the score to head each side with when
  * a game does exist; without it the starters' own total stands in (0.00 before kickoff).
+ *
+ * Once the NFL week loads (useNflWeek), each player is marked played / playing / yet to play and
+ * each side gets a projected final score; the same feed supplies each player's NFL team, which the
+ * live lineups lack. It loads after the lineups and may not load at all
+ * (undocumented feed), so the box score never waits on it.
  */
 export function LiveLineupModal({
   leagueId,
@@ -29,9 +36,16 @@ export function LiveLineupModal({
   onClose: () => void
 }) {
   const { data, loading } = useLiveBoxScore(leagueId, week, memberIds, true)
+  const nfl = useNflWeek(year, week, true)
+  const ctx: LiveWeekContext | undefined = data && nfl ? { ...nfl, scoring: data.scoring } : undefined
 
   const sides: BoxScoreSide[] = data
-    ? data.teams.map((lineup) => ({ memberId: lineup.memberId, score: scoreOf?.(lineup.memberId) ?? starterPoints(lineup), lineup }))
+    ? data.teams.map((raw) => {
+        const lineup = nfl ? withNflTeams(raw, nfl.projections) : raw
+        const side: BoxScoreSide = { memberId: lineup.memberId, score: scoreOf?.(lineup.memberId) ?? starterPoints(lineup), lineup }
+        const projected = ctx && teamLiveProjection(lineup, ctx)
+        return projected === undefined ? side : { ...side, projected }
+      })
     : []
   const [sideA, sideB] = sides
 
@@ -40,7 +54,10 @@ export function LiveLineupModal({
       {loading ? (
         <div className="p-10"><LoadingSpinner /></div>
       ) : data && sideA && sideB ? (
-        <BoxScore slots={data.slots} players={data.players} year={year} sides={[sideA, sideB]} />
+        <>
+          <BoxScore slots={data.slots} players={data.players} year={year} sides={[sideA, sideB]} statusOf={ctx && ((id) => playerLiveStatus(id, ctx))} />
+          {ctx && <LiveStatusLegend />}
+        </>
       ) : (
         <p className="p-6 text-sm text-muted">Lineups aren't available for this game.</p>
       )}

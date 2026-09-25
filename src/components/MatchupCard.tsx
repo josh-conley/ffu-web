@@ -3,7 +3,21 @@ import { nameForYear } from '@/config'
 import { winnerOf } from '@/selectors'
 import { TeamLogo } from './TeamLogo'
 
-function ParticipantRow({ memberId, score, year, isWinner, subtitle }: { memberId: string; score: number; year: string; isWinner: boolean; subtitle?: string }) {
+function ParticipantRow({
+  memberId,
+  score,
+  year,
+  isWinner,
+  subtitle,
+  projected,
+}: {
+  memberId: string
+  score: number
+  year: string
+  isWinner: boolean
+  subtitle?: string
+  projected?: number
+}) {
   return (
     <div
       className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${
@@ -15,20 +29,37 @@ function ParticipantRow({ memberId, score, year, isWinner, subtitle }: { memberI
         <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
         {subtitle && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle}</span>}
       </span>
-      <span className="font-mono tabular-nums">{score.toFixed(2)}</span>
+      {/* Projection stacked under the score, not beside it, so it never takes width from the name. */}
+      <span className="flex shrink-0 flex-col items-end leading-tight">
+        <span className="font-mono tabular-nums">{score.toFixed(2)}</span>
+        {projected !== undefined && <span className="font-mono text-[10px] font-normal text-muted tabular-nums" title="Projected final score">proj {projected.toFixed(1)}</span>}
+      </span>
     </div>
   )
 }
 
-/** `subtitle`: small tag beside each team — its running record (regular season) or seed (playoffs). */
-export function MatchupCard({ game, year, onOpen, subtitle }: { game: Game; year: string; onOpen?: () => void; subtitle?: (memberId: string) => string | undefined }) {
+/** `subtitle`: small tag beside each team — its running record (regular season) or seed (playoffs).
+ *  `projected`: a live game's projected final score per team, shown beside the actual one. */
+export function MatchupCard({
+  game,
+  year,
+  onOpen,
+  subtitle,
+  projected,
+}: {
+  game: Game
+  year: string
+  onOpen?: () => void
+  subtitle?: (memberId: string) => string | undefined
+  projected?: (memberId: string) => number | undefined
+}) {
   const winner = winnerOf(game)
   const body = (
     <>
       {game.round && <div className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{game.round}</div>}
       <div className="space-y-1">
         {game.participants.map((p) => (
-          <ParticipantRow key={p.memberId} memberId={p.memberId} score={p.score} year={year} isWinner={p.memberId === winner} subtitle={subtitle?.(p.memberId)} />
+          <ParticipantRow key={p.memberId} memberId={p.memberId} score={p.score} year={year} isWinner={p.memberId === winner} subtitle={subtitle?.(p.memberId)} projected={projected?.(p.memberId)} />
         ))}
       </div>
     </>

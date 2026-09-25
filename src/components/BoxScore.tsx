@@ -1,7 +1,8 @@
 import { Fragment } from 'react'
 import type { LineupPlayer, PlayerMap, TeamLineup } from '@/data'
 import { getMember, nameForYear } from '@/config'
-import { benchByPoints } from '@/selectors'
+import { benchByPoints, type PlayerLiveStatus } from '@/selectors'
+import { LiveStatusDot } from './LiveStatusDot'
 import { shortPlayerName } from './format'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
@@ -10,6 +11,8 @@ import { TeamLogo } from './TeamLogo'
 // modal. Source-agnostic: it takes two resolved sides (each a team's score + lineup) plus the shared
 // roster slots, and renders starters row-by-row with the bench below. The two teams may live in
 // different tiers (tournament) or the same one (matchups) — this component doesn't care.
+// A live box score adds two optional extras: each player's game status (a dot by the name) and
+// each side's projected final score (a row under the heads).
 
 const SLOT_LABEL: Record<string, string> = { SUPER_FLEX: 'SFLX', REC_FLEX: 'RFLX', WRRB_FLEX: 'W/R' }
 const fmt = (n: number) => n.toFixed(2)
@@ -39,41 +42,51 @@ export interface BoxScoreSide {
   memberId: string
   score: number
   lineup: TeamLineup
+  /** Projected final score, live games only; absent once there is nothing left to project. */
+  projected?: number
 }
 
-function PlayerName({ player, players, align, dim }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; dim?: boolean }) {
-  const info = player ? players[player.playerId] : undefined
-  const team = player?.team ? <span className="shrink-0 text-[10px] text-muted">{player.team}</span> : null
+type StatusOf = (playerId: string) => PlayerLiveStatus
+
+const playerLabel = (player: LineupPlayer | undefined, players: PlayerMap) => (player ? players[player.playerId]?.name ?? player.playerId : '')
+
+function PlayerName({ player, players, align, dim, statusOf }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; dim?: boolean; statusOf?: StatusOf }) {
+  // Written left-to-right for the left side; the right side is the same parts mirrored, so the
+  // status dot sits on the outer edge on both.
+  const parts = [
+    player && <LiveStatusDot key="dot" status={statusOf?.(player.playerId)} />,
+    <NameParts key="name" full={playerLabel(player, players)} />,
+    player?.team && <span key="team" className="shrink-0 text-[10px] text-muted">{player.team}</span>,
+  ]
   return (
     <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${dim ? 'text-muted' : ''}`}>
-      {align === 'right' && team}
-      <NameParts full={info?.name ?? player?.playerId ?? ''} />
-      {align === 'left' && team}
+      {align === 'right' ? parts.reverse() : parts}
     </span>
   )
 }
 
-function StarterRows({ slots, a, b, players, winner }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; winner: 'a' | 'b' | null }) {
+function StarterRows({ slots, a, b, players, winner, statusOf }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; winner: 'a' | 'b' | null; statusOf?: StatusOf }) {
   return (
     <div className={`${COLS} ${ROW_PAD} py-2 text-xs sm:text-sm`}>
       {slots.map((slot, i) => (
         <Fragment key={i}>
-          <PlayerName player={a.starters[i]} players={players} align="left" dim={winner === 'b'} />
+          <PlayerName player={a.starters[i]} players={players} align="left" dim={winner === 'b'} statusOf={statusOf} />
           <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{fmt(a.starters[i]?.points ?? 0)}</span>
           <span className={`justify-self-center rounded px-1 text-[10px] font-bold ${posClass(slot)}`}>{SLOT_LABEL[slot] ?? slot}</span>
           <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{fmt(b.starters[i]?.points ?? 0)}</span>
-          <PlayerName player={b.starters[i]} players={players} align="right" dim={winner === 'a'} />
+          <PlayerName player={b.starters[i]} players={players} align="right" dim={winner === 'a'} statusOf={statusOf} />
         </Fragment>
       ))}
     </div>
   )
 }
 
-function BenchRow({ p, players, align }: { p: LineupPlayer; players: PlayerMap; align: 'left' | 'right' }) {
+function BenchRow({ p, players, align, statusOf }: { p: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
   const info = players[p.playerId]
   const pos = info?.position ?? '—'
   return (
     <div className={`flex items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
+      <LiveStatusDot status={statusOf?.(p.playerId)} />
       <span className={`shrink-0 rounded px-1 text-[9px] font-bold ${posClass(pos)}`}>{pos}</span>
       <span className={`flex min-w-0 flex-1 ${align === 'right' ? 'justify-end' : ''}`}>
         <NameParts full={info?.name ?? p.playerId} />
@@ -83,13 +96,13 @@ function BenchRow({ p, players, align }: { p: LineupPlayer; players: PlayerMap; 
   )
 }
 
-function BenchSection({ a, b, players }: { a: TeamLineup; b: TeamLineup; players: PlayerMap }) {
+function BenchSection({ a, b, players, statusOf }: { a: TeamLineup; b: TeamLineup; players: PlayerMap; statusOf?: StatusOf }) {
   return (
     <>
       <div className="border-t border-border bg-surface-2/40 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Bench</div>
       <div className={`grid grid-cols-2 gap-x-3 sm:gap-x-6 ${ROW_PAD} py-2 text-xs sm:text-sm text-muted`}>
-        <div className="space-y-1">{benchByPoints(a).map((p, i) => <BenchRow key={i} p={p} players={players} align="left" />)}</div>
-        <div className="space-y-1">{benchByPoints(b).map((p, i) => <BenchRow key={i} p={p} players={players} align="right" />)}</div>
+        <div className="space-y-1">{benchByPoints(a).map((p, i) => <BenchRow key={i} p={p} players={players} align="left" statusOf={statusOf} />)}</div>
+        <div className="space-y-1">{benchByPoints(b).map((p, i) => <BenchRow key={i} p={p} players={players} align="right" statusOf={statusOf} />)}</div>
       </div>
     </>
   )
@@ -121,16 +134,45 @@ function Heads({ a, b, year, winner }: { a: BoxScoreSide; b: BoxScoreSide; year:
   )
 }
 
+/** Each side's projected final score, under its actual one — only while either side has one. */
+function Projections({ a, b }: { a: BoxScoreSide; b: BoxScoreSide }) {
+  if (a.projected === undefined && b.projected === undefined) return null
+  const proj = (n: number | undefined) => (n === undefined ? '' : n.toFixed(1))
+  return (
+    <div className={`${COLS} ${ROW_PAD} bg-surface-2/40 py-1 text-[10px] text-muted sm:text-xs`}>
+      <span />
+      <span className="text-right font-mono tabular-nums">{proj(a.projected)}</span>
+      <span className="text-center font-semibold uppercase">Proj</span>
+      <span className="font-mono tabular-nums">{proj(b.projected)}</span>
+      <span />
+    </div>
+  )
+}
+
 /** Head-to-head lineups (+ bench): slot label centered + color-coded, scores flanking it, names on the
- *  outer edges. The dimmed side is the loser (by score); ties dim neither. */
-export function BoxScore({ slots, players, year, sides }: { slots: string[]; players: PlayerMap; year: string; sides: [BoxScoreSide, BoxScoreSide] }) {
+ *  outer edges. The dimmed side is the loser (by score); ties dim neither. `statusOf` (live only)
+ *  marks where each player's NFL game stands. */
+export function BoxScore({
+  slots,
+  players,
+  year,
+  sides,
+  statusOf,
+}: {
+  slots: string[]
+  players: PlayerMap
+  year: string
+  sides: [BoxScoreSide, BoxScoreSide]
+  statusOf?: StatusOf
+}) {
   const [a, b] = sides
   const winner: 'a' | 'b' | null = a.score === b.score ? null : a.score > b.score ? 'a' : 'b'
   return (
     <>
       <Heads a={a} b={b} year={year} winner={winner} />
-      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} winner={winner} />
-      <BenchSection a={a.lineup} b={b.lineup} players={players} />
+      <Projections a={a} b={b} />
+      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} winner={winner} statusOf={statusOf} />
+      <BenchSection a={a.lineup} b={b.lineup} players={players} statusOf={statusOf} />
     </>
   )
 }

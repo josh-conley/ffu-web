@@ -35,8 +35,12 @@ export type {
   DraftSchedule,
   DraftOrderSlot,
   LiveDraftOrder,
+  NflGameStatus,
+  NflGameClock,
+  PlayerProjection,
 } from './types'
-export { fetchNflState, fetchLiveSeason, fetchLiveLineups, fetchMissingPlayers } from './liveSleeper'
+export { fetchNflState, fetchLiveSeason, fetchLiveLineups, fetchLiveWeekLineups, fetchMissingPlayers } from './liveSleeper'
+export { fetchNflWeekGames, fetchWeekProjections } from './liveNfl'
 export { fetchLeagueRosters } from './liveRosters'
 export { fetchDraftSchedules, fetchDraftOrder, fetchDraftPicks } from './liveDrafts'
-export type { NflState, LiveLineups } from './liveSleeper'
+export type { NflState, LiveLineups, LiveWeekLineups } from './liveSleeper'

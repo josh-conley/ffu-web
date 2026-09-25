@@ -3,6 +3,10 @@
 // one error shape for all of them (Charter DRY).
 
 const API = 'https://api.sleeper.app/v1'
+// The host Sleeper's own app reads NFL game scores and player projections from. Undocumented (the
+// public v1 API has neither), so it can change without notice: every caller treats it as optional
+// garnish and must render fine without it.
+const APP_API = 'https://api.sleeper.com'
 
 interface GetOptions {
   /**
@@ -21,9 +25,18 @@ interface GetOptions {
   fresh?: boolean
 }
 
-export async function sleeperGet<T>(path: string, { fresh }: GetOptions = {}): Promise<T> {
-  const url = `${API}${path}`
-  const res = fresh ? await fetch(`${url}?_=${Date.now()}`, { cache: 'no-store' }) : await fetch(url)
+async function get<T>(base: string, path: string, { fresh }: GetOptions): Promise<T> {
+  const url = `${base}${path}`
+  const res = fresh ? await fetch(`${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`, { cache: 'no-store' }) : await fetch(url)
   if (!res.ok) throw new Error(`Sleeper ${path} -> HTTP ${res.status}`)
   return res.json() as Promise<T>
+}
+
+export function sleeperGet<T>(path: string, options: GetOptions = {}): Promise<T> {
+  return get<T>(API, path, options)
+}
+
+/** A read from Sleeper's undocumented app API (see APP_API) — callers must tolerate it failing. */
+export function sleeperAppGet<T>(path: string, options: GetOptions = {}): Promise<T> {
+  return get<T>(APP_API, path, options)
 }

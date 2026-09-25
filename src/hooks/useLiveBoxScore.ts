@@ -7,6 +7,7 @@ import { useAsyncData } from './useAsyncData'
 
 export interface LiveBoxScore {
   slots: string[]
+  scoring: LiveLineups['scoring']
   players: PlayerMap
   teams: LiveLineups['teams']
 }
@@ -35,7 +36,7 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
 
   const data: LiveBoxScore | undefined =
     lineups.data && players.data
-      ? { slots: lineups.data.slots, teams: lineups.data.teams, players: { ...players.data, ...(extra.data ?? {}) } }
+      ? { slots: lineups.data.slots, scoring: lineups.data.scoring, teams: lineups.data.teams, players: { ...players.data, ...(extra.data ?? {}) } }
       : undefined
 
   return {
