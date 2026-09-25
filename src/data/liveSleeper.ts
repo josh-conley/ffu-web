@@ -124,8 +124,9 @@ interface SleeperFullMatchupEntry {
   players_points?: Record<string, number>
 }
 
-function zipStarters(ids: string[], points: number[]): LineupPlayer[] {
-  return ids.map((playerId, i) => ({ playerId, points: points[i] ?? 0 })).filter((s) => s.playerId && s.playerId !== '0')
+/** Sleeper marks an empty starting slot with player id "0"; it becomes `null` in its place. */
+function zipStarters(ids: string[], points: number[]): (LineupPlayer | null)[] {
+  return ids.map((playerId, i) => (playerId && playerId !== '0' ? { playerId, points: points[i] ?? 0 } : null))
 }
 
 function benchOf(entry: SleeperFullMatchupEntry): LineupPlayer[] {

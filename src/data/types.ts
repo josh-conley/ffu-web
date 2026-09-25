@@ -109,8 +109,9 @@ export interface LineupPlayer {
 
 export interface TeamLineup {
   memberId: string
-  /** Starting lineup, in Sleeper roster-slot order. */
-  starters: LineupPlayer[]
+  /** Starting lineup, one entry per roster slot in Sleeper's order. `null` is a slot the manager
+   *  left empty — kept (not dropped) so every player after it stays lined up with their own slot. */
+  starters: (LineupPlayer | null)[]
   /** Rostered but not started (didn't count). */
   bench: LineupPlayer[]
 }

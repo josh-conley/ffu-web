@@ -1,4 +1,5 @@
 import type { LineupPlayer, NflGameClock, NflGameStatus, PlayerProjection, TeamLineup } from '@/data'
+import { startedPlayers } from './lineups'
 
 /** A player's NFL game this week — or `idle` when they have none (bye, free agent, unknown team). */
 export type PlayerLiveStatus = NflGameStatus | 'idle'
@@ -46,12 +47,13 @@ export function playerLiveProjection(player: LineupPlayer, ctx: LiveWeekContext)
  * repeat the actual score.
  */
 export function teamLiveProjection(lineup: TeamLineup, ctx: LiveWeekContext): number | undefined {
-  const stillToPlay = lineup.starters.some((p) => {
+  const started = startedPlayers(lineup)
+  const stillToPlay = started.some((p) => {
     const status = playerLiveStatus(p.playerId, ctx)
     return status === 'pre' || status === 'live'
   })
   if (!stillToPlay) return undefined
-  return lineup.starters.reduce((sum, p) => sum + playerLiveProjection(p, ctx), 0)
+  return started.reduce((sum, p) => sum + playerLiveProjection(p, ctx), 0)
 }
 
 /** Every team's projected final score in one league (teams with nothing left to project are absent). */
@@ -74,5 +76,5 @@ export function withNflTeams(lineup: TeamLineup, projections: Record<string, Pla
     const team = p.team ?? projections[p.playerId]?.team
     return team ? { ...p, team } : p
   }
-  return { ...lineup, starters: lineup.starters.map(fill), bench: lineup.bench.map(fill) }
+  return { ...lineup, starters: lineup.starters.map((p) => p && fill(p)), bench: lineup.bench.map(fill) }
 }

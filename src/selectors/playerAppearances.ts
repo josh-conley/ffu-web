@@ -1,5 +1,6 @@
 import type { Tier } from '@/config'
 import type { PlayerMap, SeasonData, SeasonLineups } from '@/data'
+import { startedPlayers } from './lineups'
 
 // NFL players through FFU's eyes: every week a player was in an FFU starting lineup, flattened out
 // of the lineup files. Benched weeks are left out on purpose — only a start put points on the board,
@@ -88,7 +89,7 @@ export function playerAppearances(lineups: SeasonLineups[], seasons: SeasonData[
           championshipBracket: weeks?.bracket.has(key) ?? false,
           ...(titleGame && { titleGame }),
         }
-        for (const p of team.starters) out.push({ ...base, playerId: p.playerId, points: p.points })
+        for (const p of startedPlayers(team)) out.push({ ...base, playerId: p.playerId, points: p.points })
       }
     }
   }

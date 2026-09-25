@@ -1,5 +1,5 @@
 import type { LineupPlayer, SeasonLineups, TeamLineup } from '@/data'
-import { benchByPoints, gameLineups, starterPoints } from './lineups'
+import { benchByPoints, gameLineups, startedPlayers, starterPoints } from './lineups'
 
 const player = (playerId: string, points: number): LineupPlayer => ({ playerId, points })
 
@@ -64,5 +64,13 @@ describe('benchByPoints', () => {
     const t = team('a', [], bench)
     benchByPoints(t)
     expect(bench.map((p) => p.playerId)).toEqual(['low', 'high'])
+  })
+})
+
+describe('startedPlayers', () => {
+  it('drops empty slots and keeps the players', () => {
+    const team: TeamLineup = { memberId: 'm', starters: [null, { playerId: 'p1', points: 4 }], bench: [] }
+    expect(startedPlayers(team)).toEqual([{ playerId: 'p1', points: 4 }])
+    expect(starterPoints(team)).toBe(4)
   })
 })

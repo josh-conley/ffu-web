@@ -100,8 +100,9 @@ function expectedScores(season) {
   return exp
 }
 
-const zipStarters = (ids, pts) =>
-  ids.map((playerId, i) => ({ playerId, points: pts[i] ?? 0 })).filter((s) => s.playerId && s.playerId !== '0')
+// Sleeper marks an empty starting slot with player id "0". It stays in the list as `null` so every
+// later starter keeps its own slot (dropping it shifted them all up one).
+const zipStarters = (ids, pts) => ids.map((playerId, i) => (playerId && playerId !== '0' ? { playerId, points: pts[i] ?? 0 } : null))
 
 function benchOf(entry) {
   const starting = new Set(entry.starters ?? [])
@@ -135,12 +136,12 @@ async function buildSeason(season, ffuMap, ids, warn) {
       if (!memberId || exp[week]?.[memberId] === undefined) continue // not in one of our games this week
       const starters = zipStarters(e.starters ?? [], e.starters_points ?? [])
       const bench = benchOf(e)
-      for (const s of [...starters, ...bench]) {
+      for (const s of [...starters.filter(Boolean), ...bench]) {
         ids.add(s.playerId)
         const t = teamFor(s.playerId, week)
         if (t) s.team = t
       }
-      const got = sum(starters)
+      const got = sum(starters.filter(Boolean))
       const want = exp[week][memberId]
       if (Math.abs(got - want) > 0.5) warn.push(`${season.year} ${season.tier} wk${week} ${memberId}: starters ${got} vs stored ${want}`)
       teams.push({ memberId, starters, bench })

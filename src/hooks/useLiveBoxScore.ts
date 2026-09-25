@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { AsyncState } from './useAsyncData'
 import type { LiveLineups, PlayerMap } from '@/data'
 import { fetchLiveLineups, fetchMissingPlayers } from '@/data'
+import { startedPlayers } from '@/selectors'
 import { usePlayers } from './useLeagueData'
 import { useAsyncData } from './useAsyncData'
 
@@ -13,7 +14,7 @@ export interface LiveBoxScore {
 }
 
 function allPlayerIds(lineups: LiveLineups): string[] {
-  return lineups.teams.flatMap((t) => [...t.starters, ...t.bench].map((p) => p.playerId))
+  return lineups.teams.flatMap((t) => [...startedPlayers(t), ...t.bench].map((p) => p.playerId))
 }
 
 /**

@@ -80,6 +80,13 @@ describe('fetchLiveLineups', () => {
     expect(b).toEqual({ memberId: 'ffu-002', starters: [{ playerId: 'p4', points: 90.25 }], bench: [] })
   })
 
+  it('keeps an empty starting slot (Sleeper id "0") as null in its place', async () => {
+    const withEmpty = WEEK_1_MATCHUPS.map((e) => (e.roster_id === 1 ? { ...e, starters: ['0', 'p2'], starters_points: [0, 40.5] } : e))
+    vi.stubGlobal('fetch', vi.fn((url: string) => (url.endsWith('/matchups/1') ? Promise.resolve({ ok: true, status: 200, json: async () => withEmpty } as Response) : mapFetch(url))))
+    const [a] = (await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).teams
+    expect(a.starters).toEqual([null, { playerId: 'p2', points: 40.5 }])
+  })
+
   it('carries the league\'s scoring rules for projecting', async () => {
     expect((await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).scoring).toEqual({ rec: 0.5 })
   })

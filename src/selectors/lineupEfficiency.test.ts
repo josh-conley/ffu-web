@@ -54,6 +54,12 @@ describe('optimalPoints', () => {
     expect(optimalPoints(t, SLOTS, PLAYERS)).toBe(71)
   })
 
+  it('keeps each starter in their own slot when an earlier slot was left empty', () => {
+    // QB slot empty: db1 still counts via FLEX (its real slot), not the WR slot a shift would give it.
+    const t: TeamLineup = { memberId: 'm1', starters: [null, lp('rb1', 15), lp('rb2', 12), lp('wr1', 10), lp('db1', 9), lp('BUF', 5)], bench: [] }
+    expect(optimalPoints(t, SLOTS, PLAYERS)).toBe(51)
+  })
+
   it('considers a benched defense for the DEF slot', () => {
     const t = team('m1', [['qb1', 20], ['rb1', 15], ['rb2', 12], ['wr1', 10], ['te1', 8], ['BUF', 0]], [['MIA', 11]])
     expect(optimalPoints(t, SLOTS, PLAYERS)).toBe(76)

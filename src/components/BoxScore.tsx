@@ -51,7 +51,13 @@ type StatusOf = (playerId: string) => PlayerLiveStatus
 
 const playerLabel = (player: LineupPlayer | undefined, players: PlayerMap) => (player ? players[player.playerId]?.name ?? player.playerId : '')
 
-function PlayerName({ player, players, align, statusOf }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
+/** A starting slot the manager left empty (`null` in the lineup) — named as such, like Sleeper does. */
+function EmptySlot({ align }: { align: 'left' | 'right' }) {
+  return <span className={`truncate italic text-muted ${align === 'right' ? 'text-right' : ''}`}>Empty</span>
+}
+
+function PlayerName({ player, players, align, statusOf }: { player?: LineupPlayer | null; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
+  if (player === null) return <EmptySlot align={align} />
   const status = player && statusOf?.(player.playerId)
   // Written left-to-right for the left side; the right side is the same parts mirrored, so the
   // status dot sits on the outer edge on both.
@@ -67,9 +73,11 @@ function PlayerName({ player, players, align, statusOf }: { player?: LineupPlaye
   )
 }
 
-function PlayerPoints({ player, align, statusOf }: { player?: LineupPlayer; align: 'left' | 'right'; statusOf?: StatusOf }) {
-  const status = player && statusOf?.(player.playerId)
-  return <span className={`font-mono tabular-nums ${align === 'left' ? 'text-right' : ''} ${pointsTone(status)}`}>{pointsText(player?.points ?? 0, status)}</span>
+function PlayerPoints({ player, align, statusOf }: { player?: LineupPlayer | null; align: 'left' | 'right'; statusOf?: StatusOf }) {
+  const status = player ? statusOf?.(player.playerId) : undefined
+  // An empty slot scores a real zero; muted like the rest of its row.
+  const tone = player === null ? 'text-muted' : pointsTone(status)
+  return <span className={`font-mono tabular-nums ${align === 'left' ? 'text-right' : ''} ${tone}`}>{pointsText(player?.points ?? 0, status)}</span>
 }
 
 /** Starters row by row. Every player reads at full strength whichever side is winning — the heads

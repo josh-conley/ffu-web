@@ -1,4 +1,5 @@
 import type { PlayerMap, SeasonLineups, TeamLineup } from '@/data'
+import { startedPlayers } from './lineups'
 
 // Lineup efficiency: how close each started lineup came to the best possible lineup from the
 // full roster that week (starters + bench). Lineups exist only for game weeks (the backfill
@@ -56,7 +57,8 @@ const eligible = (c: Candidate, slot: string) =>
  */
 export function optimalPoints(team: TeamLineup, slots: string[], players: PlayerMap): number {
   const pool: Candidate[] = [
-    ...team.starters.map((p, i) => ({ points: p.points, position: players[p.playerId]?.position ?? '?', startedSlot: slots[i] })),
+    // Index against the full starters list (empty slots included) so each player keeps their slot.
+    ...team.starters.flatMap((p, i) => (p ? [{ points: p.points, position: players[p.playerId]?.position ?? '?', startedSlot: slots[i] }] : [])),
     ...team.bench.map((p) => ({ points: p.points, position: players[p.playerId]?.position ?? '?' })),
   ]
   // Group repeated slots (RB, RB → RB×2), then fill most-restrictive groups first.
@@ -75,7 +77,7 @@ export function optimalPoints(team: TeamLineup, slots: string[], players: Player
     for (const p of picks) total += p.points
     remaining = remaining.filter((c) => !picks.includes(c))
   }
-  const actual = team.starters.reduce((sum, p) => sum + p.points, 0)
+  const actual = startedPlayers(team).reduce((sum, p) => sum + p.points, 0)
   return Math.max(total, actual)
 }
 
@@ -84,7 +86,7 @@ export function seasonEfficiency(lineups: SeasonLineups, players: PlayerMap): Ma
   const byMember = new Map<string, SeasonEfficiency>()
   for (const wk of lineups.weeks) {
     for (const team of wk.teams) {
-      const actual = team.starters.reduce((sum, p) => sum + p.points, 0)
+      const actual = startedPlayers(team).reduce((sum, p) => sum + p.points, 0)
       const optimal = optimalPoints(team, lineups.slots, players)
       const week: WeekEfficiency = { week: wk.week, actual, optimal, lost: optimal - actual }
       const entry = byMember.get(team.memberId) ?? { memberId: team.memberId, weeks: [], actual: 0, optimal: 0, lost: 0, efficiency: 1 }
