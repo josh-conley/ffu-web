@@ -5,8 +5,8 @@ import type { PlayerLiveStatus } from '@/selectors'
 // they have no game this week (bye) — there's nothing to report. The legend below spells it out.
 
 const LABEL: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = { live: 'Playing now', pre: 'Yet to play', final: 'Played' }
-// The key also names the matching points styling (see liveStatusTone.ts), which the dot's own label doesn't need.
-const KEY: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = { live: 'Playing now (green points)', pre: 'Yet to play (—)', final: 'Played' }
+// The key also shows the dash a player yet to play gets for points (see liveStatusTone.ts).
+const KEY: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = { live: 'Playing now', pre: 'Yet to play (—)', final: 'Played' }
 const STYLE: Record<Exclude<PlayerLiveStatus, 'idle'>, string> = {
   live: 'bg-positive motion-safe:animate-pulse',
   pre: 'border border-muted',
