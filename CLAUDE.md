@@ -120,9 +120,11 @@ push after every green change** without being asked. Where it goes depends on wh
      PR's "Preview" check. Give them the link. The preview carries a banner linking to its PR, so
      they can merge from GitHub themselves while looking at it.
   3. Follow-up tweaks to the same change go on the same branch (the preview updates on each push).
-  4. When they say it looks good (or have merged it themselves): CI green and the branch up to date
-     (if `main` moved and conflicts, merge `main` in, never rebase or force-push, and let the
-     preview redeploy), then merge with a **merge commit** and delete the branch.
+  4. Merge when they approve it, in any words ("looks good", "ship it", "merge it", a 👍), or once
+     they've merged it themselves. A reply that's feedback or a question isn't approval: ask. Before
+     merging, CI must be green and the branch up to date (if `main` moved and conflicts, merge
+     `main` in, never rebase or force-push, and let the preview redeploy); then merge with a
+     **merge commit** and delete the branch.
 - **Straight to `main`**, no preview: docs (`CLAUDE.md`, `ai-docs/`), workflows and tooling,
   test-only changes, urgent fixes while the site is broken, or when he says "just ship it". **Josh
   only**: the commissioner's changes always go through a `preview/` branch and PR. A cloud session

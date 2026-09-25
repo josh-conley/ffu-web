@@ -476,7 +476,7 @@ enforced rather than a convention. The operational rules for sessions are in `CL
 
 ## 2026-09-25 — previews are approved by telling Claude, not merged from the page
 
-**Decision.** A preview is approved by saying "looks good" in the Claude session that made it; the
+**Decision.** A preview is approved by saying so, in any words, in the Claude session that made it; the
 session merges once CI is green. The preview banner only links to the PR as a fallback.
 
 **Why.** Merging from the preview page itself would need a backend (a Cloudflare Worker plus a GitHub
