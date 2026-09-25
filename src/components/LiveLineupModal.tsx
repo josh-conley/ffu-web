@@ -58,7 +58,7 @@ export function LiveLineupModal({
   const [sideA, sideB] = sides
 
   return (
-    <LineupModalFrame title={`Week ${week} · Live`} memberIds={memberIds} onClose={onClose}>
+    <LineupModalFrame title={`Week ${week} · Live`} live memberIds={memberIds} onClose={onClose}>
       {loading ? (
         <div className="p-10"><LoadingSpinner /></div>
       ) : data && sideA && sideB ? (

@@ -9,11 +9,14 @@ import { SeriesTag } from './SeriesTag'
  */
 export function LineupModalFrame({
   title,
+  live = false,
   memberIds,
   onClose,
   children,
 }: {
   title: string
+  /** A game still being played: a pulsing dot leads the title. */
+  live?: boolean
   memberIds: readonly string[]
   onClose: () => void
   children: ReactNode
@@ -32,7 +35,10 @@ export function LineupModalFrame({
       <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-4xl overflow-auto border border-border bg-surface shadow-xl">
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-accent px-4 py-2.5 text-accent-fg">
           <span className="flex flex-wrap items-baseline gap-x-2 text-sm font-bold uppercase tracking-wide">
-            <span>{title}</span>
+            <span className="inline-flex items-center gap-1.5">
+              {live && <span aria-hidden className="size-2 rounded-full bg-accent-fg motion-safe:animate-pulse" />}
+              {title}
+            </span>
             {series && <span><span aria-hidden="true">· </span><SeriesTag standing={series} /></span>}
           </span>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded px-2 text-lg leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text">✕</button>
