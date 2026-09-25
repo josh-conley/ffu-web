@@ -1,21 +1,29 @@
 name: Deploy preview on push
 
-# Keeps preview.ffunion.com in sync with ANY push to the rolling auto/requests branch — not just
-# Discord-pipeline runs (which deploy themselves inside discord-requests.yml). Manual pushes to the
-# preview branch previously deployed nothing. The double deploy after a pipeline push is harmless
-# (idempotent upload, ~1 min of runner time).
+# Builds any preview branch and deploys it to the ffu-web-preview Cloudflare Pages project, where each
+# branch gets its own address:
+#   - auto/requests (the Discord bot's rolling branch) is the project's production branch, so it's
+#     served at preview.ffunion.com. The bot's own runs also deploy it; the double deploy is harmless.
+#   - preview/<name> (one branch per change, e.g. the commissioner's) gets Cloudflare's branch alias,
+#     https://preview-<name>.ffu-web-preview.pages.dev.
+# The URL is posted as a "Preview" commit status, so it shows as a Details link in the PR's checks,
+# and in the run summary.
 
 on:
   push:
-    branches: [auto/requests]
+    branches: [auto/requests, 'preview/**']
   workflow_dispatch: {}
 
 permissions:
   contents: read
+  statuses: write # the "Preview" status carrying the URL
 
+# One deploy per branch at a time. Queued rather than cancelled: sync-requests.yml joins
+# auto/requests's group and must never be cut off mid-sync. GitHub keeps only the newest queued run,
+# so a burst of pushes still deploys once for the latest.
 concurrency:
-  group: preview-deploy
-  cancel-in-progress: true
+  group: preview-deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -34,7 +42,28 @@ jobs:
           npm run build
 
       - name: Deploy to Cloudflare Pages
+        id: deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch auto/requests --commit-dirty=true
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          npx wrangler@4 pages deploy dist --project-name ffu-web-preview --branch "$BRANCH" --commit-dirty=true | tee deploy.log
+          if [ "$BRANCH" = "auto/requests" ]; then
+            URL="https://preview.ffunion.com"
+          else
+            # Prefer the stable branch alias wrangler reports; fall back to this deploy's own URL.
+            URL="$(grep -o 'Deployment alias URL: https://[^ ]*' deploy.log | sed 's/.*: //' | tail -1)"
+            [ -n "$URL" ] || URL="$(grep -o 'https://[a-z0-9.-]*\.ffu-web-preview\.pages\.dev' deploy.log | tail -1)"
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "### Preview for \`$BRANCH\`: $URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post the URL as a commit status
+        if: steps.deploy.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          gh api "repos/${{ github.repository }}/statuses/${{ github.sha }}" \
+            -f state=success -f context=Preview -f description="Preview deployed" -f target_url="$URL"

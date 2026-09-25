@@ -40,10 +40,13 @@ longer used and can be deleted.)
 - Client-side routes (e.g. visiting `/standings` directly) may 404 on Cloudflare without an SPA
   fallback — the root URL + clicking around works; if deep links 404 we'll add a `_redirects` file.
 - `preview.ffunion.com` is the stable custom domain for the project (a Namecheap CNAME to it).
-- **Not only the Discord bot:** collaborators' Claude Code sessions (e.g. the commissioner's) push
-  their work to `auto/requests` too and merge it through the same rolling PR once the preview looks
-  right. `preview-deploy.yml` deploys any push to the branch. The rules are in `CLAUDE.md` under
-  "Who pushes where".
+- **Per-change previews:** besides `auto/requests`, `preview-deploy.yml` deploys every
+  `preview/<name>` branch. Cloudflare serves each branch at its own alias,
+  `https://preview-<name>.ffu-web-preview.pages.dev` (lowercased, non-alphanumerics become `-`,
+  cut at 28 characters), and the workflow posts the URL as a "Preview" commit status on the PR.
+  Collaborators' Claude Code sessions (e.g. the commissioner's) use one such branch + PR per change,
+  so changes ship independently. The rules are in `CLAUDE.md` under "Who pushes where". Stale
+  preview deployments are harmless; delete them from the Cloudflare dashboard now and then.
 - **Kept in sync with `main`:** `sync-requests.yml` runs after every production deploy. With nothing
   pending it fast-forwards `auto/requests` to `main`; with requests pending it merges `main` in
   underneath them. Either way it redeploys the preview, so preview.ffunion.com is always production
