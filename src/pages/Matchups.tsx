@@ -45,7 +45,14 @@ interface OpenFixture {
 }
 
 function WeekBadge({ week, liveWeek }: { week: number; liveWeek?: number }) {
-  if (week === liveWeek) return <span className="text-[10px] font-semibold text-accent">Live</span>
+  if (week === liveWeek) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-accent">
+        <span aria-hidden className="size-1.5 rounded-full bg-accent motion-safe:animate-pulse" />
+        Live
+      </span>
+    )
+  }
   // An earlier week still missing from the file is finished, just not yet written by the refresh.
   if (liveWeek !== undefined && week < liveWeek) return null
   return <span className="text-[10px] font-semibold text-muted">Upcoming</span>
