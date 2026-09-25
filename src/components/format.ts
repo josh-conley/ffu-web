@@ -52,12 +52,13 @@ function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): 
 }
 
 /**
- * A live box score's note on a player's NFL game: "Mon 8:15 PM vs PHI" before kickoff (in the
- * VIEWER's timezone, like draftDateTime, but unnamed for space), "Q3 7:30 @ BUF" while it's on, and
- * nothing once it's over. The same text on every screen size; only where it sits changes.
+ * A live box score's note on a player's NFL game: its schedule, "Mon 8:15 PM vs PHI" (in the
+ * VIEWER's timezone, like draftDateTime, but unnamed for space), before kickoff and again once it's
+ * over — the dimmed styling and status dot already say it's done, and the schedule still answers
+ * "who, and when did he play?" — and "Q3 7:30 @ BUF" while it's on. The same text on every screen
+ * size; only where it sits changes.
  */
-export function gameNote(game: PlayerGame): string | undefined {
-  if (game.status === 'final') return undefined
+export function gameNote(game: PlayerGame): string {
   const when = game.status === 'live' ? gamePeriod(game) : game.kickoff !== undefined ? KICKOFF.format(new Date(game.kickoff)).replace(',', '') : undefined
   return when ? `${when} ${game.opponent}` : game.opponent
 }

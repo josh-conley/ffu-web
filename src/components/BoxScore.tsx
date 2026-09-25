@@ -50,7 +50,7 @@ export interface BoxScoreSide {
 /** Live box scores only: where a player's NFL game stands, and the note shown under their name. */
 export interface PlayerLiveInfo {
   status: PlayerLiveStatus
-  /** "Mon 8:15 PM vs PHI" / "Q3 7:30 @ BUF" while the game is to come or on; undefined once over. */
+  /** "Mon 8:15 PM vs PHI" (to come or over) / "Q3 7:30 @ BUF" (on); undefined with no game. */
   note: string | undefined
 }
 type LiveOf = (playerId: string) => PlayerLiveInfo
@@ -68,8 +68,8 @@ const mirrored = <T,>(parts: T[], align: 'left' | 'right') => (align === 'right'
 const TAG = 'shrink-0 whitespace-nowrap text-[10px] text-muted'
 
 /**
- * The player's name with their NFL team beside it, and — live, while their game is still to come or
- * on — a note on it ("Mon 8:15 PM vs PHI"). From `sm` up the note shares the row, justified to the
+ * The player's name with their NFL team beside it, and — live, whenever they have a game this
+ * week — a note on it ("Mon 8:15 PM vs PHI"). From `sm` up the note shares the row, justified to the
  * opposite end beside the points, so names and notes each line up down the column. On a phone
  * there's no room for that, so the same note drops to a smaller second line under the name.
  * Laid out with CSS direction rather than reordering, so the phone's stack stays name-first.
