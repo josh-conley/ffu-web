@@ -67,9 +67,8 @@ export function MatchupCard({
   const base = 'block w-full border border-border bg-surface p-3 text-left shadow-sm'
   if (!onOpen) return <div className={base}>{body}</div>
   return (
-    <button type="button" onClick={onOpen} className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}>
+    <button type="button" onClick={onOpen} title="View lineups" className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}>
       {body}
-      <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">View lineups →</span>
     </button>
   )
 }
@@ -108,9 +107,8 @@ export function FixtureCard({
   const base = 'block w-full border border-dashed border-border bg-surface/60 p-3 text-left'
   if (!onOpen) return <div className={base}>{body}</div>
   return (
-    <button type="button" onClick={onOpen} className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}>
+    <button type="button" onClick={onOpen} title="View lineups" className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}>
       {body}
-      <span className="mt-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">View lineups →</span>
     </button>
   )
 }
