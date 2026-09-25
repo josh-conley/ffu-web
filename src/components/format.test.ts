@@ -1,4 +1,4 @@
-import { draftDateTime, ordinal, recordLabel, shortPlayerName } from './format'
+import { draftDateTime, gameLine, ordinal, recordLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
@@ -44,5 +44,23 @@ describe('draftDateTime', () => {
   it('reflects the actual instant, to the minute', () => {
     const hourLater = draftDateTime(1787445046000 + 60 * 60 * 1000)
     expect(hourLater).not.toBe(draftDateTime(1787445046000))
+  })
+})
+
+describe('gameLine', () => {
+  it('shows the kickoff (viewer\'s timezone) and opponent before the game', () => {
+    expect(gameLine({ status: 'pre', kickoff: 1790528400000, opponent: '@ NYG' })).toMatch(/^\w{3},? \d{1,2}:\d{2}\s?(AM|PM) @ NYG$/)
+    expect(gameLine({ status: 'pre', opponent: 'vs DAL' })).toBe('vs DAL')
+  })
+
+  it('shows the quarter and clock while it is on', () => {
+    expect(gameLine({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })).toBe('Q3 7:30 vs MIA')
+    expect(gameLine({ status: 'live', quarter: 2, clock: '00:00', opponent: '@ BUF' })).toBe('Half @ BUF')
+    expect(gameLine({ status: 'live', quarter: 5, clock: '04:12', opponent: '@ BUF' })).toBe('OT 4:12 @ BUF')
+    expect(gameLine({ status: 'live', opponent: '@ BUF' })).toBe('Live @ BUF')
+  })
+
+  it('shows nothing once the game is over', () => {
+    expect(gameLine({ status: 'final', opponent: '@ BUF' })).toBeUndefined()
   })
 })

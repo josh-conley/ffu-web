@@ -47,7 +47,12 @@ export interface BoxScoreSide {
   projected?: number
 }
 
-type StatusOf = (playerId: string) => PlayerLiveStatus
+/** Live box scores only: where a player's NFL game stands, and the note shown under their name. */
+export interface PlayerLiveInfo {
+  status: PlayerLiveStatus
+  line: string | undefined
+}
+type LiveOf = (playerId: string) => PlayerLiveInfo
 
 const playerLabel = (player: LineupPlayer | undefined, players: PlayerMap) => (player ? players[player.playerId]?.name ?? player.playerId : '')
 
@@ -56,25 +61,39 @@ function EmptySlot({ align }: { align: 'left' | 'right' }) {
   return <span className={`truncate italic text-muted ${align === 'right' ? 'text-right' : ''}`}>Empty</span>
 }
 
-function PlayerName({ player, players, align, statusOf }: { player?: LineupPlayer | null; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
-  if (player === null) return <EmptySlot align={align} />
-  const status = player && statusOf?.(player.playerId)
-  // Written left-to-right for the left side; the right side is the same parts mirrored, so the
-  // status dot sits on the outer edge on both.
+/** Mirrors a left-to-right run of parts for the right-hand team, so both read from the outer edge in. */
+const mirrored = <T,>(parts: T[], align: 'left' | 'right') => (align === 'right' ? [...parts].reverse() : parts)
+
+/** The player's name (+ NFL team), and under it the live note on their game when there is one. */
+function NameBlock({ player, players, align, line }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; line?: string | undefined }) {
   const parts = [
-    <LiveStatusDot key="dot" status={status} />,
     <NameParts key="name" full={playerLabel(player, players)} />,
     player?.team && <span key="team" className="shrink-0 text-[10px] text-muted">{player.team}</span>,
   ]
   return (
-    <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${nameTone(status)}`}>
-      {align === 'right' ? parts.reverse() : parts}
+    <span className={`flex min-w-0 flex-col ${align === 'right' ? 'items-end' : ''}`}>
+      <span className="flex min-w-0 max-w-full items-center gap-1 sm:gap-1.5">{mirrored(parts, align)}</span>
+      {line && <span className="max-w-full truncate text-[10px] leading-tight text-muted">{line}</span>}
     </span>
   )
 }
 
-function PlayerPoints({ player, align, statusOf }: { player?: LineupPlayer | null; align: 'left' | 'right'; statusOf?: StatusOf }) {
-  const status = player ? statusOf?.(player.playerId) : undefined
+function PlayerName({ player, players, align, liveOf }: { player?: LineupPlayer | null; players: PlayerMap; align: 'left' | 'right'; liveOf?: LiveOf }) {
+  if (player === null) return <EmptySlot align={align} />
+  const live = player && liveOf?.(player.playerId)
+  const parts = [
+    <LiveStatusDot key="dot" status={live?.status} />,
+    <NameBlock key="name" player={player} players={players} align={align} line={live?.line} />,
+  ]
+  return (
+    <span className={`flex min-w-0 items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'justify-end' : ''} ${nameTone(live?.status)}`}>
+      {mirrored(parts, align)}
+    </span>
+  )
+}
+
+function PlayerPoints({ player, align, liveOf }: { player?: LineupPlayer | null; align: 'left' | 'right'; liveOf?: LiveOf }) {
+  const status = player ? liveOf?.(player.playerId).status : undefined
   // An empty slot scores a real zero; muted like the rest of its row.
   const tone = player === null ? 'text-muted' : pointsTone(status)
   return <span className={`font-mono tabular-nums ${align === 'left' ? 'text-right' : ''} ${tone}`}>{pointsText(player?.points ?? 0, status)}</span>
@@ -82,45 +101,44 @@ function PlayerPoints({ player, align, statusOf }: { player?: LineupPlayer | nul
 
 /** Starters row by row. Every player reads at full strength whichever side is winning — the heads
  *  carry the result; what a player's own styling says is where their game stands (live only). */
-function StarterRows({ slots, a, b, players, statusOf }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; statusOf?: StatusOf }) {
+function StarterRows({ slots, a, b, players, liveOf }: { slots: string[]; a: TeamLineup; b: TeamLineup; players: PlayerMap; liveOf?: LiveOf }) {
   return (
     <div className={`${COLS} ${ROW_PAD} py-2 text-xs sm:text-sm`}>
       {slots.map((slot, i) => (
         <Fragment key={i}>
-          <PlayerName player={a.starters[i]} players={players} align="left" statusOf={statusOf} />
-          <PlayerPoints player={a.starters[i]} align="left" statusOf={statusOf} />
+          <PlayerName player={a.starters[i]} players={players} align="left" liveOf={liveOf} />
+          <PlayerPoints player={a.starters[i]} align="left" liveOf={liveOf} />
           <span className={`justify-self-center rounded px-1 text-[10px] font-bold ${posClass(slot)}`}>{SLOT_LABEL[slot] ?? slot}</span>
-          <PlayerPoints player={b.starters[i]} align="right" statusOf={statusOf} />
-          <PlayerName player={b.starters[i]} players={players} align="right" statusOf={statusOf} />
+          <PlayerPoints player={b.starters[i]} align="right" liveOf={liveOf} />
+          <PlayerName player={b.starters[i]} players={players} align="right" liveOf={liveOf} />
         </Fragment>
       ))}
     </div>
   )
 }
 
-function BenchRow({ p, players, align, statusOf }: { p: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; statusOf?: StatusOf }) {
-  const info = players[p.playerId]
-  const pos = info?.position ?? '—'
-  const status = statusOf?.(p.playerId)
+function BenchRow({ p, players, align, liveOf }: { p: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; liveOf?: LiveOf }) {
+  const pos = players[p.playerId]?.position ?? '—'
+  const live = liveOf?.(p.playerId)
   return (
     <div className={`flex items-center gap-1 sm:gap-1.5 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
-      <LiveStatusDot status={status} />
+      <LiveStatusDot status={live?.status} />
       <span className={`shrink-0 rounded px-1 text-[9px] font-bold ${posClass(pos)}`}>{pos}</span>
       <span className={`flex min-w-0 flex-1 ${align === 'right' ? 'justify-end' : ''}`}>
-        <NameParts full={info?.name ?? p.playerId} />
+        <NameBlock player={p} players={players} align={align} line={live?.line} />
       </span>
-      <span className={`shrink-0 font-mono tabular-nums ${pointsTone(status)}`}>{pointsText(p.points, status)}</span>
+      <span className={`shrink-0 font-mono tabular-nums ${pointsTone(live?.status)}`}>{pointsText(p.points, live?.status)}</span>
     </div>
   )
 }
 
-function BenchSection({ a, b, players, statusOf }: { a: TeamLineup; b: TeamLineup; players: PlayerMap; statusOf?: StatusOf }) {
+function BenchSection({ a, b, players, liveOf }: { a: TeamLineup; b: TeamLineup; players: PlayerMap; liveOf?: LiveOf }) {
   return (
     <>
       <div className="border-t border-border bg-surface-2/40 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Bench</div>
       <div className={`grid grid-cols-2 gap-x-3 sm:gap-x-6 ${ROW_PAD} py-2 text-xs sm:text-sm text-muted`}>
-        <div className="space-y-1">{benchByPoints(a).map((p, i) => <BenchRow key={i} p={p} players={players} align="left" statusOf={statusOf} />)}</div>
-        <div className="space-y-1">{benchByPoints(b).map((p, i) => <BenchRow key={i} p={p} players={players} align="right" statusOf={statusOf} />)}</div>
+        <div className="space-y-1">{benchByPoints(a).map((p, i) => <BenchRow key={i} p={p} players={players} align="left" liveOf={liveOf} />)}</div>
+        <div className="space-y-1">{benchByPoints(b).map((p, i) => <BenchRow key={i} p={p} players={players} align="right" liveOf={liveOf} />)}</div>
       </div>
     </>
   )
@@ -168,20 +186,20 @@ function Projections({ a, b }: { a: BoxScoreSide; b: BoxScoreSide }) {
 }
 
 /** Head-to-head lineups (+ bench): slot label centered + color-coded, scores flanking it, names on the
- *  outer edges. Only the losing side's team score is dimmed (ties dim neither). `statusOf` (live only)
- *  marks where each player's NFL game stands. */
+ *  outer edges. Only the losing side's team score is dimmed (ties dim neither). `liveOf` (live only)
+ *  marks where each player's NFL game stands and when/who they play. */
 export function BoxScore({
   slots,
   players,
   year,
   sides,
-  statusOf,
+  liveOf,
 }: {
   slots: string[]
   players: PlayerMap
   year: string
   sides: [BoxScoreSide, BoxScoreSide]
-  statusOf?: StatusOf
+  liveOf?: LiveOf
 }) {
   const [a, b] = sides
   const winner: 'a' | 'b' | null = a.score === b.score ? null : a.score > b.score ? 'a' : 'b'
@@ -189,8 +207,8 @@ export function BoxScore({
     <>
       <Heads a={a} b={b} year={year} winner={winner} />
       <Projections a={a} b={b} />
-      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} statusOf={statusOf} />
-      <BenchSection a={a.lineup} b={b.lineup} players={players} statusOf={statusOf} />
+      <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} liveOf={liveOf} />
+      <BenchSection a={a.lineup} b={b.lineup} players={players} liveOf={liveOf} />
     </>
   )
 }

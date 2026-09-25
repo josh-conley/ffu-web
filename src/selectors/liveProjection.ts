@@ -20,9 +20,29 @@ export function projectedPoints(stats: Record<string, number>, scoring: Record<s
 
 // A team defense's player id IS its team abbreviation ("BUF"), so it finds its game even when
 // the projections feed has no row for it.
+const teamOf = (playerId: string, ctx: LiveWeekContext) => ctx.projections[playerId]?.team ?? playerId
+
 function clockFor(playerId: string, ctx: LiveWeekContext): NflGameClock | undefined {
-  const team = ctx.projections[playerId]?.team ?? playerId
-  return ctx.games[team]
+  return ctx.games[teamOf(playerId, ctx)]
+}
+
+/** A player's NFL game this week, seen from their side: who they play, and where it stands. */
+export interface PlayerGame extends Pick<NflGameClock, 'status' | 'kickoff' | 'quarter' | 'clock'> {
+  /** "@ BUF" on the road, "vs BUF" at home. */
+  opponent: string
+}
+
+/** Undefined when the player has no game this week (bye, free agent, unknown team). */
+export function playerGame(playerId: string, ctx: LiveWeekContext): PlayerGame | undefined {
+  const team = teamOf(playerId, ctx)
+  const game = ctx.games[team]
+  if (!game) return undefined
+  const { status, kickoff, quarter, clock, home, away } = game
+  const out: PlayerGame = { status, opponent: team === home ? `vs ${away}` : `@ ${home}` }
+  if (kickoff !== undefined) out.kickoff = kickoff
+  if (quarter !== undefined) out.quarter = quarter
+  if (clock !== undefined) out.clock = clock
+  return out
 }
 
 export function playerLiveStatus(playerId: string, ctx: LiveWeekContext): PlayerLiveStatus {

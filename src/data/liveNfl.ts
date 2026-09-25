@@ -10,7 +10,9 @@ const REGULATION_SECONDS = 4 * QUARTER_SECONDS
 
 interface RawScore {
   status?: string
+  start_time?: number
   metadata?: {
+    date_time?: string
     home_team?: string
     away_team?: string
     quarter_num?: number | string
@@ -33,14 +35,30 @@ function remainingShare(quarter: number, timeRemaining: string | undefined): num
   return Math.min(1, Math.max(0, left / REGULATION_SECONDS))
 }
 
-/** Sleeper's game row -> our clock. `canceled` counts as over: nobody in it scores any more. */
-export function gameClock(raw: RawScore): NflGameClock {
+/** Kickoff as epoch ms: Sleeper's `start_time`, else its ISO `date_time`; undefined if neither reads. */
+function kickoffOf(raw: RawScore): number | undefined {
+  const ms = typeof raw.start_time === 'number' ? raw.start_time : Date.parse(raw.metadata?.date_time ?? '')
+  return Number.isFinite(ms) ? ms : undefined
+}
+
+function liveClock(quarter: number, timeRemaining: string | undefined): Pick<NflGameClock, 'status' | 'remaining' | 'quarter' | 'clock'> {
+  const clock = { status: 'live' as const, remaining: remainingShare(quarter, timeRemaining) }
+  if (!(quarter >= 1)) return clock
+  return timeRemaining ? { ...clock, quarter, clock: timeRemaining } : { ...clock, quarter }
+}
+
+function statusOf(raw: RawScore): Pick<NflGameClock, 'status' | 'remaining' | 'quarter' | 'clock'> {
   const meta = raw.metadata ?? {}
   if (raw.status === 'complete' || raw.status === 'canceled' || meta.is_over) return { status: 'final', remaining: 0 }
-  if (raw.status === 'in_game' || meta.is_in_progress) {
-    return { status: 'live', remaining: remainingShare(Number(meta.quarter_num), meta.time_remaining) }
-  }
+  if (raw.status === 'in_game' || meta.is_in_progress) return liveClock(Number(meta.quarter_num), meta.time_remaining)
   return { status: 'pre', remaining: 1 }
+}
+
+/** Sleeper's game row -> our clock. `canceled` counts as over: nobody in it scores any more. */
+export function gameClock(raw: RawScore): NflGameClock {
+  const kickoff = kickoffOf(raw)
+  const game = { ...statusOf(raw), home: raw.metadata?.home_team ?? '', away: raw.metadata?.away_team ?? '' }
+  return kickoff === undefined ? game : { ...game, kickoff }
 }
 
 /** Every NFL game of the week, keyed by BOTH teams' abbreviations (so a player's team finds it). */

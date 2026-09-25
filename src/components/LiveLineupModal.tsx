@@ -1,7 +1,8 @@
 import { useLiveBoxScore } from '@/hooks/useLiveBoxScore'
 import { useNflWeek } from '@/hooks/useNflWeek'
-import { type LiveWeekContext, playerLiveStatus, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
-import { BoxScore, type BoxScoreSide } from './BoxScore'
+import { type LiveWeekContext, playerGame, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
+import { BoxScore, type BoxScoreSide, type PlayerLiveInfo } from './BoxScore'
+import { gameLine } from './format'
 import { LineupModalFrame } from './LineupModalFrame'
 import { LiveStatusLegend } from './LiveStatusDot'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -15,7 +16,8 @@ import { LoadingSpinner } from './LoadingSpinner'
  * lineups but there is no result to read. `scoreOf` supplies the score to head each side with when
  * a game does exist; without it the starters' own total stands in (0.00 before kickoff).
  *
- * Once the NFL week loads (useNflWeek), each player is marked played / playing / yet to play and
+ * Once the NFL week loads (useNflWeek), each player is marked played / playing / yet to play (with
+ * their kickoff or game clock and opponent under the name while it's still to come or on), and
  * each side gets a projected final score; the same feed supplies each player's NFL team, which the
  * live lineups lack. It loads after the lineups and may not load at all
  * (undocumented feed), so the box score never waits on it.
@@ -38,6 +40,12 @@ export function LiveLineupModal({
   const { data, loading } = useLiveBoxScore(leagueId, week, memberIds, true)
   const nfl = useNflWeek(year, week, true)
   const ctx: LiveWeekContext | undefined = data && nfl ? { ...nfl, scoring: data.scoring } : undefined
+  const liveOf =
+    ctx &&
+    ((playerId: string): PlayerLiveInfo => {
+      const game = playerGame(playerId, ctx)
+      return game ? { status: game.status, line: gameLine(game) } : { status: 'idle', line: undefined }
+    })
 
   const sides: BoxScoreSide[] = data
     ? data.teams.map((raw) => {
@@ -55,7 +63,7 @@ export function LiveLineupModal({
         <div className="p-10"><LoadingSpinner /></div>
       ) : data && sideA && sideB ? (
         <>
-          <BoxScore slots={data.slots} players={data.players} year={year} sides={[sideA, sideB]} statusOf={ctx && ((id) => playerLiveStatus(id, ctx))} />
+          <BoxScore slots={data.slots} players={data.players} year={year} sides={[sideA, sideB]} liveOf={liveOf} />
           {ctx && <LiveStatusLegend />}
         </>
       ) : (

@@ -1,5 +1,5 @@
 import type { TeamLineup } from '@/data'
-import { type LiveWeekContext, playerLiveProjection, projectionsByMember, withNflTeams, playerLiveStatus, projectedPoints, teamLiveProjection } from './liveProjection'
+import { type LiveWeekContext, playerGame, playerLiveProjection, projectionsByMember, withNflTeams, playerLiveStatus, projectedPoints, teamLiveProjection } from './liveProjection'
 
 // Half-PPR-ish scoring; `pass_td` deliberately unscored so its projection must add nothing.
 const scoring = { rec: 0.5, rec_yd: 0.1, rush_yd: 0.1 }
@@ -7,9 +7,10 @@ const scoring = { rec: 0.5, rec_yd: 0.1, rush_yd: 0.1 }
 const ctx: LiveWeekContext = {
   scoring,
   games: {
-    KC: { status: 'final', remaining: 0 },
-    BUF: { status: 'live', remaining: 0.5 },
-    DAL: { status: 'pre', remaining: 1 },
+    KC: { status: 'final', remaining: 0, home: 'KC', away: 'LV' },
+    LV: { status: 'final', remaining: 0, home: 'KC', away: 'LV' },
+    BUF: { status: 'live', remaining: 0.5, home: 'BUF', away: 'MIA', quarter: 3, clock: '07:30' },
+    DAL: { status: 'pre', remaining: 1, home: 'NYG', away: 'DAL', kickoff: 1790528400000 },
   },
   projections: {
     done: { team: 'KC', stats: { rec: 4, rec_yd: 60 } }, // 8 pts
@@ -18,6 +19,17 @@ const ctx: LiveWeekContext = {
     bye: { team: 'SEA', stats: {} }, // SEA has no game this week
   },
 }
+
+describe('playerGame', () => {
+  it('names the opponent from the player\'s side, home or away', () => {
+    expect(playerGame('waiting', ctx)).toEqual({ status: 'pre', kickoff: 1790528400000, opponent: '@ NYG' })
+    expect(playerGame('playing', ctx)).toEqual({ status: 'live', quarter: 3, clock: '07:30', opponent: 'vs MIA' })
+  })
+
+  it('is undefined for a player with no game this week', () => {
+    expect(playerGame('bye', ctx)).toBeUndefined()
+  })
+})
 
 describe('projectedPoints', () => {
   it('scores each stat by the league weight and ignores unscored stats', () => {

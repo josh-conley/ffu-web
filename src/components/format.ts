@@ -1,4 +1,5 @@
 // Small display formatters shared across components (Charter DRY — one home each).
+import type { PlayerGame } from '@/selectors'
 
 const SUFFIX = ['th', 'st', 'nd', 'rd']
 
@@ -37,4 +38,26 @@ const DRAFT_TIME = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute:
 export function draftDateTime(startTime: number): string {
   const at = new Date(startTime)
   return `${DRAFT_DATE.format(at)} · ${DRAFT_TIME.format(at)}`
+}
+
+const KICKOFF = new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+
+/** Where a live game is: "Q3 7:30", "Half", "OT 4:12" — or just "Live" before a quarter is reported. */
+function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): string {
+  if (quarter === undefined) return 'Live'
+  const time = clock?.replace(/^0(?=\d:)/, '') // "07:30" -> "7:30"
+  if (quarter === 2 && time === '0:00') return 'Half'
+  const period = quarter > 4 ? 'OT' : `Q${quarter}`
+  return time ? `${period} ${time}` : period
+}
+
+/**
+ * A live box score's note on a player's NFL game: "Sun 1:00 PM @ BUF" before kickoff (in the
+ * VIEWER's timezone, like draftDateTime — but unnamed, as there's no room under a player's name),
+ * "Q3 7:30 vs MIA" while it's on, and nothing once it's over.
+ */
+export function gameLine(game: PlayerGame): string | undefined {
+  if (game.status === 'final') return undefined
+  const when = game.status === 'live' ? gamePeriod(game) : game.kickoff !== undefined ? KICKOFF.format(new Date(game.kickoff)) : undefined
+  return when ? `${when} ${game.opponent}` : game.opponent
 }

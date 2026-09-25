@@ -281,6 +281,13 @@ export interface NflGameClock {
   status: NflGameStatus
   /** Share of regulation still to play, 0–1: 1 before kickoff, 0 once over (overtime counts as 0). */
   remaining: number
+  home: string
+  away: string
+  /** Kickoff, epoch ms — absent if Sleeper didn't send one. */
+  kickoff?: number
+  /** Live games only: the quarter (5+ = overtime) and time left in it, "MM:SS", as far as reported. */
+  quarter?: number
+  clock?: string
 }
 
 /** One player's projected stat line for a week, and the NFL team they're on that week. */
