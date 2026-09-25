@@ -4,7 +4,7 @@ import { getMember, nameForYear } from '@/config'
 import { benchByPoints, type PlayerLiveStatus } from '@/selectors'
 import { LiveStatusDot } from './LiveStatusDot'
 import { nameTone, pointsText, pointsTone } from './liveStatusTone'
-import { shortPlayerName, type GameNote } from './format'
+import { shortPlayerName } from './format'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
 
@@ -50,7 +50,8 @@ export interface BoxScoreSide {
 /** Live box scores only: where a player's NFL game stands, and the note shown under their name. */
 export interface PlayerLiveInfo {
   status: PlayerLiveStatus
-  note: GameNote | undefined
+  /** "Mon 8:15 PM vs PHI" / "Q3 7:30 @BUF" while the game is to come or on; undefined once over. */
+  note: string | undefined
 }
 type LiveOf = (playerId: string) => PlayerLiveInfo
 
@@ -68,12 +69,12 @@ const TAG = 'shrink-0 whitespace-nowrap text-[10px] text-muted'
 
 /**
  * The player's name with their NFL team beside it, and — live, while their game is still to come or
- * on — a note on it. From `sm` up the note shares the row, justified to the opposite end beside the
- * points ("@MIA · Sun 1:00 PM"), so names and notes each line up down the column. On a phone there
- * is no room for that: a smaller "Sun 1p" / "Q3 7:30" drops to a second line under the name.
+ * on — a note on it ("Mon 8:15 PM vs PHI"). From `sm` up the note shares the row, justified to the
+ * opposite end beside the points, so names and notes each line up down the column. On a phone
+ * there's no room for that, so the same note drops to a smaller second line under the name.
  * Laid out with CSS direction rather than reordering, so the phone's stack stays name-first.
  */
-function NameBlock({ player, players, align, note }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; note?: GameNote | undefined }) {
+function NameBlock({ player, players, align, note }: { player?: LineupPlayer; players: PlayerMap; align: 'left' | 'right'; note?: string | undefined }) {
   const name = [
     <NameParts key="name" full={playerLabel(player, players)} />,
     player?.team && <span key="team" className={TAG}>{player.team}</span>,
@@ -82,8 +83,7 @@ function NameBlock({ player, players, align, note }: { player?: LineupPlayer; pl
   return (
     <span className={`flex min-w-0 flex-1 flex-col sm:items-center sm:gap-3 ${direction} ${note ? 'sm:justify-between' : ''}`}>
       <span className="flex min-w-0 max-w-full items-center gap-1 sm:gap-1.5">{mirrored(name, align)}</span>
-      {note && <span className={`${TAG} hidden sm:inline`}>{note.full}</span>}
-      {note && <span className="max-w-full truncate text-[9px] leading-tight text-muted sm:hidden">{note.short}</span>}
+      {note && <span className="max-w-full truncate text-[9px] leading-tight text-muted sm:shrink-0 sm:text-[10px]">{note}</span>}
     </span>
   )
 }

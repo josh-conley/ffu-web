@@ -42,16 +42,6 @@ export function draftDateTime(startTime: number): string {
 
 const KICKOFF = new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
 
-/** "Sun 1p", "Thu 8:15p" — a kickoff squeezed for a phone. A 24-hour locale keeps its own "Sun 13:00". */
-function shortKickoff(at: Date): string {
-  const parts = KICKOFF.formatToParts(at)
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? ''
-  const period = part('dayPeriod')
-  if (!period) return `${part('weekday')} ${part('hour')}:${part('minute')}`
-  const minute = part('minute') === '00' ? '' : `:${part('minute')}`
-  return `${part('weekday')} ${part('hour')}${minute}${period[0]?.toLowerCase() ?? ''}`
-}
-
 /** Where a live game is: "Q3 7:30", "Half", "OT 4:12" — or just "Live" before a quarter is reported. */
 function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): string {
   if (quarter === undefined) return 'Live'
@@ -61,26 +51,13 @@ function gamePeriod({ quarter, clock }: Pick<PlayerGame, 'quarter' | 'clock'>): 
   return time ? `${period} ${time}` : period
 }
 
-/** A player's game, in the two widths a box score has room for (see gameNote). */
-export interface GameNote {
-  /** From `sm` up, after the name and NFL team: "@MIA · Sun 1:00 PM", "vs NO · Q3 7:30". */
-  full: string
-  /** On a phone, on a second line under the name: "Sun 1p", "Q3 7:30" — no opponent, for room. */
-  short: string
-}
-
 /**
- * A live box score's inline note on a player's NFL game: the kickoff (in the VIEWER's timezone,
- * like draftDateTime, but unnamed for space) before it starts, the clock while it's on, and nothing
- * once it's over.
+ * A live box score's note on a player's NFL game: "Mon 8:15 PM vs PHI" before kickoff (in the
+ * VIEWER's timezone, like draftDateTime, but unnamed for space), "Q3 7:30 @BUF" while it's on, and
+ * nothing once it's over. The same text on every screen size; only where it sits changes.
  */
-export function gameNote(game: PlayerGame): GameNote | undefined {
+export function gameNote(game: PlayerGame): string | undefined {
   if (game.status === 'final') return undefined
-  if (game.status === 'live') {
-    const period = gamePeriod(game)
-    return { full: `${game.opponent} · ${period}`, short: period }
-  }
-  if (game.kickoff === undefined) return { full: game.opponent, short: game.opponent }
-  const at = new Date(game.kickoff)
-  return { full: `${game.opponent} · ${KICKOFF.format(at)}`, short: shortKickoff(at) }
+  const when = game.status === 'live' ? gamePeriod(game) : game.kickoff !== undefined ? KICKOFF.format(new Date(game.kickoff)).replace(',', '') : undefined
+  return when ? `${when} ${game.opponent}` : game.opponent
 }
