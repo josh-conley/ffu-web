@@ -135,6 +135,17 @@ export function milestoneStandings(seasons: SeasonData[], tournaments: Tournamen
   return out
 }
 
+/** Close enough to the next milestone to be on Milestone Watch. */
+export function isOnWatch(standing: MilestoneStanding, cutoff: number = WATCH_THRESHOLD): boolean {
+  return standing.progress !== null && standing.progress >= cutoff
+}
+
+/** One member's standing in every category, in MILESTONE_CATEGORIES order (Members page). */
+export function memberMilestones(standings: MilestoneStanding[], memberId: string): MilestoneStanding[] {
+  const mine = standings.filter((s) => s.memberId === memberId)
+  return MILESTONE_CATEGORIES.flatMap((category) => mine.filter((s) => s.category === category))
+}
+
 /**
  * Members close enough to their next milestone to be worth watching, by category, closest first.
  * A member who has passed everything is not on watch — there is nothing left to approach.
@@ -146,7 +157,7 @@ export function milestoneWatch(
   const out = new Map<MilestoneCategory, MilestoneStanding[]>()
   for (const category of MILESTONE_CATEGORIES) {
     const rows = standings
-      .filter((s) => s.category === category && s.progress !== null && s.progress >= cutoff)
+      .filter((s) => s.category === category && isOnWatch(s, cutoff))
       .sort((a, b) => (a.remaining ?? 0) - (b.remaining ?? 0))
     out.set(category, rows)
   }
