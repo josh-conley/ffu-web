@@ -13,7 +13,7 @@ import type { NavGroup } from './nav'
 // pointerdown, and navigation.
 
 const TRIGGER_BASE =
-  'flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60'
+  'flex items-center gap-1.5 whitespace-nowrap px-1.5 py-1.5 text-xs lg:px-3 lg:text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60'
 
 function Chevron({ open }: { open: boolean }) {
   return (
@@ -43,7 +43,7 @@ function MenuPanel({ group, panelId, onNavigate }: { group: NavGroup; panelId: s
     //
     // pt-1.5 is a TRANSPARENT bridge: it keeps the gap between trigger and panel inside the hover
     // subtree, so crossing it doesn't fire pointerleave and snap the panel shut.
-    <div id={panelId} className="absolute right-0 top-full z-30 w-52 pt-1.5">
+    <div id={panelId} className="absolute right-0 top-full z-30 w-60 pt-1.5">
       <div className="flex flex-col border border-border bg-surface shadow-xl">
         {/* Accent cap — same card language as the rest of the site (see LatestChampions). */}
         <span aria-hidden className="h-0.5 bg-accent" />

@@ -45,16 +45,17 @@ export const NAV: readonly NavEntry[] = [
   {
     label: 'Stats & More',
     items: [
-      // Named "All-Time" in the menu: the group already says Stats, so repeating the word would
-      // make the page indistinguishable from its own heading.
-      { to: '/stats', label: 'All-Time', end: false },
+      // Menu labels are the pages' own headings (and tab titles, via pageTitle.ts), so the link you
+      // pick names the page you land on. Revised 2026-09-25: the shortened forms ("All-Time",
+      // "Builds", "Lineal Champ", ...) read as different pages from the headings they opened.
+      { to: '/stats', label: 'All-Time Stats', end: false },
       { to: '/records', label: 'Records', end: false },
       { to: '/players', label: 'Players', end: false },
       { to: '/around-the-union', label: 'Around the Union', end: false },
-      { to: '/milestones', label: 'Milestones', end: false },
-      { to: '/builds', label: 'Builds', end: false },
-      { to: '/adp-comparison', label: 'Compare ADP', end: false },
-      { to: '/lineal', label: 'Lineal Champ', end: false },
+      { to: '/milestones', label: 'Milestone Watch', end: false },
+      { to: '/builds', label: 'Roster Build Stats', end: false },
+      { to: '/adp-comparison', label: 'ADP Comparison', end: false },
+      { to: '/lineal', label: 'Lineal Championship', end: false },
     ],
   },
 ]

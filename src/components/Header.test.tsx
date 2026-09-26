@@ -73,11 +73,11 @@ describe('Header dropdowns', () => {
 
     await user.hover(trigger)
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Championship' })).toBeInTheDocument()
 
     await user.unhover(trigger)
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    expect(screen.queryByRole('link', { name: 'Lineal Champ' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Lineal Championship' })).not.toBeInTheDocument()
   })
 
   it('a click on a hover-opened menu pins it instead of closing it', async () => {
@@ -86,7 +86,7 @@ describe('Header dropdowns', () => {
 
     await user.hover(trigger)
     await user.click(trigger)
-    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Championship' })).toBeInTheDocument()
   })
 
   it('toggles on keyboard activation, where there is no pointer to hover with', async () => {
@@ -126,10 +126,10 @@ describe('Header dropdowns', () => {
     const trigger = screen.getByRole('button', { name: GROUP })
 
     await user.hover(trigger)
-    expect(screen.getByRole('link', { name: 'Lineal Champ' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Lineal Championship' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('link', { name: 'Lineal Champ' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Lineal Championship' })).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
   })
 
