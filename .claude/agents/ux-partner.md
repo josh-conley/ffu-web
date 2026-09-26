@@ -49,9 +49,9 @@ from the components and `WebFetch`, and say your findings are from code only.
   states, live-season states (before kickoff, mid-game, bye week).
 
 ## Live notes
-If `cmux` is on PATH (`command -v cmux`), post a condensed line to the cmux sidebar log whenever you
+If `cmux` is on PATH (`command -v cmux`), post a short progress note to the cmux sidebar log whenever you
 finish looking at a page or land on a finding, so Josh can follow along:
-`cmux log --source ux-partner --level info "<what you looked at → what you think>"` (under ~120 chars,
+`cmux log --source ux-partner --level info "<page or area checked: finding>"` (under ~120 chars,
 plain words; `--level warning` for a real bug). One line every few steps, not per tool call.
 
 ## Brainstorming with the other partner
