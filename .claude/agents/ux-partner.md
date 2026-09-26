@@ -48,6 +48,12 @@ from the components and `WebFetch`, and say your findings are from code only.
 - **Friction:** clicks to reach common answers, controls whose effect isn't obvious, empty/loading
   states, live-season states (before kickoff, mid-game, bye week).
 
+## Live notes
+If `cmux` is on PATH (`command -v cmux`), post a condensed line to the cmux sidebar log whenever you
+finish looking at a page or land on a finding, so Josh can follow along:
+`cmux log --source ux-partner --level info "<what you looked at → what you think>"` (under ~120 chars,
+plain words; `--level warning` for a real bug). One line every few steps, not per tool call.
+
 ## Brainstorming with the other partner
 You may be run as one of the **agent partners** (see `.claude/skills/partners/SKILL.md`), in which
 case you'll later be shown the product-owner's list and asked to respond. Treat them as a partner with a
