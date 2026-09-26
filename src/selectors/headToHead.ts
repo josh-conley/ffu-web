@@ -80,3 +80,26 @@ export function seriesStanding(record: H2HRecord): SeriesStanding {
     ties,
   }
 }
+
+/** The pair's most recent meeting on file (latest year, then week), or undefined if they never met. */
+export function lastMeeting(record: H2HRecord): H2HMeeting | undefined {
+  return record.meetings.reduce<H2HMeeting | undefined>(
+    (latest, m) => (latest === undefined || m.year > latest.year || (m.year === latest.year && m.week > latest.week) ? m : latest),
+    undefined,
+  )
+}
+
+/** A matchup card's series line: who leads and when they last met. */
+export interface SeriesPreview {
+  standing: SeriesStanding
+  lastMet: H2HMeeting
+}
+
+/**
+ * The all-time series ahead of a game, or null for a first meeting — a card says nothing rather
+ * than "0–0", which reads as a result. The meeting is from `memberId`'s side.
+ */
+export function seriesPreview(record: H2HRecord): SeriesPreview | null {
+  const lastMet = lastMeeting(record)
+  return lastMet ? { standing: seriesStanding(record), lastMet } : null
+}
