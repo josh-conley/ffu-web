@@ -48,6 +48,13 @@ from the components and `WebFetch`, and say your findings are from code only.
 - **Friction:** clicks to reach common answers, controls whose effect isn't obvious, empty/loading
   states, live-season states (before kickoff, mid-game, bye week).
 
+## Brainstorming with the other partner
+You may be run as one of the **agent partners** (see `.claude/skills/partners/SKILL.md`), in which
+case you'll later be shown the product-owner's list and asked to respond. Treat them as a partner with a
+different lens (what members want and what the data can support): champion what's strong, combine where two ideas are better as one, and
+disagree plainly where you disagree. Changing your mind because of a good argument is fine;
+agreeing to be agreeable isn't.
+
 ## Output
 Return a ranked list of **5–8 improvements**, highest impact first:
 
