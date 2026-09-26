@@ -18,7 +18,7 @@ export interface UnionScope {
 }
 
 const BUTTON =
-  'inline-flex min-h-11 items-center border px-3 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0'
+  'inline-flex min-h-11 items-center border px-2 py-1.5 text-sm font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:px-3 md:min-h-0'
 const UNSELECTED = 'border-border bg-surface text-muted hover:bg-surface-2 hover:text-text'
 export function SeasonLeaguePicker({
   years,
@@ -50,7 +50,7 @@ export function SeasonLeaguePicker({
           </option>
         ))}
       </select>
-      <div className="flex gap-1" role="group" aria-label="League tier">
+      <div className="flex flex-wrap gap-1" role="group" aria-label="League tier">
         {tiers.map((t) => {
           const selected = t === tier && union?.active !== true
           return (
