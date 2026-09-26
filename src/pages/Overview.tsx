@@ -33,10 +33,11 @@ const leagueAnchor = (tier: Tier) => `week-${tier.toLowerCase()}`
  * Jump links to each league's block. On a phone the three stack, and National starts a couple of
  * screens down; these are anchors, not a filter, so every league stays on the page. The text uses
  * the tier's readable foreground, not its solid color (Premier gold fails contrast as text).
+ * Hidden from `lg` up, where the grid puts all three leagues side by side and there's nowhere to jump.
  */
 function LeagueJumpLinks({ tiers }: { tiers: Tier[] }) {
   return (
-    <nav aria-label="Jump to league" className="flex flex-wrap gap-x-2 text-sm font-semibold">
+    <nav aria-label="Jump to league" className="flex flex-wrap gap-x-2 text-sm font-semibold lg:hidden">
       {tiers.map((tier, i) => (
         <span key={tier} className="flex items-center gap-2">
           {i > 0 && <span aria-hidden className="text-muted">·</span>}
