@@ -26,7 +26,8 @@ function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] 
   return [
     {
       key: 'rank',
-      header: 'Rank',
+      header: '#',
+      align: 'right',
       title: byUpr ? 'Placement across all three leagues, by UPR' : 'Placement across all three leagues, by record',
       sortValue: (r) => r.rank,
       render: (r) => <span className="font-semibold">{r.rank}</span>,
@@ -38,7 +39,7 @@ function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] 
       render: (r) => (
         <span className="flex items-center gap-2">
           <TeamLogo ffuId={r.team.memberId} />
-          <span className="font-semibold whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
+          <span className="font-semibold max-sm:max-w-36 sm:whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
         </span>
       ),
     },
