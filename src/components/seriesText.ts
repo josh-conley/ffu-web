@@ -20,11 +20,7 @@ export function seriesLineText({ standing, lastMet }: SeriesPreview): string {
   return `${lead} · ${lastMetText(lastMet)}`
 }
 
-/**
- * The accessible name of a card that opens a game's lineups: "Stallions vs Johnkshire Cats, view
- * lineups". It replaces the card's content for a screen reader, so it carries the belt marker too.
- */
-export function lineupsLabel(memberIds: readonly string[], year: string, titleOnTheLine = false): string {
-  const teams = memberIds.map((id) => nameForYear(id, year) ?? id).join(' vs ')
-  return `${teams}${titleOnTheLine ? ', lineal title on the line' : ''}, view lineups`
+/** The accessible name of a card that opens a game's lineups: "Stallions vs Johnkshire Cats, view lineups". */
+export function lineupsLabel(memberIds: readonly string[], year: string): string {
+  return `${memberIds.map((id) => nameForYear(id, year) ?? id).join(' vs ')}, view lineups`
 }

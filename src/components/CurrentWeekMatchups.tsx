@@ -19,14 +19,11 @@ export function CurrentWeekMatchups({
   data,
   onOpen,
   projected,
-  beltHolderId,
 }: {
   tier: Tier
   data: LiveSeasonData
   onOpen: (open: OpenGame) => void
   projected?: (memberId: string) => number | undefined
-  /** Who carries the lineal belt into this week — their game is marked as the title bout. */
-  beltHolderId?: string
 }) {
   const style = LEAGUE_STYLES[tier]
   return (
@@ -40,7 +37,6 @@ export function CurrentWeekMatchups({
             year={data.year}
             status="live"
             projected={projected}
-            beltHolderId={beltHolderId}
             onOpen={() => onOpen({ leagueId: data.leagueId, year: data.year, game })}
           />
         ))}

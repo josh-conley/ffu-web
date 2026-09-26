@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { FaCrown } from 'react-icons/fa6'
 import type { Game, ScheduledGame } from '@/data'
 import { nameForYear } from '@/config'
 import { winnerOf } from '@/selectors'
@@ -11,17 +10,12 @@ import { lineupsLabel, seriesLineText } from './seriesText'
  *  neither team is dressed as having won or lost; only the leading score is bold. */
 export type MatchupStatus = 'final' | 'live'
 
-/** Logo, name, belt marker and subtitle — the left side of every row, scored or not. */
-function TeamLabel({ memberId, year, subtitle, hasBelt }: { memberId: string; year: string; subtitle?: string; hasBelt: boolean }) {
+/** Logo, name and subtitle — the left side of every row, scored or not. */
+function TeamLabel({ memberId, year, subtitle }: { memberId: string; year: string; subtitle?: string }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
       <TeamLogo ffuId={memberId} size={24} />
       <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
-      {hasBelt && (
-        <span title="Lineal champion: the title is on the line" className="shrink-0 text-accent">
-          <FaCrown aria-label="Lineal champion, title on the line" className="text-[11px]" />
-        </span>
-      )}
       {subtitle && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle}</span>}
     </span>
   )
@@ -43,7 +37,6 @@ function ParticipantRow({
   leading,
   subtitle,
   projected,
-  hasBelt,
 }: {
   memberId: string
   score: number
@@ -53,11 +46,10 @@ function ParticipantRow({
   leading: boolean
   subtitle?: string
   projected?: number
-  hasBelt: boolean
 }) {
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${ROW_TONE[tone]}`}>
-      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} hasBelt={hasBelt} />
+      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} />
       {/* Projection stacked under the score, not beside it, so it never takes width from the name. */}
       <span className="flex shrink-0 flex-col items-end leading-tight">
         <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
@@ -90,8 +82,7 @@ function rowTone(status: MatchupStatus, winner: string | null, memberId: string)
 }
 
 /** `subtitle`: small tag beside each team — its running record (regular season) or seed (playoffs).
- *  `projected`: a live game's projected final score per team, shown beside the actual one.
- *  `beltHolderId`: who carries the lineal belt into this week; marked if they're in this game. */
+ *  `projected`: a live game's projected final score per team, shown beside the actual one. */
 export function MatchupCard({
   game,
   year,
@@ -99,7 +90,6 @@ export function MatchupCard({
   onOpen,
   subtitle,
   projected,
-  beltHolderId,
 }: {
   game: Game
   year: string
@@ -107,13 +97,11 @@ export function MatchupCard({
   onOpen?: () => void
   subtitle?: (memberId: string) => string | undefined
   projected?: (memberId: string) => number | undefined
-  beltHolderId?: string
 }) {
   const winner = winnerOf(game)
   const memberIds = game.participants.map((p) => p.memberId)
-  const titleOnTheLine = beltHolderId !== undefined && memberIds.includes(beltHolderId)
   return (
-    <CardShell base="block w-full border border-border bg-surface p-3 text-left shadow-sm" label={lineupsLabel(memberIds, year, titleOnTheLine)} onOpen={onOpen}>
+    <CardShell base="block w-full border border-border bg-surface p-3 text-left shadow-sm" label={lineupsLabel(memberIds, year)} onOpen={onOpen}>
       {game.round && <div className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">{game.round}</div>}
       <div className="space-y-1">
         {game.participants.map((p) => (
@@ -126,7 +114,6 @@ export function MatchupCard({
             leading={status === 'live' && p.memberId === winner}
             subtitle={subtitle?.(p.memberId)}
             projected={projected?.(p.memberId)}
-            hasBelt={p.memberId === beltHolderId}
           />
         ))}
       </div>
@@ -146,21 +133,18 @@ export function FixtureCard({
   year,
   onOpen,
   subtitle,
-  beltHolderId,
 }: {
   fixture: ScheduledGame
   year: string
   onOpen?: () => void
   subtitle?: (memberId: string) => string | undefined
-  beltHolderId?: string
 }) {
-  const titleOnTheLine = beltHolderId !== undefined && fixture.memberIds.includes(beltHolderId)
   return (
-    <CardShell base="block w-full border border-dashed border-border bg-surface/60 p-3 text-left" label={lineupsLabel(fixture.memberIds, year, titleOnTheLine)} onOpen={onOpen}>
+    <CardShell base="block w-full border border-dashed border-border bg-surface/60 p-3 text-left" label={lineupsLabel(fixture.memberIds, year)} onOpen={onOpen}>
       <div className="space-y-1">
         {fixture.memberIds.map((memberId) => (
           <div key={memberId} className="flex items-center justify-between gap-2 border-l-2 border-transparent pl-2 text-muted">
-            <TeamLabel memberId={memberId} year={year} subtitle={subtitle?.(memberId)} hasBelt={memberId === beltHolderId} />
+            <TeamLabel memberId={memberId} year={year} subtitle={subtitle?.(memberId)} />
             <span className="font-mono text-xs tabular-nums" aria-label="not yet played">—</span>
           </div>
         ))}

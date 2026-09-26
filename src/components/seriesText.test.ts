@@ -21,8 +21,4 @@ describe('lineupsLabel', () => {
   it('names both teams by their name that season', () => {
     expect(lineupsLabel(['ffu-001', 'ffu-002'], '2026')).toBe('The Stallions vs FFUcked Up, view lineups')
   })
-
-  it('says when the lineal title is on the line', () => {
-    expect(lineupsLabel(['ffu-001', 'ffu-002'], '2026', true)).toBe('The Stallions vs FFUcked Up, lineal title on the line, view lineups')
-  })
 })

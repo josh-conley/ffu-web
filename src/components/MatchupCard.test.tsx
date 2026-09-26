@@ -48,9 +48,9 @@ describe('MatchupCard', () => {
     expect(screen.queryByText(/leads|tied|last met/)).not.toBeInTheDocument()
   })
 
-  it('names both teams on the lineups button, and the belt when it is on the line', () => {
-    render(<MatchupCard game={game} year="2026" status="live" onOpen={() => {}} beltHolderId="ffu-002" />)
-    expect(screen.getByRole('button', { name: 'The Stallions vs FFUcked Up, lineal title on the line, view lineups' })).toBeInTheDocument()
+  it('names both teams on the lineups button', () => {
+    render(<MatchupCard game={game} year="2026" status="live" onOpen={() => {}} />)
+    expect(screen.getByRole('button', { name: 'The Stallions vs FFUcked Up, view lineups' })).toBeInTheDocument()
   })
 })
 
