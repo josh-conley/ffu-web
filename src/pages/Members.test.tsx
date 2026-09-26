@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS } from '@/config'
@@ -82,7 +82,9 @@ it('shows a member detail with derived debut year + owner', async () => {
   renderAt('/members?member=ffu-023')
   // Header heading (not the directory link)
   await waitFor(() => expect(screen.getByRole('heading', { name: 'The Minutemen' })).toBeInTheDocument())
-  expect(screen.getByText('Season History')).toBeInTheDocument()
+  // The page's fixed structure, in order.
+  const sections = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+  expect(sections).toEqual(['Career', 'Rivals', 'Franchise Players', 'Up / Down History', 'Milestones'])
   // The Minutemen have played every season, so their tenure runs to the newest one with games —
   // derived, because the season in progress joins it the week its first games land.
   const manifest = FILES['/data/seasons.json'] as { seasons: { year: string; hasGames?: boolean }[] }
@@ -95,4 +97,15 @@ it('shows a head-to-head comparison when ?vs is set', async () => {
   renderAt('/members?member=ffu-023&vs=ffu-009')
   await waitFor(() => expect(screen.getByText('Head-to-Head')).toBeInTheDocument())
   expect(screen.getByText('Championships')).toBeInTheDocument() // career compare row
+})
+
+it("lists a member's rivals with a plain Compare link and no win% column", async () => {
+  renderAt('/members?member=ffu-023')
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Rivals' })).toBeInTheDocument())
+  const table = screen.getAllByRole('table')[1] as HTMLElement
+  const headers = within(table).getAllByRole('columnheader').map((h) => h.textContent?.replace(/[▲▼]/g, ''))
+  expect(headers.slice(0, 6)).toEqual(['Opponent', 'GP', 'W-L', 'PF', 'PA', 'Last Met'])
+  expect(headers.some((h) => /%/.test(h ?? ''))).toBe(false)
+  const compare = within(table).getAllByRole('link', { name: /^Compare with / })[0]
+  expect(compare).toHaveAttribute('href', expect.stringMatching(/^\/members\?member=ffu-023&vs=ffu-/))
 })

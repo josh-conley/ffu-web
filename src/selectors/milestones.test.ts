@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { bandFor, milestoneNewsWeek, milestonesReachedRecently, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
+import { bandFor, isOnWatch, memberMilestones, milestoneNewsWeek, milestonesReachedRecently, milestoneStandings, milestoneWatch, MILESTONES, WATCH_THRESHOLD } from './milestones'
 
 describe('bandFor', () => {
   const points = MILESTONES.pointsFor // 10k / 15k / 20k / 25k
@@ -81,6 +81,29 @@ describe('milestoneWatch', () => {
   it('takes the cutoff as an argument so the page can be tuned without touching the rule', () => {
     expect(milestoneWatch([standing('far', 20)], 0.3).get('wins')!.map((r) => r.memberId)).toEqual(['far'])
     expect(WATCH_THRESHOLD).toBe(0.75)
+  })
+})
+
+describe('memberMilestones', () => {
+  it("returns one member's standing in every category, in category order", () => {
+    const seasons = [season('2024', [team('a', 30, 6_000), team('b', 5, 1_000)])]
+    const rows = memberMilestones(milestoneStandings(seasons, []), 'b')
+    expect(rows.map((r) => [r.memberId, r.category])).toEqual([
+      ['b', 'pointsFor'],
+      ['b', 'wins'],
+      ['b', 'earnings'],
+      ['b', 'pointsAgainst'],
+    ])
+  })
+})
+
+describe('isOnWatch', () => {
+  const standing = (value: number) => ({ memberId: 'a', category: 'wins' as const, value, achieved: [], ...bandFor(value, MILESTONES.wins) })
+
+  it('is the same rule the watch list uses', () => {
+    expect(isOnWatch(standing(48))).toBe(true)
+    expect(isOnWatch(standing(20))).toBe(false)
+    expect(isOnWatch(standing(200))).toBe(false) // nothing left to reach
   })
 })
 
