@@ -5,6 +5,7 @@ import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useNflState } from '@/hooks/useNflState'
 import { useLiveWeekGames } from '@/hooks/useLiveWeekGames'
+import { useLinealHolder } from '@/hooks/useLinealHolder'
 import { gameForFixture, gamesByWeek, liveScoredWeeks, liveWeekFor, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { FixtureCard, MatchupCard } from '@/components/MatchupCard'
@@ -71,6 +72,9 @@ function UpcomingWeeks({
   onOpen?: (open: OpenFixture) => void
   subtitle?: (memberId: string) => string | undefined
 }) {
+  // The belt is only known going into the first week not yet on file (see linealHolderGoingInto).
+  const beltWeek = weeks[0]?.week
+  const beltHolderId = useLinealHolder(year, beltWeek)
   return (
     <>
       {weeks.map(({ week, fixtures }) => (
@@ -82,10 +86,13 @@ function UpcomingWeeks({
             {fixtures.map((fixture, i) => {
               const game = gameForFixture(fixture, liveGames)
               const open = onOpen ? () => onOpen({ fixture, game }) : undefined
+              const belt = week === beltWeek ? beltHolderId : undefined
+              // An earlier week still missing from the file is finished; only the live one is in play.
+              const status = week === liveWeek ? 'live' : 'final'
               return game ? (
-                <MatchupCard key={`${week}-${i}`} game={game} year={year} subtitle={subtitle} onOpen={open} />
+                <MatchupCard key={`${week}-${i}`} game={game} year={year} status={status} subtitle={subtitle} onOpen={open} beltHolderId={belt} />
               ) : (
-                <FixtureCard key={`${week}-${i}`} fixture={fixture} year={year} subtitle={subtitle} onOpen={open} />
+                <FixtureCard key={`${week}-${i}`} fixture={fixture} year={year} subtitle={subtitle} onOpen={open} beltHolderId={belt} />
               )
             })}
           </div>

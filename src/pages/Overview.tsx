@@ -5,6 +5,7 @@ import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek } from '@/hooks/useLiveWeek'
 import { useLiveProjections } from '@/hooks/useLiveProjections'
+import { useLinealHolder } from '@/hooks/useLinealHolder'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
 import { homeLiveSection, unionHighlight, upcomingYear } from '@/selectors'
 import { HomeUnionPanel } from '@/components/HomeUnionPanel'
@@ -46,6 +47,7 @@ function LiveSection({
     tiers.map((t) => t.data),
     !showStandings,
   )
+  const beltHolderId = useLinealHolder(tiers[0]?.data.year, week)
   const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}` : 'This Week'
   return (
     <section className="space-y-3">
@@ -55,7 +57,7 @@ function LiveSection({
           showStandings ? (
             <CurrentWeekStandings key={tier} tier={tier} data={data} />
           ) : (
-            <CurrentWeekMatchups key={tier} tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
+            <CurrentWeekMatchups key={tier} tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} beltHolderId={beltHolderId} />
           ),
         )}
       </div>
