@@ -180,4 +180,11 @@ Ops/planning docs that aren't app source live here (kept out of the repo root to
 `ai-docs/DEPLOY.md` (deploy + apex cutover checklist), `ai-docs/PREVIEW-ENVIRONMENT.md` (Cloudflare
 preview setup), `ai-docs/TODO.md` (**living task list — check it, and keep it current as work
 happens**, e.g. what's left for 2026 season readiness), `ai-docs/DECISIONS.md` (short ADR notes for
-non-obvious choices — e.g. when a season counts as "started"; add an entry rather than re-deciding).
+non-obvious choices — e.g. when a season counts as "started"; add an entry rather than re-deciding),
+`ai-docs/IDEAS.md` (pitched ideas + Josh's verdicts; log a line after he reacts to a pitch).
+
+## Idea agents
+`.claude/agents/product-owner.md` (features/stats, in the commissioner's mold) and
+`.claude/agents/ux-partner.md` (UI/UX, a11y, mobile) are read-only subagents that pitch ranked ideas.
+Spawn them when Josh asks what to build next or for a design/usability pass (both in parallel if he
+asks broadly). Relay their lists; nothing gets built until he picks.
