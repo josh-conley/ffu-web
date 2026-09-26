@@ -15,7 +15,7 @@ import { CurrentWeekStandings } from '@/components/CurrentWeekStandings'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
 import { CupBanner } from '@/components/CupBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
-import { TIER_PRESTIGE } from '@/components/leagues'
+import { LEAGUE_STYLES, TIER_PRESTIGE } from '@/components/leagues'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -24,6 +24,30 @@ const championOf = (season: SeasonData) => season.teams.find((t) => t.finalPlace
 interface LiveTier {
   tier: Tier
   data: LiveSeasonData
+}
+
+/** The id each league's live block carries, so the jump links above the grid can target it. */
+const leagueAnchor = (tier: Tier) => `week-${tier.toLowerCase()}`
+
+/**
+ * Jump links to each league's block. On a phone the three stack, and National starts a couple of
+ * screens down; these are anchors, not a filter, so every league stays on the page. The text uses
+ * the tier's readable foreground, not its solid color (Premier gold fails contrast as text).
+ * Hidden from `lg` up, where the grid puts all three leagues side by side and there's nowhere to jump.
+ */
+function LeagueJumpLinks({ tiers }: { tiers: Tier[] }) {
+  return (
+    <nav aria-label="Jump to league" className="flex flex-wrap gap-x-2 text-sm font-semibold lg:hidden">
+      {tiers.map((tier, i) => (
+        <span key={tier} className="flex items-center gap-2">
+          {i > 0 && <span aria-hidden className="text-muted">·</span>}
+          <a href={`#${leagueAnchor(tier)}`} className={`${LEAGUE_STYLES[tier].readableText} underline-offset-2 hover:underline`}>
+            {LEAGUE_STYLES[tier].label}
+          </a>
+        </span>
+      ))}
+    </nav>
+  )
 }
 
 /**
@@ -50,14 +74,18 @@ function LiveSection({
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{heading}</h2>
+      <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {tiers.map(({ tier, data }) =>
-          showStandings ? (
-            <CurrentWeekStandings key={tier} tier={tier} data={data} />
-          ) : (
-            <CurrentWeekMatchups key={tier} tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
-          ),
-        )}
+        {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}
+        {tiers.map(({ tier, data }) => (
+          <div key={tier} id={leagueAnchor(tier)} className="min-w-0 scroll-mt-24">
+            {showStandings ? (
+              <CurrentWeekStandings tier={tier} data={data} />
+            ) : (
+              <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
+            )}
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -115,14 +143,17 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
-      <CupBanner />
-      <HomeUnionPanel highlight={union} />
-      {/* Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
-          resolves, but the per-tier season fetches take longer — and can fail. Keying off liveTiers
-          keeps the section headings from rendering over an empty (or permanently failed) grid. */}
+      {/* While a week is live it leads the page: it's what people come for on a game day, and
+          behind the Cup promo and last week's Around the Union it started a screen and a half down
+          on a phone. Gate on the DATA (not just inScope): inScope flips true as soon as the tiny
+          nfl-state fetch resolves, but the per-tier season fetches take longer — and can fail.
+          Keying off liveTiers keeps the section headings from rendering over an empty (or
+          permanently failed) grid. With no live week, the order is Cup, then Around the Union. */}
       {liveTiers.length > 0 && (
         <LiveSection tiers={liveTiers} week={currentWeekNumber} showStandings={showStandings} onOpen={setOpen} />
       )}
+      <CupBanner />
+      <HomeUnionPanel highlight={union} />
       <UpcomingDrafts year={nextYear} schedules={draftSchedules} />
       {latest && <LatestChampions year={latest} champions={latestChampions} />}
       <section className="space-y-3">
