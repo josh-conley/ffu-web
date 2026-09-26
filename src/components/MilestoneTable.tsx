@@ -3,7 +3,7 @@ import { getMember } from '@/config'
 import type { MilestoneCategory, MilestoneStanding } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
 import { MILESTONE_FORMAT as FORMAT } from './milestones'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 const teamName = (memberId: string) => getMember(memberId)?.name ?? memberId
 
@@ -28,10 +28,9 @@ function columnsFor(category: MilestoneCategory): Column<MilestoneStanding>[] {
       header: 'Team',
       sortValue: (r) => teamName(r.memberId),
       render: (r) => (
-        <span className="flex items-center gap-2">
-          <TeamLogo ffuId={r.memberId} />
+        <TeamLink ffuId={r.memberId} logoSize={32}>
           <span className="font-semibold whitespace-nowrap">{teamName(r.memberId)}</span>
-        </span>
+        </TeamLink>
       ),
     },
     { key: 'value', header: 'Current', align: 'right', sortValue: (r) => r.value, render: (r) => fmt(r.value) },
@@ -80,8 +79,9 @@ export function RecentlyReached({ rows, category }: { rows: MilestoneStanding[];
           key={`${a.memberId}-${a.milestone}`}
           className="flex items-center gap-2 border border-border bg-surface px-2.5 py-1.5 text-xs shadow-sm"
         >
-          <TeamLogo ffuId={a.memberId} size={18} />
-          <span className="font-semibold">{teamName(a.memberId)}</span>
+          <TeamLink ffuId={a.memberId} logoSize={18}>
+            <span className="font-semibold">{teamName(a.memberId)}</span>
+          </TeamLink>
           <span className="text-muted">
             {fmt(a.milestone)} in {a.year}
           </span>

@@ -1,7 +1,7 @@
 import { nameForYear } from '@/config'
 import type { WeekScore } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { ordinal } from '../format'
 
 /**
@@ -17,11 +17,14 @@ export function WeekScoreRow({ score, year }: { score: WeekScore; year: string }
       <span className="w-9 shrink-0 text-center font-mono text-sm font-bold tabular-nums text-muted">
         {ordinal(score.rank)}
       </span>
-      <TeamLogo ffuId={score.memberId} size={28} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold">{nameForYear(score.memberId, year) ?? score.memberId}</div>
-        <div className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</div>
-      </div>
+      <TeamLink
+        ffuId={score.memberId}
+        logoSize={28}
+        className="flex-1 gap-3"
+        detail={<span className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</span>}
+      >
+        <span className="truncate text-sm font-bold">{nameForYear(score.memberId, year) ?? score.memberId}</span>
+      </TeamLink>
       <span className="shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
     </div>
   )
@@ -33,10 +36,11 @@ export function WeekScoreChip({ score, year }: { score: WeekScore; year: string 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-2 px-3 py-2.5">
       <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
-      <TeamLogo ffuId={score.memberId} size={26} />
-      <span className="truncate text-base font-bold leading-tight">
-        {nameForYear(score.memberId, year) ?? score.memberId}
-      </span>
+      <TeamLink ffuId={score.memberId} logoSize={26}>
+        <span className="truncate text-base font-bold leading-tight">
+          {nameForYear(score.memberId, year) ?? score.memberId}
+        </span>
+      </TeamLink>
       <span className="ml-auto shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
       <span className={`shrink-0 text-[11px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
     </div>

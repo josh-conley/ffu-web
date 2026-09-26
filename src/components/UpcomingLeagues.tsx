@@ -79,7 +79,7 @@ function TeamRow({ team, year, tier, onSelect }: { team: UpcomingTeam; year: str
         onClick={() => onSelect(team.memberId)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        <TeamLogo ffuId={team.memberId} size={28} />
+        <TeamLogo ffuId={team.memberId} size={28} clickable={false} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-sm font-semibold">{teamName(team, year)}</span>

@@ -1,6 +1,8 @@
+import type { ReactElement } from 'react'
 import { render, screen } from '@testing-library/react'
 import type { Game } from '@/data'
 import { FixtureCard, MatchupCard } from './MatchupCard'
+import { TeamProfileContext } from './teamProfile'
 
 // The series line reads every season on file; stub it so these tests stay about the card.
 const preview = vi.hoisted(() => ({ value: null as unknown }))
@@ -51,6 +53,21 @@ describe('MatchupCard', () => {
   it('names both teams on the lineups button', () => {
     render(<MatchupCard game={game} year="2026" status="live" onOpen={() => {}} />)
     expect(screen.getByRole('button', { name: 'The Stallions vs FFUcked Up, view lineups' })).toBeInTheDocument()
+  })
+})
+
+describe('MatchupCard team links', () => {
+  const withProfile = (ui: ReactElement) => render(<TeamProfileContext.Provider value={() => {}}>{ui}</TeamProfileContext.Provider>)
+
+  it('links each team on a plain card', () => {
+    withProfile(<MatchupCard game={game} year="2026" />)
+    expect(screen.getByRole('button', { name: 'The Stallions' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'FFUcked Up' })).toBeInTheDocument()
+  })
+
+  it('nests no control inside the whole-card lineups button', () => {
+    withProfile(<MatchupCard game={game} year="2026" onOpen={() => {}} />)
+    expect(screen.getAllByRole('button')).toHaveLength(1)
   })
 })
 

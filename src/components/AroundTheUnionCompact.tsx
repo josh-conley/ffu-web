@@ -2,7 +2,7 @@ import { FaTrophy } from 'react-icons/fa6'
 import { nameForYear } from '@/config'
 import type { LeaguePointsRow, WeekScore } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 /**
  * The FFUN layout: the same two blocks as the standard board, folded into horizontal bands instead
@@ -26,15 +26,20 @@ function Leader({ score, year }: { score: WeekScore; year: string }) {
   return (
     <div className={`flex min-w-0 items-center gap-3 px-3 py-2.5 sm:flex-1 ${style.solidHeader}`}>
       <FaTrophy className="shrink-0 text-2xl" aria-hidden />
-      <TeamLogo ffuId={score.memberId} size={40} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-base font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
+      <TeamLink
+        ffuId={score.memberId}
+        logoSize={40}
+        className="flex-1 gap-3"
+        detail={
+          <span className="font-mono text-xs font-bold leading-tight opacity-90 sm:text-sm">
+            {score.score.toFixed(2)} · {style.label}
+          </span>
+        }
+      >
+        <span className="truncate text-base font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
           {nameForYear(score.memberId, year) ?? score.memberId}
-        </div>
-        <div className="font-mono text-xs font-bold leading-tight opacity-90 sm:text-sm">
-          {score.score.toFixed(2)} · {style.label}
-        </div>
-      </div>
+        </span>
+      </TeamLink>
     </div>
   )
 }
@@ -46,8 +51,9 @@ function RunnerUp({ score, year }: { score: WeekScore; year: string }) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2 bg-surface-2 px-3 py-2.5">
       <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
-      <TeamLogo ffuId={score.memberId} size={26} />
-      <span className="truncate text-sm font-bold leading-tight sm:text-base">{nameForYear(score.memberId, year) ?? score.memberId}</span>
+      <TeamLink ffuId={score.memberId} logoSize={26}>
+        <span className="truncate text-sm font-bold leading-tight sm:text-base">{nameForYear(score.memberId, year) ?? score.memberId}</span>
+      </TeamLink>
       <span className="ml-auto shrink-0 font-mono text-sm font-bold tabular-nums sm:text-base">{score.score.toFixed(2)}</span>
       <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider sm:text-[11px] ${style.text}`}>{style.label}</span>
     </div>

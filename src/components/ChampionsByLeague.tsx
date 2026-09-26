@@ -1,7 +1,7 @@
 import type { Tier } from '@/config'
 import { nameForYear } from '@/config'
 import { LEAGUE_STYLES } from './leagues'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 const TIERS: Tier[] = ['PREMIER', 'MASTERS', 'NATIONAL']
 
@@ -26,10 +26,11 @@ export function ChampionsByLeague({ years, champions }: { years: string[]; champ
               {rows.map(({ year, id }) => (
                 <li key={year} className="flex items-center gap-2.5 px-3 py-2 text-sm">
                   <span className="w-10 shrink-0 font-bold tabular-nums text-muted">{year}</span>
-                  <TeamLogo ffuId={id} size={22} />
-                  {/* min-w-0 lets the flex item shrink so the name truncates instead of forcing the
-                      row (and the whole page) wider than the viewport. */}
-                  <span className="min-w-0 truncate font-medium">{nameForYear(id, year) ?? id}</span>
+                  {/* min-w-0 (on the link and the name) lets them shrink so the name truncates
+                      instead of forcing the row (and the whole page) wider than the viewport. */}
+                  <TeamLink ffuId={id} className="gap-2.5">
+                    <span className="min-w-0 truncate font-medium">{nameForYear(id, year) ?? id}</span>
+                  </TeamLink>
                 </li>
               ))}
             </ul>

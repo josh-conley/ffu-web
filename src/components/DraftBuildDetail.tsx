@@ -5,7 +5,7 @@ import { FaToilet, FaTrophy } from 'react-icons/fa6'
 import { ordinal } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { posClass } from './positions'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 // Drill-down for one build: every team-season that drafted it, with the actual roster (its picks in
 // the first N rounds) and how the season finished. Presentational only — the page owns selection
@@ -39,8 +39,9 @@ function InstanceRow({ inst }: { inst: BuildInstance }) {
           <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${tier.badge}`}>{tier.label}</span>
           <span className="text-xs tabular-nums text-muted">{inst.year}</span>
         </span>
-        <TeamLogo ffuId={inst.memberId} size={18} />
-        <span className="font-medium">{nameForYear(inst.memberId, inst.year) ?? inst.memberId}</span>
+        <TeamLink ffuId={inst.memberId} logoSize={18}>
+          <span className="font-medium">{nameForYear(inst.memberId, inst.year) ?? inst.memberId}</span>
+        </TeamLink>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">{inst.picks.map(pickPill)}</div>
     </div>

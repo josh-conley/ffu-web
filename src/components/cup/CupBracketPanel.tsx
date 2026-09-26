@@ -2,6 +2,7 @@ import { FaTrophy } from 'react-icons/fa6'
 import { CUP_ACCENT, nameForYear } from '@/config'
 import type { ResolvedTournament, RoundOutline } from '@/selectors'
 import { TournamentBracket, type OpenMatchup } from '../TournamentBracket'
+import { TeamNameButton } from '../TeamLink'
 import { TeamLogo } from '../TeamLogo'
 import { CupBracketOutline } from './CupBracketOutline'
 
@@ -10,12 +11,14 @@ import { CupBracketOutline } from './CupBracketOutline'
 
 function ChampionBanner({ ffuId, year }: { ffuId: string; year: string }) {
   return (
-    <div className="flex items-center gap-3 border bg-surface-2 px-4 py-3" style={{ borderColor: CUP_ACCENT }}>
+    <div className="relative flex items-center gap-3 border bg-surface-2 px-4 py-3" style={{ borderColor: CUP_ACCENT }}>
       <FaTrophy size={22} aria-hidden style={{ color: CUP_ACCENT }} />
-      <TeamLogo ffuId={ffuId} size={32} />
+      <TeamLogo ffuId={ffuId} size={32} clickable={false} />
       <div>
         <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Champion</div>
-        <div className="text-lg font-extrabold uppercase tracking-tight">{nameForYear(ffuId, year) ?? ffuId}</div>
+        <div className="text-lg font-extrabold uppercase tracking-tight">
+          <TeamNameButton ffuId={ffuId}>{nameForYear(ffuId, year) ?? ffuId}</TeamNameButton>
+        </div>
       </div>
     </div>
   )

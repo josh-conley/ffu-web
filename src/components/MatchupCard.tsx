@@ -3,19 +3,22 @@ import type { Game, ScheduledGame } from '@/data'
 import { nameForYear } from '@/config'
 import { winnerOf } from '@/selectors'
 import { useSeriesPreview } from '@/hooks/useSeriesPreview'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 import { lineupsLabel, seriesLineText } from './seriesText'
 
 /** `final`: the result stands — winner bar and bold, loser muted. `live`: still being played, so
  *  neither team is dressed as having won or lost; only the leading score is bold. */
 export type MatchupStatus = 'final' | 'live'
 
-/** Logo, name and subtitle — the left side of every row, scored or not. */
-function TeamLabel({ memberId, year, subtitle }: { memberId: string; year: string; subtitle?: string }) {
+/** Logo, name and subtitle — the left side of every row, scored or not. `linked`: the team opens
+ *  its profile. Only on a plain card: inside the whole-card lineups button it would be a button in
+ *  a button, which screen readers flatten, so there the logo and name are just text. */
+function TeamLabel({ memberId, year, subtitle, linked }: { memberId: string; year: string; subtitle?: string; linked: boolean }) {
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <TeamLogo ffuId={memberId} size={24} />
-      <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
+      <TeamLink ffuId={memberId} logoSize={24} plain={!linked} tight>
+        <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
+      </TeamLink>
       {subtitle && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle}</span>}
     </span>
   )
@@ -37,6 +40,7 @@ function ParticipantRow({
   leading,
   subtitle,
   projected,
+  linked,
 }: {
   memberId: string
   score: number
@@ -46,10 +50,11 @@ function ParticipantRow({
   leading: boolean
   subtitle?: string
   projected?: number
+  linked: boolean
 }) {
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${ROW_TONE[tone]}`}>
-      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} />
+      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} linked={linked} />
       {/* Projection stacked under the score, not beside it, so it never takes width from the name. */}
       <span className="flex shrink-0 flex-col items-end leading-tight">
         <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
@@ -114,6 +119,7 @@ export function MatchupCard({
             leading={status === 'live' && p.memberId === winner}
             subtitle={subtitle?.(p.memberId)}
             projected={projected?.(p.memberId)}
+            linked={!onOpen}
           />
         ))}
       </div>
@@ -144,7 +150,7 @@ export function FixtureCard({
       <div className="space-y-1">
         {fixture.memberIds.map((memberId) => (
           <div key={memberId} className="flex items-center justify-between gap-2 border-l-2 border-transparent pl-2 text-muted">
-            <TeamLabel memberId={memberId} year={year} subtitle={subtitle?.(memberId)} />
+            <TeamLabel memberId={memberId} year={year} subtitle={subtitle?.(memberId)} linked={!onOpen} />
             <span className="font-mono text-xs tabular-nums" aria-label="not yet played">—</span>
           </div>
         ))}

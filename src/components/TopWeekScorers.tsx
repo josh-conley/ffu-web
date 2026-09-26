@@ -3,7 +3,7 @@ import { nameForYear } from '@/config'
 import type { WeekScore } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
 import { WeekScoreRow } from './recap/WeekScoreRow'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 /**
  * The week's biggest scores across all three leagues — the FFUN's page-2 staple.
@@ -17,13 +17,16 @@ function Leader({ score, year }: { score: WeekScore; year: string }) {
   return (
     <div className={`flex items-center gap-4 border-l-4 ${style.border} bg-surface p-4 shadow-sm`}>
       <FaTrophy className={`shrink-0 text-3xl ${style.text}`} aria-hidden />
-      <TeamLogo ffuId={score.memberId} size={48} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-lg font-extrabold uppercase tracking-tight sm:text-xl">
+      <TeamLink
+        ffuId={score.memberId}
+        logoSize={48}
+        className="flex-1 gap-4"
+        detail={<span className={`text-xs font-bold uppercase tracking-widest ${style.text}`}>{style.label}</span>}
+      >
+        <span className="truncate text-lg font-extrabold uppercase tracking-tight sm:text-xl">
           {nameForYear(score.memberId, year) ?? score.memberId}
-        </div>
-        <div className={`text-xs font-bold uppercase tracking-widest ${style.text}`}>{style.label}</div>
-      </div>
+        </span>
+      </TeamLink>
       <div className="shrink-0 text-right">
         <div className="font-mono text-2xl font-extrabold tabular-nums sm:text-3xl">{score.score.toFixed(2)}</div>
         <div className="text-[11px] uppercase tracking-widest text-muted">Week high</div>

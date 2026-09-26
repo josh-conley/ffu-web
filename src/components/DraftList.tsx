@@ -6,7 +6,7 @@ import { useFilters, type FilterDef, type FilterOption } from '@/hooks/useFilter
 import { DataTable, type Column } from './DataTable'
 import { FilterBar } from './FilterBar'
 import { posClass } from './positions'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 const POS_ORDER = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
 
@@ -53,8 +53,9 @@ export function DraftList({ draft, year }: { draft: DraftData; year: string }) {
           const ownerId = bySlot.get(p.slot)
           return (
             <span className="flex items-center gap-2 whitespace-nowrap">
-              <TeamLogo ffuId={p.memberId} size={20} />
-              <span>{nameForYear(p.memberId, year) ?? p.memberId}</span>
+              <TeamLink ffuId={p.memberId} logoSize={20}>
+                {nameForYear(p.memberId, year) ?? p.memberId}
+              </TeamLink>
               {isTraded(p, bySlot) && ownerId && (
                 <span className="text-[11px] text-accent" title={`Acquired from ${nameForYear(ownerId, year) ?? ownerId}`}>
                   from {getMember(ownerId)?.abbreviation ?? '?'}
