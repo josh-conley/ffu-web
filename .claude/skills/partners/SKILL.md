@@ -46,6 +46,11 @@ Write the joint recommendation yourself, from what they said (quote or attribute
   to decide. Don't average it away.
 - **Dropped:** a one-line list of what was cut in discussion and why, so it isn't re-pitched.
 
+**Tone:** the partners are tools, not colleagues or stakeholders. Report what they found and
+proposed ("the UX pass measured…", "PO suggests…"), never what they "want", "need" or "insist on",
+and never turn a timing observation into a deadline for Josh ("both want it by Sunday"). Timing
+context is fine as a plain fact ("week 3 kicks off Sunday").
+
 Keep it under ~500 words. Offer to start the "do next" item on a `preview/` branch; don't start
 it until Josh picks.
 
