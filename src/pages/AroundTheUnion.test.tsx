@@ -33,6 +33,9 @@ function renderPage(entry = '/around-the-union') {
   )
 }
 
+// The league points race, told apart from the prize-race tables by its column.
+const raceTable = () => screen.queryAllByRole('table').find((t) => within(t).queryByText('Total Points') !== null)
+
 const ready = () => waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Around the Union'))
 
 it('shows both blocks the newsletter needs', async () => {
@@ -41,7 +44,7 @@ it('shows both blocks the newsletter needs', async () => {
   expect(screen.getByText(/Top Scores/)).toBeInTheDocument()
   expect(screen.getByText('League Scoring — Season to Date')).toBeInTheDocument()
   // All three leagues in the race, ordered by total points.
-  const rows = screen.getAllByRole('row').slice(1)
+  const rows = within(raceTable()!).getAllByRole('row').slice(1)
   expect(rows).toHaveLength(3)
   const totals = rows.map((r) => Number(within(r).getAllByRole('cell')[2]!.textContent!.replace(/,/g, '')))
   expect(totals).toEqual([...totals].sort((a, b) => b - a))
@@ -60,8 +63,9 @@ it('leads with the highest score of that week, across every league', async () =>
   await ready()
   const shown = screen
     .getAllByText(/^\d+\.\d{2}$/)
+    // The week's scores, not the league averages or the season-long prize numbers, which are in tables.
+    .filter((el) => el.closest('table') === null)
     .map((el) => Number(el.textContent))
-    .filter((n) => n > 50) // scores, not the league averages, which are in table cells
   const leader = Number(screen.getByText('Week high').parentElement!.querySelector('.font-mono')!.textContent)
   expect(leader).toBe(Math.max(...shown))
 })
@@ -85,7 +89,7 @@ describe('the FFUN layout', () => {
     await ready()
     // The section headings and the race TABLE are gone — that is the vertical space being saved.
     expect(screen.queryByText(/Top Scores/)).not.toBeInTheDocument()
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(raceTable()).toBeUndefined()
     // ...but all three leagues' figures are still on the strip.
     // Scoped to the footer strip — a league name also appears on the podium above it.
     const strip = within(screen.getByText('Avg Game / Total League Points').parentElement!)
@@ -97,16 +101,16 @@ describe('the FFUN layout', () => {
   it('is reachable from the toggle and lands in the URL', async () => {
     renderPage()
     await ready()
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(raceTable()).toBeDefined()
     await userEvent.click(screen.getByRole('button', { name: 'FFUN' }))
-    await waitFor(() => expect(screen.queryByRole('table')).not.toBeInTheDocument())
+    await waitFor(() => expect(raceTable()).toBeUndefined())
     expect(screen.getByText('Avg Game / Total League Points')).toBeInTheDocument()
   })
 
   it('falls back to standard for an unknown layout', async () => {
     renderPage('/around-the-union?layout=nonsense')
     await ready()
-    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(raceTable()).toBeDefined()
   })
 })
 

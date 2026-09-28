@@ -1,7 +1,7 @@
 import type { Tier } from '@/config'
 import { getPrizeSchedule, isCupRoundKey, type CrossLeagueSchedule, type CrossUnionSchedule, type CupPrizeSchedule, type CupRoundKey, type TierPrizeSchedule } from '@/config'
 import type { SeasonData, Tournament } from '@/data'
-import { regularSeasonComplete, regularSeasonTotals, winnerOf } from './games'
+import { regularSeasonComplete, regularSeasonTotals, winnerOf, type TeamTotals } from './games'
 import { divisionWinnerIds } from './standings'
 import { resolveTournament, type ResolvedRound, type SeasonsByTier } from './tournament'
 
@@ -94,24 +94,60 @@ function placement(season: SeasonData, rank: number): string | undefined {
   return season.teams.find((t) => t.finalPlacement === rank)?.memberId
 }
 
+/** The three season-long regular-season prizes a tier can offer, in the prize sheet's order. */
+export const SEASON_LONG_PRIZES = ['mostPoints', 'highestFloor', 'highestScoreInLoss'] as const
+export type SeasonLongPrize = (typeof SEASON_LONG_PRIZES)[number]
+
+/** Who holds each season-long category on the games played so far — the leader, not yet the winner. */
+function seasonLongAwards(season: SeasonData, totals: TeamTotals[]): Record<SeasonLongPrize, Award> {
+  return {
+    mostPoints: maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.pointsFor }))),
+    highestFloor: maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.low }))),
+    highestScoreInLoss: scoreInLossAward(season),
+  }
+}
+
 function tierMetrics(season: SeasonData): TierMetrics {
   const totals = [...regularSeasonTotals(season).values()]
   const settled = regularSeasonComplete(season)
-  const seasonLong = (award: () => Award) => (settled ? award() : NO_AWARD)
+  const seasonLong = settled ? seasonLongAwards(season, totals) : undefined
   return {
     tier: season.tier,
     champion: placement(season, 1),
     runnerUp: placement(season, 2),
     third: placement(season, 3),
     divisionWinners: [...divisionWinnerIds(season)],
-    mostPoints: seasonLong(() => maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.pointsFor })))),
-    highestFloor: seasonLong(() => maxAward(totals.map((t) => ({ memberId: t.memberId, value: t.low })))),
-    highestScoreInLoss: seasonLong(() => scoreInLossAward(season)),
+    mostPoints: seasonLong?.mostPoints ?? NO_AWARD,
+    highestFloor: seasonLong?.highestFloor ?? NO_AWARD,
+    highestScoreInLoss: seasonLong?.highestScoreInLoss ?? NO_AWARD,
     weekly: weeklyHighs(season),
     pointsSum: totals.reduce((sum, t) => sum + t.pointsFor, 0),
     memberIds: totals.map((t) => t.memberId),
     settled,
   }
+}
+
+/** One season-long prize in one league, as it stands: every team tied for the lead, and the number. */
+export interface PrizeLeader {
+  prize: SeasonLongPrize
+  memberIds: string[]
+  value: number
+}
+
+/**
+ * Who leads each season-long prize the league's schedule actually offers, on the regular-season
+ * games in `season` — pass a season rewound with seasonsThroughWeek to read it as of a past week.
+ * `settled` says the regular season is over, so the leaders are the winners. Before it is, they
+ * are only leaders: an early lead rarely holds, so callers must not present it as a result.
+ * Categories nobody qualifies for yet (no loss has been recorded) are left out.
+ */
+export function prizeRaceLeaders(season: SeasonData): { settled: boolean; leaders: PrizeLeader[] } {
+  const offered = getPrizeSchedule(season.year)?.tiers[season.tier] ?? {}
+  const awards = seasonLongAwards(season, [...regularSeasonTotals(season).values()])
+  const leaders = SEASON_LONG_PRIZES.filter((prize) => offered[prize] !== undefined)
+    .map((prize) => ({ prize, ...awards[prize] }))
+    .filter((leader) => leader.memberIds.length > 0)
+  return { settled: regularSeasonComplete(season), leaders }
 }
 
 function add(result: Map<string, Winnings>, memberId: string, tier: Tier, amount: number): void {

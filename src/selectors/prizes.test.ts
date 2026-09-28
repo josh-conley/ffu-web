@@ -1,6 +1,6 @@
 import type { Game, SeasonData, SeasonTeam, Tournament, TournamentRound } from '@/data'
 import type { Tier } from '@/config'
-import { careerWinnings, cupWinnerPurse } from './prizes'
+import { careerWinnings, cupWinnerPurse, prizeRaceLeaders } from './prizes'
 
 // `record` matters: divisionWinnerIds reads the stored regular-season record to pick division champs.
 const team = (memberId: string, finalPlacement: number, opts: { div?: number; w?: number; l?: number } = {}): SeasonTeam => ({
@@ -172,5 +172,47 @@ describe('cupWinnerPurse', () => {
     expect(cupWinnerPurse(undefined, keys)).toBeUndefined()
     // A partial total would understate the purse, so refuse rather than half-answer.
     expect(cupWinnerPurse({ r36: 10, r18: 20 }, keys)).toBeUndefined()
+  })
+})
+
+describe('prizeRaceLeaders', () => {
+  const live = (memberId: string) => ({ ...team(memberId, 0), finalPlacement: undefined }) as SeasonTeam
+  const premier2026 = (games: Game[]) =>
+    season({ tier: 'PREMIER' as Tier, year: '2026', teams: ['a', 'b', 'c', 'd'].map(live), games })
+
+  it('names the leader of each season-long prize mid-season, without calling it settled', () => {
+    // a: 150 + 120 = 270, floor 120. b: floor 118, and the best losing score (140 in week 1).
+    const r = prizeRaceLeaders(
+      premier2026([game(1, 'a', 150, 'b', 140), game(1, 'c', 100, 'd', 90), game(2, 'a', 120, 'c', 110), game(2, 'b', 118, 'd', 80)]),
+    )
+    expect(r.settled).toBe(false)
+    expect(r.leaders).toEqual([
+      { prize: 'mostPoints', memberIds: ['a'], value: 270 },
+      { prize: 'highestFloor', memberIds: ['a'], value: 120 },
+      { prize: 'highestScoreInLoss', memberIds: ['b'], value: 140 },
+    ])
+  })
+
+  it('lists every team tied for the lead', () => {
+    const r = prizeRaceLeaders(premier2026([game(1, 'a', 100, 'b', 90), game(1, 'c', 100, 'd', 90)]))
+    expect(r.leaders.find((l) => l.prize === 'mostPoints')?.memberIds).toEqual(['a', 'c'])
+    expect(r.leaders.find((l) => l.prize === 'highestScoreInLoss')?.memberIds).toEqual(['b', 'd'])
+  })
+
+  it('ignores playoff games', () => {
+    const playoff: Game = { ...game(15, 'd', 200, 'c', 199), isPlayoff: true }
+    const r = prizeRaceLeaders(premier2026([game(1, 'a', 100, 'b', 90), game(1, 'c', 80, 'd', 70), playoff]))
+    expect(r.leaders.find((l) => l.prize === 'mostPoints')?.memberIds).toEqual(['a'])
+    expect(r.leaders.find((l) => l.prize === 'highestScoreInLoss')?.value).toBe(90)
+  })
+
+  it('only includes prizes the season offered (2021 had no floor or score-in-loss prize)', () => {
+    const r = prizeRaceLeaders(season({ tier: 'PREMIER' as Tier, year: '2021', games: [game(1, 'a', 100, 'b', 90)] }))
+    expect(r.leaders.map((l) => l.prize)).toEqual(['mostPoints'])
+  })
+
+  it('leaves out a category nobody qualifies for yet (only ties so far means no loss)', () => {
+    const r = prizeRaceLeaders(premier2026([game(1, 'a', 100, 'b', 100)]))
+    expect(r.leaders.map((l) => l.prize)).toEqual(['mostPoints', 'highestFloor'])
   })
 })
