@@ -17,7 +17,7 @@ function MemberCard({ career, onSelect }: { career: CareerStats; onSelect: (id: 
       onClick={() => onSelect(career.memberId)}
       className="flex items-center gap-3 border border-border bg-surface p-3 text-left shadow-sm transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
-      <TeamLogo ffuId={career.memberId} size={40} />
+      <TeamLogo ffuId={career.memberId} size={40} clickable={false} />
       <div className="min-w-0 flex-1">
         <div className="truncate font-bold">{teamName(career)}</div>
         <div className="truncate text-sm text-muted">{owners || '—'}</div>
@@ -35,7 +35,7 @@ function PastRow({ career, onSelect }: { career: CareerStats; onSelect: (id: str
       onClick={() => onSelect(career.memberId)}
       className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
-      <TeamLogo ffuId={career.memberId} size={24} />
+      <TeamLogo ffuId={career.memberId} size={24} clickable={false} />
       <span className="min-w-0 flex-1 truncate">
         <span className="font-medium">{teamName(career)}</span>
         {owners && <span className="text-muted"> · {owners}</span>}

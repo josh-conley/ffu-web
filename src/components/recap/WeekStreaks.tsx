@@ -2,7 +2,7 @@ import { FaFire, FaSnowflake } from 'react-icons/fa6'
 import { nameForYear } from '@/config'
 import type { Streak } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
 
 /**
@@ -24,13 +24,14 @@ function StreakRow({ streak, year }: { streak: Streak; year: string }) {
   return (
     <div className="flex min-w-0 items-center gap-2 px-3 py-2">
       <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
-      <TeamLogo ffuId={streak.memberId} size={24} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold leading-tight">
-          {nameForYear(streak.memberId, year) ?? streak.memberId}
-        </div>
-        <div className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</div>
-      </div>
+      <TeamLink
+        ffuId={streak.memberId}
+        logoSize={24}
+        className="flex-1 gap-2"
+        detail={<span className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</span>}
+      >
+        <span className="truncate text-sm font-bold leading-tight">{nameForYear(streak.memberId, year) ?? streak.memberId}</span>
+      </TeamLink>
       <div className="shrink-0 text-right">
         <div className="font-mono text-base font-bold leading-tight tabular-nums">
           {streak.length}

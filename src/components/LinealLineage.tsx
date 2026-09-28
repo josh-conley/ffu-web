@@ -2,6 +2,7 @@ import { FaCrown } from 'react-icons/fa6'
 import { nameForYear } from '@/config'
 import type { LinealReign } from '@/selectors'
 import { GameWhen } from './GameWhen'
+import { TeamNameButton } from './TeamLink'
 import { TeamLogo } from './TeamLogo'
 
 const score = (n: number) => n.toFixed(2)
@@ -29,10 +30,13 @@ function ReignRow({ reign }: { reign: LinealReign }) {
       <span className="w-8 shrink-0 text-sm font-bold tabular-nums text-muted">#{reign.order}</span>
 
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <TeamLogo ffuId={championId} size={32} />
+        <TeamLogo ffuId={championId} size={32} clickable={false} />
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="truncate font-bold">{name}</span>
+          {/* Only the name line opens the profile: the line under it names the opponent. */}
+          <div className="relative flex items-center gap-1.5">
+            <TeamNameButton ffuId={championId}>
+              <span className="truncate font-bold">{name}</span>
+            </TeamNameButton>
             {reign.current && <FaCrown className="shrink-0 text-accent" aria-label="Current lineal champion" />}
           </div>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-muted">

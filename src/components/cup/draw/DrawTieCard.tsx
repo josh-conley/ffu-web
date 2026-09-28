@@ -15,7 +15,7 @@ export interface TieSide {
 function Side({ side, muted }: { side: TieSide; muted?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-1 items-center gap-3 ${muted ? 'opacity-60' : ''}`}>
-      <TeamLogo ffuId={side.ffuId} size={56} />
+      <TeamLogo ffuId={side.ffuId} size={56} clickable={false} />
       <div className="min-w-0">
         <div className="truncate text-xl font-extrabold uppercase tracking-tight sm:text-2xl">{side.name}</div>
         <div className={`text-xs font-bold uppercase tracking-widest ${LEAGUE_STYLES[side.tier].text}`}>

@@ -22,7 +22,7 @@ export function TeamHeader({ slot, ownerId, year, highlighted, onToggle }: {
         aria-pressed={ownerId !== undefined && highlighted === ownerId}
         className={`flex w-full flex-col items-center gap-1 px-1 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${dim ? 'opacity-40' : 'hover:bg-surface'}`}
       >
-        {ownerId && <TeamLogo ffuId={ownerId} size={26} />}
+        {ownerId && <TeamLogo ffuId={ownerId} size={26} clickable={false} />}
         <span className="max-w-full truncate text-[11px] font-extrabold uppercase leading-none tracking-tight">
           {ownerId ? (nameForYear(ownerId, year) ?? ownerId) : slot}
         </span>

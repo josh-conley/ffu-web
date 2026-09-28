@@ -302,7 +302,13 @@ never disagree; nothing is stored.
       (nobody past 100 or 150); earnings max is $1,635, and one member has passed $1,500. So in
       practice the page is about the 10,000-point, 50-win and $500 lines for now, and the higher
       tiers sit there as the long game. Currently 33 teams on watch across the four categories.
-- [ ] Optional: a member's own milestone progress on their Members detail page. Not built.
+- [x] A member's own milestone progress on their Members detail page. Done 2026-09-28 (PR #14):
+      the page's Milestones section, every category with an "On watch" tag (`memberMilestones`,
+      `isOnWatch`).
+- [ ] Member page: Rivals lists every opponent (37 rows for ffu-028), a long scroll on a phone
+      before Franchise Players. Offered paging it at 10 rows; not asked for yet.
+- [ ] `upcomingSeason.ts` and `TierTimeline` still keep their own tier order; switch them to
+      `tierRank` from config (Charter DRY).
 
 ## ADP Comparison — new page
 
@@ -388,6 +394,15 @@ the site already loads; nothing stored.
 - [ ] `actions/checkout` + `setup-node` bumped v4 → v5 (2026-09-23) for the Node 20 deprecation
       warning. `deploy-pages@v4` / `upload-pages-artifact@v3` may carry the same warning; check the
       next deploy's annotations and bump those if so.
+
+- [ ] **Finish the TeamLink migration** (after preview/team-links, PR for "team names and logos
+  as real links"). Still on the old clickable bare `TeamLogo` (a nameless tab stop):
+  `StandingsTable` and `CurrentWeekStandings` (left alone while the standings-lines session had
+  them) and `BoxScore`'s two team heads (lineup modal content). Move them to `TeamLink`, then drop
+  `TeamLogo`'s `clickable` prop so a logo is only ever an image.
+- [ ] **DataTable clickable rows are `<tr role="button">`** (Players, Builds): the role replaces
+  the row's table semantics, so screen readers lose the cells. Better: keep the `<tr>`, put a
+  real `<button aria-expanded>` in the first cell, keep the row click as a mouse convenience.
 
 ## Deferred / not blocking Week 1
 
