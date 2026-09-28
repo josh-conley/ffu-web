@@ -13,10 +13,11 @@ export type MatchupStatus = 'final' | 'live'
 /** Logo, name and subtitle — the left side of every row, scored or not. `linked`: the team opens
  *  its profile. Only on a plain card: inside the whole-card lineups button it would be a button in
  *  a button, which screen readers flatten, so there the logo and name are just text. */
-function TeamLabel({ memberId, year, subtitle, linked }: { memberId: string; year: string; subtitle?: string; linked: boolean }) {
+function TeamLabel({ memberId, year, subtitle, detail, linked }: { memberId: string; year: string; subtitle?: string; detail?: string; linked: boolean }) {
+  const detailLine = detail ? <span className="block truncate font-mono text-[11px] font-normal leading-tight text-muted">{detail}</span> : undefined
   return (
     <span className="flex min-w-0 items-center gap-2">
-      <TeamLink ffuId={memberId} logoSize={24} plain={!linked} tight>
+      <TeamLink ffuId={memberId} logoSize={24} plain={!linked} tight detail={detailLine}>
         <span className="truncate">{nameForYear(memberId, year) ?? memberId}</span>
       </TeamLink>
       {subtitle && <span className="shrink-0 font-mono text-[11px] font-normal text-muted">{subtitle}</span>}
@@ -37,7 +38,7 @@ const ROW_TONE: Record<RowTone, string> = {
  * name). A live row with no projection keeps the two-line height through an invisible stand-in and
  * centres the score, so it lines up with the team name while every card stays the same height.
  */
-function ScoreColumn({ score, leading, projected, reserveProjection }: { score: number; leading: boolean; projected?: number; reserveProjection: boolean }) {
+function ScoreColumn({ score, leading, projected, reserveProjection, twoLine }: { score: number; leading: boolean; projected?: number; reserveProjection: boolean; twoLine: boolean }) {
   const scoreText = <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
   if (projected !== undefined) {
     return (
@@ -48,6 +49,15 @@ function ScoreColumn({ score, leading, projected, reserveProjection }: { score: 
     )
   }
   if (!reserveProjection) return <span className="shrink-0 leading-tight">{scoreText}</span>
+  // The name has a detail line under it, so the score belongs on the name's line, over an empty one.
+  if (twoLine) {
+    return (
+      <span className="flex shrink-0 flex-col items-end leading-tight">
+        {scoreText}
+        <span className="text-[11px]" aria-hidden>{'\u00a0'}</span>
+      </span>
+    )
+  }
   return (
     <span className="grid shrink-0 items-center justify-items-end leading-tight">
       <span className="col-start-1 row-start-1">{scoreText}</span>
@@ -66,6 +76,7 @@ function ParticipantRow({
   tone,
   leading,
   subtitle,
+  detail,
   projected,
   reserveProjection,
   linked,
@@ -77,6 +88,8 @@ function ParticipantRow({
   /** A live game's leader: the score alone is bold. */
   leading: boolean
   subtitle?: string
+  /** A second line under the name (live cards: record and PPG). */
+  detail?: string
   projected?: number
   /** Live cards keep the projection line even once a team has none left, so every card matches in height. */
   reserveProjection: boolean
@@ -84,8 +97,8 @@ function ParticipantRow({
 }) {
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${ROW_TONE[tone]}`}>
-      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} linked={linked} />
-      <ScoreColumn score={score} leading={leading} projected={projected} reserveProjection={reserveProjection} />
+      <TeamLabel memberId={memberId} year={year} subtitle={subtitle} detail={detail} linked={linked} />
+      <ScoreColumn score={score} leading={leading} projected={projected} reserveProjection={reserveProjection} twoLine={detail !== undefined} />
     </div>
   )
 }
@@ -126,6 +139,7 @@ export function MatchupCard({
   status = 'final',
   onOpen,
   subtitle,
+  detail,
   projected,
 }: {
   game: Game
@@ -133,6 +147,8 @@ export function MatchupCard({
   status?: MatchupStatus
   onOpen?: () => void
   subtitle?: (memberId: string) => string | undefined
+  /** A line under each team's name (live home cards: record and PPG through last week). */
+  detail?: (memberId: string) => string | undefined
   projected?: (memberId: string) => number | undefined
 }) {
   const winner = winnerOf(game)
@@ -150,6 +166,7 @@ export function MatchupCard({
             tone={rowTone(status, winner, p.memberId)}
             leading={status === 'live' && p.memberId === winner}
             subtitle={subtitle?.(p.memberId)}
+            detail={detail?.(p.memberId)}
             projected={projected?.(p.memberId)}
             reserveProjection={projected !== undefined}
             linked={!onOpen}

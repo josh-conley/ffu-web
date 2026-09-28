@@ -1,10 +1,18 @@
-import { draftDateTime, gameNote, ordinal, recordLabel, shortPlayerName } from './format'
+import { draftDateTime, gameNote, ordinal, recordLabel, recordPpgLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
     expect([1, 2, 3, 4, 9].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '9th'])
     expect([11, 12, 13].map(ordinal)).toEqual(['11th', '12th', '13th'])
     expect([21, 22, 23, 101].map(ordinal)).toEqual(['21st', '22nd', '23rd', '101st'])
+  })
+})
+
+describe('recordPpgLabel', () => {
+  it('pairs the record with points per game, and says nothing before the first game', () => {
+    expect(recordPpgLabel({ wins: 2, losses: 1, ties: 0, average: 118.44 })).toBe('2-1 · 118.4 PPG')
+    expect(recordPpgLabel({ wins: 1, losses: 1, ties: 1, average: 101 })).toBe('1-1-1 · 101.0 PPG')
+    expect(recordPpgLabel({ wins: 0, losses: 0, ties: 0, average: 0 })).toBeUndefined()
   })
 })
 
