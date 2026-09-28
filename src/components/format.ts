@@ -40,13 +40,6 @@ export function draftDateTime(startTime: number): string {
   return `${DRAFT_DATE.format(at)} · ${DRAFT_TIME.format(at)}`
 }
 
-const CLOCK = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' })
-
-/** A time of day in the viewer's zone, e.g. "2:14 PM" — for "Scores as of", read minutes ago. */
-export function clockTime(at: number): string {
-  return CLOCK.format(new Date(at))
-}
-
 const KICKOFF = new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
 
 /** Where a live game is: "Q3 7:30", "Half", "OT 4:12" — or just "Live" before a quarter is reported. */

@@ -89,8 +89,8 @@ function buildGame(week: number, entries: SleeperMatchupEntry[], rosterMap: Map<
   return game
 }
 
-async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>, fresh = false): Promise<Game[]> {
-  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`, { fresh })
+async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>): Promise<Game[]> {
+  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`)
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
   const byMatchup = new Map<number, SleeperMatchupEntry[]>()
   for (const e of entries) {
@@ -130,12 +130,11 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
  * The games of `weeks` as Sleeper has them right now — partial scores while a week is being played.
  * For a page built on the season file, whose weeks are only written once complete (Matchups), to
  * fill in the weeks it doesn't have yet; and for the home page's poll of the week in progress, which
- * costs one request per league because the roster map is kept for the visit. `fresh` gets past
- * Sleeper's CDN (see sleeperApi), for a Refresh the reader asked for.
+ * costs one request per league because the roster map is kept for the visit.
  */
-export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[], { fresh = false } = {}): Promise<Game[]> {
+export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[]): Promise<Game[]> {
   const rosterMap = await fetchRosterMap(leagueId)
-  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap, fresh)))
+  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap)))
   return games.flat()
 }
 

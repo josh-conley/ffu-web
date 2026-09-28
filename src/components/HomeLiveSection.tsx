@@ -5,7 +5,6 @@ import { useAfterIdle } from '@/hooks/useAfterIdle'
 import { useLiveProjections } from '@/hooks/useLiveProjections'
 import { CurrentWeekMatchups, type OpenGame } from './CurrentWeekMatchups'
 import { CurrentWeekStandings } from './CurrentWeekStandings'
-import { clockTime } from './format'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 
 export interface LiveTier {
@@ -39,38 +38,6 @@ function LeagueJumpLinks({ tiers }: { tiers: Tier[] }) {
   )
 }
 
-export interface ScoresFreshness {
-  /** When the scores on screen were read (epoch ms); undefined hides the line. */
-  asOf: number | undefined
-  refreshing: boolean
-  onRefresh: () => void
-}
-
-/**
- * "Scores as of 2:14 PM · Refresh". The time is when the read finished, not when the page loaded,
- * so it moves with every poll. The button stays focusable while a refresh runs (aria-disabled, not
- * disabled, which would drop keyboard focus) and ignores the extra clicks. Not a live region: a
- * screen reader announcing the time every minute would be noise.
- */
-function ScoresAsOf({ asOf, refreshing, onRefresh }: ScoresFreshness & { asOf: number }) {
-  return (
-    <p className="flex items-center gap-1.5 text-xs text-muted">
-      <span>
-        Scores as of <time dateTime={new Date(asOf).toISOString()}>{clockTime(asOf)}</time>
-      </span>
-      <span aria-hidden>·</span>
-      <button
-        type="button"
-        onClick={() => !refreshing && onRefresh()}
-        aria-disabled={refreshing}
-        className="inline-flex min-h-6 items-center font-semibold uppercase tracking-wide text-text underline decoration-dotted underline-offset-4 hover:decoration-solid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent aria-disabled:cursor-progress aria-disabled:text-muted"
-      >
-        {refreshing ? 'Refreshing…' : 'Refresh'}
-      </button>
-    </p>
-  )
-}
-
 function LeagueGrid({ children }: { children: ReactNode }) {
   return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
 }
@@ -87,29 +54,26 @@ export function HomeLiveSection({
   tiers,
   week,
   showStandings,
-  freshness,
+  asOf,
   onOpen,
 }: {
   tiers: LiveTier[]
   week: number | undefined
   showStandings: boolean
-  freshness: ScoresFreshness
+  /** When the scores were last read; each new read refreshes the projections beside them. */
+  asOf: number | undefined
   onOpen: (open: OpenGame) => void
 }) {
   const painted = useAfterIdle(!showStandings)
   const projections = useLiveProjections(
     tiers.map((t) => t.data),
     !showStandings && painted,
-    freshness.asOf,
+    asOf,
   )
   const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}` : 'This Week'
-  const { asOf } = freshness
   return (
     <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <h2 className={HEADING}>{heading}</h2>
-        {!showStandings && asOf !== undefined && <ScoresAsOf {...freshness} asOf={asOf} />}
-      </div>
+      <h2 className={HEADING}>{heading}</h2>
       <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />
       <LeagueGrid>
         {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}

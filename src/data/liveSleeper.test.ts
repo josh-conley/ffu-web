@@ -121,16 +121,6 @@ describe('shared Sleeper reads', () => {
     const urls = fetchMock.mock.calls.map(([url]) => url.replace(/^.*\/v1/, ''))
     expect(urls.sort()).toEqual(['/league/lg1', '/league/lg1/matchups/1', '/league/lg1/rosters'])
   })
-
-  it('a fresh poll goes past the caches for the matchups only', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const fetchMock = vi.fn((url: string) => mapFetch(url.replace(/\?_=\d+$/, '')))
-    vi.stubGlobal('fetch', fetchMock)
-    await fetchLiveWeeksGames('lg1', [1])
-    await fetchLiveWeeksGames('lg1', [1], { fresh: true })
-    const urls = fetchMock.mock.calls.map(([url]) => url.replace(/^.*\/v1/, '').replace(/\?_=\d+$/, '?fresh'))
-    expect(urls).toEqual(['/league/lg1/rosters', '/league/lg1/matchups/1', '/league/lg1/matchups/1?fresh'])
-  })
 })
 
 describe('fetchMissingPlayers', () => {

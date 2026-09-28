@@ -489,9 +489,8 @@ Don't re-propose it unless the chat step becomes an actual bottleneck.
 **Decision.** The home page reads the season so far (rosters, every week) once per mount, then
 re-reads **only the week in progress** every 60s through `usePoll`, one `/matchups/{week}` call per
 league. Polling pauses in a hidden tab (and refetches when the tab returns), and it's off on Tuesday's
-standings view, which is built only from finished weeks. "Scores as of 2:14 PM · Refresh" shows when
-the last read *finished*; Refresh reads `fresh` (past Sleeper's CDN), since a reader who asks for it
-wants the current answer. Each poll also re-reads the NFL game clocks, and the projections are
+standings view, which is built only from finished weeks. There's no "scores as of" line or Refresh
+button: Josh had them removed. Each poll also re-reads the NFL game clocks, and the projections are
 recomputed, so a projection never sits below a score that has moved on: about **4 calls a minute** per
 open tab.
 

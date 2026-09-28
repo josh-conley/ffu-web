@@ -11,8 +11,7 @@ const APP_API = 'https://api.sleeper.com'
 interface GetOptions {
   /**
    * Ask for the genuinely current answer, for the reads that are polled while their subject is
-   * changing (a draft in progress) or that a reader asked for by hand (the home page's Refresh).
-   * Two caches sit in the way and each needs its own answer:
+   * changing (a draft in progress). Two caches sit in the way and each needs its own answer:
    *
    * - the browser's. Sleeper replies without a `max-age`, which leaves a private cache free to
    *   reuse a response on its own heuristics — hence `no-store`.

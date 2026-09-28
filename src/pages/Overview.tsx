@@ -40,8 +40,7 @@ function LiveBlock({ liveWeek, onOpen }: { liveWeek: LiveWeek; onOpen: (open: Op
   // Tuesday leads with the standings instead of the matchups (see homeLiveSection) — but only once
   // a week has actually finished, otherwise there is nothing in them and the matchups stay.
   const showStandings = homeLiveSection() === 'standings' && tiers.some(({ data }) => data.currentWeek > 1)
-  const freshness = { asOf: liveWeek.asOf, refreshing: liveWeek.refreshing, onRefresh: liveWeek.refresh }
-  return <HomeLiveSection tiers={tiers} week={week} showStandings={showStandings} freshness={freshness} onOpen={onOpen} />
+  return <HomeLiveSection tiers={tiers} week={week} showStandings={showStandings} asOf={liveWeek.asOf} onOpen={onOpen} />
 }
 
 /** Last week's Around the Union panel — needs every season file, so it has its own loading state. */

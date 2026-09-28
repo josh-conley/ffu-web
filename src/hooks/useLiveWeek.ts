@@ -15,11 +15,8 @@ export interface LiveWeek {
   loading: boolean
   error: Error | undefined
   /** When the week in progress was last read (epoch ms, as that read finished); undefined until then
-   *  and whenever it isn't being polled. */
+   *  and whenever it isn't being polled. The projections re-read on each change. */
   asOf: number | undefined
-  /** Re-read the week in progress now, past Sleeper's CDN. */
-  refresh: () => void
-  refreshing: boolean
 }
 
 /** Sleeper's CDN holds `/matchups` for 60s (`s-maxage=60`), so polling any faster gains nothing. */
@@ -48,8 +45,8 @@ interface CurrentWeekRead {
 }
 
 /** The week in progress only: one request per league, the roster map being kept for the visit. */
-async function fetchCurrentWeek(tiers: Tier[], leagueIds: Record<Tier, string>, week: number, fresh: boolean): Promise<CurrentWeekRead> {
-  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week], { fresh })] as const))
+async function fetchCurrentWeek(tiers: Tier[], leagueIds: Record<Tier, string>, week: number): Promise<CurrentWeekRead> {
+  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week])] as const))
   return { games: Object.fromEntries(entries), asOf: Date.now() }
 }
 
@@ -74,7 +71,7 @@ export function useLiveWeek({ poll }: { poll: boolean }): LiveWeek {
   // Its first read coincides with the season read above, and sleeperApi answers both from one request.
   const current = usePoll(
     `live-current-week:${year ?? ''}:${week ?? ''}`,
-    (manual) => fetchCurrentWeek(tiers, leagueIds as Record<Tier, string>, week as number, manual),
+    () => fetchCurrentWeek(tiers, leagueIds as Record<Tier, string>, week as number),
     inScope && poll,
     POLL_MS,
   )
@@ -92,7 +89,5 @@ export function useLiveWeek({ poll }: { poll: boolean }): LiveWeek {
     loading: LIVE_SEASON_CONFIGURED && (state.loading || (inScope && seasons.loading)),
     error: state.error ?? seasons.error,
     asOf: current.data?.asOf,
-    refresh: current.refresh,
-    refreshing: current.refreshing,
   }
 }

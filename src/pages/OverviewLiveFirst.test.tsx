@@ -48,8 +48,6 @@ it('shows the live week while the season files are still loading', async () => {
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Fantasy Football Union')
   expect(await screen.findByRole('heading', { name: 'Week 2' })).toBeInTheDocument()
   expect(screen.getAllByText('61.50').length).toBeGreaterThan(0)
-  expect(await screen.findByText(/Scores as of/)).toHaveTextContent(/2:14/)
-  expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument()
   // History sections each say they're loading instead of holding the whole page back.
   expect(screen.getByText('Loading champions…')).toBeInTheDocument()
 })
