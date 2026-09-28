@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek } from './liveWeek'
+import { currentWeekMatchups, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -31,6 +31,19 @@ describe('currentWeekMatchups', () => {
     const games = currentWeekMatchups(data)
     expect(games).toHaveLength(1)
     expect(games[0]?.week).toBe(5)
+  })
+})
+
+describe('withCurrentWeekGames', () => {
+  it('replaces the current week with the newer read and leaves finished weeks alone', () => {
+    const next = withCurrentWeekGames(data, [game(5, 'a', 88, 'b', 71)])
+    expect(next.games.filter((g) => g.week < 5)).toEqual(data.games.slice(0, 4))
+    expect(currentWeekMatchups(next)).toEqual([game(5, 'a', 88, 'b', 71)])
+  })
+
+  it('ignores games from any other week and keeps the data as-is without a newer read', () => {
+    expect(currentWeekMatchups(withCurrentWeekGames(data, [game(4, 'a', 1, 'b', 2)]))).toEqual([])
+    expect(withCurrentWeekGames(data, undefined)).toBe(data)
   })
 })
 

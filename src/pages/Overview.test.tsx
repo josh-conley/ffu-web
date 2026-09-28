@@ -22,7 +22,8 @@ it('renders champions grouped by league', async () => {
       <Overview />
     </MemoryRouter>,
   )
-  await waitFor(() => expect(screen.getByText('Champions by Season')).toBeInTheDocument())
+  // The heading is up at once now (history loads section by section); wait for its content.
+  await waitFor(() => expect(screen.getByText('2025 Champions')).toBeInTheDocument())
   // 2024 Premier champion (ffu-009) shows its current name.
   expect(screen.getAllByText('Fort Wayne Banana Bread').length).toBeGreaterThan(0)
   // The front-door promo points at the Cup; Upcoming Drafts announcement is present (TBD per league).
@@ -62,7 +63,8 @@ it('heads the champions section with the last DECIDED season, not the one being 
       <Overview />
     </MemoryRouter>,
   )
-  await waitFor(() => expect(screen.getByText('Champions by Season')).toBeInTheDocument())
+  // The heading is up at once now (history loads section by section); wait for its content.
+  await waitFor(() => expect(screen.getByText('2025 Champions')).toBeInTheDocument())
   // 2026 has a data file from the day its leagues were created, but nobody has won it. Heading the
   // page "2026 Champions" over three blank slots — or opening the table with an empty 2026 row —
   // is the failure this guards.

@@ -10,14 +10,19 @@ import { useNflWeek } from './useNflWeek'
  * member plays in exactly one league a season, so one map covers them all). Empty until both the
  * lineups and the NFL week have loaded — or for good if the NFL feed fails; the cards just show
  * their actual scores.
+ *
+ * `asOf` is when the scores beside them were read: each new read re-reads the lineups (whose
+ * `/matchups` request sleeperApi answers from that same read) and the NFL clocks, so a projection
+ * never sits below a score that has moved on. The previous projections stay up meanwhile.
  */
-export function useLiveProjections(seasons: LiveSeasonData[], enabled: boolean): Map<string, number> {
+export function useLiveProjections(seasons: LiveSeasonData[], enabled: boolean, asOf: number | undefined): Map<string, number> {
   const first = seasons[0]
-  const nfl = useNflWeek(first?.year, first?.currentWeek, enabled)
+  const nfl = useNflWeek(first?.year, first?.currentWeek, enabled, asOf)
   const lineups = useAsyncData(
-    `live-week-lineups:${seasons.map((s) => `${s.leagueId}:${s.currentWeek}`).join(',')}`,
+    `live-week-lineups:${seasons.map((s) => `${s.leagueId}:${s.currentWeek}`).join(',')}:${asOf ?? ''}`,
     () => Promise.all(seasons.map((s) => fetchLiveWeekLineups(s.leagueId, s.currentWeek))),
     enabled && seasons.length > 0,
+    { keepPrevious: true },
   )
 
   return useMemo(() => {

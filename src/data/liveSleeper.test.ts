@@ -1,4 +1,4 @@
-import { fetchLiveLineups, fetchLiveSeason, fetchLiveWeekLineups, fetchMissingPlayers, fetchNflState } from './liveSleeper'
+import { fetchLiveLineups, fetchLiveSeason, fetchLiveWeekLineups, fetchLiveWeeksGames, fetchMissingPlayers, fetchNflState } from './liveSleeper'
 
 // Real ffu-001/ffu-002 sleeper owner ids from src/config/members.ts; 'owner-unmapped' deliberately
 // isn't in MEMBERS, standing in for a new member not yet added to config (the day-one-of-2026 case).
@@ -105,6 +105,31 @@ describe('fetchLiveWeekLineups', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const data = await fetchLiveWeekLineups('lg1', 1)
     expect(data.teams.map((t) => t.memberId)).toEqual(['ffu-001', 'ffu-002'])
+  })
+})
+
+// The home page reads the season, then polls the week in progress, then reads lineups for its
+// projections: every one of those used to re-ask for rosters and the week's matchups.
+describe('shared Sleeper reads', () => {
+  it('reads rosters and a week\'s matchups once across the season, the poll and the lineups', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchMock = vi.fn(mapFetch)
+    vi.stubGlobal('fetch', fetchMock)
+    await fetchLiveSeason('PREMIER', '2025', 'lg1', 1)
+    await fetchLiveWeeksGames('lg1', [1])
+    await fetchLiveWeekLineups('lg1', 1)
+    const urls = fetchMock.mock.calls.map(([url]) => url.replace(/^.*\/v1/, ''))
+    expect(urls.sort()).toEqual(['/league/lg1', '/league/lg1/matchups/1', '/league/lg1/rosters'])
+  })
+
+  it('a fresh poll goes past the caches for the matchups only', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchMock = vi.fn((url: string) => mapFetch(url.replace(/\?_=\d+$/, '')))
+    vi.stubGlobal('fetch', fetchMock)
+    await fetchLiveWeeksGames('lg1', [1])
+    await fetchLiveWeeksGames('lg1', [1], { fresh: true })
+    const urls = fetchMock.mock.calls.map(([url]) => url.replace(/^.*\/v1/, '').replace(/\?_=\d+$/, '?fresh'))
+    expect(urls).toEqual(['/league/lg1/rosters', '/league/lg1/matchups/1', '/league/lg1/matchups/1?fresh'])
   })
 })
 

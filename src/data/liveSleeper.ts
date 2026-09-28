@@ -33,14 +33,21 @@ interface SleeperRoster {
   reserve?: string[] | null
 }
 
-async function fetchRosters(leagueId: string): Promise<SleeperRoster[]> {
-  const rosters = await sleeperGet<SleeperRoster[]>(`/league/${leagueId}/rosters`)
+// How stale each league read may be when it's shared through sleeperApi's in-memory cache. Which
+// Sleeper account owns which roster, and the league's slots and scoring, don't change inside a
+// visit (a mid-season takeover shows up on the next page load), so the polled scores never re-ask
+// for them. IR does move, but only matters to the box score's bench split: minutes-old is fine.
+const FOR_THE_VISIT = { maxAgeMs: Infinity }
+const IR_MAX_AGE = { maxAgeMs: 10 * 60_000 }
+
+async function fetchRosters(leagueId: string, options: { maxAgeMs: number }): Promise<SleeperRoster[]> {
+  const rosters = await sleeperGet<SleeperRoster[]>(`/league/${leagueId}/rosters`, options)
   if (!Array.isArray(rosters)) throw new Error(`Sleeper league/${leagueId}/rosters: not an array`)
   return rosters
 }
 
 async function fetchRosterMap(leagueId: string): Promise<Map<number, string>> {
-  return rosterMapOf(await fetchRosters(leagueId))
+  return rosterMapOf(await fetchRosters(leagueId, FOR_THE_VISIT))
 }
 
 /** roster_id -> ffuId, via the same config used by scripts/backfill-lineups.mjs (memberBySleeperId).
@@ -82,8 +89,8 @@ function buildGame(week: number, entries: SleeperMatchupEntry[], rosterMap: Map<
   return game
 }
 
-async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>): Promise<Game[]> {
-  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`)
+async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>, fresh = false): Promise<Game[]> {
+  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`, { fresh })
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
   const byMatchup = new Map<number, SleeperMatchupEntry[]>()
   for (const e of entries) {
@@ -122,11 +129,13 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
 /**
  * The games of `weeks` as Sleeper has them right now — partial scores while a week is being played.
  * For a page built on the season file, whose weeks are only written once complete (Matchups), to
- * fill in the weeks it doesn't have yet.
+ * fill in the weeks it doesn't have yet; and for the home page's poll of the week in progress, which
+ * costs one request per league because the roster map is kept for the visit. `fresh` gets past
+ * Sleeper's CDN (see sleeperApi), for a Refresh the reader asked for.
  */
-export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[]): Promise<Game[]> {
+export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[], { fresh = false } = {}): Promise<Game[]> {
   const rosterMap = await fetchRosterMap(leagueId)
-  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap)))
+  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap, fresh)))
   return games.flat()
 }
 
@@ -181,8 +190,8 @@ export interface LiveWeekLineups {
 
 export async function fetchLiveWeekLineups(leagueId: string, week: number): Promise<LiveWeekLineups> {
   const [rosters, league, entries] = await Promise.all([
-    fetchRosters(leagueId),
-    sleeperGet<SleeperLeague>(`/league/${leagueId}`),
+    fetchRosters(leagueId, IR_MAX_AGE),
+    sleeperGet<SleeperLeague>(`/league/${leagueId}`, FOR_THE_VISIT),
     sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
   ])
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
