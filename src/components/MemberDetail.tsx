@@ -53,7 +53,7 @@ interface MemberDetailProps {
 }
 
 /**
- * One member's page, in a fixed order: Career, Rivals, Franchise players, Up/down history,
+ * One member's page, in a fixed order: Career, Rivals, Franchise players, Promotion & relegation history,
  * Milestones. Franchise players loads every lineup file, so it waits until it is scrolled near.
  */
 export function MemberDetail({ career, history, winnings, seasons, tournaments }: MemberDetailProps) {
