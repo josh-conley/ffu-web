@@ -32,11 +32,17 @@ export function Dialog({
   const onBackdrop = (e: MouseEvent<HTMLDialogElement>) => e.target === e.currentTarget && onClose()
 
   return (
-    // Escape closes the dialog natively; its `close` event is what reports that back up.
+    // Escape fires `cancel`; that's the user's close, reported up so the caller unmounts us (the
+    // unmount does the actual close). Deliberately NOT `onClose`: the `close` event also fires when
+    // our own cleanup closes the element, and under StrictMode's dev-only unmount/remount it arrives
+    // after the remount's showModal() and shuts the dialog the instant it opens.
     <dialog
       ref={ref}
       aria-label={label}
-      onClose={onClose}
+      onCancel={(e) => {
+        e.preventDefault()
+        onClose()
+      }}
       onClick={onBackdrop}
       className={`mx-auto mb-0 mt-auto max-h-[90dvh] w-full max-w-full overflow-auto overscroll-contain border border-border bg-surface p-0 text-text shadow-xl backdrop:bg-black/60 sm:mb-auto ${WIDTHS[width]}`}
     >
