@@ -183,10 +183,12 @@ non-obvious choices — e.g. when a season counts as "started"; add an entry rat
 `ai-docs/IDEAS.md` (pitched ideas + Josh's verdicts; log a line after he reacts to a pitch).
 
 ## Idea agents
-`.claude/agents/product-owner.md` (features/stats, in the commissioner's mold) and
-`.claude/agents/ux-partner.md` (UI/UX, a11y, mobile) are read-only subagents that pitch ranked ideas.
-Together they're the **agent partners**: when Josh mentions the partners or asks broadly what to do
-next, run the `partners` skill (pitch → cross-talk → converge) rather than relaying two separate
+`.claude/agents/product-owner.md` (features/stats) and
+`.claude/agents/ux-partner.md` (UI/UX, a11y, mobile) are read-only subagents that pitch ranked ideas;
+`.claude/agents/commissioner.md` is a stand-in for the commissioner's view (FFUN author, stats,
+UI), grounded in his documented requests. It never speaks for him or counts as his approval.
+Together the three are the **agent partners**: when Josh mentions the partners or asks broadly what to do
+next, run the `partners` skill (pitch → cross-talk → converge) rather than relaying separate
 lists. A narrow ask ("UX pass on Standings") can go to one agent alone. Specialists the partners
 proposed, pulled in when a pass touches their area: `perf-specialist` (load speed, bundles, data
 loading) and `sports-statistician` (soundness and honest presentation of stats and models). Nothing gets built until he

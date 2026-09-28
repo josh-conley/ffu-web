@@ -1,12 +1,13 @@
 ---
 name: partners
-description: Run the "agent partners" brainstorm — the product-owner and ux-partner agents pitch independently, then read and react to each other's ideas, then converge on a joint recommendation for what to do next. Use when Josh mentions the agent partners / the partners / the team, or asks them to brainstorm, or asks broadly "what should we do next with the site?".
+description: Run the "agent partners" brainstorm — the product-owner, ux-partner and commissioner agents pitch independently, then read and react to each other's ideas, then converge on a joint recommendation for what to do next. Use when Josh mentions the agent partners / the partners / the team, or asks them to brainstorm, or asks broadly "what should we do next with the site?".
 ---
 
 # Agent partners brainstorm
 
-The partners are two read-only subagents in `.claude/agents/`: **product-owner** (features, stats,
-the commissioner's view) and **ux-partner** (design, usability, a11y, mobile). They don't share a
+The partners are three read-only subagents in `.claude/agents/`: **product-owner** (features,
+stats), **ux-partner** (design, usability, a11y, mobile) and **commissioner** (a stand-in for the
+league's commissioner and FFUN author: stats, UI, what goes in the newsletter). They don't share a
 context, so you moderate: you carry each one's words to the other, verbatim, and keep the rounds
 honest. They talk to each other through you; you don't put words in their mouths.
 
@@ -16,9 +17,9 @@ With no focus, the brief is "what should we do next with the site?". Don't ask h
 broad request: broad is a valid brief.
 
 ## 1. Round 1: independent pitches (parallel)
-Spawn both agents **in one message** with the Agent tool (`subagent_type: product-owner` and
-`subagent_type: ux-partner`), each given the brief and told: "This is round 1 of a partners
-brainstorm; the other partner will read your list and respond." Keep each agent's id: rounds 2–3
+Spawn all three **in one message** with the Agent tool (`subagent_type: product-owner`,
+`ux-partner` and `commissioner`), each given the brief and told: "This is round 1 of a partners
+brainstorm; the others will read your list and respond." Keep each agent's id: rounds 2–3
 continue the same agents with SendMessage so they keep what they already read.
 
 Josh can follow along in the cmux sidebar log: the agents post live notes there (see their
@@ -26,12 +27,13 @@ Josh can follow along in the cmux sidebar log: the agents post live notes there 
 `cmux log --source moderator "Round 2: cross-talk started"`.
 
 ## 2. Round 2: cross-talk (parallel)
-Send each partner the other's round-1 list **verbatim**, with this ask:
-> Here is <the other partner>'s list. Respond as their partner, not their reviewer:
+Send each partner the others' round-1 lists **verbatim** (write them to scratch files and point
+at them, so each reads the same text), with this ask:
+> Here are <the other partners>' lists. Respond as their partner, not their reviewer:
 > - **Back:** which of theirs you'd champion, and what your angle adds to it.
 > - **Push back:** which you'd cut or change, and why. Disagree plainly when you disagree.
 > - **Combine:** where one of theirs and one of yours are better as one idea.
-> - **Revised top 3:** your top three across BOTH lists now.
+> - **Revised top 3:** your top three across ALL the lists now.
 > Under ~400 words.
 
 ## 3. Round 3: only if they genuinely disagree
