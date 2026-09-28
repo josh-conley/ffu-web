@@ -133,3 +133,9 @@ body {
   background: var(--color-accent);
   cursor: pointer;
 }
+
+/* Page headings take focus after a navigation (useRouteFocus) so screen readers announce the new
+   page. They aren't controls, so no focus ring: the move is for assistive tech, not a visual cue. */
+main h1[tabindex='-1']:focus {
+  outline: none;
+}
