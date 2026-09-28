@@ -58,7 +58,13 @@ function SelectedMember({
           bWinnings={totalFor(opponent.memberId)}
         />
       ) : (
-        <MemberDetail career={selected} history={memberSeasons(seasons, selected.memberId)} winnings={totalFor(selected.memberId)} />
+        <MemberDetail
+          career={selected}
+          history={memberSeasons(seasons, selected.memberId)}
+          winnings={totalFor(selected.memberId)}
+          seasons={seasons}
+          tournaments={tournaments}
+        />
       )}
     </div>
   )
@@ -82,8 +88,9 @@ export function Members() {
   // member + vs live in the URL; update them together so switching members clears a stale compare.
   const member = params.get('member') ?? ''
   const vs = params.get('vs') ?? ''
-  // Opening (or leaving) a member swaps the whole view without a route change — start at the top.
-  useScrollToTop(member)
+  // Opening (or leaving) a member, or a compare, swaps the whole view without a route change — start
+  // at the top. The compare key matters since Rivals' Compare links sit well down the page.
+  useScrollToTop(`${member}|${vs}`)
   const updateParams = useUpdateUrlParams()
   const update = (changes: Record<string, string>) =>
     updateParams(Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v || null])))

@@ -2,6 +2,7 @@ import { FaCrown } from 'react-icons/fa6'
 import { getMember, nameForYear, ownerNames } from '@/config'
 import type { LinealReign } from '@/selectors'
 import { GameWhen } from './GameWhen'
+import { TeamNameButton } from './TeamLink'
 import { TeamLogo } from './TeamLogo'
 
 /** One headline number in the hero's stat strip. */
@@ -28,13 +29,17 @@ export function LinealBelt({ reign }: { reign: LinealReign }) {
     <section className="border border-border bg-surface shadow-sm">
       <span aria-hidden className="block h-1 bg-accent" />
       <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <TeamLogo ffuId={championId} size={64} />
+        <div className="relative flex items-center gap-4">
+          <TeamLogo ffuId={championId} size={64} clickable={false} />
           <div className="min-w-0">
             <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-accent">
               <FaCrown aria-hidden /> Lineal Champion
             </span>
-            <h2 className="mt-1 truncate text-xl font-extrabold">{name}</h2>
+            <h2 className="mt-1 text-xl font-extrabold">
+              <TeamNameButton ffuId={championId}>
+                <span className="truncate">{name}</span>
+              </TeamNameButton>
+            </h2>
             {owners.length > 0 && <p className="truncate text-sm text-muted">{owners.join(' & ')}</p>}
           </div>
         </div>

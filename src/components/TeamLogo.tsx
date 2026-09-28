@@ -6,10 +6,14 @@ import { useOpenTeamProfile } from './teamProfile'
 // (and on load error) fall back to the abbreviation in a neutral circle — same as the old site.
 // `object-cover` on a white disc (not `object-contain`): the source images aren't all square, and
 // contain letterboxes them so they render undersized with corners clipped by the circular mask.
+// The image is decorative (alt=""): a logo always sits beside its team's name, so an alt text would
+// only read the name twice ("The Stallions logo The Stallions").
 interface TeamLogoProps {
   ffuId: string
   size?: number
-  /** Opt out of the click-to-open profile (e.g. inside the profile modal itself). */
+  /** Opt out of the click-to-open profile: inside the profile modal itself, inside a card or row
+   *  that is already a button (no nested controls), and inside `TeamLink`, which owns the click.
+   *  New code wants `TeamLink` (logo + name as one control) rather than a clickable bare logo. */
   clickable?: boolean
 }
 
@@ -31,7 +35,7 @@ export function TeamLogo({ ffuId, size = 32, clickable = true }: TeamLogoProps) 
     ) : (
       <img
         src={`/team-logos/${ffuId}.png`}
-        alt={`${member.name} logo`}
+        alt=""
         style={dimension}
         className="shrink-0 rounded-full bg-surface object-cover ring-1 ring-border"
         onError={() => setFailed(true)}

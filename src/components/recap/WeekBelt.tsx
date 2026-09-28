@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { nameForYear } from '@/config'
 import { plural } from '@/lib/plural'
 import type { BeltWatch } from '@/selectors'
+import { TeamNameButton } from '../TeamLink'
 import { TeamLogo } from '../TeamLogo'
 import { BeltChain } from './BeltChain'
 import { RecapPanel } from './RecapPanel'
@@ -22,10 +23,13 @@ function Headline({ watch, year }: { watch: BeltWatch; year: string }) {
   return (
     <div className="flex min-w-0 items-center gap-3 bg-accent px-3 py-2.5 text-accent-fg">
       <FaChessKing className="shrink-0 text-2xl" aria-hidden />
-      <TeamLogo ffuId={watch.holderId} size={40} />
+      <TeamLogo ffuId={watch.holderId} size={40} clickable={false} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-lg font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
-          {name(watch.holderId, year)}
+        {/* Only the name line opens the profile: the line under it can name the old holder. */}
+        <div className="relative text-lg font-extrabold uppercase leading-tight tracking-tight sm:text-xl">
+          <TeamNameButton ffuId={watch.holderId}>
+            <span className="truncate">{name(watch.holderId, year)}</span>
+          </TeamNameButton>
         </div>
         <div className="font-mono text-xs font-bold leading-tight opacity-90">
           {changed ? `Took it from ${name(watch.tookItFrom!, year)}` : `${plural(watch.defenses, 'defense')} · ${plural(watch.weeksHeld, 'week')}`}
