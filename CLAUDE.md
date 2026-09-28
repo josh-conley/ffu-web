@@ -167,8 +167,7 @@ its own `preview-<name>.ffu-web-preview.pages.dev` (see Who pushes where). `new.
 `ai-docs/DEPLOY.md`.
 
 **Next / open:** optional UPR-progression line chart (All-Time horserace + Members view);
-confirm ffu-035/ffu-048 (in the registry but never appear in data) belong; a couple owner first-names
-(ffu-019/033) TBD. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
+confirm ffu-035/ffu-048 (in the registry but never appear in data) belong. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
 weeks (15–17). 2026-readiness checklist lives in `ai-docs/TODO.md`.
 
 **Weekly data refresh:** `.github/workflows/refresh-season.yml` (Tuesdays, Sep–Dec) runs

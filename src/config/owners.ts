@@ -25,7 +25,7 @@ export const OWNERS: Owner[] = [
   { id: 'owner-016', firstName: '', lastInitial: '' }, // MustachePapi
   { id: 'owner-017', firstName: 'Kaylee', lastInitial: '' }, // The Riveters
   { id: 'owner-018', firstName: 'Mitch', lastInitial: '' }, // Crawfordsville's Finest
-  { id: 'owner-019', firstName: '', lastInitial: 'F' }, // LegendsRise (first name TBD)
+  { id: 'owner-019', firstName: 'John', lastInitial: 'F' }, // LegendsRise
   { id: 'owner-020', firstName: 'Bob', lastInitial: '' }, // The Tooth Tuggers
   { id: 'owner-021', firstName: 'Jack', lastInitial: '' }, // Nighthawks
   { id: 'owner-022', firstName: 'Ben', lastInitial: '' }, // The Gaston Ramblers
@@ -34,16 +34,16 @@ export const OWNERS: Owner[] = [
   { id: 'owner-025', firstName: 'Jensen', lastInitial: '' }, // Indianapolis Aztecs
   { id: 'owner-026', firstName: 'Nathan', lastInitial: '' }, // Raging Rhinos
   { id: 'owner-027', firstName: 'Cam', lastInitial: '' }, // CamDelphia
-  { id: 'owner-028', firstName: 'Zach', lastInitial: '' }, // El Guapo Puto
+  { id: 'owner-028', firstName: 'Zach', lastInitial: 'L' }, // El Guapo Puto
   { id: 'owner-029', firstName: 'Marcus', lastInitial: '' }, // Team Pancake
-  { id: 'owner-030', firstName: 'John', lastInitial: '' }, // Johnkshire Cats
+  { id: 'owner-030', firstName: 'John', lastInitial: 'L' }, // Johnkshire Cats
   { id: 'owner-031', firstName: 'Tyler', lastInitial: 'H' }, // Team Dogecoin (co-owned)
   { id: 'owner-032', firstName: 'Michael', lastInitial: '' }, // Team Dogecoin (co-owned)
-  { id: 'owner-033', firstName: '', lastInitial: 'W' }, // He Hate Me (first name TBD)
+  { id: 'owner-033', firstName: 'Eric', lastInitial: '' }, // He Hate Me
   { id: 'owner-034', firstName: 'Ethan', lastInitial: '' }, // CENATION
   { id: 'owner-035', firstName: '', lastInitial: '' }, // ZBoser
   { id: 'owner-036', firstName: 'Zach', lastInitial: 'P' }, // Big Ten Bandits
-  { id: 'owner-037', firstName: 'Tyler', lastInitial: '' }, // Head Cow Always Grazing
+  { id: 'owner-037', firstName: 'Tyler', lastInitial: 'S' }, // Head Cow Always Grazing
   { id: 'owner-038', firstName: 'Seth', lastInitial: '' }, // Odin's Herr
   { id: 'owner-039', firstName: 'Kyle', lastInitial: '' }, // Bucky Badgers
   { id: 'owner-040', firstName: 'Mark', lastInitial: '' }, // The Sha'Dynasty
