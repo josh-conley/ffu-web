@@ -32,6 +32,33 @@ const ROW_TONE: Record<RowTone, string> = {
   even: 'border-transparent',
 }
 
+/**
+ * The score, with the projection stacked under it (never beside it, so it never takes width from the
+ * name). A live row with no projection keeps the two-line height through an invisible stand-in and
+ * centres the score, so it lines up with the team name while every card stays the same height.
+ */
+function ScoreColumn({ score, leading, projected, reserveProjection }: { score: number; leading: boolean; projected?: number; reserveProjection: boolean }) {
+  const scoreText = <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
+  if (projected !== undefined) {
+    return (
+      <span className="flex shrink-0 flex-col items-end leading-tight">
+        {scoreText}
+        <span className="font-mono text-[11px] font-normal text-muted tabular-nums" title="Projected final score">proj {projected.toFixed(1)}</span>
+      </span>
+    )
+  }
+  if (!reserveProjection) return <span className="shrink-0 leading-tight">{scoreText}</span>
+  return (
+    <span className="grid shrink-0 items-center justify-items-end leading-tight">
+      <span className="col-start-1 row-start-1">{scoreText}</span>
+      <span aria-hidden className="invisible col-start-1 row-start-1 flex flex-col font-mono">
+        <span>0</span>
+        <span className="text-[11px]">0</span>
+      </span>
+    </span>
+  )
+}
+
 function ParticipantRow({
   memberId,
   score,
@@ -58,15 +85,7 @@ function ParticipantRow({
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${ROW_TONE[tone]}`}>
       <TeamLabel memberId={memberId} year={year} subtitle={subtitle} linked={linked} />
-      {/* Projection stacked under the score, not beside it, so it never takes width from the name. */}
-      <span className="flex shrink-0 flex-col items-end leading-tight">
-        <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
-        {projected !== undefined ? (
-          <span className="font-mono text-[11px] font-normal text-muted tabular-nums" title="Projected final score">proj {projected.toFixed(1)}</span>
-        ) : (
-          reserveProjection && <span className="text-[11px]" aria-hidden>{'\u00a0'}</span>
-        )}
-      </span>
+      <ScoreColumn score={score} leading={leading} projected={projected} reserveProjection={reserveProjection} />
     </div>
   )
 }
