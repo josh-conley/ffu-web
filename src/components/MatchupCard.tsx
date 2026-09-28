@@ -4,7 +4,7 @@ import { nameForYear } from '@/config'
 import { winnerOf } from '@/selectors'
 import { useSeriesPreview } from '@/hooks/useSeriesPreview'
 import { TeamLink } from './TeamLink'
-import { lineupsLabel, seriesLineText } from './seriesText'
+import { lineupsLabel, seriesLineFor } from './seriesText'
 
 /** `final`: the result stands — winner bar and bold, loser muted. `live`: still being played, so
  *  neither team is dressed as having won or lost; only the leading score is bold. */
@@ -40,6 +40,7 @@ function ParticipantRow({
   leading,
   subtitle,
   projected,
+  reserveProjection,
   linked,
 }: {
   memberId: string
@@ -50,6 +51,8 @@ function ParticipantRow({
   leading: boolean
   subtitle?: string
   projected?: number
+  /** Live cards keep the projection line even once a team has none left, so every card matches in height. */
+  reserveProjection: boolean
   linked: boolean
 }) {
   return (
@@ -58,17 +61,27 @@ function ParticipantRow({
       {/* Projection stacked under the score, not beside it, so it never takes width from the name. */}
       <span className="flex shrink-0 flex-col items-end leading-tight">
         <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
-        {projected !== undefined && <span className="font-mono text-[11px] font-normal text-muted tabular-nums" title="Projected final score">proj {projected.toFixed(1)}</span>}
+        {projected !== undefined ? (
+          <span className="font-mono text-[11px] font-normal text-muted tabular-nums" title="Projected final score">proj {projected.toFixed(1)}</span>
+        ) : (
+          reserveProjection && <span className="text-[11px]" aria-hidden>{'\u00a0'}</span>
+        )}
       </span>
     </div>
   )
 }
 
-/** The all-time series under a game still to be decided; nothing at all for a first meeting. */
+/**
+ * The all-time series under a game still to be decided. Always exactly one line (truncated, full
+ * text on hover) so cards in a row match in height, whether or not the pair has met.
+ */
 function SeriesLine({ memberIds }: { memberIds: readonly string[] }) {
-  const preview = useSeriesPreview(memberIds)
-  if (!preview) return null
-  return <p className="mt-1.5 pl-2.5 text-[11px] leading-snug text-muted">{seriesLineText(preview)}</p>
+  const text = seriesLineFor(useSeriesPreview(memberIds))
+  return (
+    <p className="mt-1.5 truncate pl-2.5 text-[11px] leading-snug text-muted" title={text}>
+      {text ?? '\u00a0'}
+    </p>
+  )
 }
 
 /** A plain box, or a whole-card button when it opens the game's lineups. */
@@ -119,6 +132,7 @@ export function MatchupCard({
             leading={status === 'live' && p.memberId === winner}
             subtitle={subtitle?.(p.memberId)}
             projected={projected?.(p.memberId)}
+            reserveProjection={projected !== undefined}
             linked={!onOpen}
           />
         ))}
