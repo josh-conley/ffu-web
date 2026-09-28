@@ -8,8 +8,8 @@ import { MemberSection } from './MemberSection'
 const KIND: Record<TierMoveKind, { label: string; up?: boolean; tone: string }> = {
   promoted: { label: 'Promoted', up: true, tone: 'text-positive' },
   relegated: { label: 'Relegated', up: false, tone: 'text-negative' },
-  'moved-up': { label: 'Moved up · no flag', up: true, tone: 'text-muted' },
-  'moved-down': { label: 'Moved down · no flag', up: false, tone: 'text-muted' },
+  'moved-up': { label: 'Moved up', up: true, tone: 'text-muted' },
+  'moved-down': { label: 'Moved down', up: false, tone: 'text-muted' },
   returned: { label: 'Returned', tone: 'text-muted' },
 }
 
@@ -40,13 +40,13 @@ function MoveRow({ move }: { move: TierMove }) {
   )
 }
 
-/** Up/down history: the tier chart plus every promotion, relegation and unflagged move. */
+/** Promotion & relegation history: the tier chart plus every promotion, relegation and other tier move. */
 export function TierMovesSection({ history }: { history: MemberSeason[] }) {
   const moves = useMemo(() => tierMoves(history), [history])
   return (
     <MemberSection
-      title="Up / Down History"
-      note="Promotions and relegations are the flags recorded with each season, from 2021 on. Tier changes without one — the 2018–2020 seasons and the 2022 expansion placements into Masters — show as unflagged moves."
+      title="Promotion & Relegation History"
+      note="Promotions and relegations are marked from 2021 on. Earlier tier changes, and the 2022 expansion placements into Masters, show as moves up or down."
     >
       <div className="border border-border bg-surface p-3 shadow-sm">
         <TierTimeline seasons={history} />
