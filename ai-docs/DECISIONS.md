@@ -5,6 +5,16 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-09-28 — Fonts: Inter + IBM Plex Mono, self-hosted
+
+The Barlow / JetBrains Mono `@import` had silently never loaded, so the site had always rendered in
+each OS's system font. Once #11 made Barlow load, Josh preferred the old look, but system fonts
+differ per OS (San Francisco, Segoe UI, Roboto), and he wants one look everywhere. Inter is the
+closest open font to San Francisco; for numbers he compared Geist Mono, Roboto Mono and IBM Plex
+Mono and picked Plex. Both are self-hosted with `@fontsource` (Latin subset, only the weights the UI
+uses: Inter 400–900, Plex 400–700) rather than Google Fonts: no third-party request, and they cache
+with the site. Adding a weight means adding its import in `src/main.tsx`.
+
 ## 2026-08-21 — The draw announcer speaks in phrase tokens, not sentences
 
 > **Removed 2026-09-23.** No real voice materialised, so the parked pipeline was deleted as one unit,
