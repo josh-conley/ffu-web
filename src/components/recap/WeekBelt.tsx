@@ -7,6 +7,7 @@ import { TeamNameButton } from '../TeamLink'
 import { TeamLogo } from '../TeamLogo'
 import { BeltChain } from './BeltChain'
 import { RecapPanel } from './RecapPanel'
+import { formatPoints } from '../format'
 
 /**
  * The lineal belt, as of the week — the one recap item no other league can print, because it is an
@@ -53,10 +54,10 @@ function Bout({ watch, year }: { watch: BeltWatch; year: string }) {
       </span>
       <span className="ml-auto flex min-w-0 items-center gap-2">
         <span className={`truncate ${held ? 'font-bold' : 'text-muted'}`}>{name(bout.championId, year)}</span>
-        <span className="shrink-0 font-mono font-bold tabular-nums">{bout.championScore.toFixed(2)}</span>
+        <span className="shrink-0 font-mono font-bold tabular-nums">{formatPoints(bout.championScore)}</span>
         <span className="shrink-0 text-muted">v</span>
         <span className={`truncate ${held ? 'text-muted' : 'font-bold'}`}>{name(bout.challengerId, year)}</span>
-        <span className="shrink-0 font-mono font-bold tabular-nums">{bout.challengerScore.toFixed(2)}</span>
+        <span className="shrink-0 font-mono font-bold tabular-nums">{formatPoints(bout.challengerScore)}</span>
       </span>
     </div>
   )

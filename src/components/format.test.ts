@@ -1,10 +1,23 @@
-import { draftDateTime, gameNote, ordinal, recordLabel, recordPpgLabel, shortPlayerName } from './format'
+import { draftDateTime, formatPoints, gameNote, ordinal, recordLabel, recordPpgLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
     expect([1, 2, 3, 4, 9].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '9th'])
     expect([11, 12, 13].map(ordinal)).toEqual(['11th', '12th', '13th'])
     expect([21, 22, 23, 101].map(ordinal)).toEqual(['21st', '22nd', '23rd', '101st'])
+  })
+})
+
+describe('formatPoints', () => {
+  it('shows hundredths and groups thousands', () => {
+    expect(formatPoints(13662.5)).toBe('13,662.50')
+    expect(formatPoints(118.444)).toBe('118.44')
+    expect(formatPoints(0)).toBe('0.00')
+    expect(formatPoints(1234567.891)).toBe('1,234,567.89')
+  })
+
+  it('keeps the sign on negatives (a point differential)', () => {
+    expect(formatPoints(-1520.256)).toBe('-1,520.26')
   })
 })
 

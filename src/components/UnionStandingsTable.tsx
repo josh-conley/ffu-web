@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { nameForYear } from '@/config'
 import { rankedByUpr, type UnionStandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
-import { recordLabel } from './format'
+import { formatPoints, recordLabel } from './format'
 import { LeagueBadge } from './LeagueBadge'
 import { TIER_PRESTIGE } from './leagues'
 import { TeamLink } from './TeamLink'
@@ -53,8 +53,8 @@ function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] 
       render: (r) => <LeagueBadge tier={r.tier} rank={r.leagueRank} />,
     },
     { key: 'record', header: 'Record', sortValue: (r) => r.winPct, render: (r) => recordLabel(r.team.record) },
-    num('pf', 'PF', (r) => r.team.points.for, (n) => n.toFixed(2), 'Points For'),
-    num('pa', 'PA', (r) => r.team.points.against, (n) => n.toFixed(2), 'Points Against'),
+    num('pf', 'PF', (r) => r.team.points.for, formatPoints, 'Points For'),
+    num('pa', 'PA', (r) => r.team.points.against, formatPoints, 'Points Against'),
     ...(byUpr
       ? [num('upr', 'UPR', (r) => r.upr, (n) => (n ? n.toFixed(2) : '—'), 'Union Power Ranking — the cross-league rating')]
       : []),

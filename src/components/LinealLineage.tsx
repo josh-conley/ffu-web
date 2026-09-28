@@ -4,8 +4,8 @@ import type { LinealReign } from '@/selectors'
 import { GameWhen } from './GameWhen'
 import { TeamNameButton } from './TeamLink'
 import { TeamLogo } from './TeamLogo'
+import { formatPoints } from './format'
 
-const score = (n: number) => n.toFixed(2)
 
 /** "beat X 125.45–121.00" — how a reign began (or ended, from the loser's side). */
 function Bout({ year, oppId, forScore, againstScore }: { year: string; oppId: string; forScore: number; againstScore: number }) {
@@ -13,7 +13,7 @@ function Bout({ year, oppId, forScore, againstScore }: { year: string; oppId: st
     <span className="flex flex-wrap items-center gap-x-1.5">
       <span className="font-medium">{nameForYear(oppId, year) ?? oppId}</span>
       <span className="font-mono text-xs tabular-nums text-muted">
-        {score(forScore)}–{score(againstScore)}
+        {formatPoints(forScore)}–{formatPoints(againstScore)}
       </span>
     </span>
   )

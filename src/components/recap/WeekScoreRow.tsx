@@ -2,7 +2,7 @@ import { nameForYear } from '@/config'
 import type { WeekScore } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
 import { TeamLink } from '../TeamLink'
-import { ordinal } from '../format'
+import { formatPoints, ordinal } from '../format'
 
 /**
  * One team's week, as a row: where it placed, who it was, and what it scored.
@@ -25,7 +25,7 @@ export function WeekScoreRow({ score, year }: { score: WeekScore; year: string }
       >
         <span className="truncate text-sm font-bold">{nameForYear(score.memberId, year) ?? score.memberId}</span>
       </TeamLink>
-      <span className="shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
+      <span className="shrink-0 font-mono text-base font-bold tabular-nums">{formatPoints(score.score)}</span>
     </div>
   )
 }
@@ -41,7 +41,7 @@ export function WeekScoreChip({ score, year }: { score: WeekScore; year: string 
           {nameForYear(score.memberId, year) ?? score.memberId}
         </span>
       </TeamLink>
-      <span className="ml-auto shrink-0 font-mono text-base font-bold tabular-nums">{score.score.toFixed(2)}</span>
+      <span className="ml-auto shrink-0 font-mono text-base font-bold tabular-nums">{formatPoints(score.score)}</span>
       <span className={`shrink-0 text-[11px] font-bold uppercase tracking-wider ${style.text}`}>{style.label}</span>
     </div>
   )

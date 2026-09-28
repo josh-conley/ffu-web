@@ -4,7 +4,7 @@ import { getMember, nameForYear } from '@/config'
 import { benchByPoints, type PlayerLiveStatus } from '@/selectors'
 import { LiveStatusDot } from './LiveStatusDot'
 import { nameTone, pointsText, pointsTone } from './liveStatusTone'
-import { shortPlayerName } from './format'
+import { formatPoints, shortPlayerName } from './format'
 import { posClass } from './positions'
 import { TeamLogo } from './TeamLogo'
 
@@ -16,7 +16,6 @@ import { TeamLogo } from './TeamLogo'
 // each side's projected final score (a row under the heads).
 
 const SLOT_LABEL: Record<string, string> = { SUPER_FLEX: 'SFLX', REC_FLEX: 'RFLX', WRRB_FLEX: 'W/R' }
-const fmt = (n: number) => n.toFixed(2)
 // 5 columns: name | score | slot | score | name — scores hug the centered slot badge. The middle
 // three are as narrow as their contents allow on a phone, because everything they don't take is
 // name: two names share one row, so each gets less than half the screen (see NameParts).
@@ -186,9 +185,9 @@ function Heads({ a, b, year, winner }: { a: BoxScoreSide; b: BoxScoreSide; year:
   return (
     <div className={`${COLS} ${ROW_PAD} border-b border-border py-2 text-xs font-semibold sm:text-sm`}>
       <span className="flex min-w-0 items-center gap-1.5 sm:gap-2"><TeamLogo ffuId={a.memberId} size={22} /><TeamName memberId={a.memberId} year={year} /></span>
-      <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{fmt(a.score)}</span>
+      <span className={`text-right font-mono tabular-nums ${winner === 'b' ? 'text-muted' : ''}`}>{formatPoints(a.score)}</span>
       <span className="text-center text-[10px] text-muted">VS</span>
-      <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{fmt(b.score)}</span>
+      <span className={`font-mono tabular-nums ${winner === 'a' ? 'text-muted' : ''}`}>{formatPoints(b.score)}</span>
       <span className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2"><TeamName memberId={b.memberId} year={year} /><TeamLogo ffuId={b.memberId} size={22} /></span>
     </div>
   )

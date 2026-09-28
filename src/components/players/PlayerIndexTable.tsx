@@ -3,6 +3,7 @@ import { FaChevronRight } from 'react-icons/fa6'
 import type { PlayerSummary } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
 import { posClass } from '../positions'
+import { formatPoints } from '../format'
 
 const num = (key: keyof PlayerSummary & string, header: string, title: string, fmt = (n: number) => String(n)): Column<PlayerSummary> => ({
   key,
@@ -13,7 +14,6 @@ const num = (key: keyof PlayerSummary & string, header: string, title: string, f
   sortValue: (r) => r[key] as number,
 })
 
-const pts = (n: number) => n.toFixed(2)
 
 function columns(openKey: string | undefined): Column<PlayerSummary>[] {
   return [
@@ -29,7 +29,7 @@ function columns(openKey: string | undefined): Column<PlayerSummary>[] {
       ),
       sortValue: (r) => r.name,
     },
-    num('points', 'FFU Pts', 'Points scored while in an FFU starting lineup', pts),
+    num('points', 'FFU Pts', 'Points scored while in an FFU starting lineup', formatPoints),
     num('playoffApps', 'Playoffs', 'Playoff runs he started in: team-seasons where he started a championship-bracket game'),
     num('titleGames', 'Title Gms', 'Championship finals he started in, won or lost'),
     num('titlesWon', 'Titles', 'Championship finals he started in and his team won'),

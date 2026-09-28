@@ -4,6 +4,7 @@ import type { LinealReign } from '@/selectors'
 import { GameWhen } from './GameWhen'
 import { TeamNameButton } from './TeamLink'
 import { TeamLogo } from './TeamLogo'
+import { formatPoints } from './format'
 
 /** One headline number in the hero's stat strip. */
 function Stat({ value, label }: { value: string | number; label: string }) {
@@ -53,7 +54,7 @@ export function LinealBelt({ reign }: { reign: LinealReign }) {
         <span className="text-muted">{wonFrom === null ? 'Won the first FFU title over' : 'Took the belt from'}</span>
         <span className="font-semibold">{nameForYear(reign.wonBout.opponentId, wonAt.year) ?? reign.wonBout.opponentId}</span>
         <span className="font-mono text-xs tabular-nums text-muted">
-          {reign.wonBout.score.toFixed(2)}–{reign.wonBout.opponentScore.toFixed(2)}
+          {formatPoints(reign.wonBout.score)}–{formatPoints(reign.wonBout.opponentScore)}
         </span>
         <GameWhen year={wonAt.year} tier={wonAt.tier} week={wonAt.week} round={wonAt.round} />
       </p>

@@ -5,6 +5,7 @@ import { winnerOf } from '@/selectors'
 import { useSeriesPreview } from '@/hooks/useSeriesPreview'
 import { TeamLink } from './TeamLink'
 import { lineupsLabel, seriesLineFor } from './seriesText'
+import { formatPoints } from './format'
 
 /** `final`: the result stands — winner bar and bold, loser muted. `live`: still being played, so
  *  neither team is dressed as having won or lost; only the leading score is bold. */
@@ -39,7 +40,7 @@ const ROW_TONE: Record<RowTone, string> = {
  * centres the score, so it lines up with the team name while every card stays the same height.
  */
 function ScoreColumn({ score, leading, projected, reserveProjection, twoLine }: { score: number; leading: boolean; projected?: number; reserveProjection: boolean; twoLine: boolean }) {
-  const scoreText = <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{score.toFixed(2)}</span>
+  const scoreText = <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{formatPoints(score)}</span>
   if (projected !== undefined) {
     return (
       <span className="flex shrink-0 flex-col items-end leading-tight">

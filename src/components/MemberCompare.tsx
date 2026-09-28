@@ -2,6 +2,7 @@ import { getMember } from '@/config'
 import type { CareerStats, H2HRecord } from '@/selectors'
 import { TeamLink } from './TeamLink'
 import { LeagueBadge } from './LeagueBadge'
+import { formatPoints } from './format'
 
 const name = (ffuId: string) => getMember(ffuId)?.name ?? ffuId
 const better = 'font-semibold text-emerald-600 dark:text-emerald-400'
@@ -31,7 +32,7 @@ function CareerCompare({ a, b, aWinnings, bWinnings }: { a: CareerStats; b: Care
         <CompareRow label="Championships" a={a.championships} b={b.championships} dir="high" />
         <CompareRow label="Best Finish" a={a.bestFinish ?? 99} b={b.bestFinish ?? 99} dir="low" fmt={(n) => (n === 99 ? '—' : String(n))} />
         <CompareRow label="Playoff Apps" a={a.playoffAppearances} b={b.playoffAppearances} dir="high" />
-        <CompareRow label="Points For" a={a.pointsFor} b={b.pointsFor} dir="high" fmt={(n) => n.toFixed(2)} />
+        <CompareRow label="Points For" a={a.pointsFor} b={b.pointsFor} dir="high" fmt={(n) => formatPoints(n)} />
         <CompareRow label="Winnings" a={aWinnings} b={bWinnings} dir="high" fmt={usd} />
       </tbody>
     </table>
@@ -49,7 +50,7 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
         <span className="font-semibold">{name(h2h.memberId)}</span>{' '}
         <span className="tabular-nums">{h2h.wins}–{h2h.losses}</span>{' '}
         <span className="font-semibold">{name(h2h.opponentId)}</span>
-        {ties} · {h2h.pointsFor.toFixed(2)}–{h2h.pointsAgainst.toFixed(2)} pts
+        {ties} · {formatPoints(h2h.pointsFor)}–{formatPoints(h2h.pointsAgainst)} pts
       </p>
       <div className="overflow-x-auto border border-border bg-surface shadow-sm">
         <table className="w-max min-w-full text-sm">
@@ -68,8 +69,8 @@ function H2H({ h2h }: { h2h: H2HRecord }) {
                 <td className="px-3 py-2 tabular-nums">{m.year}</td>
                 <td className="px-3 py-2"><LeagueBadge tier={m.tier} /></td>
                 <td className="px-3 py-2 text-muted">{m.round ?? `Wk ${m.week}`}</td>
-                <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'W' ? better : ''}`}>{m.score.toFixed(2)}</td>
-                <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'L' ? better : ''}`}>{m.opponentScore.toFixed(2)}</td>
+                <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'W' ? better : ''}`}>{formatPoints(m.score)}</td>
+                <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'L' ? better : ''}`}>{formatPoints(m.opponentScore)}</td>
               </tr>
             ))}
           </tbody>

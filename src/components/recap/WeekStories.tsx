@@ -3,6 +3,7 @@ import type { WeekMatchup, WeekNotes } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
 import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
+import { formatPoints } from '../format'
 
 /**
  * The week's four matchup stories: the rout, the finish that came down to nothing, and the two
@@ -50,7 +51,7 @@ function Side({
       <TeamLink ffuId={memberId} tight>
         <span className="truncate">{name(memberId, year)}</span>
       </TeamLink>
-      <span className={`ml-auto shrink-0 font-mono tabular-nums ${won ? 'font-bold' : ''}`}>{score.toFixed(2)}</span>
+      <span className={`ml-auto shrink-0 font-mono tabular-nums ${won ? 'font-bold' : ''}`}>{formatPoints(score)}</span>
     </div>
   )
 }
@@ -68,7 +69,7 @@ function StoryCard({ story, game, year, compact }: { story: Story; game: WeekMat
         <Side memberId={game.loserId} score={game.loserScore} year={year} won={false} />
       </div>
       <div className="mt-1 font-mono text-xs font-bold tabular-nums text-muted">
-        {game.margin === 0 ? 'level' : `by ${game.margin.toFixed(2)}`}
+        {game.margin === 0 ? 'level' : `by ${formatPoints(game.margin)}`}
         {!compact && <span className="ml-2 font-sans font-normal normal-case">· {story.blurb}</span>}
       </div>
     </div>
