@@ -483,3 +483,28 @@ session merges once CI is green. The preview banner only links to the PR as a fa
 App for sign-in), since the static site can never hold a GitHub credential. That's real
 infrastructure and a security review to save a message the person is already in position to send.
 Don't re-propose it unless the chat step becomes an actual bottleneck.
+
+## 2026-09-25 — the home page's live scores poll every 60s (supersedes "fetched once per mount")
+
+**Decision.** The home page reads the season so far (rosters, every week) once per mount, then
+re-reads **only the week in progress** every 60s through `usePoll`, one `/matchups/{week}` call per
+league. Polling pauses in a hidden tab (and refetches when the tab returns), and it's off on Tuesday's
+standings view, which is built only from finished weeks. There's no "scores as of" line or Refresh
+button: Josh had them removed. Each poll also re-reads the NFL game clocks, and the projections are
+recomputed, so a projection never sits below a score that has moved on: about **4 calls a minute** per
+open tab.
+
+`sleeperApi` keeps one promise per URL, whether in flight or answered within the caller's max age
+(default 60s). That's how the season read, the poll, the projections' lineups and a box score share
+one `/rosters` or `/matchups/{week}` request instead of each making their own (27 → 21 Sleeper calls
+on a week-3 home load, measured). Roster owners and league settings are kept for the visit; IR for 10
+minutes. A failure is never cached.
+
+**Why 60s.** Sleeper's `/matchups` response carries `s-maxage=60`, so an ordinary read any sooner gets
+the same cached bytes back. Polling faster would only add load, and bypassing the CDN on every tick
+(as the draft board does at 5s) isn't worth it for scores that change a few times a minute on a
+Sunday. The draft-schedule panel, which used to poll all season, now stops once every draft is
+complete.
+
+**Rejected.** *Keep reload-to-refresh*: a game-day tab goes silently stale for hours. *Poll the whole
+season each tick*: 12+ calls a minute to re-read weeks that are final.

@@ -9,3 +9,6 @@ export const TeamProfileContext = createContext<((ffuId: string) => void) | null
 export function useOpenTeamProfile() {
   return useContext(TeamProfileContext)
 }
+
+/** The member's full profile page (the quick-profile modal's "View full profile" destination). */
+export const memberProfileHref = (ffuId: string) => `/members?member=${ffuId}`

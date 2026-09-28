@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 
 /** What a polled request looks like to a caller — same shape as useAsyncData, plus it keeps going. */
 export interface Polled<T> {
@@ -13,13 +13,77 @@ interface Resolved<T> {
   error?: Error
 }
 
+interface Latest<T> {
+  fetcher: () => Promise<T>
+  isFinal: ((value: T) => boolean) | undefined
+  intervalMs: number
+}
+
+type Resolve<T> = (update: (prev: Resolved<T> | undefined) => Resolved<T> | undefined) => void
+
+/**
+ * The loop itself, outside React. Each request gets a sequence number so an answer that arrives
+ * after a newer one (the tab-visible refetch racing a tick) can't overwrite it, and
+ * only the newest request schedules the next tick, so there is never more than one timer running.
+ */
+function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolve<T>) {
+  let cancelled = false
+  let done = false
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let issued = 0
+  let applied = 0
+
+  function schedule() {
+    if (cancelled || done) return
+    clearTimeout(timer)
+    timer = setTimeout(() => void poll(), latest.current.intervalMs)
+  }
+
+  /** One request; a stale answer (a newer one already applied) or a cancelled loop is dropped. */
+  async function read(id: number) {
+    try {
+      const next = await latest.current.fetcher()
+      if (cancelled || id < applied) return
+      applied = id
+      resolve(() => ({ key, data: next }))
+      if (latest.current.isFinal?.(next)) done = true
+    } catch (err: unknown) {
+      if (cancelled) return
+      // Only surface a failure when we have nothing to show; otherwise the next tick retries.
+      resolve((prev) => (prev?.key === key && prev.data !== undefined ? prev : { key, error: err instanceof Error ? err : new Error(String(err)) }))
+    }
+  }
+
+  async function poll() {
+    if (cancelled || done) return
+    // Hidden tab: skip the request, but keep the loop alive so it resumes on its own.
+    if (document.visibilityState === 'hidden') return schedule()
+    const id = ++issued
+    clearTimeout(timer)
+    await read(id)
+    if (id === issued) schedule()
+  }
+
+  const onVisible = () => {
+    if (document.visibilityState === 'visible') void poll()
+  }
+  document.addEventListener('visibilitychange', onVisible)
+  void poll()
+  return () => {
+    cancelled = true
+    clearTimeout(timer)
+    document.removeEventListener('visibilitychange', onVisible)
+  }
+}
+
 /**
  * Re-fetch something on an interval for as long as it can still change.
  *
- * Used by the live draft, where Sleeper has no push API. Polling stops on its own in three ways, so
- * an open tab can't sit there hammering Sleeper: it pauses while the tab is hidden (and refreshes
- * immediately on return, so you never stare at a stale board), it stops once `isFinal` says the
- * value can no longer change, and the caller stops it entirely with `active`.
+ * Used by the live draft and the home page's live scores, where Sleeper has no push API. Polling
+ * stops on its own in three ways, so an open tab can't sit there hammering Sleeper: it pauses while
+ * the tab is hidden (and refreshes immediately on return, so you never stare at a stale board), it
+ * stops once `isFinal` says the value can no longer change, and the caller stops it entirely with
+ * `active`.
  *
  * `intervalMs` may change between renders — the live board polls hard while the draft is running
  * and barely at all when it isn't. The wait is therefore a chained timeout that reads the current
@@ -30,67 +94,20 @@ interface Resolved<T> {
  * should be invisible. An error is only reported when there is nothing good to show yet, i.e. the
  * very first fetch failed.
  */
-export function usePoll<T>(
-  key: string,
-  fetcher: () => Promise<T>,
-  active: boolean,
-  intervalMs: number,
-  isFinal?: (value: T) => boolean,
-): Polled<T> {
+export function usePoll<T>(key: string, fetcher: () => Promise<T>, active: boolean, intervalMs: number, isFinal?: (value: T) => boolean): Polled<T> {
   const [resolved, setResolved] = useState<Resolved<T>>()
 
   // These are fresh closures/values every render; the poll loop must not restart for that, so it
   // reads them through a ref and keys its lifetime on the request identity instead.
-  const latest = useRef({ fetcher, isFinal, intervalMs })
-  latest.current = { fetcher, isFinal, intervalMs }
+  // Declared before the loop's effect, so it has run by the time the loop's first poll reads it.
+  const latest = useRef<Latest<T>>({ fetcher, isFinal, intervalMs })
+  useEffect(() => {
+    latest.current = { fetcher, isFinal, intervalMs }
+  })
 
   useEffect(() => {
     if (!active) return
-    let cancelled = false
-    let done = false
-    let timer: ReturnType<typeof setTimeout> | undefined
-
-    function schedule() {
-      if (cancelled || done) return
-      clearTimeout(timer)
-      timer = setTimeout(() => void poll(), latest.current.intervalMs)
-    }
-
-    async function poll() {
-      if (cancelled || done) return
-      // Hidden tab: skip the request, but keep the loop alive so it resumes on its own.
-      if (document.visibilityState === 'hidden') return schedule()
-      try {
-        const next = await latest.current.fetcher()
-        if (cancelled) return
-        setResolved({ key, data: next })
-        if (latest.current.isFinal?.(next)) {
-          done = true
-          clearTimeout(timer)
-          return
-        }
-      } catch (err: unknown) {
-        if (cancelled) return
-        // Only surface a failure when we have nothing to show; otherwise the next tick retries.
-        setResolved((prev) =>
-          prev?.key === key && prev.data !== undefined
-            ? prev
-            : { key, error: err instanceof Error ? err : new Error(String(err)) },
-        )
-      }
-      schedule()
-    }
-
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void poll()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    void poll()
-    return () => {
-      cancelled = true
-      clearTimeout(timer)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
+    return startLoop(key, latest, setResolved)
   }, [key, active])
 
   if (active && resolved?.key === key) {

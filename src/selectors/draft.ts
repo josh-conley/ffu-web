@@ -68,3 +68,11 @@ export function draftPhase(schedule: DraftSchedule, now: number = Date.now()): D
   if (start !== null && now >= start && now < start + LIVE_WINDOW_MS) return 'live'
   return 'upcoming'
 }
+
+/**
+ * True once every league's draft is over — nothing on the home page's draft panel can change after
+ * that, so its poll stops. An empty list is not "all complete": it means nothing has loaded.
+ */
+export function allDraftsComplete(schedules: readonly DraftSchedule[], now: number = Date.now()): boolean {
+  return schedules.length > 0 && schedules.every((s) => draftPhase(s, now) === 'complete')
+}
