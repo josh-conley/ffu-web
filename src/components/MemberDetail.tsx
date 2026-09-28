@@ -26,7 +26,7 @@ function FirstSeasonDetail({ memberId }: { memberId: string }) {
   return (
     <div className="space-y-6">
       <header className="flex items-center gap-4">
-        <TeamLogo ffuId={memberId} size={48} />
+        <TeamLogo ffuId={memberId} size={48} clickable={false} />
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{member?.name ?? memberId}</h1>
@@ -65,7 +65,7 @@ export function MemberDetail({ career, history, winnings, seasons, tournaments }
   return (
     <div className="space-y-8">
       <header className="flex items-center gap-4">
-        <TeamLogo ffuId={career.memberId} size={48} />
+        <TeamLogo ffuId={career.memberId} size={48} clickable={false} />
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{member?.name ?? career.memberId}</h1>
