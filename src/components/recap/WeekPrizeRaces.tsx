@@ -1,5 +1,6 @@
 import { nameForYear, type Tier } from '@/config'
 import type { PrizeLeader, SeasonLongPrize } from '@/selectors'
+import { formatPoints } from '../format'
 import { LEAGUE_STYLES } from '../leagues'
 import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
@@ -61,7 +62,7 @@ function LeagueTable({ race, year, settled }: { race: LeaguePrizeRace; year: str
                 ))}
               </div>
             </td>
-            <td className="px-3 py-2 text-right align-top font-mono font-bold tabular-nums">{leader.value.toFixed(2)}</td>
+            <td className="px-3 py-2 text-right align-top font-mono font-bold tabular-nums">{formatPoints(leader.value)}</td>
           </tr>
         ))}
       </tbody>
