@@ -1,6 +1,12 @@
 // Extends Vitest's `expect` with jest-dom matchers (toBeInTheDocument, etc.)
 // and auto-cleans the DOM between tests. Wired via vite.config.ts `test.setupFiles`.
 import '@testing-library/jest-dom/vitest'
+import { beforeEach } from 'vitest'
+import { clearSleeperCache } from '@/data/sleeperApi'
+
+// The Sleeper client keeps recent answers in memory (src/data/sleeperApi.ts); each test stubs its
+// own `fetch`, so none may inherit another's cached response.
+beforeEach(() => clearSleeperCache())
 
 // jsdom has <dialog> but not its modal API. A minimal stand-in: toggles `open` and fires `close`
 // like the browser does, which is all the shared Dialog relies on (inertness and the top layer are

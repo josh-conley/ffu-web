@@ -2,6 +2,7 @@ import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS } from '@/config'
 import type { DraftSchedule } from '@/data'
 import { fetchDraftSchedules } from '@/data'
+import { allDraftsComplete } from '@/selectors'
 import { usePoll } from './usePoll'
 
 /** Slow: this only has to notice a draft starting or finishing, and it asks about all three tiers. */
@@ -14,7 +15,8 @@ const POLL_MS = 60_000
  *
  * Polled, so a home page left open through the evening starts pointing at draft night by itself
  * rather than waiting for someone to reload. Reads through Sleeper's cache on purpose (unlike the
- * board's own polls): half a minute of staleness costs nothing in an announcement panel.
+ * board's own polls): half a minute of staleness costs nothing in an announcement panel. Stops once
+ * every draft is complete, which is all season long: nothing on the panel can change after that.
  */
 export function useDraftSchedules(year: string | undefined): { schedules: DraftSchedule[]; loading: boolean } {
   const leagueIds: Partial<Record<Tier, string>> | undefined = year ? LIVE_LEAGUE_IDS[year] : undefined
@@ -25,6 +27,7 @@ export function useDraftSchedules(year: string | undefined): { schedules: DraftS
     () => fetchDraftSchedules(year as string, leagueIds as Partial<Record<Tier, string>>),
     enabled,
     POLL_MS,
+    allDraftsComplete,
   )
 
   // Errors are swallowed on purpose (as in useLeagueRosters): Sleeper being unreachable should leave

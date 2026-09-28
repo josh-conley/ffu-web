@@ -20,16 +20,53 @@ interface GetOptions {
    *   past it — a distinct cache key, served from origin.
    *
    * Only worth it where the delay would be felt. Everything else takes the cached answer, which is
-   * both faster for us and kinder to Sleeper.
+   * both faster for us and kinder to Sleeper. A fresh answer still lands in the in-memory cache
+   * below, so the next ordinary read of the same path gets it.
    */
   fresh?: boolean
+  /**
+   * How old an answer from the in-memory cache (see `recent`) this caller will take. Defaults to
+   * `DEFAULT_MAX_AGE_MS`; `Infinity` for facts that don't move inside a visit (who owns a roster).
+   */
+  maxAgeMs?: number
 }
 
-async function get<T>(base: string, path: string, { fresh }: GetOptions): Promise<T> {
-  const url = `${base}${path}`
+/**
+ * Sleeper's CDN holds its league reads for 60s (`s-maxage=60` on `/matchups`, measured), so asking
+ * again inside that window gets the same bytes back. Answering from memory instead costs nothing
+ * in freshness and saves the round trip.
+ */
+const DEFAULT_MAX_AGE_MS = 60_000
+
+/**
+ * One promise per url, in flight or recently settled — the StaticFileProvider idea, with an age
+ * limit because this data moves. It is what lets the home page's scores, its projections and a box
+ * score share one read of `/rosters` or `/matchups/{week}` instead of each making their own: the
+ * callers stay independent, and the data layer notices they asked for the same thing. The age runs
+ * from when the request started, so a 60s poll never lands on its own previous answer.
+ */
+const recent = new Map<string, { startedAt: number; promise: Promise<unknown> }>()
+
+/** Empties the in-memory cache. For tests, whose stubbed `fetch` changes between cases. */
+export function clearSleeperCache(): void {
+  recent.clear()
+}
+
+async function request<T>(url: string, path: string, fresh: boolean | undefined): Promise<T> {
   const res = fresh ? await fetch(`${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`, { cache: 'no-store' }) : await fetch(url)
   if (!res.ok) throw new Error(`Sleeper ${path} -> HTTP ${res.status}`)
   return res.json() as Promise<T>
+}
+
+function get<T>(base: string, path: string, { fresh, maxAgeMs = DEFAULT_MAX_AGE_MS }: GetOptions): Promise<T> {
+  const url = `${base}${path}`
+  const hit = recent.get(url)
+  if (!fresh && hit && Date.now() - hit.startedAt < maxAgeMs) return hit.promise as Promise<T>
+  const entry = { startedAt: Date.now(), promise: request<T>(url, path, fresh) }
+  recent.set(url, entry)
+  // Never keep a failure: the next read retries rather than replaying the error.
+  entry.promise.catch(() => recent.get(url) === entry && recent.delete(url))
+  return entry.promise as Promise<T>
 }
 
 export function sleeperGet<T>(path: string, options: GetOptions = {}): Promise<T> {
