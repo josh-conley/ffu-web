@@ -39,3 +39,6 @@ export function stickyCell(enabled: boolean, i: number, header: boolean): string
   if (!enabled || i !== 0) return ''
   return `sticky left-0 border-r border-border ${header ? 'z-10 bg-accent' : 'z-[5] bg-surface group-hover:bg-surface-2'}`
 }
+
+/** The `aria-sort` value for a header cell: set only on the active sort column. */
+export const ariaSort = (active: boolean, dir?: 'asc' | 'desc') => (active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined)

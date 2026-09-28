@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS } from '@/config'
@@ -61,4 +61,20 @@ it('leads with the standings the completed weeks produced', async () => {
   await waitFor(() => expect(screen.getByText(/^Standings — Through Week 2$/)).toBeInTheDocument())
   // One row per team, with the record and both points totals under the name (1 win, 1 loss each).
   expect(screen.getAllByText('1-1 · 210.00 PF · 200.00 PA').length).toBe(3)
+})
+
+it('puts the live week above the Cup and Around the Union, with a jump link to each league', async () => {
+  const { container } = render(
+    <MemoryRouter>
+      <Overview />
+    </MemoryRouter>,
+  )
+  const heading = await screen.findByText(/^Standings — Through Week 2$/)
+  const cup = screen.getAllByRole('link').find((a) => a.getAttribute('href')?.startsWith('/cup'))
+  expect(cup).toBeDefined()
+  expect(heading.compareDocumentPosition(cup!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+  const jumps = within(screen.getByRole('navigation', { name: 'Jump to league' })).getAllByRole('link')
+  expect(jumps.map((a) => a.textContent)).toEqual(['Premier', 'Masters', 'National'])
+  for (const a of jumps) expect(container.querySelector(a.getAttribute('href')!)).not.toBeNull()
 })

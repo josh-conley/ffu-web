@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember, ownerNames } from '@/config'
 import { careerFor, currentLeague, type CareerStats } from '@/selectors'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { Dialog } from './Dialog'
+import { memberProfileHref } from './teamProfile'
 import { TeamLogo } from './TeamLogo'
 import { LeagueBadge } from './LeagueBadge'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -71,35 +73,21 @@ function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undef
 
 /** Global quick-profile popup, opened by clicking any TeamLogo (via TeamProfileProvider). */
 export function TeamProfileModal({ ffuId, onClose }: { ffuId: string; onClose: () => void }) {
-  const closeRef = useRef<HTMLButtonElement>(null)
-  useEffect(() => {
-    closeRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const { data: seasons, loading } = useAllSeasons()
   const career = useMemo(() => (seasons ? careerFor(seasons, ffuId) : undefined), [seasons, ffuId])
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Team profile" onClick={onClose} className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 sm:items-center sm:p-4">
-      <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-lg overflow-auto border border-border bg-surface shadow-xl">
-        <header className="flex items-center justify-between border-b border-border bg-accent px-4 py-2.5 text-accent-fg">
-          <span className="text-sm font-bold uppercase tracking-wide">Team Profile</span>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="rounded px-2 text-lg leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-text">✕</button>
-        </header>
-        {loading ? (
-          <div className="p-10"><LoadingSpinner /></div>
-        ) : (
-          <Profile ffuId={ffuId} career={career} />
-        )}
-        <footer className="border-t border-border px-4 py-3 text-sm">
-          <Link to={`/members?member=${ffuId}`} onClick={onClose} className="font-medium text-accent hover:underline">
-            View full profile →
-          </Link>
-        </footer>
-      </div>
-    </div>
+    <Dialog label="Team profile" title="Team Profile" onClose={onClose}>
+      {loading ? (
+        <div className="p-10"><LoadingSpinner /></div>
+      ) : (
+        <Profile ffuId={ffuId} career={career} />
+      )}
+      <footer className="border-t border-border px-4 py-3 text-sm">
+        <Link to={memberProfileHref(ffuId)} onClick={onClose} className="font-medium text-accent hover:underline">
+          View full profile →
+        </Link>
+      </footer>
+    </Dialog>
   )
 }

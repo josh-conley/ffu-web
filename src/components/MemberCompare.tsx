@@ -1,6 +1,6 @@
 import { getMember } from '@/config'
 import type { CareerStats, H2HRecord } from '@/selectors'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 import { LeagueBadge } from './LeagueBadge'
 
 const name = (ffuId: string) => getMember(ffuId)?.name ?? ffuId
@@ -84,12 +84,14 @@ export function MemberCompare({ a, b, h2h, aWinnings, bWinnings }: { a: CareerSt
     <div className="space-y-6">
       <div className="grid grid-cols-2 items-center gap-4">
         <div className="flex items-center justify-end gap-2 text-right">
-          <span className="font-semibold">{name(a.memberId)}</span>
-          <TeamLogo ffuId={a.memberId} size={36} />
+          <TeamLink ffuId={a.memberId} logoSize={36} className="flex-row-reverse gap-2">
+            <span className="font-semibold">{name(a.memberId)}</span>
+          </TeamLink>
         </div>
         <div className="flex items-center gap-2">
-          <TeamLogo ffuId={b.memberId} size={36} />
-          <span className="font-semibold">{name(b.memberId)}</span>
+          <TeamLink ffuId={b.memberId} logoSize={36}>
+            <span className="font-semibold">{name(b.memberId)}</span>
+          </TeamLink>
         </div>
       </div>
 

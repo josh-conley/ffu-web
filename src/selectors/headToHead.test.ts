@@ -1,5 +1,5 @@
 import type { SeasonData } from '@/data'
-import { headToHead, seriesStanding } from './headToHead'
+import { headToHead, lastMeeting, seriesPreview, seriesStanding } from './headToHead'
 
 const mk = (year: string, games: SeasonData['games']): SeasonData => ({
   schemaVersion: 1, tier: 'PREMIER', year, era: 'sleeper', platformLeagueId: 'x', teams: [], games,
@@ -55,5 +55,28 @@ describe('seriesStanding', () => {
 
   it('has no leader and no meetings for teams that have never played', () => {
     expect(seriesStanding(headToHead(seasons, 'b', 'c'))).toEqual({ meetings: 0, leaderWins: 0, trailerWins: 0, ties: 0 })
+  })
+})
+
+describe('lastMeeting', () => {
+  it('is the latest year, then latest week — whatever order the file lists games in', () => {
+    const last = lastMeeting(headToHead(seasons, 'a', 'b'))
+    expect(last).toMatchObject({ year: '2024', week: 16, isPlayoff: true })
+  })
+
+  it('is undefined for a pair that never met', () => {
+    expect(lastMeeting(headToHead(seasons, 'b', 'c'))).toBeUndefined()
+  })
+})
+
+describe('seriesPreview', () => {
+  it('carries the standing and the last meeting', () => {
+    const p = seriesPreview(headToHead(seasons, 'b', 'a'))
+    expect(p?.standing.leaderId).toBe('a')
+    expect(p?.lastMet).toMatchObject({ year: '2024', week: 16 })
+  })
+
+  it('is null for a first meeting, never a 0–0 series', () => {
+    expect(seriesPreview(headToHead(seasons, 'b', 'c'))).toBeNull()
   })
 })

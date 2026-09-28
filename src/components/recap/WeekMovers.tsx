@@ -2,7 +2,7 @@ import { FaArrowDown, FaArrowUp } from 'react-icons/fa6'
 import { nameForYear } from '@/config'
 import type { Mover } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
 
 /**
@@ -18,13 +18,14 @@ function MoverRow({ mover, year }: { mover: Mover; year: string }) {
   return (
     <div className="flex min-w-0 items-center gap-2 px-3 py-2">
       <span aria-hidden className={`h-6 w-1 shrink-0 ${style.dot}`} />
-      <TeamLogo ffuId={mover.memberId} size={24} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold leading-tight">
-          {nameForYear(mover.memberId, year) ?? mover.memberId}
-        </div>
-        <div className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</div>
-      </div>
+      <TeamLink
+        ffuId={mover.memberId}
+        logoSize={24}
+        className="flex-1 gap-2"
+        detail={<span className={`text-[11px] font-semibold uppercase tracking-wider ${style.text}`}>{style.label}</span>}
+      >
+        <span className="truncate text-sm font-bold leading-tight">{nameForYear(mover.memberId, year) ?? mover.memberId}</span>
+      </TeamLink>
       <div className="shrink-0 text-right">
         <div
           className={`flex items-center justify-end gap-1 font-mono text-base font-bold leading-tight tabular-nums ${climbed ? 'text-positive' : 'text-negative'}`}

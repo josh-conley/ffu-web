@@ -21,6 +21,10 @@ Spawn both agents **in one message** with the Agent tool (`subagent_type: produc
 brainstorm; the other partner will read your list and respond." Keep each agent's id: rounds 2–3
 continue the same agents with SendMessage so they keep what they already read.
 
+Josh can follow along in the cmux sidebar log: the agents post live notes there (see their
+"Live notes" section). Post your own round markers too, e.g.
+`cmux log --source moderator "Round 2: cross-talk started"`.
+
 ## 2. Round 2: cross-talk (parallel)
 Send each partner the other's round-1 list **verbatim**, with this ask:
 > Here is <the other partner>'s list. Respond as their partner, not their reviewer:

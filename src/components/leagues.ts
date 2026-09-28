@@ -15,6 +15,9 @@ export interface LeagueStyle {
   text: string
   /** Tier color as a border (e.g. the draft board's header rule). */
   border: string
+  /** Tier-tinted text that stays readable on the page background in both themes (e.g. the home
+   *  page's league jump links). `text` doesn't: Premier gold on white fails contrast as text. */
+  readableText: string
 }
 
 /** Tiers in prestige order (top flight first) — for views that rank accomplishments across tiers. */
@@ -28,6 +31,7 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     solidHeader: 'bg-premier text-black',
     text: 'text-premier',
     border: 'border-premier',
+    readableText: 'text-premier-fg',
   },
   MASTERS: {
     label: 'Masters',
@@ -36,6 +40,7 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     solidHeader: 'bg-masters text-white',
     text: 'text-masters',
     border: 'border-masters',
+    readableText: 'text-masters-fg',
   },
   NATIONAL: {
     label: 'National',
@@ -44,5 +49,6 @@ export const LEAGUE_STYLES: Record<Tier, LeagueStyle> = {
     solidHeader: 'bg-national text-white',
     text: 'text-national',
     border: 'border-national',
+    readableText: 'text-national-fg',
   },
 }

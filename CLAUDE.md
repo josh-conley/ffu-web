@@ -188,5 +188,7 @@ non-obvious choices — e.g. when a season counts as "started"; add an entry rat
 `.claude/agents/ux-partner.md` (UI/UX, a11y, mobile) are read-only subagents that pitch ranked ideas.
 Together they're the **agent partners**: when Josh mentions the partners or asks broadly what to do
 next, run the `partners` skill (pitch → cross-talk → converge) rather than relaying two separate
-lists. A narrow ask ("UX pass on Standings") can go to one agent alone. Nothing gets built until he
+lists. A narrow ask ("UX pass on Standings") can go to one agent alone. Specialists the partners
+proposed, pulled in when a pass touches their area: `perf-specialist` (load speed, bundles, data
+loading) and `sports-statistician` (soundness and honest presentation of stats and models). Nothing gets built until he
 picks.

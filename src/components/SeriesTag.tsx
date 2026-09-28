@@ -1,13 +1,9 @@
-import { getMember } from '@/config'
 import type { SeriesStanding } from '@/selectors'
-
-const abbr = (ffuId: string) => getMember(ffuId)?.abbreviation ?? getMember(ffuId)?.name ?? ffuId
+import { seriesScore, teamAbbr } from './seriesText'
 
 function seriesText(s: SeriesStanding): string {
   if (s.meetings === 0) return 'First meeting'
-  const tail = s.ties > 0 ? `–${s.ties}` : ''
-  const score = `${s.leaderWins}–${s.trailerWins}${tail}`
-  return s.leaderId ? `${abbr(s.leaderId)} leads all-time ${score}` : `All-time series tied ${score}`
+  return s.leaderId ? `${teamAbbr(s.leaderId)} leads all-time ${seriesScore(s)}` : `All-time series tied ${seriesScore(s)}`
 }
 
 /** One-line all-time series tag ("STA leads all-time 5–4") for a lineup modal's header. */

@@ -10,7 +10,8 @@ export interface OpenGame {
   game: Game
 }
 
-/** One tier's column of this week's matchups (live/in-progress scores, clickable for a box score).
+/** One tier's column of this week's matchups (in progress, so styled live: no winner until the
+ *  weekly refresh files it; clickable for a box score).
  *  A solid tier-colored heading — same treatment as ChampionsByLeague's per-league card — so all
  *  three tiers read at a glance side by side. `projected` adds each team's projected final score. */
 export function CurrentWeekMatchups({
@@ -34,6 +35,7 @@ export function CurrentWeekMatchups({
             key={game.participants.map((p) => p.memberId).join('-')}
             game={game}
             year={data.year}
+            status="live"
             projected={projected}
             onOpen={() => onOpen({ leagueId: data.leagueId, year: data.year, game })}
           />

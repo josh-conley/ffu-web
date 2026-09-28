@@ -21,7 +21,7 @@ const RUN_UP = 100
 function Cell({ team }: { team: BowlTeam }) {
   return (
     <div className="flex shrink-0 flex-col items-center justify-center gap-1 border border-border bg-surface" style={{ width: ITEM_PX - 8, height: ITEM_PX - 8, marginInline: 4 }}>
-      <TeamLogo ffuId={team.ffuId} size={40} />
+      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
       <span className="w-full truncate px-1 text-center text-[10px] font-bold leading-tight">{team.name}</span>
       <span className={`text-[8px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}

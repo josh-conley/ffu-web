@@ -1,5 +1,5 @@
 import type { DraftData, DraftPick } from '@/data'
-import { draftPhase, isTraded, pickLabel, snakePickNumbers, teamsBySlot } from './draft'
+import { allDraftsComplete, draftPhase, isTraded, pickLabel, snakePickNumbers, teamsBySlot } from './draft'
 
 const pick = (overall: number, round: number, slot: number, memberId: string): DraftPick => ({
   overall,
@@ -122,5 +122,19 @@ describe('draftPhase', () => {
 
   it('treats a draft with no date as upcoming', () => {
     expect(draftPhase(schedule('pre_draft', null), NINE_FIFTEEN)).toBe('upcoming')
+  })
+})
+
+describe('allDraftsComplete', () => {
+  const schedule = (status: string) => ({ tier: 'MASTERS' as const, year: '2026', status, startTime: null })
+
+  it('is true only once every league has finished drafting', () => {
+    expect(allDraftsComplete([schedule('complete'), schedule('complete')])).toBe(true)
+    expect(allDraftsComplete([schedule('complete'), schedule('drafting')])).toBe(false)
+    expect(allDraftsComplete([schedule('complete'), schedule('pre_draft')])).toBe(false)
+  })
+
+  it('is false with nothing loaded', () => {
+    expect(allDraftsComplete([])).toBe(false)
   })
 })

@@ -7,6 +7,17 @@ export function currentWeekMatchups(data: LiveSeasonData): Game[] {
   return data.games.filter((g) => g.week === data.currentWeek)
 }
 
+/**
+ * `data` with its current week's games swapped for a newer read of that week — the home page polls
+ * only the week in progress, since every earlier week is already final. `undefined` (no newer read
+ * yet) leaves it as it was.
+ */
+export function withCurrentWeekGames(data: LiveSeasonData, latest: Game[] | undefined): LiveSeasonData {
+  if (latest === undefined) return data
+  const earlier = data.games.filter((g) => g.week !== data.currentWeek)
+  return { ...data, games: [...earlier, ...latest.filter((g) => g.week === data.currentWeek)] }
+}
+
 export interface LiveStandingRow {
   totals: TeamTotals
   rank: number

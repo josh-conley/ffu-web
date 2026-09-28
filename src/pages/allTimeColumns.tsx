@@ -6,7 +6,7 @@ import type { Column } from '@/components/DataTable'
 import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
 import { TbPennantFilled } from 'react-icons/tb'
 import { LEAGUE_STYLES } from '@/components/leagues'
-import { TeamLogo } from '@/components/TeamLogo'
+import { TeamLink } from '@/components/TeamLink'
 
 // Column definitions for the All-Time Stats page, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
@@ -49,12 +49,11 @@ function identityColumns(): Column<CareerStats>[] {
         const member = getMember(c.memberId)
         return (
           // Mobile: logo + abbreviation so the pinned column stays narrow; desktop shows the full
-          // name. The logo (not the name) opens the team profile — names aren't links anywhere.
-          <span className="flex items-center gap-2">
-            <TeamLogo ffuId={c.memberId} size={22} />
+          // name. Either way the label is the full name, since "STA" alone means nothing read aloud.
+          <TeamLink ffuId={c.memberId} label={member?.name ?? c.memberId}>
             <span className="font-medium sm:hidden">{member?.abbreviation ?? '?'}</span>
             <span className="hidden font-medium whitespace-nowrap sm:inline">{member?.name ?? c.memberId}</span>
-          </span>
+          </TeamLink>
         )
       },
     },

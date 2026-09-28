@@ -12,7 +12,7 @@ function buildColumns(upr: Map<string, number>, year: string): Column<StandingRo
     key, header, align: 'right', title, sortValue: get, render: (r) => fmt(get(r)),
   })
   return [
-    { key: 'rank', header: 'Rank', title: 'Final placement after playoffs', sortValue: (r) => r.rank, render: (r) => <span className="font-semibold">{r.rank}</span> },
+    { key: 'rank', header: '#', align: 'right', title: 'Final placement after playoffs', sortValue: (r) => r.rank, render: (r) => <span className="font-semibold">{r.rank}</span> },
     {
       key: 'team',
       header: 'Team',
@@ -20,7 +20,7 @@ function buildColumns(upr: Map<string, number>, year: string): Column<StandingRo
       render: (r) => (
         <span className="flex items-center gap-2">
           <TeamLogo ffuId={r.team.memberId} />
-          <span className="font-semibold whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
+          <span className="font-semibold max-sm:max-w-36 sm:whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
         </span>
       ),
     },
