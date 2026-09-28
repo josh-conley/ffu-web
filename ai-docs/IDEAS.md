@@ -22,7 +22,7 @@ Format: `- YYYY-MM-DD · <agent> · <idea> — <accepted | rejected | later>: <r
 - 2026-09-25 · perf-specialist · Route splitting with React.lazy — accepted: preview/route-split
 - 2026-09-25 · partners (deep) · Promotion/relegation ↑/↓ + cut lines + historical base rates on Standings — accepted: preview/standings-lines (playoff line pending the seeding rule)
 - 2026-09-25 · partners (deep) · Team names/logos as real links, no nested buttons — accepted: preview/team-links
-- 2026-09-25 · partners (deep) · Member page: Career/Rivals/Franchise players/Up-down/Milestones — accepted: preview/member-page
+- 2026-09-25 · partners (deep) · Member page: Career/Rivals/Franchise players/Up-down/Milestones — accepted: shipped
 - 2026-09-25 · ux-partner · Tab titles, skip link, focus on nav, shared Dialog, menu-label alignment, 1024px header — accepted: preview/a11y-shell
 - 2026-09-25 · product-owner · Season records on Records — later: open question on PPG/era ranking and one-dropdown placement
 - 2026-09-25 · product-owner · Draft Hindsight — later: needs round-relative framing (46% of picks leave the roster)
