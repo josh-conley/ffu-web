@@ -1,17 +1,17 @@
-import type { PlayoffBerth, TierMove } from '@/selectors'
+import type { PlayoffBerth, SeasonMove } from '@/selectors'
 
 // The small marks the Standings tables add to a row — shared by the Standings page and the home
 // page's per-league summary so both say the same thing the same way. Every mark carries its meaning
 // in text (a glyph plus an accessible name), never in color alone.
 
-const MOVES: Record<TierMove, { glyph: string; verb: string; direction: string; className: string }> = {
+const MOVES: Record<SeasonMove, { glyph: string; verb: string; direction: string; className: string }> = {
   promoted: { glyph: '↑', verb: 'Promoted', direction: 'up', className: 'text-positive' },
   relegated: { glyph: '↓', verb: 'Relegated', direction: 'down', className: 'text-negative' },
 }
 
 /** ↑ or ↓ beside a team a finished season moved. Says "up/down a league" rather than naming the
  *  league, because the 2022 expansion sent some teams further than one step. */
-export function MoveMark({ move, year }: { move: TierMove; year: string }) {
+export function MoveMark({ move, year }: { move: SeasonMove; year: string }) {
   const m = MOVES[move]
   const label = `${m.verb}: ${m.direction} a league for ${Number(year) + 1}`
   return (

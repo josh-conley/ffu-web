@@ -8,7 +8,7 @@ import { TeamLogo } from './TeamLogo'
 const teamName = (memberId: string) => getMember(memberId)?.name ?? memberId
 
 /** A bar for how far through the current band a member is. Decorative — the numbers carry it. */
-function ProgressBar({ progress }: { progress: number }) {
+export function ProgressBar({ progress }: { progress: number }) {
   const pct = Math.round(progress * 100)
   return (
     <span className="flex items-center gap-2">

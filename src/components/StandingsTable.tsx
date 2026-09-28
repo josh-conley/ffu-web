@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { nameForYear } from '@/config'
 import type { StandingsLines } from '@/hooks/useStandingsLines'
-import { baseRateFor, firstOutside, recordKey, tierMove, type StandingRow } from '@/selectors'
+import { baseRateFor, firstOutside, recordKey, seasonMove, type StandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
 import { recordLabel } from './format'
 import { BerthTag, CutLabel, MoveMark } from './standingsMarks'
@@ -9,7 +9,7 @@ import { baseRateSentence, PICTURE_CAPTION } from './standingsText'
 import { TeamLogo } from './TeamLogo'
 
 function TeamCell({ row, year, lines }: { row: StandingRow; year: string; lines: StandingsLines | undefined }) {
-  const move = tierMove(row.team)
+  const move = seasonMove(row.team)
   const berth = lines?.picture.berths.get(row.team.memberId)
   return (
     <span className="flex items-center gap-2">

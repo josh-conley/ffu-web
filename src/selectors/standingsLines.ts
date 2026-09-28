@@ -13,10 +13,10 @@ import { winPct } from './standings'
 /** Base rates say nothing useful about a record after one or two games. */
 export const BASE_RATE_MIN_WEEK = 3
 
-export type TierMove = 'promoted' | 'relegated'
+export type SeasonMove = 'promoted' | 'relegated'
 
 /** Where a finished season sent this team — from the stored flags (unset on ESPN-era seasons). */
-export function tierMove(team: SeasonTeam): TierMove | undefined {
+export function seasonMove(team: SeasonTeam): SeasonMove | undefined {
   if (team.promoted) return 'promoted'
   if (team.relegated) return 'relegated'
   return undefined

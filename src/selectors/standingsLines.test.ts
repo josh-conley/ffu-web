@@ -11,7 +11,7 @@ import {
   leaguesAddedAfter,
   livePlayoffPicture,
   seasonPlayoffPicture,
-  tierMove,
+  seasonMove,
 } from './standingsLines'
 import premier2025 from '../../public/data/2025/premier.json'
 
@@ -44,11 +44,11 @@ const season = (teams: SeasonTeam[], games: Game[]): SeasonData => ({
   games,
 })
 
-describe('tierMove', () => {
+describe('seasonMove', () => {
   it('reads the stored flags', () => {
-    expect(tierMove(team('a', 1, 0, 0, { promoted: true }))).toBe('promoted')
-    expect(tierMove(team('a', 1, 0, 0, { relegated: true }))).toBe('relegated')
-    expect(tierMove(team('a', 1, 0, 0))).toBeUndefined()
+    expect(seasonMove(team('a', 1, 0, 0, { promoted: true }))).toBe('promoted')
+    expect(seasonMove(team('a', 1, 0, 0, { relegated: true }))).toBe('relegated')
+    expect(seasonMove(team('a', 1, 0, 0))).toBeUndefined()
   })
 })
 
