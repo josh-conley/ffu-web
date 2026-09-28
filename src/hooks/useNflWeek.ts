@@ -10,15 +10,19 @@ export type NflWeek = Omit<LiveWeekContext, 'scoring'>
  * volatile part; projections are cached per session in the data layer). Resolves to undefined on
  * failure as well as while loading: it's an undocumented Sleeper feed, and everything built on it
  * is extra detail that the box score and cards render perfectly well without.
+ *
+ * A new `refreshKey` re-reads the game clocks, keeping the previous answer up meanwhile — the home
+ * page passes its scores' read time, so projections move with the scores they sit beside.
  */
-export function useNflWeek(year: string | undefined, week: number | undefined, enabled: boolean): NflWeek | undefined {
+export function useNflWeek(year: string | undefined, week: number | undefined, enabled: boolean, refreshKey?: number): NflWeek | undefined {
   const { data } = useAsyncData(
-    `nfl-week:${year ?? ''}:${week ?? ''}`,
+    `nfl-week:${year ?? ''}:${week ?? ''}:${refreshKey ?? ''}`,
     async (): Promise<NflWeek> => {
       const [games, projections] = await Promise.all([fetchNflWeekGames(year as string, week as number), fetchWeekProjections(year as string, week as number)])
       return { games, projections }
     },
     enabled && year !== undefined && week !== undefined,
+    { keepPrevious: true },
   )
   return data
 }
