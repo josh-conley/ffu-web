@@ -29,7 +29,7 @@ export function LatestChampions({ year, champions }: { year: string; champions: 
             <span aria-hidden className={`h-1 ${LEAGUE_STYLES[tier].dot}`} />
             <div className="flex items-center gap-3 p-4">
               {memberId ? (
-                <TeamLogo ffuId={memberId} size={44} />
+                <TeamLogo ffuId={memberId} size={44} clickable={false} />
               ) : (
                 <span className="size-11 shrink-0 bg-surface-2" aria-hidden />
               )}

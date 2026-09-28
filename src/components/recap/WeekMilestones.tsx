@@ -5,7 +5,7 @@ import { getMember } from '@/config'
 import type { MilestoneReached, MilestoneStanding } from '@/selectors'
 import { MILESTONE_FORMAT, MILESTONE_META } from '../milestones'
 import { MilestoneReachedRow } from '../MilestoneReachedRow'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
 
 /**
@@ -23,13 +23,18 @@ function Row({ row }: { row: MilestoneStanding }) {
   const format = MILESTONE_FORMAT[row.category]
   return (
     <div className="flex min-w-0 items-center gap-2 bg-surface px-3 py-2">
-      <TeamLogo ffuId={row.memberId} size={24} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold leading-tight">{teamName(row.memberId)}</div>
-        <div className="truncate text-[11px] leading-tight text-muted">
-          {format(row.value)} · {MILESTONE_META[row.category].label}
-        </div>
-      </div>
+      <TeamLink
+        ffuId={row.memberId}
+        logoSize={24}
+        className="flex-1 gap-2"
+        detail={
+          <span className="truncate text-[11px] leading-tight text-muted">
+            {format(row.value)} · {MILESTONE_META[row.category].label}
+          </span>
+        }
+      >
+        <span className="truncate text-sm font-bold leading-tight">{teamName(row.memberId)}</span>
+      </TeamLink>
       <div className="shrink-0 text-right">
         <div className="font-mono text-base font-bold leading-tight tabular-nums">{format(row.next ?? 0)}</div>
         <div className="font-mono text-[11px] leading-tight tabular-nums text-muted">
