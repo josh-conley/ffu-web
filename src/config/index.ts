@@ -7,7 +7,7 @@ import type { Member, Owner, SeasonMeta, Tier } from './types'
 import { MEMBERS } from './members'
 import { SEASONS } from './seasons'
 import { OWNERS } from './owners'
-import { LIVE_LEAGUE_IDS } from './liveSeason'
+import { LIVE_LEAGUE_IDS, LIVE_PLAYOFF_FORMAT } from './liveSeason'
 
 const TIER_ORDER: Record<Tier, number> = { PREMIER: 0, MASTERS: 1, NATIONAL: 2 }
 
@@ -101,11 +101,11 @@ export function ownerNames(ffuId: string): string[] {
 }
 
 export { MEMBERS, SEASONS, OWNERS }
-export type { Member, Owner, SeasonMeta, Tier, Era, OwnerRole, MemberOwner } from './types'
+export type { Member, Owner, SeasonMeta, Tier, Era, OwnerRole, MemberOwner, PlayoffFormat } from './types'
 export { seasonLength, playoffWeeks, regularSeasonWeeks } from './eras'
 export { getPrizeSchedule } from './prizes'
 export type { SeasonPrizeSchedule, TierPrizeSchedule, CrossUnionSchedule, CrossLeagueSchedule, CupPrizeSchedule } from './prizes'
-export { LIVE_LEAGUE_IDS }
+export { LIVE_LEAGUE_IDS, LIVE_PLAYOFF_FORMAT }
 export { PREVIEW_BUILD } from './preview'
 export type { PreviewBuild } from './preview'
 export { CUP_NAME, CUP_YEAR, CUP_INAUGURAL_YEAR, CUP_FIELD_SIZE, CUP_ACCENT, CUP_DISCORD_ROLE, CUP_ROUND_RULES, isCupRoundKey } from './cup'

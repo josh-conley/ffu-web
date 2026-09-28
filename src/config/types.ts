@@ -49,3 +49,14 @@ export interface SeasonMeta {
   seasonLength?: number // optional override; else derived from era
   playoffWeeks?: number[] // optional override; else derived from era
 }
+
+/**
+ * How a Sleeper league sets its playoff field: every division's leader qualifies, the rest of the
+ * `teams` spots go to the best remaining records (wildcards). `tiebreak` is Sleeper's
+ * `playoff_seed_type` — 0 breaks equal records on points for, 1 on head-to-head first.
+ * See ai-docs/DECISIONS.md (2026-09-25) for how this was checked against every Sleeper season.
+ */
+export interface PlayoffFormat {
+  teams: number
+  tiebreak: 'points' | 'head-to-head'
+}

@@ -106,6 +106,25 @@ function ExpandedRow({ span, children }: { span: number; children: ReactNode }) 
   )
 }
 
+/** A labelled rule across the whole table ABOVE a row — the Standings cut lines. Sticky-left so the
+ *  label stays in view while a wide table scrolls. */
+function DividerRow({ span, children }: { span: number; children: ReactNode }) {
+  return (
+    <tr className="border-t-2 border-text/40">
+      <td colSpan={span} className="bg-surface-2 p-0">
+        <div className="sticky left-0 w-max max-w-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">{children}</div>
+      </td>
+    </tr>
+  )
+}
+
+function Caption({ children }: { children: ReactNode }) {
+  if (children === undefined || children === null) return null
+  return <caption className="caption-bottom border-t border-border px-2 py-1 text-left text-[11px] text-muted">{children}</caption>
+}
+
+const sameSort = (a: SortState | undefined, b: SortState | undefined) => a?.key === b?.key && a?.dir === b?.dir
+
 /** `table-fixed` takes its widths from the first row, so a fit table states them once, up front. */
 function ColGroup<T>({ columns }: { columns: Column<T>[] }) {
   return (
@@ -138,6 +157,8 @@ export function DataTable<T>({
   selectedRowKey,
   expandedRowKey,
   renderExpanded,
+  dividers,
+  caption,
 }: {
   columns: Column<T>[]
   rows: T[]
@@ -174,6 +195,11 @@ export function DataTable<T>({
   expandedRowKey?: string
   /** Renders the expanded detail as a full-width row directly under `expandedRowKey`'s row. */
   renderExpanded?: (row: T) => ReactNode
+  /** Rules drawn ABOVE the row with that key, labelled. They describe the table's own order, so
+   *  they're hidden while it is sorted any other way. */
+  dividers?: ReadonlyMap<string, ReactNode>
+  /** Rendered as the table's `<caption>`, under it. */
+  caption?: ReactNode
 }) {
   const [sort, setSort] = useState<SortState | undefined>(initialSort)
   const [page, setPage] = useState(0)
@@ -192,12 +218,14 @@ export function DataTable<T>({
   }
 
   const frame = frameClasses(fit, fullBleed, renderExpanded !== undefined)
+  const shownDividers = sameSort(sort, initialSort) ? dividers : undefined
 
   return (
     <div className="space-y-3">
       <div className={frame.outer}>
         <div className={frame.box}>
           <table className={frame.table}>
+            <Caption>{caption}</Caption>
             {fit && <ColGroup columns={columns} />}
             <DataTableHead columns={columns} sort={sort} onToggleSort={toggleSort} stickyFirstColumn={stickyFirstColumn && !fit} reorder={reorder} headerClassName={headerClassName} dense={fit} heading={heading} />
             <tbody className="divide-y divide-border">
@@ -206,6 +234,7 @@ export function DataTable<T>({
                 const expanded = renderExpanded !== undefined && key === expandedRowKey
                 return (
                   <Fragment key={key}>
+                    {shownDividers?.has(key) && <DividerRow span={columns.length}>{shownDividers.get(key)}</DividerRow>}
                     <DataRow row={row} columns={columns} pinned={pinned} selected={selectedRowKey !== undefined && key === selectedRowKey} onRowClick={onRowClick} cellBase={cellBase} />
                     {expanded && <ExpandedRow span={columns.length}>{renderExpanded(row)}</ExpandedRow>}
                   </Fragment>

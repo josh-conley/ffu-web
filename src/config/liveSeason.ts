@@ -1,4 +1,4 @@
-import type { Tier } from './types'
+import type { PlayoffFormat, Tier } from './types'
 
 /**
  * Sleeper league ids for the season CURRENTLY in progress, keyed by year — deliberately separate
@@ -14,3 +14,10 @@ export const LIVE_LEAGUE_IDS: Partial<Record<string, Record<Tier, string>>> = {
     NATIONAL: '1384255395987488768',
   },
 }
+
+/**
+ * The live season's playoff rules, as its Sleeper leagues are set (2026: `playoff_teams` 6,
+ * `playoff_seed_type` 1, three divisions — identical in all three leagues). Drives the Standings
+ * "if the season ended today" line; re-check against Sleeper when a new season's leagues are made.
+ */
+export const LIVE_PLAYOFF_FORMAT: PlayoffFormat = { teams: 6, tiebreak: 'head-to-head' }

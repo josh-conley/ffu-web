@@ -3,7 +3,9 @@ import type { SeasonData } from '@/data'
 import { useYearSeasons } from '@/hooks/useLeagueData'
 import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
-import { finalStandings, rankedByUpr, seasonUpr, standingsByDivision, unionStandings } from '@/selectors'
+import { useStandingsLines } from '@/hooks/useStandingsLines'
+import { finalStandings, inPictureOrder, leaguesAddedAfter, rankedByUpr, seasonUpr, standingsByDivision, unionStandings } from '@/selectors'
+import { LEAGUE_STYLES } from '@/components/leagues'
 import { segButton } from '@/components/controls'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { StandingsTable } from '@/components/StandingsTable'
@@ -12,11 +14,37 @@ import { UprNote } from '@/components/UprNote'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
+/** A finished season whose ↑/↓ flags don't tell the whole story: the year after it added a league,
+ *  and teams placed into that league carry no flag. */
+function ExpansionNote({ year, finished }: { year: string; finished: boolean }) {
+  const added = leaguesAddedAfter(year)
+  if (!finished || added.length === 0) return null
+  const names = added.map((t) => LEAGUE_STYLES[t].label).join(' and ')
+  return (
+    <p className="text-sm text-muted">
+      ↑ and ↓ mark promotion and relegation. {names} was added for {Number(year) + 1}, and teams placed into it carry no
+      mark, so not every change of league shows here.
+    </p>
+  )
+}
+
 function StandingsContent({ season, year }: { season: SeasonData; year: string }) {
   const upr = useMemo(() => seasonUpr(season), [season])
-  const divisions = useMemo(() => standingsByDivision(season), [season])
-  const flat = useMemo(() => finalStandings(season), [season])
+  const lines = useStandingsLines(season)
+  const flat = useMemo(() => {
+    const rows = finalStandings(season)
+    return lines ? inPictureOrder(rows, lines.picture, (r) => r.team.memberId) : rows
+  }, [season, lines])
+  // Mid-season, each division follows the picture too, so its leader (by the playoff tiebreak) is
+  // the row on top and every # matches the overall table's.
+  const divisions = useMemo(() => {
+    const groups = standingsByDivision(season)
+    if (!lines || !groups) return groups
+    const byId = new Map(flat.map((r) => [r.team.memberId, r]))
+    return groups.map((g) => ({ ...g, rows: g.rows.map((r) => byId.get(r.team.memberId) ?? r).sort((a, b) => a.rank - b.rank) }))
+  }, [season, lines, flat])
   const [view, setView] = useUrlState('view', 'division')
+  const finished = season.teams.every((t) => t.finalPlacement !== undefined)
 
   if (divisions) {
     const showDivisions = view !== 'overall'
@@ -31,6 +59,7 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
           </button>
         </div>
         {upr.size === 0 && <UprNote />}
+        <ExpansionNote year={year} finished={finished} />
         {showDivisions ? (
           divisions.map((group) => (
             <section key={group.division.id}>
@@ -38,11 +67,11 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
                 <span className="inline-block h-4 w-1 bg-accent" aria-hidden />
                 {group.division.name}
               </h2>
-              <StandingsTable rows={group.rows} upr={upr} year={year} />
+              <StandingsTable rows={group.rows} upr={upr} year={year} lines={lines} />
             </section>
           ))
         ) : (
-          <StandingsTable rows={flat} upr={upr} year={year} />
+          <StandingsTable rows={flat} upr={upr} year={year} lines={lines} cutLine />
         )}
       </div>
     )
@@ -50,7 +79,8 @@ function StandingsContent({ season, year }: { season: SeasonData; year: string }
   return (
     <div className="space-y-2">
       {upr.size === 0 && <UprNote />}
-      <StandingsTable rows={flat} upr={upr} year={year} />
+      <ExpansionNote year={year} finished={finished} />
+      <StandingsTable rows={flat} upr={upr} year={year} lines={lines} cutLine />
     </div>
   )
 }

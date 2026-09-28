@@ -11,17 +11,18 @@ export function useSeasons() {
   return useAsyncData('seasons', () => provider.getSeasons())
 }
 
-/** Every season loaded (for all-time views like Records / All-Time Stats). */
-export function useAllSeasons() {
+/** Every season loaded (for all-time views like Records / All-Time Stats). `enabled` lets a page
+ *  that only sometimes needs the archive (Standings, mid-season) skip loading it otherwise. */
+export function useAllSeasons(enabled = true) {
   const { data: manifest, loading, error } = useSeasons()
   const all = useAsyncData(
     'all-seasons',
     () => Promise.all((manifest ?? []).map((s) => provider.getSeason(s.tier, s.year))),
-    manifest !== undefined,
+    enabled && manifest !== undefined,
   )
   return {
     data: all.data,
-    loading: loading || (manifest !== undefined && all.loading),
+    loading: loading || (enabled && manifest !== undefined && all.loading),
     error: error ?? all.error,
   }
 }

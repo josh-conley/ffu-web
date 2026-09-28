@@ -5,6 +5,45 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-09-25 — The Standings playoff line follows Sleeper's rule, checked against history
+
+**Context.** Standings now draws "if the season ended today" cut lines for the season in play. A
+plain "top 6 by wins, then points for" line would have named the wrong field in 7 of the 20 past
+seasons: division leaders get in regardless of record, and equal records aren't always split on
+points.
+
+**Decision.** The field (`playoffPicture`, `src/selectors/playoffPicture.ts`) is:
+1. every division's leader, then
+2. the best of everyone else as wildcards, up to `playoff_teams` (6);
+3. equal win% is broken, as one group, on the tied teams' combined head-to-head record against each
+   other, then points for — Sleeper's `playoff_seed_type` 1. Type 0 (2021 only) is points for alone.
+The 2026 settings (6 teams, type 1, three divisions, all three leagues) live in
+`LIVE_PLAYOFF_FORMAT` in `src/config/liveSeason.ts`.
+
+**How it was checked.** Fed each finished Sleeper season's final regular-season table, the rule names
+exactly the six teams that played in the championship bracket in all 14 (2021–2025). The test in
+`playoffPicture.test.ts` runs that check over every season file, so a change that breaks history
+fails CI. A one-off script also matched the two first-round byes (the top two division leaders)
+in all 14.
+
+**Not claimed.**
+- The ESPN era (2018–2020: four divisions, ESPN's own rules) — the same rule misses 2 of those 6
+  fields, and it isn't used for them. Base rates still count those seasons, because they read the
+  actual bracket, not the rule.
+- The order of seeds 3–6: history doesn't pin it down (plain head-to-head and plain points each
+  miss a first-round pairing), so the table lists the six in standings order and tags each DIV or
+  WC, never a seed number or "clinched".
+
+**Relegation is the same line.** Every non-playoff team plays the Toilet Bowl, and its two losers
+(11th and 12th) go down — a team 7th after the regular season has been relegated more than once.
+So there is no separate "bottom two" zone; in a league that relegates (all but the lowest), the
+divider reads "Playoff line · Relegation zone".
+
+**Base rates** ("teams 2-1 after 3 weeks made the playoffs 58 of 83 times") are plain counts over
+every finished season, shown only from week 3, as the record's tooltip. No simulation.
+
+---
+
 ## 2026-08-21 — The draw announcer speaks in phrase tokens, not sentences
 
 > **Removed 2026-09-23.** No real voice materialised, so the parked pipeline was deleted as one unit,

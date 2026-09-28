@@ -64,6 +64,15 @@ this section is unread by me until you say so, so it's safe to leave half-formed
 - [ ] Once 2026 is backfilled, the year moves out of `LIVE_LEAGUE_IDS` into `SEASONS` and the page
       switches to the completed board on its own — no code change
 
+## Standings — promotion/relegation marks and live cut lines (preview/standings-lines)
+
+- [x] ↑/↓ on finished seasons from the stored flags; 2021 notes that Masters placements carry none
+- [x] Live "if the season ended today" playoff line (Standings Overall + home per-league tables),
+      DIV/WC tags, relegation zone = below the line; base-rate tooltip from week 3. Rule and its
+      check in `ai-docs/DECISIONS.md` (2026-09-25)
+- [ ] Re-check `LIVE_PLAYOFF_FORMAT` against Sleeper when the 2027 leagues are created
+- [ ] Not done: marks on the Union view's table; seeds 3–6 (history doesn't settle their order)
+
 ## Home page — draft announcement section
 
 - [ ] **Next preseason:** a proper announcement section (likely on Overview, near the top) for the
