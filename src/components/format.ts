@@ -15,6 +15,12 @@ export function recordLabel(record: { wins: number; losses: number; ties: number
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
 }
 
+/** A live matchup row's line under the team name: "2-1 · 118.4 PPG". Nothing before a team's first game. */
+export function recordPpgLabel(t: { wins: number; losses: number; ties: number; average: number }): string | undefined {
+  if (t.wins + t.losses + t.ties === 0) return undefined
+  return `${recordLabel(t)} · ${t.average.toFixed(1)} PPG`
+}
+
 /**
  * A player's name with the first name reduced to an initial: "Christian McCaffrey" → "C. McCaffrey".
  * For narrow screens, where a box score has two names side by side and the full pair doesn't fit —
