@@ -20,7 +20,7 @@ Format: `- YYYY-MM-DD · <agent> · <idea> — <accepted | rejected | later>: <r
 - 2026-09-25 · product-owner · Player links from box scores/drafts to /players — later: only outside whole-card buttons (nested interactive)
 - 2026-09-25 · partners (deep) · Live scores first + 60s poll + "as of" + stop draft poll + dedupe Sleeper + defer projections — accepted: preview/live-scores
 - 2026-09-25 · perf-specialist · Route splitting with React.lazy — accepted: preview/route-split
-- 2026-09-25 · partners (deep) · Promotion/relegation ↑/↓ + cut lines + historical base rates on Standings — accepted: preview/standings-lines (playoff line pending the seeding rule)
+- 2026-09-25 · partners (deep) · Promotion/relegation ↑/↓ + cut lines + historical base rates on Standings — rejected: PR #16 closed by Josh (2026-09-28)
 - 2026-09-25 · partners (deep) · Team names/logos as real links, no nested buttons — accepted: preview/team-links
 - 2026-09-25 · partners (deep) · Member page: Career/Rivals/Franchise players/Up-down/Milestones — accepted: shipped
 - 2026-09-25 · ux-partner · Tab titles, skip link, focus on nav, shared Dialog, menu-label alignment, 1024px header — accepted: preview/a11y-shell
