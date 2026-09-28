@@ -7,6 +7,7 @@ import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
 import { TbPennantFilled } from 'react-icons/tb'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLink } from '@/components/TeamLink'
+import { formatPoints } from '@/components/format'
 
 // Column definitions for the All-Time Stats page, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
@@ -15,7 +16,6 @@ import { TeamLink } from '@/components/TeamLink'
 const games = (c: CareerStats) => c.wins + c.losses + c.ties
 const dash = <span className="text-muted">—</span>
 const f1 = (n: number) => n.toFixed(1) // ranks (not a point value)
-const f2 = (n: number) => n.toFixed(2) // game/point values → hundredths
 
 /** Point differential, signed and color-coded (green positive, red negative). */
 function diffCell(c: CareerStats): ReactNode {
@@ -24,7 +24,7 @@ function diffCell(c: CareerStats): ReactNode {
   return (
     <span className={`font-medium ${tone}`}>
       {d >= 0 ? '+' : ''}
-      {d.toFixed(2)}
+      {formatPoints(d)}
     </span>
   )
 }
@@ -66,12 +66,12 @@ function identityColumns(): Column<CareerStats>[] {
 
 function scoringColumns(): Column<CareerStats>[] {
   return [
-    numCol('pf', 'Points For', (c) => c.pointsFor, f2),
-    numCol('pa', 'Points Agst', (c) => c.pointsAgainst, f2),
+    numCol('pf', 'Points For', (c) => c.pointsFor, formatPoints),
+    numCol('pa', 'Points Agst', (c) => c.pointsAgainst, formatPoints),
     { key: 'diff', header: 'Point Diff', align: 'right', sortValue: (c) => c.pointsFor - c.pointsAgainst, render: diffCell },
-    numCol('ppg', 'Avg PPG', (c) => (games(c) ? c.pointsFor / games(c) : 0), f2),
-    numCol('high', 'High Game', (c) => c.careerHighGame ?? 0, (n) => (n ? f2(n) : dash)),
-    numCol('low', 'Low Game', (c) => c.careerLowGame ?? 0, (n) => (n ? f2(n) : dash)),
+    numCol('ppg', 'Avg PPG', (c) => (games(c) ? c.pointsFor / games(c) : 0), (n) => n.toFixed(2)),
+    numCol('high', 'High Game', (c) => c.careerHighGame ?? 0, (n) => (n ? formatPoints(n) : dash)),
+    numCol('low', 'Low Game', (c) => c.careerLowGame ?? 0, (n) => (n ? formatPoints(n) : dash)),
   ]
 }
 

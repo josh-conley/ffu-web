@@ -74,7 +74,10 @@ it("lists the season's leagues with how each member got there, and opens a membe
   expect(screen.getByText(/1 pending member/)).toBeInTheDocument()
   expect(screen.getByText('Past Members')).toBeInTheDocument()
 
-  fireEvent.click(screen.getByRole('button', { name: /The Minutemen/ }))
+  // A real link (open in a new tab, copy the address), not a button.
+  const row = screen.getByRole('link', { name: /The Minutemen/ })
+  expect(row).toHaveAttribute('href', expect.stringMatching(/^\/members\?member=ffu-\d+$/))
+  fireEvent.click(row)
   await waitFor(() => expect(screen.getByRole('heading', { name: 'The Minutemen' })).toBeInTheDocument())
 })
 

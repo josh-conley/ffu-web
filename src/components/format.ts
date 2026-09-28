@@ -9,6 +9,13 @@ export function ordinal(n: number): string {
   return `${n}${SUFFIX[(v - 20) % 10] ?? SUFFIX[v] ?? SUFFIX[0]}`
 }
 
+const POINTS = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+/** Fantasy points, to the hundredth and grouped: 13662.5 → "13,662.50". The one points format. */
+export function formatPoints(n: number): string {
+  return POINTS.format(n)
+}
+
 /** A team's record, e.g. "7-6" or "7-6-1" — ties shown only when there are any. */
 export function recordLabel(record: { wins: number; losses: number; ties: number }): string {
   const { wins, losses, ties } = record

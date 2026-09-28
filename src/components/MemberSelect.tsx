@@ -8,12 +8,16 @@ export function MemberSelect({
   value,
   onChange,
   placeholder,
+  label,
   excludeId,
 }: {
   memberIds: string[]
   value: string
   onChange: (ffuId: string) => void
   placeholder: string
+  /** Accessible name. The placeholder is an option, not a label, so without this a screen reader
+   *  announces the select as every option run together. */
+  label: string
   excludeId?: string
 }) {
   const options = useMemo(
@@ -28,6 +32,7 @@ export function MemberSelect({
   return (
     <select
       value={value}
+      aria-label={label}
       onChange={(e) => onChange(e.target.value)}
       className={SELECT}
     >

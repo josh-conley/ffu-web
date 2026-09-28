@@ -5,7 +5,7 @@ import type { SeasonData } from '@/data'
 import { meetingOrder, rivals, type H2HMeeting, type Rival } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
 import { TeamLink } from '../TeamLink'
-import { recordLabel } from '../format'
+import { formatPoints, recordLabel } from '../format'
 import { EmptyNote, MemberSection } from './MemberSection'
 
 const teamName = (ffuId: string) => getMember(ffuId)?.name ?? ffuId
@@ -16,7 +16,7 @@ function MeetingCell({ m }: { m: H2HMeeting }) {
   return (
     <span className="whitespace-nowrap">
       {when}
-      <span className="text-muted"> · {m.result} {m.score.toFixed(2)}–{m.opponentScore.toFixed(2)}</span>
+      <span className="text-muted"> · {m.result} {formatPoints(m.score)}–{formatPoints(m.opponentScore)}</span>
     </span>
   )
 }
@@ -37,8 +37,8 @@ function columnsFor(memberId: string): Column<Rival>[] {
     },
     { key: 'games', header: 'GP', title: 'Games played (regular season + playoffs)', align: 'right', sortValue: (r) => r.games, render: (r) => r.games },
     { key: 'record', header: 'W-L', align: 'right', sortValue: (r) => r.record.wins - r.record.losses, render: (r) => recordLabel(r.record) },
-    { key: 'pf', header: 'PF', title: 'Points For', align: 'right', sortValue: (r) => r.record.pointsFor, render: (r) => r.record.pointsFor.toFixed(2) },
-    { key: 'pa', header: 'PA', title: 'Points Against', align: 'right', sortValue: (r) => r.record.pointsAgainst, render: (r) => r.record.pointsAgainst.toFixed(2) },
+    { key: 'pf', header: 'PF', title: 'Points For', align: 'right', sortValue: (r) => r.record.pointsFor, render: (r) => formatPoints(r.record.pointsFor) },
+    { key: 'pa', header: 'PA', title: 'Points Against', align: 'right', sortValue: (r) => r.record.pointsAgainst, render: (r) => formatPoints(r.record.pointsAgainst) },
     { key: 'last', header: 'Last Met', sortValue: (r) => meetingOrder(r.lastMet), render: (r) => <MeetingCell m={r.lastMet} /> },
     {
       key: 'compare',

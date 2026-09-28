@@ -4,7 +4,7 @@ import { nameForYear } from '@/config'
 import type { LiveSeasonData } from '@/data'
 import { standingsThroughPreviousWeek, type LiveStandingRow } from '@/selectors'
 import { DataTable, type Column } from './DataTable'
-import { recordLabel } from './format'
+import { formatPoints, recordLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
 
@@ -61,7 +61,7 @@ function buildColumns(year: string): Column<LiveStandingRow>[] {
             {/* Record, then both points columns — labelled, since the sub-line has no header to
                 explain which number is which. */}
             <span className="block leading-tight text-muted tabular-nums">
-              {recordLabel(r.totals)} · {r.totals.pointsFor.toFixed(2)} PF · {r.totals.pointsAgainst.toFixed(2)} PA
+              {recordLabel(r.totals)} · {formatPoints(r.totals.pointsFor)} PF · {formatPoints(r.totals.pointsAgainst)} PA
             </span>
           </span>
           <StreakTag streak={r.streak} />

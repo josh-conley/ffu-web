@@ -4,6 +4,7 @@ import type { Tier } from '@/config'
 import type { PlayerHistory } from '@/selectors'
 import { LeagueBadge } from '../LeagueBadge'
 import { TeamCell } from '../TeamCell'
+import { formatPoints } from '../format'
 
 // A player's FFU history, as the Players table's expanded row: title games, drafts, best weeks and
 // who started him. Presentational — the page computes the history and owns which row is open.
@@ -48,7 +49,7 @@ export function PlayerDetailPanel({ history }: { history: PlayerHistory }) {
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <List title="Title Games" empty="Never started in an FFU final.">
         {titleGames.map((t) => (
-          <Row key={`${t.year}-${t.tier}-${t.memberId}`} {...t} detail={<>{t.points.toFixed(2)} · <Result won={t.won} /></>} />
+          <Row key={`${t.year}-${t.tier}-${t.memberId}`} {...t} detail={<>{formatPoints(t.points)} · <Result won={t.won} /></>} />
         ))}
       </List>
       <List title="Drafted" empty="Not drafted in an FFU draft since 2021.">
@@ -58,7 +59,7 @@ export function PlayerDetailPanel({ history }: { history: PlayerHistory }) {
       </List>
       <List title="Best Weeks" empty="Never started for an FFU team.">
         {topWeeks.map((w) => (
-          <Row key={`${w.year}-${w.tier}-${w.week}-${w.memberId}`} {...w} detail={`Wk ${w.week}${w.isPlayoff ? ' (PO)' : ''} · ${w.points.toFixed(2)}`} />
+          <Row key={`${w.year}-${w.tier}-${w.week}-${w.memberId}`} {...w} detail={`Wk ${w.week}${w.isPlayoff ? ' (PO)' : ''} · ${formatPoints(w.points)}`} />
         ))}
       </List>
       <List title="Who Started Him" empty="Nobody yet.">
@@ -67,7 +68,7 @@ export function PlayerDetailPanel({ history }: { history: PlayerHistory }) {
             <TeamCell ffuId={m.memberId} />
             <span className="text-xs text-muted">{m.years.join(', ')}</span>
             <span className="ml-auto whitespace-nowrap font-mono text-xs tabular-nums">
-              {m.starts} st · {m.points.toFixed(2)}
+              {m.starts} st · {formatPoints(m.points)}
             </span>
           </li>
         ))}

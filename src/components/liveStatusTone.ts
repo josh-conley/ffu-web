@@ -1,4 +1,5 @@
 import type { PlayerLiveStatus } from '@/selectors'
+import { formatPoints } from './format'
 
 // How a live box score styles a player by where their NFL game stands (the dot beside the name
 // says the same thing). Only points still coming in read at full strength; a finished game's points
@@ -12,4 +13,4 @@ const POINTS_TONE: Partial<Record<PlayerLiveStatus, string>> = { final: 'text-di
 
 export const nameTone = (status: PlayerLiveStatus | undefined) => (status ? NAME_TONE[status] ?? '' : '')
 export const pointsTone = (status: PlayerLiveStatus | undefined) => (status ? POINTS_TONE[status] ?? '' : '')
-export const pointsText = (points: number, status: PlayerLiveStatus | undefined) => (status === 'pre' ? '—' : points.toFixed(2))
+export const pointsText = (points: number, status: PlayerLiveStatus | undefined) => (status === 'pre' ? '—' : formatPoints(points))

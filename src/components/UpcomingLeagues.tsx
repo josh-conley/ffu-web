@@ -3,9 +3,11 @@ import type { IconType } from 'react-icons'
 import type { Tier } from '@/config'
 import { nameForYear, ownerNames } from '@/config'
 import type { Movement, UpcomingRoster, UpcomingTeam } from '@/selectors'
+import { Link } from 'react-router-dom'
 import { ordinal } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLogo } from './TeamLogo'
+import { memberProfileHref } from './teamProfile'
 import { TierDots, Trophies } from './Trophies'
 
 /**
@@ -15,7 +17,6 @@ import { TierDots, Trophies } from './Trophies'
  * directory's view of the current leagues, so each row opens that member.
  */
 
-type OnSelect = (memberId: string) => void
 
 interface MovementStyle {
   label: string
@@ -69,14 +70,13 @@ function CareerTrail({ team, tier }: { team: UpcomingTeam; tier: Tier }) {
   )
 }
 
-function TeamRow({ team, year, tier, onSelect }: { team: UpcomingTeam; year: string; tier: Tier; onSelect: OnSelect }) {
+function TeamRow({ team, year, tier }: { team: UpcomingTeam; year: string; tier: Tier }) {
   // Same "First / Co-owner" rendering the Members directory uses; empty when no name is on file.
   const owners = ownerNames(team.memberId).join(' / ')
   return (
     <li className="border-t border-border first:border-t-0">
-      <button
-        type="button"
-        onClick={() => onSelect(team.memberId)}
+      <Link
+        to={memberProfileHref(team.memberId)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <TeamLogo ffuId={team.memberId} size={28} clickable={false} />
@@ -88,7 +88,7 @@ function TeamRow({ team, year, tier, onSelect }: { team: UpcomingTeam; year: str
           </div>
           <CareerTrail team={team} tier={tier} />
         </div>
-      </button>
+      </Link>
     </li>
   )
 }
@@ -103,7 +103,7 @@ function RosterFooter({ roster }: { roster: UpcomingRoster }) {
   return <p className="border-t border-border px-3 py-2 text-xs text-muted">{notes.join(' · ')}</p>
 }
 
-function RosterCard({ roster, onSelect }: { roster: UpcomingRoster; onSelect: OnSelect }) {
+function RosterCard({ roster }: { roster: UpcomingRoster }) {
   const style = LEAGUE_STYLES[roster.tier]
   const filled = roster.teams.length + roster.unregistered
   const size = filled + roster.openSlots
@@ -118,7 +118,7 @@ function RosterCard({ roster, onSelect }: { roster: UpcomingRoster; onSelect: On
       </h3>
       <ul>
         {teams.map((team) => (
-          <TeamRow key={team.memberId} team={team} year={roster.year} tier={roster.tier} onSelect={onSelect} />
+          <TeamRow key={team.memberId} team={team} year={roster.year} tier={roster.tier} />
         ))}
       </ul>
       <RosterFooter roster={roster} />
@@ -126,14 +126,14 @@ function RosterCard({ roster, onSelect }: { roster: UpcomingRoster; onSelect: On
   )
 }
 
-export function UpcomingLeagues({ year, rosters, onSelect }: { year: string; rosters: UpcomingRoster[]; onSelect: OnSelect }) {
+export function UpcomingLeagues({ year, rosters }: { year: string; rosters: UpcomingRoster[] }) {
   if (rosters.length === 0) return null
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-bold uppercase tracking-widest text-muted">{year} Leagues</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {rosters.map((roster) => (
-          <RosterCard key={roster.tier} roster={roster} onSelect={onSelect} />
+          <RosterCard key={roster.tier} roster={roster} />
         ))}
       </div>
     </section>

@@ -2,6 +2,7 @@ import { nameForYear } from '@/config'
 import type { ResolvedMatchup, ResolvedSide } from '@/selectors/tournament'
 import { LEAGUE_STYLES } from './leagues'
 import { TeamLink } from './TeamLink'
+import { formatPoints } from './format'
 
 /** `linked`: the team opens its profile — not when the whole card is a button (no button in a button). */
 function SideRow({ side, year, isWinner, dim, linked }: { side: ResolvedSide; year: string; isWinner: boolean; dim: boolean; linked: boolean }) {
@@ -13,7 +14,7 @@ function SideRow({ side, year, isWinner, dim, linked }: { side: ResolvedSide; ye
           <span className="truncate text-sm">{nameForYear(side.ffuId, year) ?? side.ffuId}</span>
         </TeamLink>
       </span>
-      <span className="shrink-0 font-mono text-xs tabular-nums">{side.score !== undefined ? side.score.toFixed(2) : '—'}</span>
+      <span className="shrink-0 font-mono text-xs tabular-nums">{side.score !== undefined ? formatPoints(side.score) : '—'}</span>
     </div>
   )
 }

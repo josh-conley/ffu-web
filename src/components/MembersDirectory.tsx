@@ -1,20 +1,21 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { getMember, ownerNames } from '@/config'
 import { championshipTitles, type CareerStats, type MembersByLeague, type UpcomingRoster } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
 import { UpcomingLeagues } from './UpcomingLeagues'
 import { Trophies } from './Trophies'
 import { TeamLogo } from './TeamLogo'
+import { memberProfileHref } from './teamProfile'
 
 const teamName = (c: CareerStats) => getMember(c.memberId)?.name ?? c.memberId
 const byTeamName = (a: CareerStats, b: CareerStats) => teamName(a).localeCompare(teamName(b))
 
-function MemberCard({ career, onSelect }: { career: CareerStats; onSelect: (id: string) => void }) {
+function MemberCard({ career }: { career: CareerStats }) {
   const owners = ownerNames(career.memberId).join(' / ')
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(career.memberId)}
+    <Link
+      to={memberProfileHref(career.memberId)}
       className="flex items-center gap-3 border border-border bg-surface p-3 text-left shadow-sm transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <TeamLogo ffuId={career.memberId} size={40} clickable={false} />
@@ -23,16 +24,15 @@ function MemberCard({ career, onSelect }: { career: CareerStats; onSelect: (id: 
         <div className="truncate text-sm text-muted">{owners || '—'}</div>
       </div>
       <Trophies titles={championshipTitles(career)} />
-    </button>
+    </Link>
   )
 }
 
-function PastRow({ career, onSelect }: { career: CareerStats; onSelect: (id: string) => void }) {
+function PastRow({ career }: { career: CareerStats }) {
   const owners = ownerNames(career.memberId).join(' / ')
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(career.memberId)}
+    <Link
+      to={memberProfileHref(career.memberId)}
       className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
       <TeamLogo ffuId={career.memberId} size={24} clickable={false} />
@@ -41,13 +41,13 @@ function PastRow({ career, onSelect }: { career: CareerStats; onSelect: (id: str
         {owners && <span className="text-muted"> · {owners}</span>}
       </span>
       <Trophies titles={championshipTitles(career)} />
-    </button>
+    </Link>
   )
 }
 
 /** Fallback for when Sleeper's rosters aren't available: the same members, one plain grid per
  *  tier, without the movement tags and career trails that need the season's signups. */
-function TierGrids({ groups, onSelect }: { groups: MembersByLeague; onSelect: (ffuId: string) => void }) {
+function TierGrids({ groups }: { groups: MembersByLeague }) {
   return groups.current.map(({ tier, members }) => (
     <section key={tier} className="space-y-3">
       <h2 className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${LEAGUE_STYLES[tier].solidHeader}`}>
@@ -55,7 +55,7 @@ function TierGrids({ groups, onSelect }: { groups: MembersByLeague; onSelect: (f
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[...members].sort(byTeamName).map((c) => (
-          <MemberCard key={c.memberId} career={c} onSelect={onSelect} />
+          <MemberCard key={c.memberId} career={c} />
         ))}
       </div>
     </section>
@@ -66,23 +66,21 @@ export function MembersDirectory({
   groups,
   year,
   leagues,
-  onSelect,
 }: {
   groups: MembersByLeague
   /** The season being signed up for or played, and its rosters annotated with how each member got
    *  there. Empty when Sleeper couldn't be read, which drops the directory back to `TierGrids`. */
   year: string | undefined
   leagues: UpcomingRoster[]
-  onSelect: (ffuId: string) => void
 }) {
   const past = useMemo(() => [...groups.past].sort(byTeamName), [groups.past])
 
   return (
     <div className="space-y-8">
       {year && leagues.length > 0 ? (
-        <UpcomingLeagues year={year} rosters={leagues} onSelect={onSelect} />
+        <UpcomingLeagues year={year} rosters={leagues} />
       ) : (
-        <TierGrids groups={groups} onSelect={onSelect} />
+        <TierGrids groups={groups} />
       )}
 
       {past.length > 0 && (
@@ -90,7 +88,7 @@ export function MembersDirectory({
           <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Past Members</h2>
           <div className="divide-y divide-border border border-border bg-surface shadow-sm">
             {past.map((c) => (
-              <PastRow key={c.memberId} career={c} onSelect={onSelect} />
+              <PastRow key={c.memberId} career={c} />
             ))}
           </div>
         </section>

@@ -13,6 +13,7 @@ import { TeamCell } from '@/components/TeamCell'
 import { TeamLink } from '@/components/TeamLink'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { formatPoints } from '@/components/format'
 
 type Ranked<T> = T & { rank: number }
 type MatchupMode = 'blowout' | 'closest' | 'highCombined' | 'lowCombined'
@@ -44,8 +45,8 @@ function teamColumns(): Column<Ranked<TeamGameRecord>>[] {
   return [
     { key: 'rank', header: '#', render: (r) => r.rank, sortValue: (r) => r.rank },
     { key: 'team', header: 'Team', render: (r) => <TeamCell ffuId={r.memberId} year={r.year} /> },
-    { key: 'score', header: 'Score', align: 'right', render: (r) => r.score.toFixed(2), sortValue: (r) => r.score },
-    { key: 'opp', header: 'Opponent', render: (r) => `${nameForYear(r.opponentId, r.year) ?? r.opponentId} (${r.opponentScore.toFixed(2)})` },
+    { key: 'score', header: 'Score', align: 'right', render: (r) => formatPoints(r.score), sortValue: (r) => r.score },
+    { key: 'opp', header: 'Opponent', render: (r) => `${nameForYear(r.opponentId, r.year) ?? r.opponentId} (${formatPoints(r.opponentScore)})` },
     { key: 'season', header: 'When', render: (r) => <GameWhen year={r.year} tier={r.tier} week={r.week} round={r.round} /> },
   ]
 }
@@ -53,8 +54,8 @@ function teamColumns(): Column<Ranked<TeamGameRecord>>[] {
 function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
   const isCombined = mode === 'highCombined' || mode === 'lowCombined'
   const metric: Column<Ranked<MatchupRecord>> = isCombined
-    ? { key: 'combined', header: 'Total', align: 'right', render: (r) => r.combined.toFixed(2), sortValue: (r) => r.combined }
-    : { key: 'margin', header: 'Margin', align: 'right', render: (r) => r.margin.toFixed(2), sortValue: (r) => r.margin }
+    ? { key: 'combined', header: 'Total', align: 'right', render: (r) => formatPoints(r.combined), sortValue: (r) => r.combined }
+    : { key: 'margin', header: 'Margin', align: 'right', render: (r) => formatPoints(r.margin), sortValue: (r) => r.margin }
   return [
     { key: 'rank', header: '#', render: (r) => r.rank, sortValue: (r) => r.rank },
     {
@@ -67,7 +68,7 @@ function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
               <TeamLink ffuId={t.memberId} logoSize={20} tight>
                 {nameForYear(t.memberId, r.year) ?? t.memberId}
               </TeamLink>
-              <span className="font-mono tabular-nums text-muted">{t.score.toFixed(2)}</span>
+              <span className="font-mono tabular-nums text-muted">{formatPoints(t.score)}</span>
             </span>
           ))}
         </span>

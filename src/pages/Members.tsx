@@ -47,7 +47,7 @@ function SelectedMember({
         >
           ← All members
         </button>
-        <MemberSelect memberIds={memberIds} value={vs} excludeId={selected.memberId} placeholder="Compare with…" onChange={onVs} />
+        <MemberSelect memberIds={memberIds} value={vs} excludeId={selected.memberId} placeholder="Compare with…" label="Compare with another member" onChange={onVs} />
       </div>
       {opponent ? (
         <MemberCompare
@@ -103,7 +103,7 @@ export function Members() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Members</h1>
-        <MembersDirectory groups={groups} year={year} leagues={leagues} onSelect={(id) => update({ member: id, vs: '' })} />
+        <MembersDirectory groups={groups} year={year} leagues={leagues} />
       </div>
     )
   }
