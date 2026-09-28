@@ -4,9 +4,9 @@
    toggle is part of the planned shell. https://tailwindcss.com/docs/dark-mode */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Type: the platform's own UI and monospace fonts (San Francisco / SF Mono on Apple devices, Segoe
-   on Windows, Roboto on Android). Josh prefers them to the Barlow / JetBrains Mono brand fonts, which
-   were tried once they finally loaded (2026-09-28); no web fonts means no extra request either. */
+/* Type: Inter for everything, IBM Plex Mono for stats, self-hosted via @fontsource (imported in
+   main.tsx). Chosen 2026-09-28 to look the same on every device and stay close to the San Francisco
+   look the site had; Barlow / JetBrains Mono were tried and dropped. */
 
 /* Design tokens (FFU identity: red accent, warm near-black dark, gold/purple/red tiers).
    LIGHT values live here on :root; dark counterparts override in `.dark` below. Plain
@@ -14,8 +14,8 @@
    cascade at runtime. */
 @theme {
   /* Type */
-  --font-sans: system-ui, sans-serif;
-  --font-mono: ui-monospace, monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
   /* Brand accent (FFU "Main" red from the newsletter) — same in light & dark */
   --color-accent: #cc0000;
