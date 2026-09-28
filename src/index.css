@@ -4,9 +4,9 @@
    toggle is part of the planned shell. https://tailwindcss.com/docs/dark-mode */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Brand type: Barlow (athletic, condensed-ish) for everything, JetBrains Mono for stats.
-   @import is acceptable for now; self-host later if perf matters. */
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Brand type (Barlow for everything, JetBrains Mono for stats) is loaded by a <link> in
+   index.html, not an @import here: an @import after `@import "tailwindcss"` is invalid CSS
+   and the build silently dropped it, so production shipped with no brand fonts. */
 
 /* Design tokens (FFU identity: red accent, warm near-black dark, gold/purple/red tiers).
    LIGHT values live here on :root; dark counterparts override in `.dark` below. Plain
