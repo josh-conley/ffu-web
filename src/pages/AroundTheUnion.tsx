@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { tierRank } from '@/config'
 import type { SeasonData, Tournament } from '@/data'
 import { useCareerData } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -13,6 +14,7 @@ import {
   milestonesReachedRecently,
   milestoneStandings,
   milestoneWatch,
+  prizeRaceLeaders,
   seasonsThroughWeek,
   topScoresForWeek,
   weekMovers,
@@ -24,6 +26,7 @@ import { WeekBelt } from '@/components/recap/WeekBelt'
 import { WeekLowScores } from '@/components/recap/WeekLowScores'
 import { WeekMilestones } from '@/components/recap/WeekMilestones'
 import { WeekMovers } from '@/components/recap/WeekMovers'
+import { WeekPrizeRaces } from '@/components/recap/WeekPrizeRaces'
 import { WeekStories } from '@/components/recap/WeekStories'
 import { WeekStreaks } from '@/components/recap/WeekStreaks'
 import { SELECT, segButton } from '@/components/controls'
@@ -53,6 +56,15 @@ function closestMilestones(seasons: SeasonData[], tournaments: Tournament[], lim
     .slice(0, limit)
 }
 
+/** Each league's prize races as of `week`, top flight first. Settled once every league's regular
+ *  season is over as of that week. */
+function prizeRaces(yearSeasons: SeasonData[], year: string, week: number) {
+  const races = seasonsThroughWeek(yearSeasons, year, week)
+    .sort((a, b) => tierRank(a.tier) - tierRank(b.tier))
+    .map((s) => ({ tier: s.tier, ...prizeRaceLeaders(s) }))
+  return { races, settled: races.length > 0 && races.every((r) => r.settled) }
+}
+
 function WeekBlocks({
   seasons,
   tournaments,
@@ -77,6 +89,10 @@ function WeekBlocks({
   const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
   const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
   const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
+  const prizes = useMemo(
+    () => (week === undefined ? { races: [], settled: false } : prizeRaces(yearSeasons, year, week)),
+    [yearSeasons, year, week],
+  )
   const belt = useMemo(() => (week === undefined ? null : beltWatch(seasons, year, week)), [seasons, year, week])
   // Both as of the week on show, so an author browsing back to week 5 sees week 5's milestone news
   // and week 5's watch list, not today's.
@@ -104,6 +120,7 @@ function WeekBlocks({
         copyFilename={capture('around-the-union')}
       />
       <WeekLowScores {...common} scores={lows} copyFilename={capture('lowest-scores')} />
+      <WeekPrizeRaces {...common} {...prizes} copyFilename={capture('prize-races')} />
       <WeekStories {...common} notes={notes} copyFilename={capture('week-in-review')} />
       <WeekStreaks
         {...common}
