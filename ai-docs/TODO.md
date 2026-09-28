@@ -395,6 +395,15 @@ the site already loads; nothing stored.
       warning. `deploy-pages@v4` / `upload-pages-artifact@v3` may carry the same warning; check the
       next deploy's annotations and bump those if so.
 
+- [ ] **Finish the TeamLink migration** (after preview/team-links, PR for "team names and logos
+  as real links"). Still on the old clickable bare `TeamLogo` (a nameless tab stop):
+  `StandingsTable` and `CurrentWeekStandings` (left alone while the standings-lines session had
+  them) and `BoxScore`'s two team heads (lineup modal content). Move them to `TeamLink`, then drop
+  `TeamLogo`'s `clickable` prop so a logo is only ever an image.
+- [ ] **DataTable clickable rows are `<tr role="button">`** (Players, Builds): the role replaces
+  the row's table semantics, so screen readers lose the cells. Better: keep the `<tr>`, put a
+  real `<button aria-expanded>` in the first cell, keep the row click as a mouse convenience.
+
 ## Deferred / not blocking Week 1
 
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now

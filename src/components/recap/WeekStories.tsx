@@ -1,7 +1,7 @@
 import { nameForYear } from '@/config'
 import type { WeekMatchup, WeekNotes } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { RecapPanel } from './RecapPanel'
 
 /**
@@ -47,8 +47,9 @@ function Side({
 }) {
   return (
     <div className={`flex min-w-0 items-center gap-2 text-sm ${won ? 'font-bold' : 'text-muted'}`}>
-      <TeamLogo ffuId={memberId} size={22} />
-      <span className="truncate">{name(memberId, year)}</span>
+      <TeamLink ffuId={memberId} tight>
+        <span className="truncate">{name(memberId, year)}</span>
+      </TeamLink>
       <span className={`ml-auto shrink-0 font-mono tabular-nums ${won ? 'font-bold' : ''}`}>{score.toFixed(2)}</span>
     </div>
   )

@@ -22,7 +22,7 @@ function ClosedStamp({ tier }: { tier: CupTier }) {
 function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
   return (
     <div className={`flex flex-col items-center gap-1 border border-border p-2 transition-opacity ${dimmed ? 'opacity-25' : ''}`}>
-      <TeamLogo ffuId={team.ffuId} size={40} />
+      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
       <span className="w-full truncate text-center text-[11px] font-bold leading-tight">{team.name}</span>
       <span className={`text-[9px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}

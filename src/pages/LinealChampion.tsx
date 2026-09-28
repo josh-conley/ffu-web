@@ -6,7 +6,7 @@ import { linealHistory, linealHolderTotals, type LinealHolderTotal } from '@/sel
 import { DataTable, type Column } from '@/components/DataTable'
 import { LinealBelt } from '@/components/LinealBelt'
 import { LinealLineage } from '@/components/LinealLineage'
-import { TeamLogo } from '@/components/TeamLogo'
+import { TeamLink } from '@/components/TeamLink'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -18,8 +18,7 @@ function holderColumns(): Column<LinealHolderTotal & { rank: number }>[] {
       header: 'Team',
       render: (r) => (
         <span className="flex items-center gap-2 whitespace-nowrap">
-          <TeamLogo ffuId={r.memberId} size={22} />
-          {getMember(r.memberId)?.name ?? r.memberId}
+          <TeamLink ffuId={r.memberId}>{getMember(r.memberId)?.name ?? r.memberId}</TeamLink>
           {r.current && <FaCrown className="text-accent" aria-label="Current lineal champion" />}
         </span>
       ),

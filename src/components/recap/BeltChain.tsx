@@ -3,7 +3,7 @@ import { FaEllipsis } from 'react-icons/fa6'
 import { getMember } from '@/config'
 import { plural } from '@/lib/plural'
 import type { LinealReign } from '@/selectors'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 
 /**
  * The belt's chain of custody: the last few holders, oldest first, each linked to the next by the
@@ -20,8 +20,9 @@ const abbr = (memberId: string) => getMember(memberId)?.abbreviation ?? memberId
 function Holder({ reign }: { reign: LinealReign }) {
   return (
     <li className={`flex shrink-0 flex-col items-center gap-1 px-2 py-1 ${reign.current ? 'bg-accent/10' : ''}`}>
-      <TeamLogo ffuId={reign.championId} size={36} />
-      <span className="font-mono text-[11px] font-bold uppercase leading-none">{abbr(reign.championId)}</span>
+      <TeamLink ffuId={reign.championId} logoSize={36} label={getMember(reign.championId)?.name} className="flex-col gap-1">
+        <span className="font-mono text-[11px] font-bold uppercase leading-none">{abbr(reign.championId)}</span>
+      </TeamLink>
       <span className="font-mono text-[10px] leading-none tabular-nums text-muted">{plural(reign.weeksHeld, 'wk')}</span>
     </li>
   )

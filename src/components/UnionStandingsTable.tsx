@@ -5,7 +5,7 @@ import { DataTable, type Column } from './DataTable'
 import { recordLabel } from './format'
 import { LeagueBadge } from './LeagueBadge'
 import { TIER_PRESTIGE } from './leagues'
-import { TeamLogo } from './TeamLogo'
+import { TeamLink } from './TeamLink'
 
 /**
  * The Union view: one year's 36 teams in a single table.
@@ -37,10 +37,9 @@ function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] 
       header: 'Team',
       sortValue: (r) => nameForYear(r.team.memberId, year) ?? r.team.memberId,
       render: (r) => (
-        <span className="flex items-center gap-2">
-          <TeamLogo ffuId={r.team.memberId} />
+        <TeamLink ffuId={r.team.memberId} logoSize={32}>
           <span className="font-semibold max-sm:max-w-36 sm:whitespace-nowrap">{nameForYear(r.team.memberId, year) ?? r.team.memberId}</span>
-        </span>
+        </TeamLink>
       ),
     },
     {

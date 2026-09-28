@@ -10,7 +10,7 @@ import { SELECT } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { GameWhen } from '@/components/GameWhen'
 import { TeamCell } from '@/components/TeamCell'
-import { TeamLogo } from '@/components/TeamLogo'
+import { TeamLink } from '@/components/TeamLink'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -64,8 +64,9 @@ function matchupColumns(mode: MatchupMode): Column<Ranked<MatchupRecord>>[] {
         <span className="flex flex-col gap-0.5">
           {r.teams.map((t) => (
             <span key={t.memberId} className={`flex items-center gap-2 ${t.memberId === r.winnerId ? 'font-semibold' : ''}`}>
-              <TeamLogo ffuId={t.memberId} size={20} />
-              <span>{nameForYear(t.memberId, r.year) ?? t.memberId}</span>
+              <TeamLink ffuId={t.memberId} logoSize={20} tight>
+                {nameForYear(t.memberId, r.year) ?? t.memberId}
+              </TeamLink>
               <span className="font-mono tabular-nums text-muted">{t.score.toFixed(2)}</span>
             </span>
           ))}

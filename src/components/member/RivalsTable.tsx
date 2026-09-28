@@ -4,7 +4,7 @@ import { getMember } from '@/config'
 import type { SeasonData } from '@/data'
 import { meetingOrder, rivals, type H2HMeeting, type Rival } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
-import { TeamLogo } from '../TeamLogo'
+import { TeamLink } from '../TeamLink'
 import { recordLabel } from '../format'
 import { EmptyNote, MemberSection } from './MemberSection'
 
@@ -30,10 +30,9 @@ function columnsFor(memberId: string): Column<Rival>[] {
       header: 'Opponent',
       sortValue: (r) => teamName(r.opponentId),
       render: (r) => (
-        <span className="flex items-center gap-2">
-          <TeamLogo ffuId={r.opponentId} />
+        <TeamLink ffuId={r.opponentId} logoSize={32}>
           <span className="font-semibold whitespace-nowrap">{teamName(r.opponentId)}</span>
-        </span>
+        </TeamLink>
       ),
     },
     { key: 'games', header: 'GP', title: 'Games played (regular season + playoffs)', align: 'right', sortValue: (r) => r.games, render: (r) => r.games },
