@@ -30,3 +30,11 @@ Format: `- YYYY-MM-DD · <agent> · <idea> — <accepted | rejected | later>: <r
 - 2026-09-25 · product-owner · Waiver-wire value — later: needs a Tuesday backfill; drop FAAB-per-point (unsound ratio)
 - 2026-09-25 · ux-partner · /builds filter collapse on phones — later: low priority
 - 2026-09-25 · sports-statistician · Playoff-odds simulation — later: not sound before ~week 8, and needs confirmed seeding/tiebreak rules
+- 2026-09-28 · partners (quick) · Member page polish: compact tiles, shared formatPoints, directory links, Compare label — accepted: preview/member-polish
+- 2026-09-28 · product-owner · Prize races on Around the Union, no dollar amounts, "Leading now" — accepted: preview/prize-races
+- 2026-09-28 · product-owner · Stats "Min seasons" default 3 — later: offered, not picked
+- 2026-09-28 · product-owner · Remaining schedule on the member page (no SOS sort) — later: week 5+
+- 2026-09-28 · product-owner · Game of the Week tag on live cards — later: cards already dense; same teams would win
+- 2026-09-28 · product-owner · First UPR of 2026 block; weekly movement as signed numbers, not ▲/▼ — later
+- 2026-09-28 · product-owner · Season grid (teams × weeks) — later: 15+ columns, shading contrast open
+- 2026-09-28 · ux-partner · Stats filter collapse on phones — later: parked with /builds
