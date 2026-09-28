@@ -84,7 +84,7 @@ it('shows a member detail with derived debut year + owner', async () => {
   await waitFor(() => expect(screen.getByRole('heading', { name: 'The Minutemen' })).toBeInTheDocument())
   // The page's fixed structure, in order.
   const sections = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-  expect(sections).toEqual(['Career', 'Rivals', 'Franchise Players', 'Up / Down History', 'Milestones'])
+  expect(sections).toEqual(['Career', 'Rivals', 'Franchise Players', 'Promotion & Relegation History', 'Milestones'])
   // The Minutemen have played every season, so their tenure runs to the newest one with games —
   // derived, because the season in progress joins it the week its first games land.
   const manifest = FILES['/data/seasons.json'] as { seasons: { year: string; hasGames?: boolean }[] }
