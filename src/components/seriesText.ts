@@ -20,6 +20,16 @@ export function seriesLineText({ standing, lastMet }: SeriesPreview): string {
   return `${lead} · ${lastMetText(lastMet)}`
 }
 
+/**
+ * What a live or upcoming card's series line says, so every card carries exactly one line and a
+ * row of cards stays the same height: the series, "First meeting", or nothing yet while the
+ * seasons load (the card still reserves the line).
+ */
+export function seriesLineFor(preview: SeriesPreview | null | undefined): string | undefined {
+  if (preview === undefined) return undefined
+  return preview ? seriesLineText(preview) : 'First meeting'
+}
+
 /** The accessible name of a card that opens a game's lineups: "Stallions vs Johnkshire Cats, view lineups". */
 export function lineupsLabel(memberIds: readonly string[], year: string): string {
   return `${memberIds.map((id) => nameForYear(id, year) ?? id).join(' vs ')}, view lineups`

@@ -1,4 +1,4 @@
-import { lineupsLabel, seriesLineText } from './seriesText'
+import { lineupsLabel, seriesLineFor, seriesLineText } from './seriesText'
 
 // ffu-001 is The Stallions (STA), ffu-002 FFUcked Up, in the member registry.
 const meeting = { year: '2024', tier: 'PREMIER' as const, week: 9, isPlayoff: false, score: 1, opponentScore: 0, result: 'W' as const }
@@ -14,6 +14,15 @@ describe('seriesLineText', () => {
     expect(seriesLineText({ standing, lastMet: { ...meeting, week: 16, isPlayoff: true } })).toBe(
       'Series tied 2–2–1 · last met in the 2024 playoffs',
     )
+  })
+})
+
+describe('seriesLineFor', () => {
+  it('gives every card one line: the series, a first meeting, or nothing while loading', () => {
+    const standing = { meetings: 6, leaderId: 'ffu-001', leaderWins: 4, trailerWins: 2, ties: 0 }
+    expect(seriesLineFor({ standing, lastMet: meeting })).toBe('STA leads 4–2 · last met 2024 Wk 9')
+    expect(seriesLineFor(null)).toBe('First meeting')
+    expect(seriesLineFor(undefined)).toBeUndefined()
   })
 })
 
