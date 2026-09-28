@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
 import { Dialog } from './Dialog'
 
 function Harness() {
@@ -43,12 +43,24 @@ describe('Dialog', () => {
     expect(screen.getByRole('button', { name: 'Open it' })).toHaveFocus()
   })
 
-  it("closes when the browser closes it (Escape fires the dialog's close event)", async () => {
+  it('closes on Escape (the dialog\'s cancel event)', async () => {
     await openDialog()
-    const dialog = screen.getByRole('dialog') as HTMLDialogElement
-    act(() => dialog.close())
-    expect(await screen.findByRole('button', { name: 'Open it' })).toBeInTheDocument()
+    const dialog = screen.getByRole('dialog')
+    act(() => {
+      dialog.dispatchEvent(new Event('cancel', { cancelable: true }))
+    })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it("stays open under StrictMode's unmount/remount (its own close isn't the user's)", async () => {
+    const user = userEvent.setup()
+    render(
+      <StrictMode>
+        <Harness />
+      </StrictMode>,
+    )
+    await user.click(screen.getByRole('button', { name: 'Open it' }))
+    expect(screen.getByRole('dialog', { name: 'Test dialog' })).toHaveAttribute('open')
   })
 
   it('closes on a backdrop click but not on a click inside the panel', async () => {
