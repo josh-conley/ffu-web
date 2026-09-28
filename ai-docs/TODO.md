@@ -302,7 +302,13 @@ never disagree; nothing is stored.
       (nobody past 100 or 150); earnings max is $1,635, and one member has passed $1,500. So in
       practice the page is about the 10,000-point, 50-win and $500 lines for now, and the higher
       tiers sit there as the long game. Currently 33 teams on watch across the four categories.
-- [ ] Optional: a member's own milestone progress on their Members detail page. Not built.
+- [x] A member's own milestone progress on their Members detail page. Done 2026-09-28 (PR #14):
+      the page's Milestones section, every category with an "On watch" tag (`memberMilestones`,
+      `isOnWatch`).
+- [ ] Member page: Rivals lists every opponent (37 rows for ffu-028), a long scroll on a phone
+      before Franchise Players. Offered paging it at 10 rows; not asked for yet.
+- [ ] `upcomingSeason.ts` and `TierTimeline` still keep their own tier order; switch them to
+      `tierRank` from config (Charter DRY).
 
 ## ADP Comparison — new page
 

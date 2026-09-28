@@ -11,6 +11,9 @@ import { LIVE_LEAGUE_IDS } from './liveSeason'
 
 const TIER_ORDER: Record<Tier, number> = { PREMIER: 0, MASTERS: 1, NATIONAL: 2 }
 
+/** A tier's place in promotion/relegation order: 0 is the top (Premier). */
+export const tierRank = (tier: Tier): number => TIER_ORDER[tier]
+
 const byFfuId = new Map<string, Member>(MEMBERS.map((m) => [m.ffuId, m]))
 const ownersById = new Map<string, Owner>(OWNERS.map((o) => [o.id, o]))
 const bySleeper = new Map<string, Member>()
