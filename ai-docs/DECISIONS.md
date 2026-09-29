@@ -511,10 +511,32 @@ on a week-3 home load, measured). Roster owners and league settings are kept for
 minutes. A failure is never cached.
 
 **Why 60s.** Sleeper's `/matchups` response carries `s-maxage=60`, so an ordinary read any sooner gets
-the same cached bytes back. Polling faster would only add load, and bypassing the CDN on every tick
-(as the draft board does at 5s) isn't worth it for scores that change a few times a minute on a
-Sunday. The draft-schedule panel, which used to poll all season, now stops once every draft is
+the same cached bytes back. Polling faster would only add load. *(Amended 2026-09-28, below: the
+polls now read past the CDN, still every 60s.)* The draft-schedule panel, which used to poll all season, now stops once every draft is
 complete.
 
 **Rejected.** *Keep reload-to-refresh*: a game-day tab goes silently stale for hours. *Poll the whole
 season each tick*: 12+ calls a minute to re-read weeks that are final.
+
+## 2026-09-28 — the live score polls read past Sleeper's CDN (amends the 2026-09-25 "Why 60s")
+
+**Decision.** The home page's poll of the week in progress and the popped-out box score read
+`/matchups/{week}` with `fresh` (a cache-busting query, as the draft board does), still once a
+minute. Ordinary reads in the next 60s (a box score opened from the home page, the projections)
+reuse that answer through `sleeperApi`'s in-memory cache. A box score modal on its own still reads
+the ordinary, cached way.
+
+**Why.** The 2026-09-25 note assumed the CDN's copy is at most 60s old. It isn't: the same header
+allows `stale-while-revalidate=300`, and on Monday night of week 3 the cached `/matchups` was 109s
+old and still "UPDATING", holding Luther Burden at 13.1 while Sleeper's origin had 16.6 (Minutemen
+127.95 cached vs 131.35–131.45 fresh). Josh noticed scores lagging minutes behind Sleeper's app.
+Cost: about three uncached calls a minute per open tab, which is the same traffic pattern the live
+draft board already runs at far higher rates.
+
+**Known wrinkle.** Sleeper's origin servers can disagree by a stat update for a few seconds (fresh
+reads 4s apart alternated 131.45 / 131.35), so a score can occasionally step back by a fraction
+of a point before settling. Accepted: it's Sleeper's own data, and it settles within a tick or two.
+
+**Not done yet.** Sleeper's undocumented `/stats/nfl/{year}/{week}` feed (`s-maxage=4`) could give
+near-real-time player points, computed with each league's scoring. Unmeasured over a full slate;
+revisit only if fresh `/matchups` still feels slow.

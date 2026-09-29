@@ -35,6 +35,10 @@ interface GetOptions {
  * Sleeper's CDN holds its league reads for 60s (`s-maxage=60` on `/matchups`, measured), so asking
  * again inside that window gets the same bytes back. Answering from memory instead costs nothing
  * in freshness and saves the round trip.
+ *
+ * That 60s is a floor, not a ceiling: the same header allows `stale-while-revalidate=300`, and on a
+ * game night the CDN served `/matchups` 109s old and still "UPDATING" while origin had moved on
+ * (2026-09-28, measured). The live score polls therefore read `fresh`.
  */
 const DEFAULT_MAX_AGE_MS = 60_000
 
