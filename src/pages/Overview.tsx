@@ -5,7 +5,7 @@ import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useLiveWeek, type LiveWeek } from '@/hooks/useLiveWeek'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { homeLiveSection, unionHighlight, upcomingYear } from '@/selectors'
+import { asOfWeek, finishedWeekOnShow, homeLiveSection, unionHighlight, upcomingYear } from '@/selectors'
 import { HomeUnionPanel } from '@/components/HomeUnionPanel'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
@@ -36,11 +36,14 @@ function LiveBlock({ liveWeek, onOpen }: { liveWeek: LiveWeek; onOpen: (open: Op
     return data ? [{ tier, data }] : []
   })
   if (tiers.length === 0) return liveWeek.loading ? <HomeLiveSectionPlaceholder /> : null
-  const week = tiers[0]?.data.currentWeek
-  // Tuesday leads with the standings instead of the matchups (see homeLiveSection) — but only once
+  // Wednesday leads with the standings instead of the matchups (see homeLiveSection) — but only once
   // a week has actually finished, otherwise there is nothing in them and the matchups stay.
   const showStandings = homeLiveSection() === 'standings' && tiers.some(({ data }) => data.currentWeek > 1)
-  return <HomeLiveSection tiers={tiers} week={week} showStandings={showStandings} asOf={liveWeek.asOf} onOpen={onOpen} />
+  // Tuesday, after Sleeper's rollover, the matchups show the week that just finished.
+  const finished = showStandings ? undefined : tiers[0] && finishedWeekOnShow(tiers[0].data)
+  const shown = finished === undefined ? tiers : tiers.map((t) => ({ ...t, data: asOfWeek(t.data, finished) }))
+  const week = shown[0]?.data.currentWeek
+  return <HomeLiveSection tiers={shown} week={week} showStandings={showStandings} final={finished !== undefined} asOf={liveWeek.asOf} onOpen={onOpen} />
 }
 
 /** Last week's Around the Union panel — needs every season file, so it has its own loading state. */
@@ -89,7 +92,7 @@ export function Overview() {
   const { data: seasons, loading, error } = useAllSeasons()
   // One nullable-unwrap for the whole page: every selector below takes the same array.
   const allSeasons = useMemo(() => seasons ?? [], [seasons])
-  // Polled only when the matchups are showing: Tuesday's standings are built from finished weeks.
+  // Polled only when the matchups are showing: Wednesday's standings are built from finished weeks.
   const liveWeek = useLiveWeek({ poll: homeLiveSection() === 'matchups' })
   const [open, setOpen] = useState<OpenGame | null>(null)
   // The season being played, from config — not `latest + 1`, which skips past it once it has a

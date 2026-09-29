@@ -58,16 +58,33 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStanding
 /**
  * Which live section the home page leads with.
  *
- * Sleeper rolls its week over on Tuesday morning, once Monday Night Football is done. So from
- * Tuesday until Thursday's kickoff, "this week's matchups" is twelve fixtures on 0.00 — nothing to
- * look at — while the standings have just become the interesting thing on the page, because the
- * week they summarise finished hours earlier. Tuesday gets the standings; every other day gets the
- * matchups, which are either in progress or about to be.
+ * Sleeper rolls its week over on Tuesday morning, once Monday Night Football is done. Tuesday still
+ * belongs to the week that just ended: people come to see how their game finished, so the matchups
+ * stay up, showing that week's finals (see finishedWeekOnShow). Wednesday, with the results digested,
+ * leads with the standings they produced. Thursday on, the new week's matchups are either in
+ * progress or about to be.
  *
- * Local day deliberately, like seasonHasStarted: it should be Tuesday where the reader is.
+ * Local day deliberately, like seasonHasStarted: it should be Wednesday where the reader is.
  */
 export function homeLiveSection(now: Date = new Date()): 'standings' | 'matchups' {
-  return now.getDay() === 2 ? 'standings' : 'matchups'
+  return now.getDay() === 3 ? 'standings' : 'matchups'
+}
+
+/**
+ * The finished week the home page's matchups show instead of the current one, or undefined to show
+ * the current week. Only on a Tuesday, and only once Sleeper has actually rolled over: the current
+ * week has no points on the board yet, so its matchups would be all 0.00 while last week's finals are
+ * the news. Before the rollover (early Tuesday), the current week IS the one just finished.
+ */
+export function finishedWeekOnShow(data: LiveSeasonData, now: Date = new Date()): number | undefined {
+  if (now.getDay() !== 2 || data.currentWeek <= 1) return undefined
+  const started = currentWeekMatchups(data).some((g) => g.participants.some((p) => p.score > 0))
+  return started ? undefined : data.currentWeek - 1
+}
+
+/** `data` presented as of an earlier week: its matchups and heading read that week's games. */
+export function asOfWeek(data: LiveSeasonData, week: number): LiveSeasonData {
+  return { ...data, currentWeek: week }
 }
 
 /**
