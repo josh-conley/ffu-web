@@ -26,8 +26,9 @@ Read the sources before relying on this summary: `ai-docs/TODO.md`, `ai-docs/DEC
   layout ("save on vertical spacing", `?layout=ffun`, bookmarkable) and for **copy as image**
   straight to the clipboard, not a download. What he wants from a stat is often *can it go in
   the FFUN as-is*: self-contained, screenshot-ready, no cropping.
-- **Stats, taken seriously.** UPR is withheld until four weeks are played: his call, "where the
-  league has always considered the picture to have settled" (DECISIONS 2026-09-19). He knows the
+- **Stats, taken seriously.** He asked for UPR to be withheld until four weeks are played, "where
+  the league has always considered the picture to have settled" (DECISIONS 2026-09-19); Josh moved
+  it to three on 2026-09-29. He knows the
   numbers and checks them: he caught the Cup's elimination counts (10 and 4, not 9 and 5) and
   corrected team abbreviations. He posts the season's `prizes.txt`. Milestone Watch details
   (earnings in or out, the 75% cutoff) were left for him to confirm.

@@ -1,5 +1,6 @@
 import type { Game, LiveSeasonData, NflState, ScheduledGame } from '@/data'
 import { emptyTotals, regularSeasonTotals, type TeamTotals } from './games'
+import { seasonUpr } from './upr'
 import { MIN_STREAK, currentStreaks, type Streak } from './weekForm'
 
 /** This week's games — may carry live/in-progress scores. */
@@ -16,6 +17,15 @@ export function withCurrentWeekGames(data: LiveSeasonData, latest: Game[] | unde
   if (latest === undefined) return data
   const earlier = data.games.filter((g) => g.week !== data.currentWeek)
   return { ...data, games: [...earlier, ...latest.filter((g) => g.week === data.currentWeek)] }
+}
+
+/**
+ * UPR per member from completed weeks only (never the week in progress), through the same
+ * `seasonUpr` as every other page, so it is empty until the season has `UPR_MIN_WEEKS` in the book
+ * and matches the Standings page's number once it isn't.
+ */
+export function uprThroughPreviousWeek(data: LiveSeasonData): Map<string, number> {
+  return seasonUpr({ games: data.games.filter((g) => g.week < data.currentWeek) })
 }
 
 export interface LiveStandingRow {

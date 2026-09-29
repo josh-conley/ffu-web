@@ -390,6 +390,11 @@ in progress is ever withheld; no historical number moves. The Union table can't 
 doesn't have, so before week 4 it ranks on league placement with points for as the tiebreak — the
 three leaders together, then the three seconds — and says so above the table.
 
+**Amended 2026-09-29: three weeks.** Josh moved `UPR_MIN_WEEKS` from 4 to 3, so 2026's UPR appears
+during week 4 rather than after it. The old note's "joins from week 4" read as "shown during week
+4", which is when UPR was expected. The note now says "once 3 weeks are played". The live home
+matchups show UPR in place of PPG from then on (`uprThroughPreviousWeek`), and PPG before it.
+
 ## 2026-09-22 — a test that reads the live data files must hold in ANY week
 
 **Decision.** Any test that reads `public/data/<live year>/*.json` may only assert things that stay

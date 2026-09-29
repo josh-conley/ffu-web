@@ -22,10 +22,17 @@ export function recordLabel(record: { wins: number; losses: number; ties: number
   return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`
 }
 
-/** A live matchup row's line under the team name: "2-1 · 118.4 PPG". Nothing before a team's first game. */
-export function recordPpgLabel(t: { wins: number; losses: number; ties: number; average: number }): string | undefined {
+/**
+ * A live matchup row's line under the team name: "2-1 · 108.42 UPR" once the season has a UPR, and
+ * "2-1 · 118.4 PPG" before it does. Nothing before a team's first game.
+ */
+export function recordRatingLabel(
+  t: { wins: number; losses: number; ties: number; average: number },
+  upr: number | undefined,
+): string | undefined {
   if (t.wins + t.losses + t.ties === 0) return undefined
-  return `${recordLabel(t)} · ${t.average.toFixed(1)} PPG`
+  const rating = upr === undefined ? `${t.average.toFixed(1)} PPG` : `${upr.toFixed(2)} UPR`
+  return `${recordLabel(t)} · ${rating}`
 }
 
 /**

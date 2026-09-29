@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import type { Tier } from '@/config'
 import type { Game, LiveSeasonData } from '@/data'
-import { currentWeekMatchups, standingsThroughPreviousWeek } from '@/selectors'
-import { recordPpgLabel } from './format'
+import { currentWeekMatchups, standingsThroughPreviousWeek, uprThroughPreviousWeek } from '@/selectors'
+import { recordRatingLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { MatchupCard } from './MatchupCard'
 
@@ -28,11 +28,13 @@ export function CurrentWeekMatchups({
   projected?: (memberId: string) => number | undefined
 }) {
   const style = LEAGUE_STYLES[tier]
-  // Record and PPG through the last completed week, the same numbers as the home standings.
+  // Record and UPR (PPG until the season has a UPR) through the last completed week, the same
+  // numbers as the home standings and the Standings page.
   const totals = useMemo(() => new Map(standingsThroughPreviousWeek(data).map((r) => [r.totals.memberId, r.totals])), [data])
+  const upr = useMemo(() => uprThroughPreviousWeek(data), [data])
   const detail = (memberId: string) => {
     const t = totals.get(memberId)
-    return t && recordPpgLabel(t)
+    return t && recordRatingLabel(t, upr.get(memberId))
   }
   return (
     <section className="border border-border bg-surface shadow-sm">

@@ -27,10 +27,10 @@ export function calculateUpr({ wins, losses, ties, average, high, low }: UprInpu
  *
  * Two of the formula's three inputs are a team's high and its low, so after one week they ARE that
  * week's score and the rating is just a re-scaled box score; the win% term swings 400 points on a
- * single result. Four weeks is where the league has always considered the picture to have settled,
- * and it is the point the commissioner asked for.
+ * single result. Three weeks gives every team a distinct high, low and average. It was four (the
+ * commissioner's original call) until Josh moved it to three on 2026-09-29, so UPR is up for week 4.
  */
-export const UPR_MIN_WEEKS = 4
+export const UPR_MIN_WEEKS = 3
 
 /**
  * UPR per member for a season — EMPTY until the season has `UPR_MIN_WEEKS` weeks in the book, so a
@@ -38,7 +38,7 @@ export const UPR_MIN_WEEKS = 4
  * is complete, so only the season in progress is ever withheld. Callers render a missing rating as
  * "—" or drop the column; see `UprNote`.
  */
-export function seasonUpr(season: SeasonData): Map<string, number> {
+export function seasonUpr(season: Pick<SeasonData, 'games'>): Map<string, number> {
   const result = new Map<string, number>()
   if (regularSeasonWeeksPlayed(season) < UPR_MIN_WEEKS) return result
   for (const [id, t] of regularSeasonTotals(season)) {

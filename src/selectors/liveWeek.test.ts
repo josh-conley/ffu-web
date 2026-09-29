@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { asOfWeek, currentWeekMatchups, finishedWeekOnShow, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
+import { asOfWeek, currentWeekMatchups, finishedWeekOnShow, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, uprThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -69,6 +69,17 @@ describe('standingsThroughPreviousWeek', () => {
     expect(a?.rank).toBe(1)
     expect(b?.rank).toBe(2)
     expect(c?.rank).toBe(3)
+  })
+})
+
+describe('uprThroughPreviousWeek', () => {
+  it('rates completed weeks only, never the partial live score', () => {
+    // a over weeks 1-4: avg 115, high 130, low 100, 3-1 → (115×6 + 230×2 + 0.75×400) / 10.
+    expect(uprThroughPreviousWeek(data).get('a')).toBe(145)
+  })
+
+  it('is empty until the season has UPR_MIN_WEEKS completed', () => {
+    expect(uprThroughPreviousWeek({ ...data, currentWeek: 3 }).size).toBe(0)
   })
 })
 
