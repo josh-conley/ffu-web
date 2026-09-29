@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 
 /** What a polled request looks like to a caller — same shape as useAsyncData, plus it keeps going. */
 export interface Polled<T> {
   data: T | undefined
   error: Error | undefined
   loading: boolean
+  /** Read now rather than waiting for the next tick (a Refresh button); settles once it's applied. */
+  refresh: () => Promise<void>
 }
 
 interface Resolved<T> {
@@ -21,8 +23,11 @@ export interface PollOptions<T> {
   whileHidden?: boolean
 }
 
+/** `manual`: this read is a `refresh`, so the viewer wants the current answer, past any cache. */
+type Fetcher<T> = (read: { manual: boolean }) => Promise<T>
+
 interface Latest<T> extends PollOptions<T> {
-  fetcher: () => Promise<T>
+  fetcher: Fetcher<T>
   intervalMs: number
 }
 
@@ -47,9 +52,9 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
   }
 
   /** One request; a stale answer (a newer one already applied) or a cancelled loop is dropped. */
-  async function read(id: number) {
+  async function read(id: number, manual: boolean) {
     try {
-      const next = await latest.current.fetcher()
+      const next = await latest.current.fetcher({ manual })
       if (cancelled || id < applied) return
       applied = id
       resolve(() => ({ key, data: next }))
@@ -61,13 +66,14 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
     }
   }
 
-  async function poll() {
+  /** `now`: asked for by the viewer, so it goes ahead even from a hidden tab. */
+  async function poll(now = false) {
     if (cancelled || done) return
     // Hidden tab: skip the request, but keep the loop alive so it resumes on its own.
-    if (document.visibilityState === 'hidden' && !latest.current.whileHidden) return schedule()
+    if (!now && document.visibilityState === 'hidden' && !latest.current.whileHidden) return schedule()
     const id = ++issued
     clearTimeout(timer)
-    await read(id)
+    await read(id, now)
     if (id === issued) schedule()
   }
 
@@ -76,10 +82,14 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
   }
   document.addEventListener('visibilitychange', onVisible)
   void poll()
-  return () => {
-    cancelled = true
-    clearTimeout(timer)
-    document.removeEventListener('visibilitychange', onVisible)
+  return {
+    // The read restarts the interval, so a refresh is never followed straight away by a tick.
+    refresh: () => poll(true),
+    stop: () => {
+      cancelled = true
+      clearTimeout(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    },
   }
 }
 
@@ -90,7 +100,8 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
  * stops on its own in three ways, so an open tab can't sit there hammering Sleeper: it pauses while
  * the tab is hidden (and refreshes immediately on return, so you never stare at a stale board), it
  * stops once `isFinal` says the value can no longer change, and the caller stops it entirely with
- * `active`. `whileHidden` opts out of the first, for a view shown outside the tab.
+ * `active`. `whileHidden` opts out of the first, for a view shown outside the tab. `refresh` reads
+ * straight away, for a viewer who doesn't want to wait out the interval.
  *
  * `intervalMs` may change between renders — the live board polls hard while the draft is running
  * and barely at all when it isn't. The wait is therefore a chained timeout that reads the current
@@ -101,7 +112,7 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
  * should be invisible. An error is only reported when there is nothing good to show yet, i.e. the
  * very first fetch failed.
  */
-export function usePoll<T>(key: string, fetcher: () => Promise<T>, active: boolean, intervalMs: number, options: PollOptions<T> = {}): Polled<T> {
+export function usePoll<T>(key: string, fetcher: Fetcher<T>, active: boolean, intervalMs: number, options: PollOptions<T> = {}): Polled<T> {
   const [resolved, setResolved] = useState<Resolved<T>>()
 
   // These are fresh closures/values every render; the poll loop must not restart for that, so it
@@ -112,13 +123,20 @@ export function usePoll<T>(key: string, fetcher: () => Promise<T>, active: boole
     latest.current = { ...options, fetcher, intervalMs }
   })
 
+  const loop = useRef<ReturnType<typeof startLoop<T>>>(undefined)
   useEffect(() => {
     if (!active) return
-    return startLoop(key, latest, setResolved)
+    const started = startLoop(key, latest, setResolved)
+    loop.current = started
+    return () => {
+      started.stop()
+      loop.current = undefined
+    }
   }, [key, active])
+  const refresh = useCallback(async () => loop.current?.refresh(), [])
 
   if (active && resolved?.key === key) {
-    return { data: resolved.data, error: resolved.error, loading: false }
+    return { data: resolved.data, error: resolved.error, loading: false, refresh }
   }
-  return { data: undefined, error: undefined, loading: active }
+  return { data: undefined, error: undefined, loading: active, refresh }
 }
