@@ -298,6 +298,9 @@ export interface PlayerProjection {
   team?: string
   /** Raw projected stats (pass_yd, rec, …), scored per league by selectors/liveProjection.ts. */
   stats: Record<string, number>
+  /** Who the player is, as the feed names them: covers this season's new players, whom the static
+   *  players.json only learns once they appear in a completed week. */
+  player?: PlayerRef
 }
 
 /**

@@ -26,14 +26,14 @@ function allPlayerIds(lineups: LiveLineups): string[] {
 /**
  * Live starters/bench + resolved player names for a live box score, fetched lazily (only while one
  * is open). Player names resolve from the existing static players.json first (usePlayers, already
- * cached across the app); Sleeper's live directory is only hit for ids that file doesn't have yet
- * (this season's new players), so most opens don't pay that cost.
+ * cached across the app), then from the week's projections (this season's new players); Sleeper's
+ * full directory is only hit for a player neither names, which should almost never happen.
  *
  * `poll` re-reads the lineups (and so every player's points) each minute, hidden tab or not: that's
  * the popped-out matchup, which floats over other tabs. Without it the lineups are read once (a
  * one-shot poll, final after its first answer), which is all the modal needs.
  */
-export function useLiveBoxScore(leagueId: string, week: number, memberIds: [string, string], { poll = false } = {}): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
+export function useLiveBoxScore(leagueId: string, year: string, week: number, memberIds: [string, string], { poll = false } = {}): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
   const players = usePlayers(true)
   const lineups = usePoll(
     `live-lineups:${leagueId}:${week}:${memberIds.join(',')}`,
@@ -48,7 +48,7 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
   const candidateIds = useMemo(() => (lineups.data ? allPlayerIds(lineups.data) : []), [lineups.data])
   const extra = useAsyncData(
     `live-players-extra:${candidateIds.join(',')}`,
-    () => fetchMissingPlayers(candidateIds, players.data ?? {}),
+    () => fetchMissingPlayers(candidateIds, players.data ?? {}, { year, week }),
     lineups.data !== undefined && players.data !== undefined,
   )
 

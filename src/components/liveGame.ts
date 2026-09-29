@@ -37,7 +37,7 @@ function sidesFor(data: LiveBoxScore, nfl: NflWeek | undefined, ctx: LiveWeekCon
 
 /** The box score's inputs, loaded: the lineups, and the NFL week's detail once it arrives. */
 export function useLiveGame({ leagueId, year, week, memberIds }: LiveGameRef, scoreOf: ScoreOf | undefined, poll: boolean) {
-  const { data, loading, refresh } = useLiveBoxScore(leagueId, week, memberIds, { poll })
+  const { data, loading, refresh } = useLiveBoxScore(leagueId, year, week, memberIds, { poll })
   const nfl = useNflWeek(year, week, true, poll ? data?.asOf : undefined)
   const ctx: LiveWeekContext | undefined = data && nfl ? { ...nfl, scoring: data.scoring } : undefined
   return { data, loading, refresh, sides: data ? sidesFor(data, nfl, ctx, scoreOf) : [], liveOf: ctx && liveOfFor(ctx) }
