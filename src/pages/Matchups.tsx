@@ -45,7 +45,7 @@ interface OpenFixture {
 }
 
 function WeekBadge({ week, liveWeek }: { week: number; liveWeek?: number }) {
-  if (week === liveWeek) return <span className="text-[10px] font-semibold text-accent">Live</span>
+  if (week === liveWeek) return <span className="text-[10px] font-semibold text-accent">Current</span>
   // An earlier week still missing from the file is finished, just not yet written by the refresh.
   if (liveWeek !== undefined && week < liveWeek) return null
   return <span className="text-[10px] font-semibold text-muted">Upcoming</span>
@@ -65,7 +65,7 @@ function UpcomingWeeks({
 }: {
   weeks: ReturnType<typeof upcomingFixtures>
   year: string
-  /** The week being played right now, if this is the live season — badged Live rather than Upcoming. */
+  /** The week being played right now, if this is the live season — badged Current rather than Upcoming. */
   liveWeek?: number
   liveGames: readonly Game[]
   onOpen?: (open: OpenFixture) => void
@@ -177,7 +177,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
 export function Matchups() {
   const { years, year, tier, setYear, setTier, season, loading, error } = useSeasonView()
   const [member, setMember] = useUrlState('member', '')
-  // Sleeper's clock, so the week actually being played reads Live rather than Upcoming. Only asked
+  // Sleeper's clock, so the week actually being played reads Current rather than Upcoming. Only asked
   // for when the season on screen could be the live one; an archive year never pays for the call.
   const nflState = useNflState(season?.era === 'sleeper')
   const liveWeek = liveWeekFor(year, nflState.data)

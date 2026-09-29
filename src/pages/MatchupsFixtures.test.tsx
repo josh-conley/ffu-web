@@ -117,15 +117,15 @@ it('opens the live box score from an unplayed fixture', async () => {
   expect(within(dialog).getAllByText('0.00').length).toBeGreaterThan(0)
 })
 
-it('badges the week being played Live, and the rest Upcoming', async () => {
+it('badges the week being played Current, and the rest Upcoming', async () => {
   renderMatchups()
   const week2 = await week2Section()
   // Week 2 is in progress per Sleeper's clock; only completed weeks are written to the data files,
   // so without this it would read "Upcoming" like the weeks that genuinely haven't started.
-  await waitFor(() => expect(within(week2).getByText('Live')).toBeInTheDocument())
+  await waitFor(() => expect(within(week2).getByText('Current')).toBeInTheDocument())
   expect(within(week2).queryByText('Upcoming')).not.toBeInTheDocument()
 
   const week3 = screen.getByText(/^Week 3$/).closest('section') as HTMLElement
   expect(within(week3).getByText('Upcoming')).toBeInTheDocument()
-  expect(within(week3).queryByText('Live')).not.toBeInTheDocument()
+  expect(within(week3).queryByText('Current')).not.toBeInTheDocument()
 })
