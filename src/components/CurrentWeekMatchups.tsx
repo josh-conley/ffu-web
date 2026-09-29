@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Tier } from '@/config'
 import type { Game, LiveSeasonData } from '@/data'
-import { currentWeekMatchups, standingsThroughPreviousWeek } from '@/selectors'
+import { currentWeekMatchups, standingsThroughPreviousWeek, weekHighScorers } from '@/selectors'
 import { recordPpgLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { MatchupCard } from './MatchupCard'
@@ -15,7 +15,8 @@ export interface OpenGame {
 /** One tier's column of this week's matchups (in progress, so styled live: no winner until the
  *  weekly refresh files it; clickable for a box score).
  *  A solid tier-colored heading — same treatment as ChampionsByLeague's per-league card — so all
- *  three tiers read at a glance side by side. `projected` adds each team's projected final score. */
+ *  three tiers read at a glance side by side. `projected` adds each team's projected final score.
+ *  The league's top score so far this week is in gold. */
 export function CurrentWeekMatchups({
   tier,
   data,
@@ -30,6 +31,8 @@ export function CurrentWeekMatchups({
   const style = LEAGUE_STYLES[tier]
   // Record and PPG through the last completed week, the same numbers as the home standings.
   const totals = useMemo(() => new Map(standingsThroughPreviousWeek(data).map((r) => [r.totals.memberId, r.totals])), [data])
+  const games = currentWeekMatchups(data)
+  const top = weekHighScorers(games)
   const detail = (memberId: string) => {
     const t = totals.get(memberId)
     return t && recordPpgLabel(t)
@@ -38,7 +41,7 @@ export function CurrentWeekMatchups({
     <section className="border border-border bg-surface shadow-sm">
       <h3 className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${style.solidHeader}`}>{style.label}</h3>
       <div className="space-y-2 p-2">
-        {currentWeekMatchups(data).map((game) => (
+        {games.map((game) => (
           <MatchupCard
             key={game.participants.map((p) => p.memberId).join('-')}
             game={game}
@@ -46,6 +49,7 @@ export function CurrentWeekMatchups({
             status="live"
             projected={projected}
             detail={detail}
+            topScorer={(memberId) => top.has(memberId)}
             onOpen={() => onOpen({ leagueId: data.leagueId, year: data.year, game })}
           />
         ))}

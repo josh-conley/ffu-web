@@ -34,13 +34,24 @@ const ROW_TONE: Record<RowTone, string> = {
   even: 'border-transparent',
 }
 
+/** The score itself. `top`: the league's best this week, in gold, and said so for screen readers. */
+function ScoreText({ score, bold, top }: { score: number; bold: boolean; top: boolean }) {
+  const tone = top ? 'text-notable' : ''
+  return (
+    <span className={`font-mono tabular-nums ${bold ? 'font-semibold' : ''} ${tone}`} title={top ? "The league's top score this week" : undefined}>
+      {formatPoints(score)}
+      {top && <span className="sr-only"> (league's top score this week)</span>}
+    </span>
+  )
+}
+
 /**
  * The score, with the projection stacked under it (never beside it, so it never takes width from the
  * name). A live row with no projection keeps the two-line height through an invisible stand-in and
  * centres the score, so it lines up with the team name while every card stays the same height.
  */
-function ScoreColumn({ score, leading, projected, reserveProjection, twoLine }: { score: number; leading: boolean; projected?: number; reserveProjection: boolean; twoLine: boolean }) {
-  const scoreText = <span className={`font-mono tabular-nums ${leading ? 'font-semibold' : ''}`}>{formatPoints(score)}</span>
+function ScoreColumn({ score, leading, top, projected, reserveProjection, twoLine }: { score: number; leading: boolean; top: boolean; projected?: number; reserveProjection: boolean; twoLine: boolean }) {
+  const scoreText = <ScoreText score={score} bold={leading || top} top={top} />
   if (projected !== undefined) {
     return (
       <span className="flex shrink-0 flex-col items-end leading-tight">
@@ -76,6 +87,7 @@ function ParticipantRow({
   year,
   tone,
   leading,
+  top,
   subtitle,
   detail,
   projected,
@@ -88,6 +100,8 @@ function ParticipantRow({
   tone: RowTone
   /** A live game's leader: the score alone is bold. */
   leading: boolean
+  /** The league's top score this week (live cards): the score in gold. */
+  top: boolean
   subtitle?: string
   /** A second line under the name (live cards: record and PPG). */
   detail?: string
@@ -99,7 +113,7 @@ function ParticipantRow({
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-2 ${ROW_TONE[tone]}`}>
       <TeamLabel memberId={memberId} year={year} subtitle={subtitle} detail={detail} linked={linked} />
-      <ScoreColumn score={score} leading={leading} projected={projected} reserveProjection={reserveProjection} twoLine={detail !== undefined} />
+      <ScoreColumn score={score} leading={leading} top={top} projected={projected} reserveProjection={reserveProjection} twoLine={detail !== undefined} />
     </div>
   )
 }
@@ -142,6 +156,7 @@ export function MatchupCard({
   subtitle,
   detail,
   projected,
+  topScorer,
 }: {
   game: Game
   year: string
@@ -151,6 +166,8 @@ export function MatchupCard({
   /** A line under each team's name (live home cards: record and PPG through last week). */
   detail?: (memberId: string) => string | undefined
   projected?: (memberId: string) => number | undefined
+  /** Whether a team has its league's top score this week (live home cards). */
+  topScorer?: (memberId: string) => boolean
 }) {
   const winner = winnerOf(game)
   const memberIds = game.participants.map((p) => p.memberId)
@@ -166,6 +183,7 @@ export function MatchupCard({
             year={year}
             tone={rowTone(status, winner, p.memberId)}
             leading={status === 'live' && p.memberId === winner}
+            top={topScorer?.(p.memberId) ?? false}
             subtitle={subtitle?.(p.memberId)}
             detail={detail?.(p.memberId)}
             projected={projected?.(p.memberId)}

@@ -33,6 +33,13 @@ describe('MatchupCard', () => {
     expect(screen.queryByText(/leads/)).not.toBeInTheDocument()
   })
 
+  it('puts the league\'s top score in gold, and says so for screen readers', () => {
+    render(<MatchupCard game={game} year="2026" status="live" topScorer={(id) => id === 'ffu-001'} />)
+    expect(screen.getByText('42.50', { exact: false })).toHaveClass('text-notable')
+    expect(screen.getByText(/league's top score this week/)).toHaveClass('sr-only')
+    expect(screen.getByText('0.00')).not.toHaveClass('text-notable')
+  })
+
   it('keeps both teams full-strength while live — no winner bar, only the leading score bold', () => {
     render(<MatchupCard game={game} year="2026" status="live" />)
     for (const name of ['The Stallions', 'FFUcked Up']) {

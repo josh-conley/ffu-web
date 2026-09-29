@@ -8,6 +8,16 @@ export function currentWeekMatchups(data: LiveSeasonData): Game[] {
 }
 
 /**
+ * Who has the most points in these games — every team on the top score, so a tie shares it. Empty
+ * until anyone has scored: before kickoff everyone is on 0, and nobody leads.
+ */
+export function weekHighScorers(games: readonly Game[]): Set<string> {
+  const scores = games.flatMap((g) => g.participants)
+  const top = Math.max(0, ...scores.map((p) => p.score))
+  return new Set(top > 0 ? scores.filter((p) => p.score === top).map((p) => p.memberId) : [])
+}
+
+/**
  * `data` with its current week's games swapped for a newer read of that week — the home page polls
  * only the week in progress, since every earlier week is already final. `undefined` (no newer read
  * yet) leaves it as it was.

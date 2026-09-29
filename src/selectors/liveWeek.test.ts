@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
+import { currentWeekMatchups, gameForFixture, weekHighScorers, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -31,6 +31,21 @@ describe('currentWeekMatchups', () => {
     const games = currentWeekMatchups(data)
     expect(games).toHaveLength(1)
     expect(games[0]?.week).toBe(5)
+  })
+})
+
+describe('weekHighScorers', () => {
+  it('picks the one team with the most points across every game', () => {
+    expect(weekHighScorers([game(5, 'a', 88, 'b', 71), game(5, 'c', 90.5, 'd', 12)])).toEqual(new Set(['c']))
+  })
+
+  it('shares it on a tie', () => {
+    expect(weekHighScorers([game(5, 'a', 90, 'b', 71), game(5, 'c', 90, 'd', 12)])).toEqual(new Set(['a', 'c']))
+  })
+
+  it('names nobody before anyone has scored', () => {
+    expect(weekHighScorers([game(5, 'a', 0, 'b', 0)])).toEqual(new Set())
+    expect(weekHighScorers([])).toEqual(new Set())
   })
 })
 
