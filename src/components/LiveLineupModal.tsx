@@ -1,5 +1,6 @@
 import { FaUpRightFromSquare } from 'react-icons/fa6'
-import { LiveBoxScoreBody, type LiveGameRef } from './LiveBoxScoreBody'
+import { LiveBoxScoreBody } from './LiveBoxScoreBody'
+import type { LiveGameRef } from './liveGame'
 import { LineupModalFrame } from './LineupModalFrame'
 import { usePopOut } from './popOut'
 

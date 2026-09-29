@@ -33,7 +33,7 @@ function allPlayerIds(lineups: LiveLineups): string[] {
  * the popped-out matchup, which floats over other tabs. Without it the lineups are read once (a
  * one-shot poll, final after its first answer), which is all the modal needs.
  */
-export function useLiveBoxScore(leagueId: string, week: number, memberIds: [string, string], { poll = false } = {}): AsyncState<LiveBoxScore> {
+export function useLiveBoxScore(leagueId: string, week: number, memberIds: [string, string], { poll = false } = {}): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
   const players = usePlayers(true)
   const lineups = usePoll(
     `live-lineups:${leagueId}:${week}:${memberIds.join(',')}`,
@@ -58,5 +58,6 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
     data,
     loading: players.loading || lineups.loading || (lineups.data !== undefined && extra.loading),
     error: players.error ?? lineups.error ?? extra.error,
+    refresh: lineups.refresh,
   }
 }

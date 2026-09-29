@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { LiveGameRef } from './LiveBoxScoreBody'
+import type { LiveGameRef } from './liveGame'
 
 // Leaf module so the pop-out button (consumer) and PopOutProvider can both import it without a
 // cycle — same pattern as teamProfile.

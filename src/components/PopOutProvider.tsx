@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { nameForYear } from '@/config'
 import { openPipWindow, pipSupported, type PipWindow } from '@/lib/pictureInPicture'
-import type { LiveGameRef } from './LiveBoxScoreBody'
+import type { LiveGameRef } from './liveGame'
 import { LiveMatchupPopOut } from './LiveMatchupPopOut'
 import { PopOutContext } from './popOut'
 

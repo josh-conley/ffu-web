@@ -61,4 +61,19 @@ describe('usePoll', () => {
       expect(fetcher).toHaveBeenCalledTimes(4)
     })
   })
+
+  it('refresh reads now and restarts the interval', async () => {
+    let n = 0
+    const fetcher = vi.fn(async () => ++n)
+    const { result } = renderHook(() => usePoll('k', fetcher, true, 60_000))
+    await flush()
+    await act(() => vi.advanceTimersByTimeAsync(40_000))
+    await act(() => result.current.refresh())
+    expect(result.current.data).toBe(2)
+    // The old tick (due at 60s) was replaced by one a full interval after the refresh.
+    await act(() => vi.advanceTimersByTimeAsync(30_000))
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    await act(() => vi.advanceTimersByTimeAsync(30_000))
+    expect(fetcher).toHaveBeenCalledTimes(3)
+  })
 })
