@@ -226,7 +226,8 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
 - [ ] **Second scheduled run went red (2026-09-29)**, again not on data: refresh, check and all gates
       passed, then the push was refused by the `main` ruleset created 2026-09-25 (required `verify`,
       admin-only bypass; the workflow token is neither). Fixed by publishing through
-      `bot/data-refresh` + a dispatched `verify` run, then a fast-forward of main (why not a bypass:
+      `bot/data-refresh` + a dispatched `verify` run, then a bot-opened PR it merges itself (a
+      fast-forward push after `verify` was still refused) (why not a bypass:
       `ai-docs/DECISIONS.md`). The 10:00 run was dropped again, so the schedule moved to minute 17.
       **To confirm:** after the fix merges, run the workflow by hand to land week 3, and check that a
       scheduled Tuesday run goes green end to end. Then delete the claude.ai routine.
