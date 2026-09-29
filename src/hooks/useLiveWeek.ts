@@ -1,10 +1,11 @@
 import type { Tier } from '@/config'
 import { LIVE_LEAGUE_IDS, regularSeasonWeeks } from '@/config'
 import { useMemo } from 'react'
-import type { Game, LiveSeasonData } from '@/data'
+import type { Game, LiveSeasonData, NflGameClock } from '@/data'
 import { fetchLiveSeason, fetchLiveWeeksGames, type NflState } from '@/data'
 import { seasonHasStarted, withCurrentWeekGames } from '@/selectors'
 import { useAsyncData } from './useAsyncData'
+import { liveScoreInterval, readFresh, readGameClocks } from './liveScoreRead'
 import { usePoll } from './usePoll'
 import { LIVE_SEASON_CONFIGURED, useNflState } from './useNflState'
 
@@ -18,9 +19,6 @@ export interface LiveWeek {
    *  and whenever it isn't being polled. The projections re-read on each change. */
   asOf: number | undefined
 }
-
-/** Each tick reads past Sleeper's CDN (its copy can lag minutes mid-game); a minute keeps that light. */
-const POLL_MS = 60_000
 
 const MAX_REGULAR_WEEK = regularSeasonWeeks('sleeper').length // 14 — playoffs are out of scope here
 
@@ -42,18 +40,23 @@ async function fetchAllTiers(tiers: Tier[], leagueIds: Record<Tier, string>, yea
 interface CurrentWeekRead {
   games: Partial<Record<Tier, Game[]>>
   asOf: number
+  /** The NFL games as they stood for this read: they decide when the next one happens. */
+  clocks: NflGameClock[] | undefined
 }
 
 /** The week in progress only: one request per league, the roster map being kept for the visit. */
-async function fetchCurrentWeek(tiers: Tier[], leagueIds: Record<Tier, string>, week: number): Promise<CurrentWeekRead> {
-  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week], { fresh: true })] as const))
-  return { games: Object.fromEntries(entries), asOf: Date.now() }
+async function fetchCurrentWeek(tiers: Tier[], leagueIds: Record<Tier, string>, year: string, week: number): Promise<CurrentWeekRead> {
+  const clocks = await readGameClocks(year, week)
+  const fresh = readFresh(clocks, false)
+  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week], { fresh })] as const))
+  return { games: Object.fromEntries(entries), asOf: Date.now(), clocks }
 }
 
 /**
  * Live "current week" data for the home page's This Week section. The season so far (rosters and
  * every week) is read once per mount; while `poll` is on, the week in progress is then re-read every
- * minute (see ai-docs/DECISIONS.md, 2026-09-25), pausing in a hidden tab. Resolves to
+ * minute while NFL games are being played and far less often between them (see ai-docs/DECISIONS.md,
+ * 2026-09-25 and 2026-09-28), pausing in a hidden tab. Resolves to
  * `inScope: false` (and renders nothing upstream) whenever `LIVE_LEAGUE_IDS` has no entry for
  * whatever year Sleeper currently reports.
  */
@@ -68,12 +71,13 @@ export function useLiveWeek({ poll }: { poll: boolean }): LiveWeek {
     () => fetchAllTiers(tiers, leagueIds as Record<Tier, string>, year as string, week as number),
     inScope,
   )
-  // Fresh reads (see fetchLiveWeeksGames), which the box score and projections then share for a minute.
+  // Every minute while NFL games are on (fresh reads, which the box score and projections then share),
+  // otherwise woken for the next kickoff: see liveScoreRead and selectors/livePolling.
   const current = usePoll(
     `live-current-week:${year ?? ''}:${week ?? ''}`,
-    () => fetchCurrentWeek(tiers, leagueIds as Record<Tier, string>, week as number),
+    () => fetchCurrentWeek(tiers, leagueIds as Record<Tier, string>, year as string, week as number),
     inScope && poll,
-    POLL_MS,
+    liveScoreInterval,
   )
 
   const byTier = useMemo(() => {

@@ -26,9 +26,12 @@ export interface PollOptions<T> {
 /** `manual`: this read is a `refresh`, so the viewer wants the current answer, past any cache. */
 type Fetcher<T> = (read: { manual: boolean }) => Promise<T>
 
+/** A fixed wait, or one chosen from the latest answer (undefined until the first one lands). */
+type Interval<T> = number | ((latest: T | undefined) => number)
+
 interface Latest<T> extends PollOptions<T> {
   fetcher: Fetcher<T>
-  intervalMs: number
+  intervalMs: Interval<T>
 }
 
 type Resolve<T> = (update: (prev: Resolved<T> | undefined) => Resolved<T> | undefined) => void
@@ -44,11 +47,13 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
   let timer: ReturnType<typeof setTimeout> | undefined
   let issued = 0
   let applied = 0
+  let last: T | undefined
 
   function schedule() {
     if (cancelled || done) return
     clearTimeout(timer)
-    timer = setTimeout(() => void poll(), latest.current.intervalMs)
+    const { intervalMs } = latest.current
+    timer = setTimeout(() => void poll(), typeof intervalMs === 'function' ? intervalMs(last) : intervalMs)
   }
 
   /** One request; a stale answer (a newer one already applied) or a cancelled loop is dropped. */
@@ -57,6 +62,7 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
       const next = await latest.current.fetcher({ manual })
       if (cancelled || id < applied) return
       applied = id
+      last = next
       resolve(() => ({ key, data: next }))
       if (latest.current.isFinal?.(next)) done = true
     } catch (err: unknown) {
@@ -106,13 +112,15 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
  * `intervalMs` may change between renders — the live board polls hard while the draft is running
  * and barely at all when it isn't. The wait is therefore a chained timeout that reads the current
  * interval when it schedules the next tick, rather than a setInterval that would have to be torn
- * down and restarted (firing an extra fetch) every time the caller changed its mind.
+ * down and restarted (firing an extra fetch) every time the caller changed its mind. It can also be
+ * a function of the answer just read, for a wait that depends on the data itself (the live scores
+ * poll hard only while NFL games are on): that decides straight away, not a render later.
  *
  * A failed poll keeps the last good value rather than blanking the UI — a dropped request mid-draft
  * should be invisible. An error is only reported when there is nothing good to show yet, i.e. the
  * very first fetch failed.
  */
-export function usePoll<T>(key: string, fetcher: Fetcher<T>, active: boolean, intervalMs: number, options: PollOptions<T> = {}): Polled<T> {
+export function usePoll<T>(key: string, fetcher: Fetcher<T>, active: boolean, intervalMs: Interval<T>, options: PollOptions<T> = {}): Polled<T> {
   const [resolved, setResolved] = useState<Resolved<T>>()
 
   // These are fresh closures/values every render; the poll loop must not restart for that, so it

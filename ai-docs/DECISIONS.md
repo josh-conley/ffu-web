@@ -540,3 +540,14 @@ of a point before settling. Accepted: it's Sleeper's own data, and it settles wi
 **Not done yet.** Sleeper's undocumented `/stats/nfl/{year}/{week}` feed (`s-maxage=4`) could give
 near-real-time player points, computed with each league's scoring. Unmeasured over a full slate;
 revisit only if fresh `/matchups` still feels slow.
+
+**Amended the same day: poll hard only while games are on.** The rule lives in
+`selectors/livePolling.ts` and is shared by both polls (`hooks/liveScoreRead.ts`). Each read first
+checks the NFL game clocks. While any game is live, or finished less than 4h after its kickoff
+(stat corrections), the poll reads fresh every 60s. Otherwise it reads the ordinary cached way and
+waits for the next kickoff, at most 15 min. If the clock feed fails, it behaves as live. This
+removed nearly all the week's polling (a tab left open on a Thursday used to make about 4 calls a
+minute for scores that couldn't move). The game clocks keep their 60s read even though their CDN
+copy only turns over every 180s: those reads are CDN hits and cost Sleeper's servers nothing, and
+a longer cache on our side would stack on theirs.
+
