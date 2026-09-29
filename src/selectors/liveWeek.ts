@@ -22,10 +22,11 @@ export function withCurrentWeekGames(data: LiveSeasonData, latest: Game[] | unde
 /**
  * UPR per member from completed weeks only (never the week in progress), through the same
  * `seasonUpr` as every other page, so it is empty until the season has `UPR_MIN_WEEKS` in the book
- * and matches the Standings page's number once it isn't.
+ * and matches the Standings page's number once it isn't. `throughWeek` as in
+ * standingsThroughPreviousWeek.
  */
-export function uprThroughPreviousWeek(data: LiveSeasonData): Map<string, number> {
-  return seasonUpr({ games: data.games.filter((g) => g.week < data.currentWeek) })
+export function uprThroughPreviousWeek(data: LiveSeasonData, throughWeek = data.currentWeek - 1): Map<string, number> {
+  return seasonUpr({ games: data.games.filter((g) => g.week <= throughWeek) })
 }
 
 export interface LiveStandingRow {
@@ -45,11 +46,14 @@ function tiedWithPrevious(a: TeamTotals, b: TeamTotals): boolean {
  * Standings derived ONLY from completed weeks (never the in-progress current week), so a team's
  * record never includes a partial live score. A member with no completed games yet (week 1) still
  * gets a row, all zeros, rather than being omitted.
+ *
+ * `throughWeek` is the last week counted: by default the one before the week on show. A finished
+ * week on show (Tuesday's finals) passes that week itself, so its cards carry the result they show.
  */
-export function standingsThroughPreviousWeek(data: LiveSeasonData): LiveStandingRow[] {
-  const games = data.games.filter((g) => g.week < data.currentWeek)
+export function standingsThroughPreviousWeek(data: LiveSeasonData, throughWeek = data.currentWeek - 1): LiveStandingRow[] {
+  const games = data.games.filter((g) => g.week <= throughWeek)
   const totals = regularSeasonTotals({ games })
-  const streaks = currentStreaks(games, data.tier, data.currentWeek - 1)
+  const streaks = currentStreaks(games, data.tier, throughWeek)
   const sorted = data.memberIds
     .map((memberId) => totals.get(memberId) ?? emptyTotals(memberId))
     .sort((a, b) => (b.winPct !== a.winPct ? b.winPct - a.winPct : b.pointsFor - a.pointsFor))

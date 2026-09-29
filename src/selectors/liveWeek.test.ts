@@ -55,6 +55,11 @@ describe('standingsThroughPreviousWeek', () => {
     expect(a?.totals.losses).toBe(1) // week 4 loss; week 5's score never counted
   })
 
+  it('counts through a given week, for a finished week on show', () => {
+    const a = standingsThroughPreviousWeek({ ...data, currentWeek: 4 }, 4).find((r) => r.totals.memberId === 'a')
+    expect(a?.totals.losses).toBe(1) // week 4's loss is in: it is the week on show, and final
+  })
+
   it('gives an all-zero row to a member with no completed games', () => {
     const rows = standingsThroughPreviousWeek(data)
     const c = rows.find((r) => r.totals.memberId === 'c')
@@ -76,6 +81,10 @@ describe('uprThroughPreviousWeek', () => {
   it('rates completed weeks only, never the partial live score', () => {
     // a over weeks 1-4: avg 115, high 130, low 100, 3-1 → (115×6 + 230×2 + 0.75×400) / 10.
     expect(uprThroughPreviousWeek(data).get('a')).toBe(145)
+  })
+
+  it('counts through a given week, for a finished week on show', () => {
+    expect(uprThroughPreviousWeek({ ...data, currentWeek: 4 }, 4).get('a')).toBe(145)
   })
 
   it('is empty until the season has UPR_MIN_WEEKS completed', () => {

@@ -98,7 +98,7 @@ export function HomeLiveSection({
               {showStandings ? (
                 <CurrentWeekStandings tier={tier} data={data} />
               ) : (
-                <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
+                <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} final={final} />
               )}
             </div>
           ))}
