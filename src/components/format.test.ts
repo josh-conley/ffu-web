@@ -1,4 +1,4 @@
-import { draftDateTime, formatPoints, gameNote, ordinal, recordLabel, recordPpgLabel, shortPlayerName } from './format'
+import { draftDateTime, formatPoints, gameNote, ordinal, recordLabel, recordRatingLabel, shortPlayerName } from './format'
 
 describe('ordinal', () => {
   it('picks the right suffix, including the teens', () => {
@@ -21,11 +21,15 @@ describe('formatPoints', () => {
   })
 })
 
-describe('recordPpgLabel', () => {
-  it('pairs the record with points per game, and says nothing before the first game', () => {
-    expect(recordPpgLabel({ wins: 2, losses: 1, ties: 0, average: 118.44 })).toBe('2-1 · 118.4 PPG')
-    expect(recordPpgLabel({ wins: 1, losses: 1, ties: 1, average: 101 })).toBe('1-1-1 · 101.0 PPG')
-    expect(recordPpgLabel({ wins: 0, losses: 0, ties: 0, average: 0 })).toBeUndefined()
+describe('recordRatingLabel', () => {
+  it('pairs the record with points per game before there is a UPR, and says nothing before the first game', () => {
+    expect(recordRatingLabel({ wins: 2, losses: 1, ties: 0, average: 118.44 }, undefined)).toBe('2-1 · 118.4 PPG')
+    expect(recordRatingLabel({ wins: 1, losses: 1, ties: 1, average: 101 }, undefined)).toBe('1-1-1 · 101.0 PPG')
+    expect(recordRatingLabel({ wins: 0, losses: 0, ties: 0, average: 0 }, undefined)).toBeUndefined()
+  })
+
+  it('shows the UPR in place of PPG once there is one', () => {
+    expect(recordRatingLabel({ wins: 2, losses: 1, ties: 0, average: 118.44 }, 108.4)).toBe('2-1 · 108.40 UPR')
   })
 })
 

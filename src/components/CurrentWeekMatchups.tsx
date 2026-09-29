@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import type { Tier } from '@/config'
 import type { Game, LiveSeasonData } from '@/data'
-import { currentWeekMatchups, standingsThroughPreviousWeek } from '@/selectors'
-import { recordPpgLabel } from './format'
+import { currentWeekMatchups, standingsThroughPreviousWeek, uprThroughPreviousWeek } from '@/selectors'
+import { recordRatingLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 import { MatchupCard } from './MatchupCard'
 
@@ -21,18 +21,24 @@ export function CurrentWeekMatchups({
   data,
   onOpen,
   projected,
+  final = false,
 }: {
   tier: Tier
   data: LiveSeasonData
   onOpen: (open: OpenGame) => void
   projected?: (memberId: string) => number | undefined
+  /** The week on show is finished (Tuesday's finals): its own result counts in the records. */
+  final?: boolean
 }) {
   const style = LEAGUE_STYLES[tier]
-  // Record and PPG through the last completed week, the same numbers as the home standings.
-  const totals = useMemo(() => new Map(standingsThroughPreviousWeek(data).map((r) => [r.totals.memberId, r.totals])), [data])
+  // Record and UPR (PPG until the season has a UPR) through the last completed week, the same
+  // numbers as the home standings and the Standings page. A final week is itself completed.
+  const through = final ? data.currentWeek : data.currentWeek - 1
+  const totals = useMemo(() => new Map(standingsThroughPreviousWeek(data, through).map((r) => [r.totals.memberId, r.totals])), [data, through])
+  const upr = useMemo(() => uprThroughPreviousWeek(data, through), [data, through])
   const detail = (memberId: string) => {
     const t = totals.get(memberId)
-    return t && recordPpgLabel(t)
+    return t && recordRatingLabel(t, upr.get(memberId))
   }
   return (
     <section className="border border-border bg-surface shadow-sm">

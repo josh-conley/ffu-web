@@ -7,8 +7,8 @@ import { UPR_MIN_WEEKS } from '@/selectors'
 export function UprNote() {
   return (
     <p className="text-sm text-muted">
-      UPR joins from week {UPR_MIN_WEEKS} — it rates a team on its average, high and low, which say
-      little about anyone until a few weeks are in the books.
+      UPR appears once {UPR_MIN_WEEKS} weeks are played — it rates a team on its average, high and
+      low, which say little about anyone until a few weeks are in the books.
     </p>
   )
 }

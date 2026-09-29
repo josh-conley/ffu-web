@@ -89,7 +89,7 @@ function ParticipantRow({
   /** A live game's leader: the score alone is bold. */
   leading: boolean
   subtitle?: string
-  /** A second line under the name (live cards: record and PPG). */
+  /** A second line under the name (live cards: record and UPR, or PPG before there is one). */
   detail?: string
   projected?: number
   /** Live cards keep the projection line even once a team has none left, so every card matches in height. */
@@ -148,7 +148,7 @@ export function MatchupCard({
   status?: MatchupStatus
   onOpen?: () => void
   subtitle?: (memberId: string) => string | undefined
-  /** A line under each team's name (live home cards: record and PPG through last week). */
+  /** A line under each team's name (live home cards: record and UPR/PPG through last week). */
   detail?: (memberId: string) => string | undefined
   projected?: (memberId: string) => number | undefined
 }) {
