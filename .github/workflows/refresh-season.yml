@@ -102,11 +102,21 @@ jobs:
       # A fast-forward to a commit `verify` already passed, so the ruleset accepts it. If main moved
       # during the ~2 minutes of CI this is rejected as non-fast-forward rather than published
       # unverified; rerun the workflow (or wait for the 14:17 run) and it rebases onto the new main.
+      # The retries are for the ruleset lagging behind the check: on 2026-09-29 a push 2s after
+      # `verify` completed was refused with "Required status check 'verify' is expected".
       - name: Publish to main
         if: steps.check.outputs.changed == 'true'
         run: |
-          git push origin HEAD:main
-          git push origin --delete bot/data-refresh
+          for attempt in 1 2 3 4 5 6; do
+            sleep 10
+            if git push origin HEAD:main; then
+              git push origin --delete bot/data-refresh
+              exit 0
+            fi
+            echo "Push refused (attempt $attempt); retrying in case the ruleset hasn't seen verify yet."
+          done
+          echo "::error::main refused the verified commit. If main moved meanwhile, rerun this workflow."
+          exit 1
 
       # A push made with GITHUB_TOKEN deliberately does not trigger other workflows, so deploy.yml's
       # `on: push` never fires for this commit. Start it explicitly instead.
