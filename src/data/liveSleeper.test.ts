@@ -16,7 +16,8 @@ const WEEK_1_MATCHUPS = [
   { roster_id: 4, matchup_id: 11, points: 70 },
 ]
 
-function mapFetch(url: string): Promise<Response> {
+function mapFetch(requested: string): Promise<Response> {
+  const url = requested.split('?')[0] ?? requested // a fresh read adds a cache-busting query
   const ok = (body: unknown) => Promise.resolve({ ok: true, status: 200, json: async () => body } as Response)
   if (url.endsWith('/state/nfl')) return ok({ week: 5, season_type: 'regular', season: '2025', season_start_date: '2025-09-04' })
   if (url.endsWith('/league/lg1')) return ok({ roster_positions: ['QB', 'RB', 'BN', 'BN'], scoring_settings: { rec: 0.5 } })
@@ -120,6 +121,17 @@ describe('shared Sleeper reads', () => {
     await fetchLiveWeekLineups('lg1', 1)
     const urls = fetchMock.mock.calls.map(([url]) => url.replace(/^.*\/v1/, ''))
     expect(urls.sort()).toEqual(['/league/lg1', '/league/lg1/matchups/1', '/league/lg1/rosters'])
+  })
+
+  it('reads a polled week past the CDN, and the lineups then reuse that answer', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchMock = vi.fn(mapFetch)
+    vi.stubGlobal('fetch', fetchMock)
+    await fetchLiveWeeksGames('lg1', [1], { fresh: true })
+    await fetchLiveWeekLineups('lg1', 1)
+    const matchupReads = fetchMock.mock.calls.map(([url]) => url).filter((url) => url.includes('/matchups/1'))
+    expect(matchupReads).toHaveLength(1)
+    expect(matchupReads[0]).toMatch(/\?_=\d+$/)
   })
 })
 

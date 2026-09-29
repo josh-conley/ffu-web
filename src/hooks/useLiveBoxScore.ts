@@ -16,7 +16,7 @@ export interface LiveBoxScore {
   asOf: number
 }
 
-/** Sleeper's CDN holds `/matchups` for 60s, so a faster poll would only get the same bytes back. */
+/** Same cadence as the home page's scores (useLiveWeek), and like them read past Sleeper's CDN. */
 const POLL_MS = 60_000
 
 function allPlayerIds(lineups: LiveLineups): string[] {
@@ -37,8 +37,8 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
   const players = usePlayers(true)
   const lineups = usePoll(
     `live-lineups:${leagueId}:${week}:${memberIds.join(',')}`,
-    // A Refresh reads past every cache, or it would get back the answer already on screen.
-    async ({ manual }) => ({ ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh: manual })), asOf: Date.now() }),
+    // Polls read past Sleeper's CDN; a Refresh does too, or it would get back the answer on screen.
+    async ({ manual }) => ({ ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh: poll || manual })), asOf: Date.now() }),
     true,
     POLL_MS,
     { isFinal: () => !poll, whileHidden: poll },
