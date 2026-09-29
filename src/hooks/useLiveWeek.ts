@@ -19,7 +19,7 @@ export interface LiveWeek {
   asOf: number | undefined
 }
 
-/** Sleeper's CDN holds `/matchups` for 60s (`s-maxage=60`), so polling any faster gains nothing. */
+/** Each tick reads past Sleeper's CDN (its copy can lag minutes mid-game); a minute keeps that light. */
 const POLL_MS = 60_000
 
 const MAX_REGULAR_WEEK = regularSeasonWeeks('sleeper').length // 14 — playoffs are out of scope here
@@ -46,7 +46,7 @@ interface CurrentWeekRead {
 
 /** The week in progress only: one request per league, the roster map being kept for the visit. */
 async function fetchCurrentWeek(tiers: Tier[], leagueIds: Record<Tier, string>, week: number): Promise<CurrentWeekRead> {
-  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week])] as const))
+  const entries = await Promise.all(tiers.map(async (tier) => [tier, await fetchLiveWeeksGames(leagueIds[tier], [week], { fresh: true })] as const))
   return { games: Object.fromEntries(entries), asOf: Date.now() }
 }
 
@@ -68,7 +68,7 @@ export function useLiveWeek({ poll }: { poll: boolean }): LiveWeek {
     () => fetchAllTiers(tiers, leagueIds as Record<Tier, string>, year as string, week as number),
     inScope,
   )
-  // Its first read coincides with the season read above, and sleeperApi answers both from one request.
+  // Fresh reads (see fetchLiveWeeksGames), which the box score and projections then share for a minute.
   const current = usePoll(
     `live-current-week:${year ?? ''}:${week ?? ''}`,
     () => fetchCurrentWeek(tiers, leagueIds as Record<Tier, string>, week as number),

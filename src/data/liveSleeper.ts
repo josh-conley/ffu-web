@@ -89,8 +89,13 @@ function buildGame(week: number, entries: SleeperMatchupEntry[], rosterMap: Map<
   return game
 }
 
-async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>): Promise<Game[]> {
-  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`)
+/** A polled read of a week in progress wants Sleeper's current scores, not its CDN's (see fetchLiveWeeksGames). */
+interface ReadOptions {
+  fresh?: boolean
+}
+
+async function fetchWeekGames(leagueId: string, week: number, rosterMap: Map<number, string>, { fresh }: ReadOptions = {}): Promise<Game[]> {
+  const entries = await sleeperGet<SleeperMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`, { fresh })
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
   const byMatchup = new Map<number, SleeperMatchupEntry[]>()
   for (const e of entries) {
@@ -130,11 +135,12 @@ export async function fetchLiveSeason(tier: Tier, year: string, leagueId: string
  * The games of `weeks` as Sleeper has them right now — partial scores while a week is being played.
  * For a page built on the season file, whose weeks are only written once complete (Matchups), to
  * fill in the weeks it doesn't have yet; and for the home page's poll of the week in progress, which
- * costs one request per league because the roster map is kept for the visit.
+ * costs one request per league because the roster map is kept for the visit. That poll passes
+ * `fresh`: during a game Sleeper's CDN can hand back scores minutes old (see sleeperApi).
  */
-export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[]): Promise<Game[]> {
+export async function fetchLiveWeeksGames(leagueId: string, weeks: readonly number[], options: ReadOptions = {}): Promise<Game[]> {
   const rosterMap = await fetchRosterMap(leagueId)
-  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap)))
+  const games = await Promise.all(weeks.map((week) => fetchWeekGames(leagueId, week, rosterMap, options)))
   return games.flat()
 }
 
@@ -187,11 +193,11 @@ export interface LiveWeekLineups {
   teams: TeamLineup[]
 }
 
-export async function fetchLiveWeekLineups(leagueId: string, week: number): Promise<LiveWeekLineups> {
+export async function fetchLiveWeekLineups(leagueId: string, week: number, { fresh }: ReadOptions = {}): Promise<LiveWeekLineups> {
   const [rosters, league, entries] = await Promise.all([
     fetchRosters(leagueId, IR_MAX_AGE),
     sleeperGet<SleeperLeague>(`/league/${leagueId}`, FOR_THE_VISIT),
-    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
+    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`, { fresh }),
   ])
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
   // IR as it stands NOW (all Sleeper exposes) — right for the week being played and those to come,
@@ -209,8 +215,8 @@ export interface LiveLineups extends Omit<LiveWeekLineups, 'teams'> {
 }
 
 /** Starters + bench for one game (the two named members), for the live box-score modal. */
-export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string]): Promise<LiveLineups> {
-  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week)
+export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string], options: ReadOptions = {}): Promise<LiveLineups> {
+  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week, options)
   const [m0, m1] = memberIds
   const lineupOf = (memberId: string): TeamLineup => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [], reserve: [] }
   return { ...rest, teams: [lineupOf(m0), lineupOf(m1)] }
