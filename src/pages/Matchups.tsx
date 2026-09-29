@@ -5,12 +5,13 @@ import { useSeasonView } from '@/hooks/useSeasonView'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useNflState } from '@/hooks/useNflState'
 import { useLiveWeekGames } from '@/hooks/useLiveWeekGames'
+import { useLiveMatchupExtras, type LiveMatchupExtras } from '@/hooks/useLiveMatchupExtras'
 import { gameForFixture, gamesByWeek, liveScoredWeeks, liveWeekFor, regularSeasonStandings, runningRecords, upcomingFixtures } from '@/selectors'
 import { SeasonLeaguePicker } from '@/components/SeasonLeaguePicker'
 import { FixtureCard, MatchupCard } from '@/components/MatchupCard'
 import { LineupModal } from '@/components/LineupModal'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
-import { recordLabel } from '@/components/format'
+import { recordLabel, recordRatingLabel } from '@/components/format'
 import { SELECT } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -51,6 +52,14 @@ function WeekBadge({ week, liveWeek }: { week: number; liveWeek?: number }) {
   return <span className="text-[10px] font-semibold text-muted">Upcoming</span>
 }
 
+/** The line under each team on a live card, the home page's This Week line: record + UPR (or PPG). */
+function liveDetail({ totals, upr }: LiveMatchupExtras) {
+  return (memberId: string) => {
+    const t = totals.get(memberId)
+    return t && recordRatingLabel(t, upr.get(memberId))
+  }
+}
+
 /**
  * The weeks not yet in the season file — shown so an in-progress season isn't a blank page. A week
  * Sleeper already has scores for (the live one) shows them, as a scored card; the rest are fixtures.
@@ -62,6 +71,7 @@ function UpcomingWeeks({
   liveGames,
   onOpen,
   subtitle,
+  extras,
 }: {
   weeks: ReturnType<typeof upcomingFixtures>
   year: string
@@ -70,7 +80,11 @@ function UpcomingWeeks({
   liveGames: readonly Game[]
   onOpen?: (open: OpenFixture) => void
   subtitle?: (memberId: string) => string | undefined
+  /** UPR line and projections for the live week's cards, as on the home page. */
+  extras: LiveMatchupExtras
 }) {
+  const detail = liveDetail(extras)
+  const projected = (memberId: string) => extras.projections.get(memberId)
   return (
     <>
       {weeks.map(({ week, fixtures }) => (
@@ -84,7 +98,9 @@ function UpcomingWeeks({
               const open = onOpen ? () => onOpen({ fixture, game }) : undefined
               // An earlier week still missing from the file is finished; only the live one is in play.
               const status = week === liveWeek ? 'live' : 'final'
-              return game ? (
+              return game && status === 'live' ? (
+                <MatchupCard key={`${week}-${i}`} game={game} year={year} status={status} detail={detail} projected={projected} onOpen={open} />
+              ) : game ? (
                 <MatchupCard key={`${week}-${i}`} game={game} year={year} status={status} subtitle={subtitle} onOpen={open} />
               ) : (
                 <FixtureCard key={`${week}-${i}`} fixture={fixture} year={year} subtitle={subtitle} onOpen={open} />
@@ -125,6 +141,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
   // The file only gains a week once it's complete, so the week being played comes from Sleeper.
   const liveWeeks = useMemo(() => liveScoredWeeks(upcoming, liveWeek), [upcoming, liveWeek])
   const liveGames = useLiveWeekGames(liveLeagueId, liveWeeks)
+  const extras = useLiveMatchupExtras(season, liveWeek)
 
   const subtitleFor = (game: Game, memberId: string): string | undefined => {
     if (game.isPlayoff) {
@@ -157,6 +174,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
         liveWeek={liveWeek}
         liveGames={liveGames}
         subtitle={fixtureSubtitle}
+        extras={extras}
         onOpen={liveLeagueId ? setOpenFixture : undefined}
       />
       {open && <LineupModal tier={season.tier} year={year} game={open} onClose={() => setOpen(null)} />}

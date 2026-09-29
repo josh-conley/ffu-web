@@ -64,12 +64,15 @@ function buildColumns(year: string, byUpr: boolean): Column<UnionStandingRow>[] 
 export function UnionStandingsTable({ rows, year }: { rows: UnionStandingRow[]; year: string }) {
   const byUpr = rankedByUpr(rows)
   const columns = useMemo(() => buildColumns(year, byUpr), [year, byUpr])
+  // Sorted on the UPR column itself once there is one, so the header shows what the order is. The
+  // key remounts the table when that flips, since DataTable reads `initialSort` only on mount.
   return (
     <DataTable
+      key={byUpr ? 'upr' : 'rank'}
       columns={columns}
       rows={rows}
       getRowKey={(r) => r.team.memberId}
-      initialSort={{ key: 'rank', dir: 'asc' }}
+      initialSort={byUpr ? { key: 'upr', dir: 'desc' } : { key: 'rank', dir: 'asc' }}
     />
   )
 }

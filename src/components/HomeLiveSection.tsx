@@ -6,6 +6,14 @@ import { useLiveProjections } from '@/hooks/useLiveProjections'
 import { CurrentWeekMatchups, type OpenGame } from './CurrentWeekMatchups'
 import { CurrentWeekStandings } from './CurrentWeekStandings'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
+import { TabPanel, Tabs, type TabDef } from './Tabs'
+
+/** Tuesday's choice between the week just finished and the one now starting (see LiveBlock). */
+export interface WeekTabs {
+  tabs: readonly TabDef[]
+  value: string
+  onChange: (id: string) => void
+}
 
 export interface LiveTier {
   tier: Tier
@@ -57,6 +65,7 @@ export function HomeLiveSection({
   final = false,
   asOf,
   onOpen,
+  weekTabs,
 }: {
   tiers: LiveTier[]
   week: number | undefined
@@ -66,6 +75,7 @@ export function HomeLiveSection({
   /** When the scores were last read; each new read refreshes the projections beside them. */
   asOf: number | undefined
   onOpen: (open: OpenGame) => void
+  weekTabs?: WeekTabs
 }) {
   const projecting = !showStandings && !final
   const painted = useAfterIdle(projecting)
@@ -78,21 +88,29 @@ export function HomeLiveSection({
   return (
     <section className="space-y-3">
       <h2 className={HEADING}>{heading}</h2>
+      {weekTabs && <Tabs tabs={weekTabs.tabs} value={weekTabs.value} onChange={weekTabs.onChange} label="Which week" />}
       <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />
-      <LeagueGrid>
-        {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}
-        {tiers.map(({ tier, data }) => (
-          <div key={tier} id={leagueAnchor(tier)} className="min-w-0 scroll-mt-24">
-            {showStandings ? (
-              <CurrentWeekStandings tier={tier} data={data} />
-            ) : (
-              <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
-            )}
-          </div>
-        ))}
-      </LeagueGrid>
+      <MaybeTabPanel id={weekTabs?.value}>
+        <LeagueGrid>
+          {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}
+          {tiers.map(({ tier, data }) => (
+            <div key={tier} id={leagueAnchor(tier)} className="min-w-0 scroll-mt-24">
+              {showStandings ? (
+                <CurrentWeekStandings tier={tier} data={data} />
+              ) : (
+                <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
+              )}
+            </div>
+          ))}
+        </LeagueGrid>
+      </MaybeTabPanel>
     </section>
   )
+}
+
+/** The grid is a tab panel only while there are tabs to label it. */
+function MaybeTabPanel({ id, children }: { id: string | undefined; children: ReactNode }) {
+  return id === undefined ? <>{children}</> : <TabPanel id={id}>{children}</TabPanel>
 }
 
 /**

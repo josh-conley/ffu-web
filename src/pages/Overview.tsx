@@ -3,6 +3,7 @@ import type { SeasonData } from '@/data'
 import type { Tier } from '@/config'
 import { tiersForYear } from '@/config'
 import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useUrlState } from '@/hooks/useUrlState'
 import { useLiveWeek, type LiveWeek } from '@/hooks/useLiveWeek'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
 import { asOfWeek, finishedWeekOnShow, homeLiveSection, unionHighlight, upcomingYear } from '@/selectors'
@@ -10,7 +11,7 @@ import { HomeUnionPanel } from '@/components/HomeUnionPanel'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import type { OpenGame } from '@/components/CurrentWeekMatchups'
-import { HomeLiveSection, HomeLiveSectionPlaceholder } from '@/components/HomeLiveSection'
+import { HomeLiveSection, HomeLiveSectionPlaceholder, type WeekTabs } from '@/components/HomeLiveSection'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
 import { CupBanner } from '@/components/CupBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
@@ -31,6 +32,7 @@ const championOf = (season: SeasonData) => season.teams.find((t) => t.finalPlace
  * placeholder holds the section's height so nothing below jumps; a failure leaves no section at all.
  */
 function LiveBlock({ liveWeek, onOpen }: { liveWeek: LiveWeek; onOpen: (open: OpenGame) => void }) {
+  const [weekView, setWeekView] = useUrlState('week', 'final')
   const tiers = TIER_PRESTIGE.flatMap((tier) => {
     const data = liveWeek.byTier[tier]
     return data ? [{ tier, data }] : []
@@ -39,11 +41,36 @@ function LiveBlock({ liveWeek, onOpen }: { liveWeek: LiveWeek; onOpen: (open: Op
   // Wednesday leads with the standings instead of the matchups (see homeLiveSection) — but only once
   // a week has actually finished, otherwise there is nothing in them and the matchups stay.
   const showStandings = homeLiveSection() === 'standings' && tiers.some(({ data }) => data.currentWeek > 1)
-  // Tuesday, after Sleeper's rollover, the matchups show the week that just finished.
+  // Tuesday, after Sleeper's rollover, the matchups show the week that just finished, with a tab
+  // for the week now starting.
   const finished = showStandings ? undefined : tiers[0] && finishedWeekOnShow(tiers[0].data)
-  const shown = finished === undefined ? tiers : tiers.map((t) => ({ ...t, data: asOfWeek(t.data, finished) }))
+  const tabs = finished === undefined ? undefined : tuesdayTabs(finished, weekView, setWeekView)
+  const onFinal = tabs?.value === 'final'
+  const shown = finished !== undefined && onFinal ? tiers.map((t) => ({ ...t, data: asOfWeek(t.data, finished) })) : tiers
   const week = shown[0]?.data.currentWeek
-  return <HomeLiveSection tiers={shown} week={week} showStandings={showStandings} final={finished !== undefined} asOf={liveWeek.asOf} onOpen={onOpen} />
+  return (
+    <HomeLiveSection
+      tiers={shown}
+      week={week}
+      showStandings={showStandings}
+      final={onFinal}
+      asOf={liveWeek.asOf}
+      onOpen={onOpen}
+      weekTabs={tabs}
+    />
+  )
+}
+
+/** Tuesday's two weeks: the finals (default, the day's news) and the week now starting. */
+function tuesdayTabs(finished: number, view: string, onChange: (id: string) => void): WeekTabs {
+  return {
+    tabs: [
+      { id: 'final', label: `Week ${finished} · Final` },
+      { id: 'current', label: `Week ${finished + 1}` },
+    ],
+    value: view === 'current' ? 'current' : 'final',
+    onChange,
+  }
 }
 
 /** Last week's Around the Union panel — needs every season file, so it has its own loading state. */

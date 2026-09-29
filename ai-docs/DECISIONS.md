@@ -569,6 +569,10 @@ rollover, the current week already is the one just finished.
 the standings read better a day later. Keying the switch on "no points yet" rather than the clock
 alone means an early-Tuesday visit, before Sleeper rolls over, doesn't jump back two weeks.
 
+**Amended the same day: Tuesday has tabs.** While the finals are up, two tabs sit above them:
+"Week N · Final" (the default) and "Week N+1", the week now starting, with its projections. The
+choice is in the URL (`?week=current`), like every other tab on the site.
+
 
 ## 2026-09-29 — the weekly refresh must publish with its own token, not a ruleset bypass
 
