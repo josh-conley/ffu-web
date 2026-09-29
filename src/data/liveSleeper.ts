@@ -187,11 +187,12 @@ export interface LiveWeekLineups {
   teams: TeamLineup[]
 }
 
-export async function fetchLiveWeekLineups(leagueId: string, week: number): Promise<LiveWeekLineups> {
+/** `fresh`: read past Sleeper's CDN and our own cache, for a viewer who asked for current scores. */
+export async function fetchLiveWeekLineups(leagueId: string, week: number, { fresh = false } = {}): Promise<LiveWeekLineups> {
   const [rosters, league, entries] = await Promise.all([
     fetchRosters(leagueId, IR_MAX_AGE),
     sleeperGet<SleeperLeague>(`/league/${leagueId}`, FOR_THE_VISIT),
-    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`),
+    sleeperGet<SleeperFullMatchupEntry[]>(`/league/${leagueId}/matchups/${week}`, { fresh }),
   ])
   if (!Array.isArray(entries)) throw new Error(`Sleeper league/${leagueId}/matchups/${week}: not an array`)
   // IR as it stands NOW (all Sleeper exposes) — right for the week being played and those to come,
@@ -209,8 +210,8 @@ export interface LiveLineups extends Omit<LiveWeekLineups, 'teams'> {
 }
 
 /** Starters + bench for one game (the two named members), for the live box-score modal. */
-export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string]): Promise<LiveLineups> {
-  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week)
+export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string], options: { fresh?: boolean } = {}): Promise<LiveLineups> {
+  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week, options)
   const [m0, m1] = memberIds
   const lineupOf = (memberId: string): TeamLineup => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [], reserve: [] }
   return { ...rest, teams: [lineupOf(m0), lineupOf(m1)] }

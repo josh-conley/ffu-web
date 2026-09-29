@@ -23,8 +23,11 @@ export interface PollOptions<T> {
   whileHidden?: boolean
 }
 
+/** `manual`: this read is a `refresh`, so the viewer wants the current answer, past any cache. */
+type Fetcher<T> = (read: { manual: boolean }) => Promise<T>
+
 interface Latest<T> extends PollOptions<T> {
-  fetcher: () => Promise<T>
+  fetcher: Fetcher<T>
   intervalMs: number
 }
 
@@ -49,9 +52,9 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
   }
 
   /** One request; a stale answer (a newer one already applied) or a cancelled loop is dropped. */
-  async function read(id: number) {
+  async function read(id: number, manual: boolean) {
     try {
-      const next = await latest.current.fetcher()
+      const next = await latest.current.fetcher({ manual })
       if (cancelled || id < applied) return
       applied = id
       resolve(() => ({ key, data: next }))
@@ -70,7 +73,7 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
     if (!now && document.visibilityState === 'hidden' && !latest.current.whileHidden) return schedule()
     const id = ++issued
     clearTimeout(timer)
-    await read(id)
+    await read(id, now)
     if (id === issued) schedule()
   }
 
@@ -109,7 +112,7 @@ function startLoop<T>(key: string, latest: RefObject<Latest<T>>, resolve: Resolv
  * should be invisible. An error is only reported when there is nothing good to show yet, i.e. the
  * very first fetch failed.
  */
-export function usePoll<T>(key: string, fetcher: () => Promise<T>, active: boolean, intervalMs: number, options: PollOptions<T> = {}): Polled<T> {
+export function usePoll<T>(key: string, fetcher: Fetcher<T>, active: boolean, intervalMs: number, options: PollOptions<T> = {}): Polled<T> {
   const [resolved, setResolved] = useState<Resolved<T>>()
 
   // These are fresh closures/values every render; the poll loop must not restart for that, so it

@@ -37,7 +37,8 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
   const players = usePlayers(true)
   const lineups = usePoll(
     `live-lineups:${leagueId}:${week}:${memberIds.join(',')}`,
-    async () => ({ ...(await fetchLiveLineups(leagueId, week, memberIds)), asOf: Date.now() }),
+    // A Refresh reads past every cache, or it would get back the answer already on screen.
+    async ({ manual }) => ({ ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh: manual })), asOf: Date.now() }),
     true,
     POLL_MS,
     { isFinal: () => !poll, whileHidden: poll },

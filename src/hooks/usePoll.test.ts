@@ -62,9 +62,9 @@ describe('usePoll', () => {
     })
   })
 
-  it('refresh reads now and restarts the interval', async () => {
+  it('refresh reads now, as a manual read, and restarts the interval', async () => {
     let n = 0
-    const fetcher = vi.fn(async () => ++n)
+    const fetcher = vi.fn<(read: { manual: boolean }) => Promise<number>>(async () => ++n)
     const { result } = renderHook(() => usePoll('k', fetcher, true, 60_000))
     await flush()
     await act(() => vi.advanceTimersByTimeAsync(40_000))
@@ -75,5 +75,6 @@ describe('usePoll', () => {
     expect(fetcher).toHaveBeenCalledTimes(2)
     await act(() => vi.advanceTimersByTimeAsync(30_000))
     expect(fetcher).toHaveBeenCalledTimes(3)
+    expect(fetcher.mock.calls.map(([read]) => read.manual)).toEqual([false, true, false])
   })
 })
