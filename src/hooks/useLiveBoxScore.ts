@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import type { AsyncState } from './useAsyncData'
-import type { LiveLineups, PlayerMap } from '@/data'
+import type { LiveLineups, NflGameClock, PlayerMap } from '@/data'
 import { fetchLiveLineups, fetchMissingPlayers } from '@/data'
 import { startedPlayers } from '@/selectors'
 import { usePlayers } from './useLeagueData'
 import { useAsyncData } from './useAsyncData'
+import { liveScoreInterval, readFresh, readGameClocks } from './liveScoreRead'
 import { usePoll } from './usePoll'
 
 export interface LiveBoxScore {
@@ -16,11 +17,25 @@ export interface LiveBoxScore {
   asOf: number
 }
 
-/** Same cadence as the home page's scores (useLiveWeek), and like them read past Sleeper's CDN. */
-const POLL_MS = 60_000
-
 function allPlayerIds(lineups: LiveLineups): string[] {
   return lineups.teams.flatMap((t) => [...startedPlayers(t), ...t.bench, ...(t.reserve ?? [])].map((p) => p.playerId))
+}
+
+interface Read {
+  game: { leagueId: string; year: string; week: number; memberIds: [string, string] }
+  poll: boolean
+  manual: boolean
+}
+
+/**
+ * One read of the lineups. Polled, it follows the home page's rule (liveScoreRead): past Sleeper's
+ * CDN only while NFL games are on. A Refresh always reads past every cache, or it would get back
+ * the answer already on screen.
+ */
+async function readLineups({ game: { leagueId, year, week, memberIds }, poll, manual }: Read) {
+  const clocks: NflGameClock[] | undefined = poll ? await readGameClocks(year, week) : undefined
+  const fresh = poll ? readFresh(clocks, manual) : manual
+  return { ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh })), asOf: Date.now(), clocks }
 }
 
 /**
@@ -29,18 +44,20 @@ function allPlayerIds(lineups: LiveLineups): string[] {
  * cached across the app); Sleeper's live directory is only hit for ids that file doesn't have yet
  * (this season's new players), so most opens don't pay that cost.
  *
- * `poll` re-reads the lineups (and so every player's points) each minute, hidden tab or not: that's
- * the popped-out matchup, which floats over other tabs. Without it the lineups are read once (a
+ * `poll` re-reads the lineups (and so every player's points) each minute while NFL games are on, hidden
+ * tab or not: that's the popped-out matchup, which floats over other tabs. Without it the lineups are read once (a
  * one-shot poll, final after its first answer), which is all the modal needs.
  */
-export function useLiveBoxScore(leagueId: string, week: number, memberIds: [string, string], { poll = false } = {}): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
+export function useLiveBoxScore(
+  game: Read['game'],
+  { poll = false } = {},
+): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
   const players = usePlayers(true)
   const lineups = usePoll(
-    `live-lineups:${leagueId}:${week}:${memberIds.join(',')}`,
-    // Polls read past Sleeper's CDN; a Refresh does too, or it would get back the answer on screen.
-    async ({ manual }) => ({ ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh: poll || manual })), asOf: Date.now() }),
+    `live-lineups:${game.leagueId}:${game.week}:${game.memberIds.join(',')}`,
+    ({ manual }) => readLineups({ game, poll, manual }),
     true,
-    POLL_MS,
+    liveScoreInterval,
     { isFinal: () => !poll, whileHidden: poll },
   )
 
@@ -53,7 +70,9 @@ export function useLiveBoxScore(leagueId: string, week: number, memberIds: [stri
   )
 
   const data: LiveBoxScore | undefined =
-    lineups.data && players.data ? { ...lineups.data, players: { ...players.data, ...(extra.data ?? {}) } } : undefined
+    lineups.data && players.data
+      ? { slots: lineups.data.slots, scoring: lineups.data.scoring, teams: lineups.data.teams, asOf: lineups.data.asOf, players: { ...players.data, ...(extra.data ?? {}) } }
+      : undefined
 
   return {
     data,
