@@ -568,8 +568,9 @@ alone means an early-Tuesday visit, before Sleeper rolls over, doesn't jump back
 ## 2026-09-29 — the weekly refresh earns `verify` instead of bypassing main's ruleset
 
 **Decision.** `refresh-season.yml` commits to `bot/data-refresh`, starts CI (`ci.yml`, via
-`workflow_dispatch`) on that commit, waits for `verify`, then fast-forwards `main` to the same
-commit. The `main` ruleset is unchanged: required `verify`, admin-only bypass.
+`workflow_dispatch`) on that commit, waits for `verify`, then opens a PR and merges it itself.
+(First tried a fast-forward push to `main` after `verify`. The ruleset refused it every time, even
+a minute after the check passed: direct pushes by a non-bypasser are refused regardless.) The `main` ruleset is unchanged: required `verify`, admin-only bypass.
 
 **Why.** The ruleset (added 2026-09-25) rejected the bot's direct push on its first Tuesday. The two
 bypass fixes were both worse. Adding GitHub Actions as a bypass actor would also let

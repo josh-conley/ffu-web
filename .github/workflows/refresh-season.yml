@@ -6,13 +6,13 @@ name: Refresh live season
 # "successful" session, and GitHub's runners can reach api.sleeper.app without an allowlist.
 #
 # Flow: refresh from Sleeper → drafts + lineups → check-season-refresh (fails on changed completed
-# scores or stray files) → commit to bot/data-refresh → run CI's `verify` on that commit → fast-forward
-# main to it → start the deploy.
+# scores or stray files) → commit to bot/data-refresh → run CI's `verify` on that commit → open a PR
+# and merge it → start the deploy.
 #
 # Why the detour through a branch: the main ruleset requires the `verify` check on any commit it
 # accepts, and only admins may bypass it. The workflow token is not an admin, and it must not become
 # a bypass actor either, because discord-requests.yml runs an AI agent with the same token. So the bot
-# earns the check the same way a PR does: `verify` runs on the exact commit, then main moves to it.
+# goes through a PR like any other change: `verify` runs on the exact commit, then the PR is merged.
 # (A plain push to main is what failed on 2026-09-29, the first Tuesday after the ruleset landed.)
 #
 # Schedule: Tuesdays 10:17 and 14:17 UTC (6am/10am ET; an hour earlier after the clocks change),
@@ -28,7 +28,8 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write # push the bot branch and fast-forward main
+  contents: write # push the bot branch and merge its PR
+  pull-requests: write # open that PR
   actions: write # start ci.yml on the bot branch, then deploy.yml
 
 concurrency:
@@ -99,24 +100,22 @@ jobs:
           if [ -z "$RUN" ]; then echo "::error::CI never started on $SHA"; exit 1; fi
           gh run watch "$RUN" --exit-status --interval 15
 
-      # A fast-forward to a commit `verify` already passed, so the ruleset accepts it. If main moved
-      # during the ~2 minutes of CI this is rejected as non-fast-forward rather than published
-      # unverified; rerun the workflow (or wait for the 14:17 run) and it rebases onto the new main.
-      # The retries are for the ruleset lagging behind the check: on 2026-09-29 a push 2s after
-      # `verify` completed was refused with "Required status check 'verify' is expected".
-      - name: Publish to main
+      # Merged as a PR, not pushed: main's ruleset refuses a direct push from anyone who can't bypass
+      # it, even with `verify` green on the commit (tried 2026-09-29, refused six times over a
+      # minute). A PR merge is the route every other change takes. If main moved during CI the merge
+      # is refused as out of date rather than published unverified; rerun the workflow.
+      - name: Merge to main
         if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MESSAGE: ${{ steps.check.outputs.message }}
         run: |
-          for attempt in 1 2 3 4 5 6; do
-            sleep 10
-            if git push origin HEAD:main; then
-              git push origin --delete bot/data-refresh
-              exit 0
-            fi
-            echo "Push refused (attempt $attempt); retrying in case the ruleset hasn't seen verify yet."
-          done
-          echo "::error::main refused the verified commit. If main moved meanwhile, rerun this workflow."
-          exit 1
+          # Reuse the PR a failed earlier run left open, if any; the branch is always this run's commit.
+          if ! gh pr view bot/data-refresh --json state --jq '.state' 2>/dev/null | grep -q OPEN; then
+            gh pr create --base main --head bot/data-refresh --title "$(head -1 <<< "$MESSAGE")" \
+              --body "Weekly data refresh, opened and merged by refresh-season.yml once \`verify\` passed."
+          fi
+          gh pr merge bot/data-refresh --merge --delete-branch
 
       # A push made with GITHUB_TOKEN deliberately does not trigger other workflows, so deploy.yml's
       # `on: push` never fires for this commit. Start it explicitly instead.
