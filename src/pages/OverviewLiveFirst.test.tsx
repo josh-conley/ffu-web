@@ -26,7 +26,7 @@ function sleeper(url: string): Promise<Response> {
   return never() // season files, the NFL feeds and anything else: still loading
 }
 
-// A Friday afternoon, so the page leads with the matchups (Tuesday would show the standings).
+// A Friday afternoon, so the page leads with the matchups (Wednesday would show the standings).
 beforeEach(() => vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 8, 25, 14, 14) }))
 afterEach(() => {
   vi.useRealTimers()

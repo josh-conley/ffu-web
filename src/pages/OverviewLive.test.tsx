@@ -35,8 +35,8 @@ function tierOf(url: string): Tier | undefined {
 }
 
 beforeAll(() => {
-  // A Tuesday, so the live block leads with the standings rather than the matchups (homeLiveSection).
-  vi.setSystemTime(new Date('2026-09-22T15:00:00Z'))
+  // A Wednesday, so the live block leads with the standings rather than the matchups (homeLiveSection).
+  vi.setSystemTime(new Date('2026-09-23T15:00:00Z'))
   vi.stubGlobal('fetch', (url: string) => {
     if (url.includes('/state/nfl')) return ok({ week: 3, season_type: 'regular', season: year, season_start_date: '2026-09-09' })
     const tier = tierOf(url)

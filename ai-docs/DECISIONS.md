@@ -498,7 +498,7 @@ Don't re-propose it unless the chat step becomes an actual bottleneck.
 
 **Decision.** The home page reads the season so far (rosters, every week) once per mount, then
 re-reads **only the week in progress** every 60s through `usePoll`, one `/matchups/{week}` call per
-league. Polling pauses in a hidden tab (and refetches when the tab returns), and it's off on Tuesday's
+league. Polling pauses in a hidden tab (and refetches when the tab returns), and it's off on Wednesday's
 standings view, which is built only from finished weeks. There's no "scores as of" line or Refresh
 button: Josh had them removed. Each poll also re-reads the NFL game clocks, and the projections are
 recomputed, so a projection never sits below a score that has moved on: about **4 calls a minute** per
@@ -551,3 +551,15 @@ minute for scores that couldn't move). The game clocks keep their 60s read even 
 copy only turns over every 180s: those reads are CDN hits and cost Sleeper's servers nothing, and
 a longer cache on our side would stack on theirs.
 
+
+## 2026-09-29 — the home page keeps Tuesday for last week's finals; standings move to Wednesday
+
+**Decision.** Tuesday's home page still leads with the matchups, showing the week that just ended
+("Week N · Final", no projections). Wednesday leads with the standings. Thursday on, the new week's
+matchups. Sleeper rolls its week over on Tuesday morning, so on a Tuesday the page shows the previous
+week only once the current one has no points on the board (`finishedWeekOnShow`). Before the
+rollover, the current week already is the one just finished.
+
+**Why.** Josh's call: Tuesday is when people check how their game ended, so the finals are the news;
+the standings read better a day later. Keying the switch on "no points yet" rather than the clock
+alone means an early-Tuesday visit, before Sleeper rolls over, doesn't jump back two weeks.

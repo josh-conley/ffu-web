@@ -1,5 +1,5 @@
 import type { Game, LiveSeasonData, NflState } from '@/data'
-import { currentWeekMatchups, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
+import { asOfWeek, currentWeekMatchups, finishedWeekOnShow, gameForFixture, homeLiveSection, liveScoredWeeks, liveWeekFor, seasonHasStarted, standingsThroughPreviousWeek, withCurrentWeekGames } from './liveWeek'
 
 const game = (week: number, aId: string, aScore: number, bId: string, bScore: number): Game => ({
   week,
@@ -119,26 +119,48 @@ describe('seasonHasStarted', () => {
 })
 
 describe('homeLiveSection', () => {
-  // Sleeper rolls its week over on Tuesday morning, so Tuesday→Thursday "this week" is all 0.00
-  // while the standings have just been settled by Monday night.
   const on = (iso: string) => homeLiveSection(new Date(iso))
 
-  it('leads with the standings on a Tuesday', () => {
-    expect(on('2026-09-15T09:00:00')).toBe('standings')
-    expect(on('2026-11-17T23:30:00')).toBe('standings')
+  it('leads with the standings on a Wednesday', () => {
+    expect(on('2026-09-16T09:00:00')).toBe('standings')
+    expect(on('2026-11-18T23:30:00')).toBe('standings')
   })
 
-  it('leads with the matchups every other day', () => {
+  it('leads with the matchups every other day, Tuesday included', () => {
     expect(on('2026-09-13T13:00:00')).toBe('matchups') // Sunday, games running
     expect(on('2026-09-14T20:00:00')).toBe('matchups') // Monday night
-    expect(on('2026-09-16T09:00:00')).toBe('matchups') // Wednesday
+    expect(on('2026-09-15T09:00:00')).toBe('matchups') // Tuesday, last week's finals
     expect(on('2026-09-17T20:00:00')).toBe('matchups') // Thursday kickoff
   })
 
-  it('reads the local day, so it is Tuesday where the reader is', () => {
-    // Late Monday local is still Monday, not yet the standings day.
-    expect(on('2026-09-14T23:59:00')).toBe('matchups')
-    expect(on('2026-09-15T00:01:00')).toBe('standings')
+  it('reads the local day, so it is Wednesday where the reader is', () => {
+    expect(on('2026-09-15T23:59:00')).toBe('matchups')
+    expect(on('2026-09-16T00:01:00')).toBe('standings')
+  })
+})
+
+describe('finishedWeekOnShow', () => {
+  const tuesday = new Date('2026-09-15T09:00:00')
+  // Sleeper has rolled over to week 5: nobody has scored yet.
+  const rolled: LiveSeasonData = { ...data, games: [...data.games.filter((g) => g.week < 5), game(5, 'a', 0, 'b', 0)] }
+
+  it('shows last week on a Tuesday once Sleeper has rolled over', () => {
+    expect(finishedWeekOnShow(rolled, tuesday)).toBe(4)
+  })
+
+  it('keeps the current week before the rollover (it already has points)', () => {
+    expect(finishedWeekOnShow(data, tuesday)).toBeUndefined()
+  })
+
+  it('keeps the current week on any other day, and in week 1', () => {
+    expect(finishedWeekOnShow(rolled, new Date('2026-09-16T09:00:00'))).toBeUndefined()
+    expect(finishedWeekOnShow({ ...rolled, currentWeek: 1 }, tuesday)).toBeUndefined()
+  })
+})
+
+describe('asOfWeek', () => {
+  it('points the current-week views at an earlier week', () => {
+    expect(currentWeekMatchups(asOfWeek(data, 3))).toEqual([game(3, 'a', 130, 'b', 95)])
   })
 })
 

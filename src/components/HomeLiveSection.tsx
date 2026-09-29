@@ -43,9 +43,9 @@ function LeagueGrid({ children }: { children: ReactNode }) {
 }
 
 /**
- * The one live block on the home page: this week's matchups, or — on Tuesdays, once a week has
- * finished — the standings they produced. One or the other, never both, so the page leads with
- * whichever is actually worth reading that day (see homeLiveSection).
+ * The one live block on the home page: this week's matchups (on Tuesday, last week's finals), or —
+ * on Wednesdays, once a week has finished — the standings they produced. One or the other, never
+ * both, so the page leads with whichever is actually worth reading that day (see homeLiveSection).
  *
  * Projections wait until the scores have painted (useAfterIdle): their feed is ~237KB gzipped, and
  * the scores are what the reader came for.
@@ -54,23 +54,27 @@ export function HomeLiveSection({
   tiers,
   week,
   showStandings,
+  final = false,
   asOf,
   onOpen,
 }: {
   tiers: LiveTier[]
   week: number | undefined
   showStandings: boolean
+  /** The matchups are a finished week's (Tuesday): headed as final, and nothing left to project. */
+  final?: boolean
   /** When the scores were last read; each new read refreshes the projections beside them. */
   asOf: number | undefined
   onOpen: (open: OpenGame) => void
 }) {
-  const painted = useAfterIdle(!showStandings)
+  const projecting = !showStandings && !final
+  const painted = useAfterIdle(projecting)
   const projections = useLiveProjections(
     tiers.map((t) => t.data),
-    !showStandings && painted,
+    projecting && painted,
     asOf,
   )
-  const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}` : 'This Week'
+  const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}${final ? ' · Final' : ''}` : 'This Week'
   return (
     <section className="space-y-3">
       <h2 className={HEADING}>{heading}</h2>
