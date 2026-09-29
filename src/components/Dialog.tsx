@@ -12,6 +12,7 @@ export function Dialog({
   label,
   title,
   width = 'md',
+  action,
   onClose,
   children,
 }: {
@@ -20,6 +21,8 @@ export function Dialog({
   /** Contents of the title bar. */
   title: ReactNode
   width?: keyof typeof WIDTHS
+  /** An extra control in the title bar, before the close button. */
+  action?: ReactNode
   onClose: () => void
   children: ReactNode
 }) {
@@ -49,15 +52,18 @@ export function Dialog({
       <div>
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-accent pl-4 text-accent-fg">
           <div className="min-w-0 py-2.5 text-sm font-bold uppercase tracking-wide">{title}</div>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex size-11 shrink-0 items-center justify-center text-lg leading-none hover:bg-black/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-fg"
-          >
-            <span aria-hidden="true">✕</span>
-          </button>
+          <div className="flex shrink-0 items-center">
+            {action}
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="flex size-11 shrink-0 items-center justify-center text-lg leading-none hover:bg-black/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-fg"
+            >
+              <span aria-hidden="true">✕</span>
+            </button>
+          </div>
         </header>
         {children}
       </div>

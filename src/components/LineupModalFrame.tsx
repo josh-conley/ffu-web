@@ -27,11 +27,14 @@ function ProfileLinks({ memberIds, onNavigate }: { memberIds: readonly string[];
 export function LineupModalFrame({
   title,
   memberIds,
+  action,
   onClose,
   children,
 }: {
   title: string
   memberIds: readonly string[]
+  /** A control for the title bar, beside the close button. */
+  action?: ReactNode
   onClose: () => void
   children: ReactNode
 }) {
@@ -44,7 +47,7 @@ export function LineupModalFrame({
   )
 
   return (
-    <Dialog label="Game lineups" title={heading} width="lg" onClose={onClose}>
+    <Dialog label="Game lineups" title={heading} width="lg" action={action} onClose={onClose}>
       {children}
       <ProfileLinks memberIds={memberIds} onNavigate={onClose} />
     </Dialog>

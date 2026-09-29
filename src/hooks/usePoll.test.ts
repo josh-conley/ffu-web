@@ -33,9 +33,32 @@ describe('usePoll', () => {
 
   it('stops once the value is final', async () => {
     const fetcher = vi.fn(async () => 'done')
-    renderHook(() => usePoll('k', fetcher, true, 60_000, (v) => v === 'done'))
+    renderHook(() => usePoll('k', fetcher, true, 60_000, { isFinal: (v) => v === 'done' }))
     await flush()
     await act(() => vi.advanceTimersByTimeAsync(180_000))
     expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  describe('in a hidden tab', () => {
+    const hide = (hidden: boolean) => Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (hidden ? 'hidden' : 'visible') })
+    afterEach(() => hide(false))
+
+    it('pauses by default', async () => {
+      const fetcher = vi.fn(async () => 'x')
+      renderHook(() => usePoll('k', fetcher, true, 60_000))
+      await flush()
+      hide(true)
+      await act(() => vi.advanceTimersByTimeAsync(180_000))
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps going with whileHidden', async () => {
+      const fetcher = vi.fn(async () => 'x')
+      renderHook(() => usePoll('k', fetcher, true, 60_000, { whileHidden: true }))
+      await flush()
+      hide(true)
+      await act(() => vi.advanceTimersByTimeAsync(180_000))
+      expect(fetcher).toHaveBeenCalledTimes(4)
+    })
   })
 })

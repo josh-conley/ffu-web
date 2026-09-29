@@ -27,7 +27,7 @@ export function useLiveDraftPicks(draftId: string | null, active: boolean, expec
     () => fetchDraftPicks(draftId as string),
     active && draftId !== null,
     live ? LIVE_POLL_MS : IDLE_POLL_MS,
-    (picks) => expectedPicks > 0 && picks.length >= expectedPicks,
+    { isFinal: (picks) => expectedPicks > 0 && picks.length >= expectedPicks },
   )
   return data ?? []
 }

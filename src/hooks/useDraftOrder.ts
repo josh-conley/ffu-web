@@ -32,7 +32,7 @@ export function useDraftOrder(tier: Tier, year: string, enabled = true): { order
     () => fetchDraftOrder(tier, year, leagueId as string),
     active,
     ORDER_POLL_MS,
-    (order) => order.status === 'complete',
+    { isFinal: (order) => order.status === 'complete' },
   )
 
   return { order: data, loading, error }

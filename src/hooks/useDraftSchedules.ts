@@ -27,7 +27,7 @@ export function useDraftSchedules(year: string | undefined): { schedules: DraftS
     () => fetchDraftSchedules(year as string, leagueIds as Partial<Record<Tier, string>>),
     enabled,
     POLL_MS,
-    allDraftsComplete,
+    { isFinal: (schedules) => allDraftsComplete(schedules) },
   )
 
   // Errors are swallowed on purpose (as in useLeagueRosters): Sleeper being unreachable should leave
