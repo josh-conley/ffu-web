@@ -565,16 +565,15 @@ the standings read better a day later. Keying the switch on "no points yet" rath
 alone means an early-Tuesday visit, before Sleeper rolls over, doesn't jump back two weeks.
 
 
-## 2026-09-29 — the weekly refresh earns `verify` instead of bypassing main's ruleset
+## 2026-09-29 — the weekly refresh must publish with its own token, not a ruleset bypass
 
-**Decision.** `refresh-season.yml` commits to `bot/data-refresh`, starts CI (`ci.yml`, via
-`workflow_dispatch`) on that commit, waits for `verify`, then opens a PR and merges it itself.
-(First tried a fast-forward push to `main` after `verify`. The ruleset refused it every time, even
-a minute after the check passed: direct pushes by a non-bypasser are refused regardless.) The `main` ruleset is unchanged: required `verify`, admin-only bypass.
+**Decision (pending build).** `refresh-season.yml` will publish through a PR opened with a dedicated
+GitHub App or fine-grained token, so the PR runs the ordinary `verify` and merges like any other
+change. The `main` ruleset stays as it is: `verify` required, admin-only bypass.
 
-**Why.** The ruleset (added 2026-09-25) rejected the bot's direct push on its first Tuesday. The two
-bypass fixes were both worse. Adding GitHub Actions as a bypass actor would also let
-`discord-requests.yml`, which runs an AI agent on Discord input with the same token, push to `main`.
-A write deploy key as a bypass actor means a new long-lived secret, and bot commits would still skip
-`verify`. With this setup, every commit on `main` has passed `verify`, bot or human, and there are no
-new secrets.
+**Why.** Everything tried with the built-in workflow token failed, and the reasons are GitHub's rules,
+not ours. That token triggers no CI, so `verify` never runs for its pushes or PRs. A `verify` run it
+starts with `workflow_dispatch` passes but doesn't count for the ruleset: pushes after it were
+refused, and the bot's PR showed no checks. The Actions app can't be a bypass actor on a
+personal-account repo. A deploy-key bypass would work, but it skips `verify` for bot commits.
+Current state and the weekly manual step: `ai-docs/TODO.md`.

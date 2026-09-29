@@ -223,14 +223,18 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       run: (a) only ONE of the two schedules fired that day (the 14:00 UTC one at 14:20; the 10:00
       run never appeared, as GitHub can drop scheduled runs under load), and (b) the claude.ai
       routine above still needs deleting once a Tuesday goes green.
-- [ ] **Second scheduled run went red (2026-09-29)**, again not on data: refresh, check and all gates
-      passed, then the push was refused by the `main` ruleset created 2026-09-25 (required `verify`,
-      admin-only bypass; the workflow token is neither). Fixed by publishing through
-      `bot/data-refresh` + a dispatched `verify` run, then a bot-opened PR it merges itself (a
-      fast-forward push after `verify` was still refused) (why not a bypass:
-      `ai-docs/DECISIONS.md`). The 10:00 run was dropped again, so the schedule moved to minute 17.
-      **To confirm:** after the fix merges, run the workflow by hand to land week 3, and check that a
-      scheduled Tuesday run goes green end to end. Then delete the claude.ai routine.
+- [ ] **Weekly refresh can't publish on its own yet (since 2026-09-29).** Refresh, check and all
+      gates pass; publishing to `main` fails. The `main` ruleset (created 2026-09-25) requires
+      `verify` and lets only admins bypass it. The workflow token triggers no CI, and a `verify`
+      run it dispatches itself isn't counted: PR #38 showed no checks with `verify` green on its
+      commit. The Actions app can't be a bypass actor on a personal-account repo (API 422).
+      **Until fixed, each Tuesday:** the run goes red after opening a `bot/data-refresh` PR. Close
+      and reopen that PR (this fires the normal PR CI), then merge it once `verify` is green.
+      **Planned fix (Josh):** a GitHub App or fine-grained token (this repo; contents + pull requests)
+      as a secret, used by `refresh-season.yml` for checkout and `gh`. The bot's PR then runs normal
+      CI and merges itself, and the merge fires the deploy. Then drop the dispatched-`verify` step,
+      `ci.yml`'s `workflow_dispatch`, and the manual deploy step. Delete the claude.ai routine once a
+      Tuesday goes green. (The schedule moved to minute 17: the 10:00 run was dropped two Tuesdays running.)
 - [ ] **Next preseason:** update `LIVE_LEAGUE_IDS` before the first September Tuesday, or the Action
       fails red (which is the reminder). NB GitHub disables scheduled workflows after 60 days with
       no repo activity — if the repo is quiet all offseason, re-enable it in the Actions tab.
