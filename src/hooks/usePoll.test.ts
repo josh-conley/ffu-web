@@ -77,4 +77,16 @@ describe('usePoll', () => {
     expect(fetcher).toHaveBeenCalledTimes(3)
     expect(fetcher.mock.calls.map(([read]) => read.manual)).toEqual([false, true, false])
   })
+
+  it('can choose each wait from the answer just read', async () => {
+    let n = 0
+    const fetcher = vi.fn(async () => ++n)
+    // Quick after the first answer, slow after that.
+    renderHook(() => usePoll('k', fetcher, true, (latest) => (latest === 1 ? 1_000 : 60_000)))
+    await flush()
+    await act(() => vi.advanceTimersByTimeAsync(1_000))
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    await act(() => vi.advanceTimersByTimeAsync(30_000))
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
 })
