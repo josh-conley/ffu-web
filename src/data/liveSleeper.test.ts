@@ -136,21 +136,40 @@ describe('shared Sleeper reads', () => {
 })
 
 describe('fetchMissingPlayers', () => {
+  // A week mapFetch has no projections for (a 404), so names fall through to the directory.
+  // Projections are cached per week for the session, so each case uses its own.
+  const NO_PROJECTIONS = { year: '2031', week: 1 }
+
   it('only fetches ids absent from the known static map', async () => {
     const fetchMock = vi.fn((url: string) => {
       if (url.endsWith('/players/nfl')) return Promise.resolve({ ok: true, status: 200, json: async () => ({ p3: { full_name: 'Third Player', position: 'WR' } }) } as Response)
       return mapFetch(url)
     })
     vi.stubGlobal('fetch', fetchMock)
-    const out = await fetchMissingPlayers(['p1', 'p3'], { p1: { name: 'Known Player', position: 'QB' } })
+    const out = await fetchMissingPlayers(['p1', 'p3'], { p1: { name: 'Known Player', position: 'QB' } }, NO_PROJECTIONS)
     expect(out).toEqual({ p3: { name: 'Third Player', position: 'WR' } })
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/players/nfl'))
+  })
+
+  it('names a player from the week\'s projections before reaching for the directory', async () => {
+    const projections = [
+      { player_id: 'p3', team: 'DET', stats: { rec: 2 }, player: { first_name: 'Sione', last_name: 'Vaki', position: 'RB' } },
+      { player_id: 'p4', team: 'CHI', stats: {}, player: { first_name: 'Other', last_name: 'Guy', position: 'WR' } },
+    ]
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes('/projections/nfl/2031/2')) return Promise.resolve({ ok: true, status: 200, json: async () => projections } as Response)
+      return mapFetch(url)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const out = await fetchMissingPlayers(['p1', 'p3'], { p1: { name: 'Known Player', position: 'QB' } }, { year: '2031', week: 2 })
+    expect(out).toEqual({ p3: { name: 'Sione Vaki', position: 'RB' } })
+    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('/players/nfl'))
   })
 
   it('skips the network call entirely when nothing is missing', async () => {
     const fetchMock = vi.fn(mapFetch)
     vi.stubGlobal('fetch', fetchMock)
-    const out = await fetchMissingPlayers(['p1'], { p1: { name: 'Known Player', position: 'QB' } })
+    const out = await fetchMissingPlayers(['p1'], { p1: { name: 'Known Player', position: 'QB' } }, NO_PROJECTIONS)
     expect(out).toEqual({})
     expect(fetchMock).not.toHaveBeenCalled()
   })

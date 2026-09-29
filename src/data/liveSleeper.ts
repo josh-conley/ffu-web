@@ -1,7 +1,8 @@
 import type { Tier } from '@/config/types'
 import { memberBySleeperId } from '@/config'
-import type { Game, GameParticipant, LineupPlayer, LiveSeasonData, PlayerMap, TeamLineup } from './types'
+import type { Game, GameParticipant, LineupPlayer, LiveSeasonData, PlayerMap, PlayerProjection, TeamLineup } from './types'
 import { assertGame } from './validate'
+import { fetchWeekProjections } from './liveNfl'
 import { sleeperGet } from './sleeperApi'
 
 // Live client-side reads of Sleeper's public API for the season currently in progress. Deliberately
@@ -229,22 +230,40 @@ interface RawSleeperPlayer {
   position?: string
 }
 
-// Sleeper's full player map is a several-MB single payload — fetch it at most once per session,
-// and only when a live box score actually needs a player our static players.json doesn't have yet
-// (new-this-season players; everyone else resolves from the existing static file for free).
+// Sleeper's full player map is a single ~2.5MB (gzipped; ~15MB raw) payload — the last resort for a
+// name, fetched at most once per session. Almost every name resolves before it: from the static
+// players.json, then from the week's projections, which the box score loads anyway and which name
+// every player they project (so this season's new pickups too).
 let allPlayersPromise: Promise<Record<string, RawSleeperPlayer>> | undefined
 
-/** Resolves ids missing from `known` (the static players map) via Sleeper's live player directory. */
-export async function fetchMissingPlayers(ids: string[], known: PlayerMap): Promise<PlayerMap> {
-  const missing = ids.filter((id) => !(id in known))
-  if (missing.length === 0) return {}
+/** Names from the week's projections; nothing if that (undocumented) feed fails. */
+async function namesFromProjections(ids: string[], { year, week }: { year: string; week: number }): Promise<PlayerMap> {
+  const projections = await fetchWeekProjections(year, week).catch((): Record<string, PlayerProjection> => ({}))
+  const out: PlayerMap = {}
+  for (const id of ids) {
+    const player = projections[id]?.player
+    if (player) out[id] = player
+  }
+  return out
+}
+
+/**
+ * Resolves ids missing from `known` (the static players map): from the week's projections first,
+ * and only what they don't name from Sleeper's full player directory.
+ */
+export async function fetchMissingPlayers(ids: string[], known: PlayerMap, week: { year: string; week: number }): Promise<PlayerMap> {
+  const unknown = ids.filter((id) => !(id in known))
+  if (unknown.length === 0) return {}
+  const projected = await namesFromProjections(unknown, week)
+  const missing = unknown.filter((id) => !(id in projected))
+  if (missing.length === 0) return projected
   if (!allPlayersPromise) {
     allPlayersPromise = sleeperGet<Record<string, RawSleeperPlayer>>('/players/nfl')
     // Don't cache a failure — clear so the next box-score open retries instead of failing all session.
     allPlayersPromise.catch(() => (allPlayersPromise = undefined))
   }
   const all = await allPlayersPromise
-  const out: PlayerMap = {}
+  const out: PlayerMap = { ...projected }
   for (const id of missing) {
     const p = all[id]
     if (!p) continue

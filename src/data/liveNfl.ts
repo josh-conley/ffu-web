@@ -1,4 +1,4 @@
-import type { NflGameClock, PlayerProjection } from './types'
+import type { NflGameClock, PlayerProjection, PlayerRef } from './types'
 import { sleeperAppGet } from './sleeperApi'
 
 // The NFL side of a live fantasy week: which real games have kicked off / finished, and what each
@@ -77,6 +77,18 @@ interface RawProjection {
   player_id?: string
   team?: string | null
   stats?: Record<string, unknown>
+  player?: { first_name?: string; last_name?: string; position?: string } | null
+}
+
+/** The row's player, named as players.json names them ("Denver Broncos" for a defense). */
+function playerOf(raw: RawProjection['player']): PlayerRef | undefined {
+  const name = [raw?.first_name, raw?.last_name].filter(Boolean).join(' ')
+  return name && raw?.position ? { name, position: raw.position } : undefined
+}
+
+function projectionOf(row: RawProjection): PlayerProjection {
+  const player = playerOf(row.player)
+  return { stats: numericStats(row.stats), ...(row.team ? { team: row.team } : {}), ...(player ? { player } : {}) }
 }
 
 const PROJECTED_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF']
@@ -98,7 +110,7 @@ async function loadProjections(year: string, week: number): Promise<Record<strin
   const out: Record<string, PlayerProjection> = {}
   for (const row of rows) {
     if (!row.player_id) continue
-    out[row.player_id] = row.team ? { team: row.team, stats: numericStats(row.stats) } : { stats: numericStats(row.stats) }
+    out[row.player_id] = projectionOf(row)
   }
   return out
 }
