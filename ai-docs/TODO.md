@@ -223,6 +223,13 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       run: (a) only ONE of the two schedules fired that day (the 14:00 UTC one at 14:20; the 10:00
       run never appeared, as GitHub can drop scheduled runs under load), and (b) the claude.ai
       routine above still needs deleting once a Tuesday goes green.
+- [ ] **Second scheduled run went red (2026-09-29)**, again not on data: refresh, check and all gates
+      passed, then the push was refused by the `main` ruleset created 2026-09-25 (required `verify`,
+      admin-only bypass; the workflow token is neither). Fixed by publishing through
+      `bot/data-refresh` + a dispatched `verify` run, then a fast-forward of main (why not a bypass:
+      `ai-docs/DECISIONS.md`). The 10:00 run was dropped again, so the schedule moved to minute 17.
+      **To confirm:** after the fix merges, run the workflow by hand to land week 3, and check that a
+      scheduled Tuesday run goes green end to end. Then delete the claude.ai routine.
 - [ ] **Next preseason:** update `LIVE_LEAGUE_IDS` before the first September Tuesday, or the Action
       fails red (which is the reminder). NB GitHub disables scheduled workflows after 60 days with
       no repo activity — if the repo is quiet all offseason, re-enable it in the Actions tab.

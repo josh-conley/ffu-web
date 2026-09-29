@@ -6,21 +6,30 @@ name: Refresh live season
 # "successful" session, and GitHub's runners can reach api.sleeper.app without an allowlist.
 #
 # Flow: refresh from Sleeper → drafts + lineups → check-season-refresh (fails on changed completed
-# scores or stray files) → typecheck/lint/test → commit + push → start the deploy.
+# scores or stray files) → commit to bot/data-refresh → run CI's `verify` on that commit → fast-forward
+# main to it → start the deploy.
 #
-# Schedule: Tuesdays 10:00 and 14:00 UTC (6am/10am ET; an hour earlier after the clocks change),
+# Why the detour through a branch: the main ruleset requires the `verify` check on any commit it
+# accepts, and only admins may bypass it. The workflow token is not an admin, and it must not become
+# a bypass actor either, because discord-requests.yml runs an AI agent with the same token. So the bot
+# earns the check the same way a PR does: `verify` runs on the exact commit, then main moves to it.
+# (A plain push to main is what failed on 2026-09-29, the first Tuesday after the ruleset landed.)
+#
+# Schedule: Tuesdays 10:17 and 14:17 UTC (6am/10am ET; an hour earlier after the clocks change),
 # September–December. The second run is a safety net for Sleeper rolling its week over late, and
 # is a no-op when the first run already committed. The months stop at December because the script
 # defaults to the calendar year and refuses any year that isn't live — a January run would fail —
-# and the regular season (all this writes) is over by mid-December anyway.
+# and the regular season (all this writes) is over by mid-December anyway. Minute 17, not :00:
+# GitHub sheds scheduled runs at the top of the hour under load, and the 10:00 run was dropped on
+# both 2026-09-22 and 2026-09-29.
 on:
   schedule:
-    - cron: '0 10,14 * 9-12 2'
+    - cron: '17 10,14 * 9-12 2'
   workflow_dispatch: {}
 
 permissions:
-  contents: write # push the data commit
-  actions: write # start deploy.yml (see the last step)
+  contents: write # push the bot branch and fast-forward main
+  actions: write # start ci.yml on the bot branch, then deploy.yml
 
 concurrency:
   group: refresh-season
@@ -29,7 +38,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
 
@@ -53,18 +62,11 @@ jobs:
       - id: check
         run: node scripts/check-season-refresh.mjs
 
-      # The gates run only when there is something to commit. Some tests read the real data files,
-      # so they must pass against the refreshed data, not just the committed data.
-      - if: steps.check.outputs.changed == 'true'
-        run: npm run typecheck
-
-      - if: steps.check.outputs.changed == 'true'
-        run: npm run lint
-
-      - if: steps.check.outputs.changed == 'true'
-        run: npm test
-
-      - name: Commit and push
+      # No gates run here: CI's `verify` (lint, typecheck, test, build) runs on the exact commit below,
+      # and main only moves if it passes. Some tests read the real data files, so this is also what
+      # proves the refreshed data, not just the committed data, is green.
+      - name: Commit to the bot branch
+        id: commit
         if: steps.check.outputs.changed == 'true'
         env:
           MESSAGE: ${{ steps.check.outputs.message }}
@@ -76,7 +78,35 @@ jobs:
           # Someone may have pushed while this ran; the commit only touches public/data, so rebasing
           # onto it is safe.
           git pull --rebase origin main
+          # The branch belongs to this workflow alone and is rebuilt each run, so forcing it is safe.
+          git push --force origin HEAD:refs/heads/bot/data-refresh
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the commit
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          gh workflow run ci.yml --ref bot/data-refresh
+          # `gh workflow run` doesn't return the run it started; find it by the commit.
+          for _ in $(seq 30); do
+            RUN=$(gh run list --workflow ci.yml --branch bot/data-refresh --event workflow_dispatch \
+              --json databaseId,headSha --jq "map(select(.headSha == \"$SHA\"))[0].databaseId // empty")
+            [ -n "$RUN" ] && break
+            sleep 5
+          done
+          if [ -z "$RUN" ]; then echo "::error::CI never started on $SHA"; exit 1; fi
+          gh run watch "$RUN" --exit-status --interval 15
+
+      # A fast-forward to a commit `verify` already passed, so the ruleset accepts it. If main moved
+      # during the ~2 minutes of CI this is rejected as non-fast-forward rather than published
+      # unverified; rerun the workflow (or wait for the 14:17 run) and it rebases onto the new main.
+      - name: Publish to main
+        if: steps.check.outputs.changed == 'true'
+        run: |
           git push origin HEAD:main
+          git push origin --delete bot/data-refresh
 
       # A push made with GITHUB_TOKEN deliberately does not trigger other workflows, so deploy.yml's
       # `on: push` never fires for this commit. Start it explicitly instead.

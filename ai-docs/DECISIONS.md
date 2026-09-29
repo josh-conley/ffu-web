@@ -563,3 +563,17 @@ rollover, the current week already is the one just finished.
 **Why.** Josh's call: Tuesday is when people check how their game ended, so the finals are the news;
 the standings read better a day later. Keying the switch on "no points yet" rather than the clock
 alone means an early-Tuesday visit, before Sleeper rolls over, doesn't jump back two weeks.
+
+
+## 2026-09-29 — the weekly refresh earns `verify` instead of bypassing main's ruleset
+
+**Decision.** `refresh-season.yml` commits to `bot/data-refresh`, starts CI (`ci.yml`, via
+`workflow_dispatch`) on that commit, waits for `verify`, then fast-forwards `main` to the same
+commit. The `main` ruleset is unchanged: required `verify`, admin-only bypass.
+
+**Why.** The ruleset (added 2026-09-25) rejected the bot's direct push on its first Tuesday. The two
+bypass fixes were both worse. Adding GitHub Actions as a bypass actor would also let
+`discord-requests.yml`, which runs an AI agent on Discord input with the same token, push to `main`.
+A write deploy key as a bypass actor means a new long-lived secret, and bot commits would still skip
+`verify`. With this setup, every commit on `main` has passed `verify`, bot or human, and there are no
+new secrets.
