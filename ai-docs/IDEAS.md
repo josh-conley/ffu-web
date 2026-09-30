@@ -45,3 +45,4 @@ Format: `- YYYY-MM-DD · <agent> · <idea> — <accepted | rejected | later>: <r
 - 2026-09-29 · product-owner · Draw rehearsal banner (?rehearse=1) — dropped in discussion: a throwaway seed already marks a rehearsal
 - 2026-09-29 · ux-partner · Draw reduced-motion override — dropped: rehearsal checklist item instead
 - 2026-09-30 · claude · Marble-race draw reveal (real physics, crests assigned after the race) — rejected: prototype built (PR #42) and scrapped; the draw runs on a Discord video call, where fast motion doesn't survive the stream
+- 2026-09-30 · claude · Last-crest-standing reveal + on-the-clock facts (PR #43) — rejected: not better than the original spinner; looking for new ideas
