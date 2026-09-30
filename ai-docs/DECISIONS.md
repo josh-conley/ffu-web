@@ -67,22 +67,29 @@ together — they are one unit.
 
 ---
 
-## 2026-09-30 — The Round of 18 is a seeded bracket: winner of 1v36 meets winner of 18v19
+## 2026-09-30 — The Cup bracket is seeded end to end: 1 and 2 can only meet in the final
 
 **Context.** The seeding makes every opening matchup k v 37−k (Premier #1 draws first, and the
 first team drawn is the 36 seed). But the opening round was stored in DRAW order, and the engine
-pairs adjacent winners, so 1v36's winner would have met 2v35's: with every higher seed winning,
-seeds 1 and 2 in the Round of 18.
+paired adjacent winners, so 1v36's winner would have met 2v35's; and after the Round of 18 the
+quarterfinal pairing was unruled.
 
-**Decision (Josh).** Seed the bracket so that, if it goes all chalk, the Round of 18 sets the best
-remaining seeds against the worst: winner(1v36) v winner(18v19), 2v35 v 17v20, … 9v28 v 10v27. One
-function, `bracketSlots` (src/lib/cupDraw.mjs), turns the draw into bracket order; the CLI writes
-the opening round in that order, and the draw page places each matchup by it. The engine's
-adjacent pairing is then correct as-is. The draw's own record (sheet, check code, stream order)
-stays in draw order. It is a FIXED bracket (winner of that slot, whoever wins), not a re-seed.
+**Decision (Josh).** If every higher seed wins, the best remaining seeds always face the worst:
+- **Round of 18: fixed seeded bracket.** winner(1v36) v winner(18v19), 2v35 v 17v20, … 9v28 v
+  10v27, so chalk gives 1v18 … 9v10. `bracketSlots` (src/lib/cupDraw.mjs) puts the draw into that
+  order; the CLI writes the opening round in it and the draw page places matchups by it. Adjacent
+  pairing then does the rest. The draw's own record (sheet, check code, stream) stays in draw order.
+- **Quarterfinals: re-seeded.** The lowest-scoring Round-of-18 winner is dropped, and it can be any
+  of the nine, so no fixed tree survives it. The eight survivors are ranked by draw seed and paired
+  best v worst in bracket order 1v8, 4v5, 2v7, 3v6 (`reseed: true` on the round in
+  tournament.json; `pairReseeded` in selectors/tournament).
+- **Semifinals and final: fixed** from the quarterfinals by adjacency: chalk gives 1v4 and 2v3,
+  then 1v2.
+Also: a round is only paired once the previous one is fully decided (a partial field would pair the
+wrong teams, and the drop needs every winner's score).
 
-**Still open.** After the Round of 18 the lowest-scoring winner is dropped and the tree breaks
-(9 → 8); how the quarterfinals pair is not ruled on.
+**To confirm** with the commissioner against the amendment; the public Format & Rules copy does not
+describe the pairings yet.
 
 ## 2026-09-29 — The draw sorts National itself; the page and CLI prove they agree
 

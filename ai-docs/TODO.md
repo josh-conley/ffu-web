@@ -150,11 +150,11 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       played. Bracket note copy updated to match.
 - [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
       variable by design, so edit the `rounds[].week` values if they move
-- [x] **Round of 18 pairing** (2026-09-30, Josh): a fixed seeded bracket, winner of 1v36 v winner of
-      18v19 and so on (DECISIONS). Confirm it matches the commissioner's amendment.
-- [ ] **Open rule question:** after the lowest-winner drop leaves 8 teams, how do they re-pair for
-      the quarterfinals? The engine currently pairs adjacent winners; a round can carry authored
-      `matchups` to override once ruled on
+- [x] **Bracket seeding** (2026-09-30, Josh): Round of 18 a fixed seeded bracket (winner of 1v36 v
+      winner of 18v19 …); quarterfinals re-seeded after the drop (1v8, 4v5, 2v7, 3v6); semis and
+      final fixed from there, so 1 and 2 can only meet in the final (DECISIONS).
+- [ ] Confirm the bracket seeding with the commissioner against the amendment, and add a line on
+      it to the Format & Rules copy (`CUP_ROUND_RULES` in src/config/cup.ts) once he agrees
 - [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
       decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo

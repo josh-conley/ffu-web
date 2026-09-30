@@ -7,7 +7,7 @@
   "rounds": [
     { "key": "r36", "label": "Round of 36", "week": 6 },
     { "key": "r18", "label": "Round of 18", "week": 7 },
-    { "key": "r8", "label": "Quarterfinals", "week": 8, "dropLowestWinner": true },
+    { "key": "r8", "label": "Quarterfinals", "week": 8, "dropLowestWinner": true, "reseed": true },
     { "key": "r4", "label": "Semifinals", "week": 10 },
     { "key": "final", "label": "Final", "week": 12 }
   ]
