@@ -86,24 +86,31 @@ it('reveals every matchup of the CLI draw, in the same order', async () => {
   expect(screen.queryByRole('region', { name: /draw complete/i })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /show all matchups/i }))
   const results = within(screen.getByRole('region', { name: /draw complete/i }))
-  expect(results.getByRole('list').querySelectorAll('li')).toHaveLength(18)
+  expect(results.getByLabelText('Round of 36').querySelectorAll('li')).toHaveLength(18)
   expect(results.getAllByText(drawCheckCode(expected)).length).toBeGreaterThan(0)
 })
 
-it('empties the Masters half of the bowl once Premier has finished drawing', async () => {
+const bracket = () => within(screen.getByLabelText('Round of 36'))
+const slots = () => screen.getByLabelText('Round of 36').querySelectorAll('li')
+
+it('fills the bracket as matchups are drawn, never ahead of the reveal', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
-  expect(screen.getByText(/Masters · 12 left/i)).toBeInTheDocument()
-  for (let i = 0; i < 12; i++) {
-    await user.click(screen.getByRole('button', { name: /^draw$/i }))
-    await user.click(screen.getByRole('button', { name: /next matchup/i }))
-  }
+  expect(slots()).toHaveLength(18)
+  // Matchup 1 is on the clock: its drawer is in slot 1, its opponent nowhere in the bracket.
+  expect(within(slots()[0]!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(bracket().queryByText(nameOf(expected.matchups[0]!.b))).not.toBeInTheDocument()
+  expect(within(slots()[1]!).getByText(/to be drawn/i)).toBeInTheDocument()
 
-  // Phase two: the leftover Masters teams are drawers now, so nothing of theirs is left to draw.
-  expect(screen.getByText(/Masters · 0 left/i)).toBeInTheDocument()
-  expect(screen.getByText(/National · 6 left/i)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(within(slots()[0]!).getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /next matchup/i }))
+  expect(within(slots()[1]!).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  expect(bracket().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
+  expect(slots()[1]).toHaveAttribute('aria-current', 'step')
 })
 
 it('runs a suspense spin, and a second press cuts it short', () => {

@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
 import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory } from '@/selectors'
+import { matchupStory, matchupTag } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
-import { DrawBowl } from './DrawBowl'
+import { DrawBracket } from './DrawBracket'
 import { DrawComplete } from './DrawComplete'
 import { DrawControls, RestartButton } from './DrawControls'
-import { DrawLedger } from './DrawLedger'
 import { DrawMatchupCard } from './DrawMatchupCard'
 import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
@@ -17,6 +16,7 @@ import { downloadText } from './downloads'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
+// Below the spinner, the Round of 36 bracket fills in as each matchup is drawn.
 
 /**
  * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
@@ -54,27 +54,6 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
   )
 }
 
-/** Mid-draw: who is left to be drawn, and what has been drawn so far. */
-function BowlAndLedger({ reveal }: { reveal: ReturnType<typeof useCupDrawReveal> }) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      <div className="space-y-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted">The bowl</h2>
-        <DrawBowl
-          masters={reveal.mastersBowl}
-          national={reveal.nationalBowl}
-          mastersClosed={reveal.mastersClosed}
-          nationalClosed={reveal.nationalClosed}
-        />
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Matchups so far</h2>
-        <DrawLedger matchups={reveal.ledger} />
-      </div>
-    </div>
-  )
-}
-
 export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
   seed: string
@@ -102,6 +81,15 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
     [seasons, drawer, drawn],
   )
 
+  // Head-to-head tags for the finished bracket (the FFUN screenshot); not needed until the end.
+  const tags = useMemo(
+    () =>
+      reveal.done && seasons.length > 0
+        ? reveal.ledger.map((m) => matchupTag(matchupStory(seasons, m.a.ffuId, m.b.ffuId)))
+        : [],
+    [reveal.done, reveal.ledger, seasons],
+  )
+
   const lastShown = reveal.phase === 'shown' && reveal.matchupNumber === TOTAL_MATCHUPS
   const buttonLabel =
     reveal.phase === 'spinning' ? 'Reveal' : lastShown ? 'Show all matchups' : reveal.phase === 'shown' ? 'Next matchup' : 'Draw'
@@ -122,17 +110,16 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
         onToggleMute={() => setMuted((m) => !m)}
       />
       {reveal.done ? (
-        <DrawComplete
-          seed={seed}
-          checkCode={drawCheckCode(result)}
-          matchups={reveal.ledger}
-          seasons={seasons}
-          onDownload={download}
-        />
+        <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
+          <DrawBracket matchups={reveal.ledger} tags={tags} />
+        </DrawComplete>
       ) : (
         <>
           <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
-          <BowlAndLedger reveal={reveal} />
+          <DrawBracket
+            matchups={reveal.ledger}
+            cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
+          />
         </>
       )}
       <RestartButton drawnAny={settled > 0} onRestart={onRestart} />

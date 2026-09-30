@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CupDrawResult, CupField, CupTier } from '@/lib/cupDraw.mjs'
-import { bowlAfter, eligibleForSpin, tierIndex } from '@/selectors'
-import type { BowlTeam } from '@/components/cup/draw/DrawBowl'
-import type { LedgerMatchup } from '@/components/cup/draw/DrawLedger'
+import { bowlAfter, eligibleForSpin, tierIndex, type BowlSlot } from '@/selectors'
+import type { LedgerMatchup } from '@/components/cup/draw/DrawBracket'
 import type { MatchupSide } from '@/components/cup/draw/DrawMatchupCard'
 
 // Drives the on-stream reveal. The bracket is decided ONCE, by drawCup, before a single crest is
@@ -35,7 +34,7 @@ export interface DrawRevealState {
   phase: Phase
   spinning: boolean
   /** Crests the reveal animation may show — never one the rules have ruled out. */
-  spinPool: BowlTeam[]
+  spinPool: BowlSlot[]
   /** The team this matchup actually lands on. Known up front; the animation only has to arrive at it. */
   spinWinner: string | undefined
   drawer: MatchupSide | undefined
@@ -50,10 +49,6 @@ export interface DrawRevealState {
   /** Matchups whose result is on screen — what a reload resumes from. */
   settled: number
   ledger: LedgerMatchup[]
-  mastersBowl: BowlTeam[]
-  nationalBowl: BowlTeam[]
-  mastersClosed: boolean
-  nationalClosed: boolean
   done: boolean
   /** Reveal the next thing: spin, or cut a spin short, or move to the next matchup. */
   advance: () => void
@@ -111,10 +106,8 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
 
   const side = useMemo(() => sideBuilder(field, result), [field, result])
 
-  // Teams out of the bowl = matchups whose result is on screen. A matchup mid-spin has NOT left the bowl,
-  // so its crest is still there to be flickered over.
+  // Matchups whose result is on screen. One mid-spin is not settled yet.
   const settled = phase === 'shown' || phase === 'done' ? index + 1 : index
-  const bowl = useMemo(() => bowlAfter(field, result, settled), [field, result, settled])
   // Only crests the rules still allow, so the animation can never tease an impossible team. Taken
   // from the bowl as it stood BEFORE this matchup, so it still describes the draw once it is shown.
   const spinPool = useMemo(() => eligibleForSpin(bowlAfter(field, result, index)), [field, result, index])
@@ -174,7 +167,6 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
     forced,
     settled,
     ledger,
-    ...bowl,
     done: phase === 'done',
     advance,
   }
