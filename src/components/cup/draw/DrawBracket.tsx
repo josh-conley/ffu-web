@@ -1,20 +1,20 @@
+import type { ReactNode } from 'react'
 import { CUP_ACCENT } from '@/config'
 import type { RoundOutline } from '@/selectors'
-import { CupBracketOutline, EmptySlot } from '../CupBracketOutline'
-import { LEAGUE_STYLES } from '../../leagues'
-import { TeamLogo } from '../../TeamLogo'
 import type { MatchupSide } from './DrawMatchupCard'
+import { BlankSlot, FeederSlot, OpeningSlot, type LedgerMatchup, type SlotSeeds } from './DrawBracketSlots'
 
-// The Cup bracket, filling in as the draw goes. It is the SAME bracket /cup shows before the draw
-// (CupBracketOutline: one column per round, later rounds centred against earlier ones), with the
-// Round of 36 column rendered live: each slot empty until its matchup is drawn, the one on the
-// clock ringed. Later rounds stay empty — the draw only decides the opening round. Matchups sit in
-// seeded bracket order, not draw order, so adjacent slots are the ones whose winners meet next.
+export type { LedgerMatchup, SlotSeeds } from './DrawBracketSlots'
 
-export interface LedgerMatchup {
-  a: MatchupSide
-  b: MatchupSide
-}
+// The Cup bracket, filling in as the draw goes — drawn TWO-SIDED, the classic shape: the top half
+// of the draw on the left, the bottom half mirrored on the right, the final in the middle. It halves
+// the height of an 18-deep column (so it fits under the spinner on one screen) and shows at a
+// glance that seeds 1 and 2 can only meet in the final.
+//
+// Slots are in seeded bracket order (bracketSlots): positions 0–7 are the left half, 8–15 the right,
+// and 16–17 — the ninth Round-of-18 game, 9v28 against 10v27 — the odd one out, shown under the
+// final. The Round of 18 names its feeders; later rounds stay blank because the quarterfinals
+// re-seed after the lowest-winner drop.
 
 /** Where the draw is: the matchup on the clock, and its opponent once revealed. */
 export interface BracketCursor {
@@ -23,64 +23,22 @@ export interface BracketCursor {
   drawn: MatchupSide | undefined
 }
 
-/** One nameplate. Every row is the same height, filled or not, so the column never changes size.
- *  Before the team is drawn it shows the seed that slot will hold — which says nothing about who. */
-function Row({ side, seed }: { side: MatchupSide | undefined; seed: number | undefined }) {
-  if (!side) {
-    return (
-      <div className="flex h-5 items-center gap-1.5 pl-1.5">
-        <span className="h-2 w-2 shrink-0 rounded-full bg-border" aria-hidden />
-        <span className="h-4 flex-1 bg-surface-2" aria-hidden />
-        {seed !== undefined && <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted">{seed}</span>}
-      </div>
-    )
-  }
-  return (
-    <div className="flex h-5 items-center gap-1.5 pl-1.5">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
-      <TeamLogo ffuId={side.ffuId} size={18} clickable={false} />
-      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{side.name}</span>
-      <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted">{side.seed}</span>
-    </div>
-  )
-}
+const HALF = 8
+// Columns stretch to fill the page (it is full-width on the call) but never below these, so a
+// narrow window scrolls rather than squashing names. The opening round and the final carry names.
+const WIDE = 'min-w-48 flex-[1.5]'
+const NARROW = 'min-w-32 flex-1'
 
-function OpeningSlot({ a, b, seeds, current, tag }: {
-  a: MatchupSide | undefined
-  b: MatchupSide | undefined
-  /** The two seeds this slot holds (drawing team's first). */
-  seeds: SlotSeeds | undefined
-  current: boolean
-  tag: string | undefined
-}) {
+function Column({ round, width, children }: { round: RoundOutline | undefined; width: string; children: ReactNode }) {
   return (
-    <div
-      data-slot
-      aria-current={current ? 'step' : undefined}
-      className={`space-y-1 border bg-surface p-2 ${a ? 'border-border' : 'border-dashed border-border'}`}
-      // A ring, not a thicker border: the slot must not change size as the cursor moves.
-      style={current ? { boxShadow: `0 0 0 3px ${CUP_ACCENT}` } : undefined}
-    >
-      <Row side={a} seed={seeds?.[0]} />
-      <Row side={b} seed={seeds?.[1]} />
-      {tag && <p className="pl-1.5 text-[10px] font-bold uppercase tracking-wide text-muted">{tag}</p>}
-    </div>
-  )
-}
-
-/** The seeds in one opening-round slot, drawing team's first: e.g. [1, 36]. */
-export type SlotSeeds = [number, number]
-
-/** A Round-of-18 slot before it is played: which two opening games feed it ("W 1v36"). */
-function FeederSlot({ from }: { from: (SlotSeeds | undefined)[] }) {
-  return (
-    <div className="space-y-1 border border-dashed border-border bg-surface p-2">
-      {from.map((seeds, k) => (
-        <div key={k} className="flex h-4 items-center gap-1.5 pl-1.5 font-mono text-[11px] text-muted">
-          {seeds ? `W ${seeds[0]}v${seeds[1]}` : ''}
-        </div>
-      ))}
-    </div>
+    <section className={`flex ${width} flex-col`}>
+      {/* Label over week, not side by side: a narrow column still fits "Quarterfinals" in full. */}
+      <header className="mb-2 border-b-2 pb-1" style={{ borderColor: CUP_ACCENT }}>
+        <h3 className="text-xs font-bold uppercase tracking-wide">{round?.label}</h3>
+        <p className="text-[10px] font-semibold uppercase text-muted">Week {round?.week}</p>
+      </header>
+      <div className="flex flex-1 flex-col justify-around gap-2">{children}</div>
+    </section>
   )
 }
 
@@ -92,8 +50,11 @@ function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | u
   return { a: undefined, b: undefined }
 }
 
+const blanks = (n: number) => Array.from({ length: n }, (_, k) => <BlankSlot key={k} />)
+const range = (from: number, n: number) => Array.from({ length: n }, (_, k) => from + k)
+
 export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] }: {
-  /** The season's rounds (tournament.json), for the bracket's shape. */
+  /** The season's rounds (tournament.json): labels and weeks, opening round first. */
   rounds: RoundOutline[]
   /** Draw-order index of the matchup in each opening-round slot, top to bottom (bracketSlots). */
   order: number[]
@@ -106,16 +67,51 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] 
   /** Optional one-line note per matchup, in draw order (the head-to-head tag, once complete). */
   tags?: string[]
 }) {
-  const slot = (round: number, position: number) => {
-    // The Round of 18 is a fixed tree off the opening round, so its slots can name their feeders.
-    // Later rounds re-seed after the lowest-winner drop, so they stay blank.
-    if (round === 1) return <FeederSlot from={[order[position * 2], order[position * 2 + 1]].map((i) => (i === undefined ? undefined : seeds[i]))} />
-    if (round > 1) return <EmptySlot />
-    // Slots are in bracket order, so the draw fills them out of sequence: matchup 1 (1v36) at the
-    // top, matchup 18 (18v19) right beneath it, as the seeds dictate.
+  const [r36, r18, qf, sf, final] = rounds
+  const opening = (position: number) => {
     const i = order[position]
-    if (i === undefined) return <EmptySlot />
-    return <OpeningSlot {...sidesOf(i, matchups, cursor)} seeds={seeds[i]} current={cursor?.index === i} tag={tags[i]} />
+    if (i === undefined) return <BlankSlot key={position} />
+    return (
+      <OpeningSlot key={position} position={position} {...sidesOf(i, matchups, cursor)} seeds={seeds[i]} current={cursor?.index === i} tag={tags[i]} />
+    )
   }
-  return <CupBracketOutline rounds={rounds} slot={slot} firstWidth="w-60" bleed={false} label="Cup bracket" />
+  const feeder = (game: number) => {
+    const from = [order[game * 2], order[game * 2 + 1]].map((i) => (i === undefined ? undefined : seeds[i]))
+    return <FeederSlot key={game} from={from} />
+  }
+
+  /** One wing: its eight opening slots, four Round-of-18 games, two quarterfinals, one semi. */
+  const wing = (side: 0 | 1) => {
+    const columns = [
+      <Column key="r36" round={r36} width={WIDE}>{range(side * HALF, HALF).map(opening)}</Column>,
+      <Column key="r18" round={r18} width={NARROW}>{range(side * 4, 4).map(feeder)}</Column>,
+      <Column key="qf" round={qf} width={NARROW}>{blanks(2)}</Column>,
+      <Column key="sf" round={sf} width={NARROW}>{blanks(1)}</Column>,
+    ]
+    return side === 0 ? columns : columns.reverse()
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="overflow-x-auto pb-2">
+        <div className="flex w-full min-w-[90rem] items-stretch gap-3" aria-label="Cup bracket">
+          {wing(0)}
+          <Column round={final} width={WIDE}>
+            {blanks(1)}
+            <div className="space-y-1.5 border-t border-border pt-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted">9th {r18?.label} game</p>
+              {opening(16)}
+              {opening(17)}
+              {feeder(8)}
+            </div>
+          </Column>
+          {wing(1)}
+        </div>
+      </div>
+      <p className="text-center text-xs text-muted">
+        The lowest-scoring {r18?.label ?? 'Round of 18'} winner is eliminated; the eight left are re-seeded for the{' '}
+        {qf?.label.toLowerCase() ?? 'quarterfinals'}, so 1 and 2 can only meet in the final.
+      </p>
+    </div>
+  )
 }

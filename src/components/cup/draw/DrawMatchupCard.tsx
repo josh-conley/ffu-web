@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { CUP_ACCENT } from '@/config'
 import type { CupTier } from '@/lib/cupDraw.mjs'
 import { LEAGUE_STYLES } from '../../leagues'
@@ -15,7 +16,7 @@ export interface MatchupSide {
 function Side({ side, muted }: { side: MatchupSide; muted?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-1 items-center gap-3 ${muted ? 'opacity-60' : ''}`}>
-      <TeamLogo ffuId={side.ffuId} size={64} clickable={false} />
+      <TeamLogo ffuId={side.ffuId} size={52} clickable={false} />
       <div className="min-w-0">
         <div className="truncate text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">{side.name}</div>
         <div className={`text-sm font-bold uppercase tracking-widest ${LEAGUE_STYLES[side.tier].text}`}>
@@ -30,18 +31,20 @@ function Side({ side, muted }: { side: MatchupSide; muted?: boolean }) {
 function Pending() {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
-      <span className="size-16 shrink-0 animate-pulse bg-surface-2" aria-hidden />
-      <span className="text-2xl font-extrabold uppercase tracking-widest text-muted sm:text-3xl">Drawing…</span>
+      <span className="size-13 shrink-0 animate-pulse bg-surface-2" aria-hidden />
+      <span className="min-w-0 truncate text-2xl font-extrabold uppercase tracking-widest text-muted sm:text-3xl">Drawing…</span>
     </div>
   )
 }
 
-export function DrawMatchupCard({ drawer, drawn, forced }: {
+export function DrawMatchupCard({ drawer, drawn, forced, footer }: {
   drawer: MatchupSide
   /** Undefined while the spinner runs. */
   drawn: MatchupSide | undefined
   /** Only one team was left to draw. */
   forced: boolean
+  /** The storyline strip along the bottom. Undefined leaves no strip; null/false keeps its room empty. */
+  footer?: ReactNode
 }) {
   // The matchup number lives in the top bar only — it used to appear three times on one screen.
   const label = !drawn ? 'On the clock' : forced ? 'Last team in the bowl' : 'Drawn'
@@ -49,10 +52,10 @@ export function DrawMatchupCard({ drawer, drawn, forced }: {
     <div
       role="group"
       aria-label="Current matchup"
-      className="border-2 bg-surface p-4 shadow-sm sm:p-6"
+      className="border-2 bg-surface px-4 py-3 shadow-sm"
       style={{ borderColor: CUP_ACCENT }}
     >
-      <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: CUP_ACCENT }}>
+      <p className="mb-1 text-xs font-bold uppercase tracking-widest" style={{ color: CUP_ACCENT }}>
         {label}
       </p>
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -60,6 +63,8 @@ export function DrawMatchupCard({ drawer, drawn, forced }: {
         <span className="shrink-0 text-center text-sm font-extrabold uppercase tracking-widest text-muted">v</span>
         {drawn ? <Side side={drawn} /> : <Pending />}
       </div>
+      {/* Reserved height, so the card doesn't grow when the storyline arrives. */}
+      {footer !== undefined && <div className="mt-2 min-h-7 border-t border-border pt-2">{footer}</div>}
     </div>
   )
 }

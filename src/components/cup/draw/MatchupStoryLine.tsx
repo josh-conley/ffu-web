@@ -31,7 +31,7 @@ function seriesLine(story: MatchupStory, aName: string, bName: string): string {
 
 export function MatchupStoryLine({ story, aName, bName }: { story: MatchupStory; aName: string; bName: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-base">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
       {story.meetings === 0 ? (
         <span className="font-extrabold uppercase tracking-widest" style={{ color: CUP_ACCENT }}>
           First ever meeting

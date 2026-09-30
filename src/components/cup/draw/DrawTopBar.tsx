@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
 import { TOTAL_MATCHUPS } from '@/hooks/useCupDrawReveal'
 
@@ -6,11 +7,24 @@ import { TOTAL_MATCHUPS } from '@/hooks/useCupDrawReveal'
 // on camera for a seed of "week4 SNF 51" — and the draw is case-sensitive, so re-running what the
 // stream showed would have produced a different bracket.
 
-export function DrawTopBar({ seed, matchupNumber, done }: { seed: string; matchupNumber: number; done: boolean }) {
+/**
+ * One row for everything the operator and the call need up top: the title, the operator's controls,
+ * the seed and where the draw is. (It used to be two rows; the vertical space goes to the bracket.)
+ */
+export function DrawTopBar({ seed, matchupNumber, done, controls, tools }: {
+  seed: string
+  matchupNumber: number
+  done: boolean
+  /** The main button (draw / reveal / next). */
+  controls: ReactNode
+  /** Small utilities at the far end (mute). */
+  tools: ReactNode
+}) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 pb-2" style={{ borderColor: CUP_ACCENT }}>
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b-2 pb-2" style={{ borderColor: CUP_ACCENT }}>
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">{CUP_NAME} Draw</h1>
-      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {controls}
+      <div className="ml-auto flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <span className="text-sm font-bold uppercase tracking-widest text-muted">
           Seed <span className="font-mono text-xl normal-case tracking-normal text-text">{seed}</span>
         </span>
@@ -18,6 +32,7 @@ export function DrawTopBar({ seed, matchupNumber, done }: { seed: string; matchu
           {done ? 'Complete' : `Matchup ${matchupNumber} of ${TOTAL_MATCHUPS}`}
         </span>
       </div>
+      {tools}
     </div>
   )
 }
