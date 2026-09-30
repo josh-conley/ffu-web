@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { drawCup } from '../src/lib/cupDraw.mjs'
-import { formatDrawSheet } from '../src/lib/drawSheet.mjs'
+import { SEED_PATTERN, formatDrawSheet } from '../src/lib/drawSheet.mjs'
 import { ROOT, TIERS, buildMemberIndex, leagueIdsFor, sleeperApi as api } from './lib/ffuConfig.mjs'
 
 /** National never draws — it is only ever drawn — so its draft order is irrelevant to the Cup. */
@@ -36,6 +36,7 @@ function parseArgs(argv) {
     else die(`Unknown argument: ${arg}`)
   }
   if (args.seed === undefined || args.seed === '') die('--seed is required (and should be published before the draw)')
+  if (!SEED_PATTERN.test(args.seed)) die('--seed may only use letters, digits, spaces and - _ . : # (the same rule as the draw page)')
   return args
 }
 
@@ -85,7 +86,7 @@ function loadFixture(path) {
 
 // ── output ────────────────────────────────────────────────────────────────────────────────────
 
-/** The draw sheet, in the order ties were made — this is what gets read out in Discord. */
+/** The draw sheet, in the order matchups were made — this is what gets read out in Discord. */
 function printSheet(field, result, seed) {
   console.log(`\n${formatDrawSheet(field, result, seed)}`)
 }
@@ -104,7 +105,7 @@ function writeTournament(year, result, force) {
   if (!opening) die(`${year} tournament.json has no rounds`)
   opening.matchups = result.matchups
   writeFileSync(path, `${JSON.stringify(tournament, null, 2)}\n`)
-  console.log(`\n✓ Wrote ${result.participants.length} participants + ${result.matchups.length} opening ties to public/data/${year}/tournament.json`)
+  console.log(`\n✓ Wrote ${result.participants.length} participants + ${result.matchups.length} opening matchups to public/data/${year}/tournament.json`)
   console.log('  Commit it together with the seed, so the draw can be re-run and verified.\n')
 }
 

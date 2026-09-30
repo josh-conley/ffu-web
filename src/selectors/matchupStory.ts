@@ -2,34 +2,34 @@ import type { SeasonData } from '@/data'
 import type { Tier } from '@/config'
 import { headToHead } from './headToHead'
 
-// The story behind one Cup tie, for the live draw's reveal. Every fact is DERIVED from the eight
+// The story behind one Cup matchup, for the live draw's reveal. Every fact is DERIVED from the eight
 // seasons of migrated games — this is the thing a generic draw animation can't do, and the reason
 // the reveal is worth watching: "they've met five times, and the last one was a playoff game".
 
-export interface TieMeeting {
+export interface MatchupMeeting {
   year: string
   tier: Tier
   week: number
   isPlayoff: boolean
 }
 
-export interface TieStory {
+export interface MatchupStory {
   meetings: number
   /** Wins for the drawing side (a) and the drawn side (b). */
   aWins: number
   bWins: number
   ties: number
   /** Most recent meeting, if they have ever played. */
-  last?: TieMeeting
-  /** Their last meeting was a playoff game — the tie the commissioner should linger on. */
+  last?: MatchupMeeting
+  /** Their last meeting was a playoff game — the matchup the commissioner should linger on. */
   playoffRematch: boolean
 }
 
 /**
  * Everything worth saying about `a` v `b` on the night. Teams that have never met come back with
- * `meetings: 0`, which is its own headline — across the whole field that is roughly six ties in ten.
+ * `meetings: 0`, which is its own headline — across the whole field that is roughly six matchups in ten.
  */
-export function tieStory(seasons: SeasonData[], a: string, b: string): TieStory {
+export function matchupStory(seasons: SeasonData[], a: string, b: string): MatchupStory {
   const h2h = headToHead(seasons, a, b)
   const last = h2h.meetings.at(-1)
   return {
@@ -40,4 +40,15 @@ export function tieStory(seasons: SeasonData[], a: string, b: string): TieStory 
     last: last && { year: last.year, tier: last.tier, week: last.week, isPlayoff: last.isPlayoff },
     playoffRematch: last?.isPlayoff === true,
   }
+}
+
+/**
+ * The story as one short tag, for the end-of-draw panel where there is a row, not a card:
+ * "Playoff rematch" / "First meeting" / "3–2 H2H" (drawing side first).
+ */
+export function matchupTag(story: MatchupStory): string {
+  if (story.meetings === 0) return 'First meeting'
+  if (story.playoffRematch) return 'Playoff rematch'
+  const tied = story.ties > 0 ? `–${story.ties}` : ''
+  return `${story.aWins}–${story.bWins}${tied} H2H`
 }

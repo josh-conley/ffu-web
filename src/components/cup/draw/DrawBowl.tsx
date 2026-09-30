@@ -21,10 +21,11 @@ function ClosedStamp({ tier }: { tier: CupTier }) {
 
 function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
   return (
-    <div className={`flex flex-col items-center gap-1 border border-border p-2 transition-opacity ${dimmed ? 'opacity-25' : ''}`}>
-      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
-      <span className="w-full truncate text-center text-[11px] font-bold leading-tight">{team.name}</span>
-      <span className={`text-[9px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
+    <div className={`flex flex-col items-center gap-1 border border-border px-3 py-2 transition-opacity ${dimmed ? 'opacity-25' : ''}`}>
+      <TeamLogo ffuId={team.ffuId} size={48} clickable={false} />
+      {/* The full name, wrapping as needed: a truncated name is unreadable on a stream. */}
+      <span className="min-h-[2lh] w-full text-center text-sm font-bold leading-tight [overflow-wrap:anywhere]">{team.name}</span>
+      <span className={`text-[11px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}
       </span>
     </div>
@@ -35,10 +36,10 @@ function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
 function Half({ tier, teams, closed }: { tier: CupTier; teams: BowlTeam[]; closed: boolean }) {
   return (
     <section className="relative flex-1">
-      <h3 className={`mb-2 text-xs font-bold uppercase tracking-widest ${LEAGUE_STYLES[tier].text}`}>
+      <h3 className={`mb-2 text-sm font-bold uppercase tracking-widest ${LEAGUE_STYLES[tier].text}`}>
         {LEAGUE_STYLES[tier].label} · {teams.length} left
       </h3>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-4">
         {teams.map((t) => (
           <Crest key={t.ffuId} team={t} dimmed={closed} />
         ))}

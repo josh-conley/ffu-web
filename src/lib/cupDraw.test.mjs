@@ -1,4 +1,4 @@
-import { drawCup, makeRng } from './cupDraw.mjs'
+import { drawCheckCode, drawCup, makeRng } from './cupDraw.mjs'
 
 // The draw decides a competition that pays out, so these tests are about two things: it is
 // REPRODUCIBLE from its seed, and it always satisfies the rules the amendment guarantees.
@@ -89,5 +89,27 @@ describe('drawCup', () => {
     }
     expect(masters / runs).toBeGreaterThan(0.4)
     expect(masters / runs).toBeLessThan(0.6)
+  })
+
+  // REGRESSION (2026-09-29): the page and the CLI handed National over in different orders (draft
+  // slot vs Sleeper roster order) and drew different brackets from the same seed. The draw must
+  // not depend on how a caller happens to order the tier that never draws.
+  it.each(seeds)('gives the same bracket whatever order National arrives in (seed %s)', (seed) => {
+    const shuffled = { ...field, NATIONAL: [...field.NATIONAL].reverse() }
+    const rotated = { ...field, NATIONAL: [...field.NATIONAL.slice(5), ...field.NATIONAL.slice(0, 5)] }
+    expect(drawCup(shuffled, seed)).toEqual(drawCup(field, seed))
+    expect(drawCup(rotated, seed)).toEqual(drawCup(field, seed))
+  })
+})
+
+describe('drawCheckCode', () => {
+  it('is a stable XXXX-XXXX fingerprint of the bracket', () => {
+    const code = drawCheckCode(drawCup(field, '47'))
+    expect(code).toMatch(/^[0-9A-F]{4}-[0-9A-F]{4}$/)
+    expect(drawCheckCode(drawCup(field, '47'))).toBe(code)
+  })
+
+  it('changes when the bracket changes', () => {
+    expect(drawCheckCode(drawCup(field, '47'))).not.toBe(drawCheckCode(drawCup(field, '48')))
   })
 })

@@ -1,19 +1,19 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { DrawStage } from './DrawStage'
 
 // The point of these: the streamed draw must be the SAME draw as `npm run draw-cup`. The page
 // imports the one algorithm, so what is left to prove is that the reveal shows all of it, in order,
-// without dropping or reordering a tie.
+// without dropping or reordering a matchup.
 
 const mk = (prefix: string) => Array.from({ length: 12 }, (_, i) => ({ ffuId: `${prefix}-${i + 1}`, name: `${prefix.toUpperCase()} ${i + 1}` }))
 const field: CupField = { PREMIER: mk('p'), MASTERS: mk('m'), NATIONAL: mk('n') }
 const SEED = '4471'
 const expected = drawCup(field, SEED)
 
-/** Reduced motion skips the suspense spin, so a test can walk 18 ties without burning 30 seconds. */
+/** Reduced motion skips the suspense spin, so a test can walk 18 matchups without burning 30 seconds. */
 function stubReducedMotion(reduce: boolean) {
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: reduce,
@@ -28,14 +28,14 @@ afterEach(() => vi.unstubAllGlobals())
 const nameOf = (ffuId: string) =>
   [...field.PREMIER, ...field.MASTERS, ...field.NATIONAL].find((t) => t.ffuId === ffuId)!.name
 
-/** Scope to the tie card: the bowl legitimately shows every remaining team, so a document-wide
+/** Scope to the matchup card: the bowl legitimately shows every remaining team, so a document-wide
  *  query would find a not-yet-drawn opponent sitting in the pot and prove nothing. */
-const card = () => within(screen.getByRole('group', { name: /current tie/i }))
+const card = () => within(screen.getByRole('group', { name: /current matchup/i }))
 
 // REGRESSION: the first cut modelled only spinning/not-spinning, so with nowhere to hold a revealed
-// result every tie's resting state rendered its own answer — the opponent was on screen before it
+// result every matchup's resting state rendered its own answer — the opponent was on screen before it
 // had been drawn. These assert concealment, not just ordering.
-it('does not show the opponent until the tie is actually drawn', async () => {
+it('does not show the opponent until the matchup is actually drawn', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
@@ -49,7 +49,7 @@ it('does not show the opponent until the tie is actually drawn', async () => {
   expect(card().getByText(firstOpponent)).toBeInTheDocument()
 })
 
-it('holds a revealed tie on screen, then hides the next opponent again', async () => {
+it('holds a revealed matchup on screen, then hides the next opponent again', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
@@ -58,33 +58,36 @@ it('holds a revealed tie on screen, then hides the next opponent again', async (
   // The result stays up for the operator to talk over, rather than vanishing into the ledger.
   expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: /next tie/i }))
+  await user.click(screen.getByRole('button', { name: /next matchup/i }))
   expect(card().getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
   expect(card().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
 })
 
-it('reveals every tie of the CLI draw, in the same order', async () => {
+it('reveals every matchup of the CLI draw, in the same order', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
-  expect(screen.getAllByText(/tie 1 of 18/i).length).toBeGreaterThan(0)
+  expect(screen.getAllByText(/matchup 1 of 18/i).length).toBeGreaterThan(0)
 
   for (let i = 0; i < 18; i++) {
     const opponent = nameOf(expected.matchups[i]!.b)
-    expect(card().getByText(nameOf(expected.matchups[i]!.a)), `tie ${i + 1} drawer`).toBeInTheDocument()
+    expect(card().getByText(nameOf(expected.matchups[i]!.a)), `matchup ${i + 1} drawer`).toBeInTheDocument()
     // Hidden before the draw...
-    expect(card().queryByText(opponent), `tie ${i + 1} opponent leaked`).not.toBeInTheDocument()
+    expect(card().queryByText(opponent), `matchup ${i + 1} opponent leaked`).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /^draw$/i }))
     // ...shown after it.
-    expect(card().getByText(opponent), `tie ${i + 1} opponent`).toBeInTheDocument()
-    if (i < 17) await user.click(screen.getByRole('button', { name: /next tie/i }))
+    expect(card().getByText(opponent), `matchup ${i + 1} opponent`).toBeInTheDocument()
+    if (i < 17) await user.click(screen.getByRole('button', { name: /next matchup/i }))
   }
 
-  expect(screen.getByText(/the draw is complete/i)).toBeInTheDocument()
-  const ledger = screen.getByRole('list')
-  expect(ledger.querySelectorAll('li')).toHaveLength(18)
+  // The 18th gets its own moment on the card; one more press brings up the full results.
+  expect(screen.queryByRole('region', { name: /draw complete/i })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: /show all matchups/i }))
+  const results = within(screen.getByRole('region', { name: /draw complete/i }))
+  expect(results.getByRole('list').querySelectorAll('li')).toHaveLength(18)
+  expect(results.getAllByText(drawCheckCode(expected)).length).toBeGreaterThan(0)
 })
 
 it('empties the Masters half of the bowl once Premier has finished drawing', async () => {
@@ -95,7 +98,7 @@ it('empties the Masters half of the bowl once Premier has finished drawing', asy
   expect(screen.getByText(/Masters · 12 left/i)).toBeInTheDocument()
   for (let i = 0; i < 12; i++) {
     await user.click(screen.getByRole('button', { name: /^draw$/i }))
-    await user.click(screen.getByRole('button', { name: /next tie/i }))
+    await user.click(screen.getByRole('button', { name: /next matchup/i }))
   }
 
   // Phase two: the leftover Masters teams are drawers now, so nothing of theirs is left to draw.
@@ -121,9 +124,9 @@ it('runs a suspense spin, and a second press cuts it short', () => {
     expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
     expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
 
-    // Leftover spin timers must not skip ahead to the next tie on their own.
+    // Leftover spin timers must not skip ahead to the next matchup on their own.
     act(() => void vi.advanceTimersByTime(5000))
-    expect(screen.getAllByText(/tie 1 of 18/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/matchup 1 of 18/i).length).toBeGreaterThan(0)
   } finally {
     vi.useRealTimers()
   }
@@ -140,7 +143,7 @@ it('downloads a sheet identical to the CLI output', async () => {
     revokeObjectURL: () => {},
   })
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
 
   await user.click(screen.getByRole('button', { name: /download sheet/i }))
   expect(captured).toBeDefined()
@@ -167,7 +170,7 @@ const seasonWith = (year: string, games: { week: number; a: number; b: number; i
   })),
 })
 
-it('tells the story of a tie once it is revealed', async () => {
+it('tells the story of a matchup once it is revealed', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   const seasons = [seasonWith('2024', [{ week: 3, a: 120, b: 100 }, { week: 15, a: 90, b: 130, isPlayoff: true }])]
@@ -185,7 +188,7 @@ it('tells the story of a tie once it is revealed', async () => {
 it('says so when two teams have never met', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  // Seasons that contain neither of tie 1's teams.
+  // Seasons that contain neither of matchup 1's teams.
   const seasons = [{ ...seasonWith('2024', []), games: [] }]
   render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
 

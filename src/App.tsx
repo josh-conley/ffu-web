@@ -60,11 +60,14 @@ export default function App() {
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           <Route path="cup" element={<Cup />} />
-          {/* Operator view for the live draw night. Unlisted: reachable by URL, not via the nav. */}
-          <Route path="cup/draw" element={page(CupDraw)} />
           {/* Earlier path for this page; redirect stale bookmarks to the current /cup. */}
           <Route path="tournament" element={<Navigate to="/cup" replace />} />
           <Route path="*" element={<NotFound />} />
+        </Route>
+        {/* Operator view for the live draw night: unlisted (reachable by URL, not via the nav) and
+            screen-shared, so it gets the stage shell with no header. */}
+        <Route element={<Layout stage />}>
+          <Route path="cup/draw" element={page(CupDraw)} />
         </Route>
       </Routes>
     </BrowserRouter>

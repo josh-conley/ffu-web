@@ -1,4 +1,4 @@
-import { REEL_EASING_CSS, tickTimes, timeAtProgress } from './reelTiming'
+import { REEL_EASING_CSS, progressAt, tickTimes, timeAtProgress } from './reelTiming'
 
 describe('timeAtProgress', () => {
   it('pins the endpoints', () => {
@@ -18,6 +18,28 @@ describe('timeAtProgress', () => {
   it('front-loads the distance, as an ease-out does', () => {
     // Half the crests are past the marker well before half the time has elapsed.
     expect(timeAtProgress(0.5)).toBeLessThan(0.5)
+  })
+
+  it('inverts progressAt', () => {
+    for (const t of [0.1, 0.3, 0.45, 0.6, 0.8, 0.95, 0.999]) expect(timeAtProgress(progressAt(t))).toBeCloseTo(t, 9)
+  })
+})
+
+describe('progressAt', () => {
+  // Speed over each small slice of the run.
+  const speeds = Array.from({ length: 100 }, (_, i) => (progressAt((i + 1) / 100) - progressAt(i / 100)) * 100)
+
+  it('never speeds up once running', () => {
+    for (let i = 1; i < speeds.length; i++) expect(speeds[i]!).toBeLessThanOrEqual(speeds[i - 1]! + 1e-9)
+  })
+
+  // The physics: friction takes off the same amount of speed every instant, so under the brake the
+  // speed falls in a straight line — equal drops per slice, arriving at zero at the end.
+  it('brakes at a constant rate to a standstill', () => {
+    const braking = speeds.slice(50)
+    const drops = braking.slice(1).map((s, i) => braking[i]! - s)
+    for (const d of drops) expect(d).toBeCloseTo(drops[0]!, 6)
+    expect(speeds.at(-1)!).toBeLessThan(speeds[0]! * 0.02)
   })
 })
 
@@ -52,12 +74,12 @@ describe('tickTimes', () => {
     const quarter = Math.floor(gaps.length / 4)
 
     expect(mean(gaps.slice(-quarter))).toBeGreaterThan(mean(gaps.slice(0, quarter)) * 2.5)
-    expect(gaps.at(-1)!).toBeGreaterThan(gaps[0]! * 15)
+    expect(gaps.at(-1)!).toBeGreaterThan(gaps[0]! * 10)
 
     // Monotonic from the fastest crest onwards — once it starts slowing it never speeds up again.
     const fastestAt = gaps.indexOf(Math.min(...gaps))
     for (let i = fastestAt + 1; i < gaps.length; i++) {
-      expect(gaps[i]!, `gap ${i}`).toBeGreaterThanOrEqual(gaps[i - 1]!)
+      expect(gaps[i]!, `gap ${i}`).toBeGreaterThanOrEqual(gaps[i - 1]! - 1e-6)
     }
   })
 
@@ -66,7 +88,12 @@ describe('tickTimes', () => {
     expect(tickTimes(100, 0)).toEqual([])
   })
 
-  it('exports the curve as CSS so the picture and the sound cannot drift', () => {
-    expect(REEL_EASING_CSS).toBe('cubic-bezier(0.6, 0.78, 0.5, 1)')
+  it('exports the same motion as CSS so the picture and the sound cannot drift', () => {
+    expect(REEL_EASING_CSS).toMatch(/^linear\(0 0%, .* 1\.0000 100\.00%\)$/)
+    // Every stop in the CSS sits on the model.
+    for (const stop of REEL_EASING_CSS.slice(7, -1).split(', ')) {
+      const [value, at] = stop.split(' ')
+      expect(Number(value)).toBeCloseTo(progressAt(parseFloat(at!) / 100), 3)
+    }
   })
 })
