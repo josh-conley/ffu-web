@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
 import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory } from '@/selectors'
-import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
+import { CUP_YEAR } from '@/config'
+import { drawFacts, matchupStory, type DrawFacts } from '@/selectors'
+import { scheduleTicks } from '@/lib/drawSound'
+import { TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBowl } from './DrawBowl'
 import { DrawComplete } from './DrawComplete'
 import { DrawControls, RestartButton } from './DrawControls'
 import { DrawLedger } from './DrawLedger'
 import { DrawMatchupCard } from './DrawMatchupCard'
-import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
 import { MatchupStoryLine } from './MatchupStoryLine'
 import { downloadText } from './downloads'
@@ -19,32 +20,21 @@ import { downloadText } from './downloads'
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
 
 /**
- * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
- * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
- * the stage jumps as a matchup moves from on the clock to drawn.
+ * The matchup on the stage: the card, then the storyline. Both keep their place for the whole
+ * matchup (the storyline has a reserved slot), so nothing jumps as a matchup is drawn.
  */
-function CurrentMatchup({ reveal, story, muted, storySlot }: {
+function CurrentMatchup({ reveal, story, storySlot, facts }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
-  muted: boolean
   /** Reserve room for the storyline (false when there is no history to tell). */
   storySlot: boolean
+  facts: Map<string, DrawFacts>
 }) {
-  const { drawer, drawn, phase, landing } = reveal
+  const { drawer, drawn, landing } = reveal
   if (!drawer) return null
-  const revealed = phase === 'shown' || phase === 'done'
   return (
     <div className="space-y-3">
-      <DrawMatchupCard drawer={drawer} drawn={landing ? undefined : drawn} forced={reveal.forced} />
-      <DrawReel
-        key={reveal.matchupNumber}
-        pool={reveal.spinPool}
-        winnerId={phase === 'ready' ? undefined : reveal.spinWinner}
-        durationMs={SPIN_MS}
-        muted={muted}
-        motion={phase === 'spinning' || landing ? 'spin' : 'still'}
-        landed={revealed}
-      />
+      <DrawMatchupCard drawer={drawer} drawn={landing ? undefined : drawn} forced={reveal.forced} facts={facts} />
       {storySlot && (
         <div className="min-h-14 border border-border bg-surface px-4 py-3">
           {story && drawn && !landing && <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} />}
@@ -54,7 +44,7 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
   )
 }
 
-/** Mid-draw: who is left to be drawn, and what has been drawn so far. */
+/** Mid-draw: the bowl, where the reveal happens, and what has been drawn so far. */
 function BowlAndLedger({ reveal }: { reveal: ReturnType<typeof useCupDrawReveal> }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -65,6 +55,8 @@ function BowlAndLedger({ reveal }: { reveal: ReturnType<typeof useCupDrawReveal>
           national={reveal.nationalBowl}
           mastersClosed={reveal.mastersClosed}
           nationalClosed={reveal.nationalClosed}
+          knockedOut={reveal.knockedOut}
+          standing={reveal.standing}
         />
       </div>
       <div className="space-y-2">
@@ -73,6 +65,14 @@ function BowlAndLedger({ reveal }: { reveal: ReturnType<typeof useCupDrawReveal>
       </div>
     </div>
   )
+}
+
+/** A soft tock per knockout, the last one heavier. Cancelled if the operator cuts it short. */
+function useKnockoutSound(drawing: boolean, times: number[], muted: boolean) {
+  useEffect(() => {
+    if (!drawing || muted || times.length === 0) return
+    return scheduleTicks(times)
+  }, [drawing, times, muted])
 }
 
 export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
@@ -89,13 +89,21 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
   // Decided once, here, before anything is shown. The reveal below is presentation over a result
   // that already exists — the animation cannot change who was drawn.
   const result = useMemo(() => drawCup(field, seed), [field, seed])
-  const reveal = useCupDrawReveal(field, result, resumeAt)
+  const reveal = useCupDrawReveal(field, result, seed, resumeAt)
   const { advance, drawer, drawn, settled } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
 
   useSpaceToAdvance(advance)
+  useKnockoutSound(reveal.drawing, reveal.knockoutTimes, muted)
   useEffect(() => onProgress?.(settled), [onProgress, settled])
+
+  // Talking points for the two teams on the card. Empty seasons (still loading, or failed) just
+  // leaves the card with names and seeds.
+  const facts = useMemo(() => {
+    const ids = [drawer?.ffuId, drawn?.ffuId].filter((id): id is string => id !== undefined)
+    return new Map(seasons.length > 0 ? ids.map((id) => [id, drawFacts(seasons, id, CUP_YEAR)]) : [])
+  }, [seasons, drawer, drawn])
 
   const story = useMemo(
     () => (drawer && drawn && seasons.length > 0 ? matchupStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
@@ -104,7 +112,7 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
 
   const lastShown = reveal.phase === 'shown' && reveal.matchupNumber === TOTAL_MATCHUPS
   const buttonLabel =
-    reveal.phase === 'spinning' ? 'Reveal' : lastShown ? 'Show all matchups' : reveal.phase === 'shown' ? 'Next matchup' : 'Draw'
+    reveal.phase === 'drawing' ? 'Reveal' : lastShown ? 'Show all matchups' : reveal.phase === 'shown' ? 'Next matchup' : 'Draw'
 
   const download = (kind: 'txt' | 'csv') =>
     kind === 'csv'
@@ -131,7 +139,7 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
         />
       ) : (
         <>
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
+          <CurrentMatchup reveal={reveal} story={story} storySlot={seasons.length > 0} facts={facts} />
           <BowlAndLedger reveal={reveal} />
         </>
       )}

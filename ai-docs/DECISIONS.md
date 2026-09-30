@@ -67,6 +67,21 @@ together — they are one unit.
 
 ---
 
+## 2026-09-30 — The draw is revealed by knockouts in the bowl, not a spinning reel
+
+**Context.** The draw will be screen-shared on a Discord video call and run 15–30 minutes. Discord
+streams at a low frame rate with heavy compression, so the reel (about 28 crests a second at full
+speed) smeared, and a prototype marble race had the same problem.
+
+**Decision.** "Last crest standing": the eligible crests in the bowl go out one at a time, briskly
+while it is crowded and slowing right down for the last few, until only the drawn team is lit.
+Every step is one large, discrete change, which survives compression, and every viewer's team is
+on screen throughout. The knockout order is shuffled from the draw seed (same seed, same reveal);
+the drawn team is never knocked out, so, as before, the reveal cannot change the result. The
+length of the call comes from pacing rather than animation: each team goes "on the clock" with
+talking points (this season, last season, titles) before it draws. The reel and its timing model
+were removed rather than kept as an option.
+
 ## 2026-09-29 — The draw sorts National itself; the page and CLI prove they agree
 
 **Context.** Sharing `drawCup` was meant to make the streamed draw and the CLI incapable of

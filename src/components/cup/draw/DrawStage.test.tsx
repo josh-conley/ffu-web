@@ -13,7 +13,7 @@ const field: CupField = { PREMIER: mk('p'), MASTERS: mk('m'), NATIONAL: mk('n') 
 const SEED = '4471'
 const expected = drawCup(field, SEED)
 
-/** Reduced motion skips the suspense spin, so a test can walk 18 matchups without burning 30 seconds. */
+/** Reduced motion skips the knockouts, so a test can walk 18 matchups without burning minutes. */
 function stubReducedMotion(reduce: boolean) {
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: reduce,
@@ -106,7 +106,7 @@ it('empties the Masters half of the bowl once Premier has finished drawing', asy
   expect(screen.getByText(/National · 6 left/i)).toBeInTheDocument()
 })
 
-it('runs a suspense spin, and a second press cuts it short', () => {
+it('runs the knockouts, and a second press cuts them short', () => {
   stubReducedMotion(false)
   vi.useFakeTimers()
   try {
@@ -115,7 +115,7 @@ it('runs a suspense spin, and a second press cuts it short', () => {
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
 
-    // Part-way through the spin it is still undecided on screen...
+    // Part-way through the knockouts it is still undecided on screen...
     act(() => void vi.advanceTimersByTime(400))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
 
@@ -124,7 +124,7 @@ it('runs a suspense spin, and a second press cuts it short', () => {
     expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
     expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
 
-    // Leftover spin timers must not skip ahead to the next matchup on their own.
+    // Leftover knockout timers must not skip ahead to the next matchup on their own.
     act(() => void vi.advanceTimersByTime(5000))
     expect(screen.getAllByText(/matchup 1 of 18/i).length).toBeGreaterThan(0)
   } finally {
@@ -196,7 +196,7 @@ it('says so when two teams have never met', async () => {
   expect(screen.getByText(/first ever meeting/i)).toBeInTheDocument()
 })
 
-it('ticks the wheel while it spins, and stops ticking if the spin is cut short', () => {
+it('ticks with each knockout, and stops ticking if the reveal is cut short', () => {
   stubReducedMotion(false)
   const cancels: number[] = []
   // Stand in for Web Audio: record the schedule handed over, and whether it gets cancelled.
@@ -226,10 +226,9 @@ it('ticks the wheel while it spins, and stops ticking if the spin is cut short',
     render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
 
-    // A tick per crest of the run-up, not a fixed count.
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
 
-    // Cutting the spin short must silence the pending ticks.
+    // Cutting the reveal short must silence the pending ticks.
     fireEvent.click(screen.getByRole('button', { name: /^reveal$/i }))
     expect(cancels.length).toBeGreaterThan(0)
   } finally {

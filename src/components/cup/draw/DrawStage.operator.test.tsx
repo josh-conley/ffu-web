@@ -1,7 +1,10 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { CUP_YEAR } from '@/config'
+import type { SeasonData } from '@/data'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
-import { LAND_MS, SPIN_MS } from '@/hooks/useCupDrawReveal'
+import { LAND_MS } from '@/hooks/useCupDrawReveal'
+import { knockoutTimes } from '@/selectors'
 import { DrawStage } from './DrawStage'
 
 // The ways the live draw could go wrong on camera for the OPERATOR, as opposed to the draw itself
@@ -91,31 +94,64 @@ it('shows the seed exactly as typed, and quotes it in the command', () => {
   expect(screen.getByText(`npm run draw-cup -- --seed "${seed}"`)).toBeInTheDocument()
 })
 
-it('rests the reel on the winner before filling the card', () => {
+it('knocks crests out one at a time until only the drawn team is standing, then names it', () => {
   stubReducedMotion(false)
   vi.stubGlobal('AudioContext', undefined)
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    const { container } = render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    const count = (state: string) => container.querySelectorAll(`[data-state="${state}"]`).length
+    const times = knockoutTimes(24)
+    const winner = nameOf(expected.matchups[0]!.b)
+
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
+    expect(count('lit')).toBe(24)
 
-    act(() => void vi.advanceTimersByTime(SPIN_MS))
-    // Landed, but the card holds back while the reel rests on the result.
-    expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
+    act(() => void vi.advanceTimersByTime(times[0]!))
+    expect(count('out')).toBe(1)
 
-    act(() => void vi.advanceTimersByTime(LAND_MS))
-    expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
-    expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
+    act(() => void vi.advanceTimersByTime(times.at(-1)! - times[0]!))
+    // Every other crest is out; the drawn team stands alone and highlighted, not yet named.
+    expect(count('out')).toBe(23)
+    expect(count('standing')).toBe(1)
+    expect(card().queryByText(winner)).not.toBeInTheDocument()
+
+    act(() => void vi.advanceTimersByTime(500 + LAND_MS))
+    expect(card().getByText(winner)).toBeInTheDocument()
+    // The bowl holds its shape until the next matchup: the drawn crest stays put, highlighted.
+    expect(count('standing')).toBe(1)
   } finally {
     vi.useRealTimers()
   }
 })
 
-it('does not fake a spin when only one team is left in the bowl', () => {
+it('skips the knockouts when only one team is left in the bowl', () => {
   stubReducedMotion(false)
   render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={17} />)
   fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
   expect(card().getByText(nameOf(expected.matchups[17]!.b))).toBeInTheDocument()
   expect(card().getByText(/last team in the bowl/i)).toBeInTheDocument()
+})
+
+it('puts the drawing team\'s talking points on the card while it is on the clock', () => {
+  stubReducedMotion(true)
+  const drawer = expected.matchups[0]!.a
+  const seasons: SeasonData[] = [
+    {
+      schemaVersion: 1,
+      tier: 'PREMIER',
+      year: CUP_YEAR,
+      era: 'sleeper',
+      platformLeagueId: 'x',
+      games: [],
+      teams: [
+        { memberId: drawer, record: { wins: 3, losses: 1, ties: 0 }, points: { for: 400, against: 350 }, promoted: false, relegated: false },
+        { memberId: 'other', record: { wins: 4, losses: 0, ties: 0 }, points: { for: 450, against: 300 }, promoted: false, relegated: false },
+      ],
+    },
+  ]
+  render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+  expect(card().getByText('This season 3-1 · 2nd of 2')).toBeInTheDocument()
+  expect(card().getByText('First FFU season')).toBeInTheDocument()
 })

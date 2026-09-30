@@ -1,10 +1,10 @@
-// The reel's wheel tick, synthesised with Web Audio — no asset files to load, host or forget to ship.
+// The draw's knockout tick, synthesised with Web Audio — no asset files to load, host or forget to ship.
 //
-// A prize-wheel tick is a flapper striking a peg: a broadband CLICK with a little body, not a pitched
+// A wooden tock, like a peg being knocked out: a broadband CLICK with a little body, not a pitched
 // beep. So it's a very short noise burst through a narrow bandpass, rather than an oscillator.
 //
-// Ticks are scheduled on the AUDIO clock, not with setTimeout. At full speed they come ~14ms apart,
-// which is inside setTimeout's jitter — the wheel would sound ragged. Handing the whole schedule to
+// Ticks are scheduled on the AUDIO clock, not with setTimeout, so they land exactly on the knockouts
+// the picture shows rather than drifting with timer jitter. Handing the whole schedule to
 // Web Audio up front makes it sample-accurate.
 //
 // Everything is best-effort: browsers refuse an AudioContext without a user gesture (the draw always
@@ -42,7 +42,7 @@ const CLUNK = { hz: 900, gain: 0.45, decay: 0.07 }
 
 /**
  * Schedules one tick per entry in `offsetsMs`, relative to now. Returns a cancel function for when
- * the operator cuts a spin short — otherwise the wheel would keep ticking after it had stopped.
+ * the operator cuts the reveal short — otherwise it would keep ticking after the result was up.
  */
 export function scheduleTicks(offsetsMs: number[]): () => void {
   const audio = context()
@@ -54,8 +54,8 @@ export function scheduleTicks(offsetsMs: number[]): () => void {
   const sources: AudioBufferSourceNode[] = []
 
   offsetsMs.forEach((offset, i) => {
-    // The last tick is the flapper settling against its peg: lower, louder and longer, so the ear
-    // hears the wheel STOP rather than just run out of ticks.
+    // The last tick is the final knockout, the one that leaves a single crest standing: lower, louder
+    // and longer, so the ear hears the draw land rather than just run out of ticks.
     const tone = i === offsetsMs.length - 1 ? CLUNK : TICK
     const at = now + offset / 1000
     const src = audio.createBufferSource()

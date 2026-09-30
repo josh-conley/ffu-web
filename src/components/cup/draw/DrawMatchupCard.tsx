@@ -1,7 +1,9 @@
 import { CUP_ACCENT } from '@/config'
 import type { CupTier } from '@/lib/cupDraw.mjs'
+import type { DrawFacts } from '@/selectors'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
+import { DrawTeamFacts } from './DrawTeamFacts'
 
 // The centre of the stage: who is drawing, and who they got.
 
@@ -12,7 +14,7 @@ export interface MatchupSide {
   seed: number
 }
 
-function Side({ side, muted }: { side: MatchupSide; muted?: boolean }) {
+function Side({ side, facts, muted }: { side: MatchupSide; facts?: DrawFacts; muted?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-1 items-center gap-3 ${muted ? 'opacity-60' : ''}`}>
       <TeamLogo ffuId={side.ffuId} size={64} clickable={false} />
@@ -21,6 +23,7 @@ function Side({ side, muted }: { side: MatchupSide; muted?: boolean }) {
         <div className={`text-sm font-bold uppercase tracking-widest ${LEAGUE_STYLES[side.tier].text}`}>
           {LEAGUE_STYLES[side.tier].label} · seed {side.seed}
         </div>
+        {facts && <DrawTeamFacts facts={facts} />}
       </div>
     </div>
   )
@@ -36,12 +39,14 @@ function Pending() {
   )
 }
 
-export function DrawMatchupCard({ drawer, drawn, forced }: {
+export function DrawMatchupCard({ drawer, drawn, forced, facts }: {
   drawer: MatchupSide
-  /** Undefined while the spinner runs. */
+  /** Undefined until the result is revealed. */
   drawn: MatchupSide | undefined
   /** Only one team was left to draw. */
   forced: boolean
+  /** Talking points by ffuId; a team without an entry just shows its name and seed. */
+  facts: Map<string, DrawFacts>
 }) {
   // The matchup number lives in the top bar only — it used to appear three times on one screen.
   const label = !drawn ? 'On the clock' : forced ? 'Last team in the bowl' : 'Drawn'
@@ -55,10 +60,10 @@ export function DrawMatchupCard({ drawer, drawn, forced }: {
       <p className="mb-3 text-xs font-bold uppercase tracking-widest" style={{ color: CUP_ACCENT }}>
         {label}
       </p>
-      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <Side side={drawer} />
-        <span className="shrink-0 text-center text-sm font-extrabold uppercase tracking-widest text-muted">v</span>
-        {drawn ? <Side side={drawn} /> : <Pending />}
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start">
+        <Side side={drawer} facts={facts.get(drawer.ffuId)} />
+        <span className="shrink-0 self-center text-center text-sm font-extrabold uppercase tracking-widest text-muted">v</span>
+        {drawn ? <Side side={drawn} facts={facts.get(drawn.ffuId)} /> : <Pending />}
       </div>
     </div>
   )
