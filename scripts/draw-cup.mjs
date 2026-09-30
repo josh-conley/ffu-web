@@ -30,7 +30,8 @@ function parseArgs(argv) {
     const arg = argv[i]
     if (arg === '--dry-run') args.dryRun = true
     else if (arg === '--force') args.force = true
-    else if (arg === '--seed') args.seed = argv[++i]
+    // Trimmed exactly as the draw page trims it: "47 " and "47" must be the same draw on both.
+    else if (arg === '--seed') args.seed = argv[++i]?.trim()
     else if (arg === '--year') args.year = argv[++i]
     else if (arg === '--fixture') args.fixture = argv[++i]
     else die(`Unknown argument: ${arg}`)
