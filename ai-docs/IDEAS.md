@@ -38,3 +38,9 @@ Format: `- YYYY-MM-DD · <agent> · <idea> — <accepted | rejected | later>: <r
 - 2026-09-28 · product-owner · First UPR of 2026 block; weekly movement as signed numbers, not ▲/▼ — later
 - 2026-09-28 · product-owner · Season grid (teams × weeks) — later: 15+ columns, shading contrast open
 - 2026-09-28 · ux-partner · Stats filter collapse on phones — later: parked with /builds
+- 2026-09-29 · partners · /cup/draw: page and CLI draw the same bracket (National sorted in drawCup) + check code — accepted: preview/wheel-brake
+- 2026-09-29 · partners · /cup/draw operator safety: URL resume, confirm Start over, focus/repeat-proof space, downloads only at the end, seed in real case — accepted: preview/wheel-brake
+- 2026-09-29 · partners · /cup/draw stream readability, landing hold, no fake spin, end-of-draw panel with copy image — accepted: preview/wheel-brake
+- 2026-09-29 · product-owner · Draw card: tier gap + live 2026 records — dropped in discussion: adds a live fetch to a one-shot event
+- 2026-09-29 · product-owner · Draw rehearsal banner (?rehearse=1) — dropped in discussion: a throwaway seed already marks a rehearsal
+- 2026-09-29 · ux-partner · Draw reduced-motion override — dropped: rehearsal checklist item instead
