@@ -7,7 +7,7 @@
 // Rules implemented (commissioner's amendment + the 2026-08-20 clarification):
 //   1. Premier draws in draft order 1→12, each from ONE pool of all 24 Masters + National teams.
 //   2. Once six teams from a league have been drawn, the pool narrows to the other league — so the
-//      round opens with exactly six Premier–Masters and six Premier–National ties.
+//      round opens with exactly six Premier–Masters and six Premier–National matchups.
 //   3. The six undrawn Masters teams then draw the six remaining National teams.
 //   4. Seeding: drawing teams by draft order (Premier 1–12, then those Masters teams 13–18); every
 //      DRAWN team by reverse order of selection (first drawn is 36, down to 19).
@@ -65,10 +65,10 @@ function validateField(field) {
 
 /**
  * Phase 1 — Premier draws from the combined pool, quota-constrained.
- * Returns the ties made and mutates the two pools.
+ * Returns the matchups made and mutates the two pools.
  */
 function premierDraws(premier, mastersPool, nationalPool, rng, drawnOrder) {
-  const ties = []
+  const matchups = []
   for (const team of premier) {
     // The quota rule: a league that has given up six teams is closed for the rest of the phase.
     const eligible = mastersPool.length === 6 ? 'NATIONAL' : nationalPool.length === 6 ? 'MASTERS' : null
@@ -84,20 +84,20 @@ function premierDraws(premier, mastersPool, nationalPool, rng, drawnOrder) {
       opponent = i < mastersPool.length ? mastersPool.splice(i, 1)[0] : nationalPool.splice(i - mastersPool.length, 1)[0]
     }
     drawnOrder.push(opponent)
-    ties.push({ a: team.ffuId, b: opponent.ffuId })
+    matchups.push({ a: team.ffuId, b: opponent.ffuId })
   }
-  return ties
+  return matchups
 }
 
 /** Phase 2 — the undrawn Masters teams, in draft order, draw the remaining National teams. */
 function mastersDraws(remainingMasters, nationalPool, rng, drawnOrder) {
-  const ties = []
+  const matchups = []
   for (const team of remainingMasters) {
     const opponent = takeRandom(nationalPool, rng)
     drawnOrder.push(opponent)
-    ties.push({ a: team.ffuId, b: opponent.ffuId })
+    matchups.push({ a: team.ffuId, b: opponent.ffuId })
   }
-  return ties
+  return matchups
 }
 
 /** Post-conditions the amendment guarantees. A violation is a bug, not a bad draw — refuse to emit. */
@@ -105,16 +105,16 @@ function verify(participants, matchups, tierOf) {
   assert(participants.length === 36, `expected 36 participants, got ${participants.length}`)
   const seeds = participants.map((p) => p.seed).sort((a, b) => a - b)
   assert(seeds.every((s, i) => s === i + 1), 'seeds are not exactly 1–36')
-  assert(matchups.length === 18, `expected 18 opening ties, got ${matchups.length}`)
+  assert(matchups.length === 18, `expected 18 opening matchups, got ${matchups.length}`)
   const pairing = (m) => [tierOf.get(m.a), tierOf.get(m.b)].sort().join('-')
   const counts = {}
   for (const m of matchups) {
-    assert(tierOf.get(m.a) !== tierOf.get(m.b), `intra-league tie: ${m.a} vs ${m.b}`)
+    assert(tierOf.get(m.a) !== tierOf.get(m.b), `intra-league matchup: ${m.a} vs ${m.b}`)
     counts[pairing(m)] = (counts[pairing(m)] ?? 0) + 1
   }
-  assert(counts['MASTERS-PREMIER'] === 6, `expected 6 Premier–Masters ties, got ${counts['MASTERS-PREMIER'] ?? 0}`)
-  assert(counts['NATIONAL-PREMIER'] === 6, `expected 6 Premier–National ties, got ${counts['NATIONAL-PREMIER'] ?? 0}`)
-  assert(counts['MASTERS-NATIONAL'] === 6, `expected 6 Masters–National ties, got ${counts['MASTERS-NATIONAL'] ?? 0}`)
+  assert(counts['MASTERS-PREMIER'] === 6, `expected 6 Premier–Masters matchups, got ${counts['MASTERS-PREMIER'] ?? 0}`)
+  assert(counts['NATIONAL-PREMIER'] === 6, `expected 6 Premier–National matchups, got ${counts['NATIONAL-PREMIER'] ?? 0}`)
+  assert(counts['MASTERS-NATIONAL'] === 6, `expected 6 Masters–National matchups, got ${counts['MASTERS-NATIONAL'] ?? 0}`)
 }
 
 /**

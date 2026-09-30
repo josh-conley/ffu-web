@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { FaFire } from 'react-icons/fa6'
 import { CUP_ACCENT } from '@/config'
-import type { TieStory } from '@/selectors'
+import type { MatchupStory } from '@/selectors'
 import { LEAGUE_STYLES } from '../../leagues'
 
-// The line the commissioner reads out after a tie lands. Everything here comes from eight seasons
+// The line the commissioner reads out after a matchup lands. Everything here comes from eight seasons
 // of real games, which is the whole point — no generic draw animation can tell you these two met in
 // a playoff last November.
 
@@ -21,7 +21,7 @@ function Flag({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 }
 
 /** "Stallions lead 3–2" / "All square at 2–2" / "Rhinos lead 1–0". */
-function seriesLine(story: TieStory, aName: string, bName: string): string {
+function seriesLine(story: MatchupStory, aName: string, bName: string): string {
   const { aWins, bWins, ties } = story
   const suffix = ties > 0 ? ` (${ties} tied)` : ''
   if (aWins === bWins) return `All square at ${aWins}–${bWins}${suffix}`
@@ -29,7 +29,7 @@ function seriesLine(story: TieStory, aName: string, bName: string): string {
   return `${leader} lead ${high}–${low}${suffix}`
 }
 
-export function TieStoryLine({ story, aName, bName }: { story: TieStory; aName: string; bName: string }) {
+export function MatchupStoryLine({ story, aName, bName }: { story: MatchupStory; aName: string; bName: string }) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
       {story.meetings === 0 ? (

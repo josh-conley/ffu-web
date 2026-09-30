@@ -15,7 +15,7 @@ function index(field, result) {
   }
 }
 
-/** The human-readable sheet: the ties in the order drawn, then the full 1–36 seeding. */
+/** The human-readable sheet: the matchups in the order drawn, then the full 1–36 seeding. */
 export function formatDrawSheet(field, result, seed) {
   const { nameOf, seedOf, tierOf } = index(field, result)
   const side = (id) => `${nameOf.get(id)} (${LABEL[tierOf.get(id)]}, ${seedOf.get(id)})`
@@ -32,11 +32,11 @@ export function formatDrawSheet(field, result, seed) {
   return lines.join('\n')
 }
 
-/** One row per tie, for a spreadsheet. */
+/** One row per matchup, for a spreadsheet. */
 export function formatDrawCsv(field, result, seed) {
   const { nameOf, seedOf, tierOf } = index(field, result)
   const cell = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v))
-  const rows = [['tie', 'seed_a', 'team_a', 'league_a', 'seed_b', 'team_b', 'league_b', 'draw_seed']]
+  const rows = [['matchup', 'seed_a', 'team_a', 'league_a', 'seed_b', 'team_b', 'league_b', 'draw_seed']]
   result.matchups.forEach((m, i) => {
     rows.push([
       i + 1,

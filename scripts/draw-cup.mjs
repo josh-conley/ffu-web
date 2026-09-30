@@ -85,7 +85,7 @@ function loadFixture(path) {
 
 // ── output ────────────────────────────────────────────────────────────────────────────────────
 
-/** The draw sheet, in the order ties were made — this is what gets read out in Discord. */
+/** The draw sheet, in the order matchups were made — this is what gets read out in Discord. */
 function printSheet(field, result, seed) {
   console.log(`\n${formatDrawSheet(field, result, seed)}`)
 }
@@ -104,7 +104,7 @@ function writeTournament(year, result, force) {
   if (!opening) die(`${year} tournament.json has no rounds`)
   opening.matchups = result.matchups
   writeFileSync(path, `${JSON.stringify(tournament, null, 2)}\n`)
-  console.log(`\n✓ Wrote ${result.participants.length} participants + ${result.matchups.length} opening ties to public/data/${year}/tournament.json`)
+  console.log(`\n✓ Wrote ${result.participants.length} participants + ${result.matchups.length} opening matchups to public/data/${year}/tournament.json`)
   console.log('  Commit it together with the seed, so the draw can be re-run and verified.\n')
 }
 

@@ -5,14 +5,14 @@ import { TeamLogo } from '../../TeamLogo'
 
 // The centre of the stage: who is drawing, and who they got.
 
-export interface TieSide {
+export interface MatchupSide {
   ffuId: string
   name: string
   tier: CupTier
   seed: number
 }
 
-function Side({ side, muted }: { side: TieSide; muted?: boolean }) {
+function Side({ side, muted }: { side: MatchupSide; muted?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-1 items-center gap-3 ${muted ? 'opacity-60' : ''}`}>
       <TeamLogo ffuId={side.ffuId} size={56} clickable={false} />
@@ -36,25 +36,25 @@ function Pending() {
   )
 }
 
-export function DrawTieCard({ drawer, drawn, tieNumber }: {
-  drawer: TieSide
+export function DrawMatchupCard({ drawer, drawn, matchupNumber }: {
+  drawer: MatchupSide
   /** Undefined while the spinner runs. */
-  drawn: TieSide | undefined
-  tieNumber: number
+  drawn: MatchupSide | undefined
+  matchupNumber: number
 }) {
   return (
     <div
       role="group"
-      aria-label="Current tie"
+      aria-label="Current matchup"
       className="border-2 bg-surface p-4 shadow-sm sm:p-6"
       style={{ borderColor: CUP_ACCENT }}
     >
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
-          {drawn ? `Tie ${tieNumber}` : 'On the clock'}
+          {drawn ? `Matchup ${matchupNumber}` : 'On the clock'}
         </span>
         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: CUP_ACCENT }}>
-          Tie {tieNumber} of 18
+          Matchup {matchupNumber} of 18
         </span>
       </div>
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

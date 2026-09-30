@@ -28,7 +28,7 @@ export function DrawSetup({ onStart }: { onStart: (seed: string) => void }) {
 
       <ol className="space-y-2 border-l-2 pl-4 text-sm text-muted" style={{ borderColor: CUP_ACCENT }}>
         <li>The draw is a pure function of this seed — the same number always produces the same bracket.</li>
-        <li>Say it out loud and leave it on screen, so the recording proves it was fixed before a single tie.</li>
+        <li>Say it out loud and leave it on screen, so the recording proves it was fixed before a single matchup was drawn.</li>
         <li>
           Afterwards, <code className="font-mono text-text">npm run draw-cup -- --seed {seed.trim() || '…'}</code>{' '}
           reproduces it exactly and writes the official file.

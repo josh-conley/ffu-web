@@ -6,7 +6,7 @@ import type { RoundOutline } from '@/selectors'
 // to render, and inventing placeholder "teams" to feed the real bracket would fake data the league
 // does not have yet. Both take their shape from the same season rounds, so they cannot disagree.
 
-/** One empty tie: two blank nameplates. */
+/** One empty matchup: two blank nameplates. */
 function EmptySlot() {
   return (
     <div className="space-y-1 border border-dashed border-border bg-surface p-2">

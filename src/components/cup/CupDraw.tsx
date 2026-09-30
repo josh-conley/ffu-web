@@ -42,7 +42,7 @@ export function CupDraw() {
           single pool of all 24 Masters and National teams.
         </Step>
         <Step n={2} title="Six from each league">
-          The opening round must produce six Premier–Masters ties and six Premier–National ties. As soon as six
+          The opening round must produce six Premier–Masters matchups and six Premier–National matchups. As soon as six
           teams from one league have been drawn, the pool narrows to the other league for everyone still to draw.
         </Step>
         <Step n={3} title="Masters draws the rest">

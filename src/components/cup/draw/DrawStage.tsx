@@ -4,19 +4,19 @@ import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { SeasonData } from '@/data'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { tieStory } from '@/selectors'
+import { matchupStory } from '@/selectors'
 import { SPIN_MS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { DrawBowl } from './DrawBowl'
 import { DrawReel } from './DrawReel'
-import { TieStoryLine } from './TieStoryLine'
+import { MatchupStoryLine } from './MatchupStoryLine'
 import { DrawLedger } from './DrawLedger'
-import { DrawTieCard } from './DrawTieCard'
+import { DrawMatchupCard } from './DrawMatchupCard'
 import { downloadText } from './downloads'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
 
-function TopBar({ seed, tieNumber, done }: { seed: string; tieNumber: number; done: boolean }) {
+function TopBar({ seed, matchupNumber, done }: { seed: string; matchupNumber: number; done: boolean }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 pb-2" style={{ borderColor: CUP_ACCENT }}>
       <h1 className="text-xl font-extrabold uppercase tracking-tight sm:text-2xl">{CUP_NAME} Draw</h1>
@@ -24,7 +24,7 @@ function TopBar({ seed, tieNumber, done }: { seed: string; tieNumber: number; do
         <span>
           seed <span className="font-bold text-text">{seed}</span>
         </span>
-        <span>{done ? 'complete' : `tie ${tieNumber} of 18`}</span>
+        <span>{done ? 'complete' : `matchup ${matchupNumber} of 18`}</span>
       </div>
     </div>
   )
@@ -74,7 +74,7 @@ function Controls({ done, label, muted, onAdvance, onToggleMute, onDownload }: {
   )
 }
 
-/** What to do once the last tie has landed. */
+/** What to do once the last matchup has landed. */
 function CompleteBanner({ seed }: { seed: string }) {
   return (
     <div className="border-2 bg-surface p-4 text-center" style={{ borderColor: CUP_ACCENT }}>
@@ -87,23 +87,23 @@ function CompleteBanner({ seed }: { seed: string }) {
   )
 }
 
-/** The tie on the stage: nameplates, the reveal reel while it spins, then the storyline. */
+/** The matchup on the stage: nameplates, the reveal reel while it spins, then the storyline. */
 function CurrentTie({ reveal, story, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
-  story: ReturnType<typeof tieStory> | undefined
+  story: ReturnType<typeof matchupStory> | undefined
   muted: boolean
 }) {
   const { drawer, drawn, phase } = reveal
   if (!drawer) return null
   return (
     <div className="space-y-3">
-      <DrawTieCard drawer={drawer} drawn={drawn} tieNumber={reveal.tieNumber} />
+      <DrawMatchupCard drawer={drawer} drawn={drawn} matchupNumber={reveal.matchupNumber} />
       {phase === 'spinning' && reveal.spinWinner !== undefined && (
         <DrawReel pool={reveal.spinPool} winnerId={reveal.spinWinner} durationMs={SPIN_MS} muted={muted} />
       )}
       {story && drawn && (
         <div className="border border-border bg-surface px-4 pb-3 pt-1">
-          <TieStoryLine story={story} aName={drawer.name} bName={drawn.name} />
+          <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} />
         </div>
       )}
     </div>
@@ -113,7 +113,7 @@ function CurrentTie({ reveal, story, muted }: {
 export function DrawStage({ field, seed, seasons, onRestart }: {
   field: CupField
   seed: string
-  /** Completed seasons, for each tie's head-to-head story. Empty just hides the storyline. */
+  /** Completed seasons, for each matchup's head-to-head story. Empty just hides the storyline. */
   seasons: SeasonData[]
   onRestart: () => void
 }) {
@@ -126,7 +126,7 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
   const [muted, setMuted] = useState(false)
 
   const story = useMemo(
-    () => (drawer && drawn && seasons.length > 0 ? tieStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
+    () => (drawer && drawn && seasons.length > 0 ? matchupStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
     [seasons, drawer, drawn],
   )
 
@@ -143,7 +143,7 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
   }, [advance])
 
   const buttonLabel =
-    reveal.phase === 'spinning' ? 'Reveal' : reveal.phase === 'shown' ? 'Next tie' : 'Draw'
+    reveal.phase === 'spinning' ? 'Reveal' : reveal.phase === 'shown' ? 'Next matchup' : 'Draw'
 
   const download = (kind: 'txt' | 'csv') =>
     kind === 'csv'
@@ -152,7 +152,7 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
 
   return (
     <div className="space-y-5">
-      <TopBar seed={seed} tieNumber={reveal.tieNumber} done={reveal.done} />
+      <TopBar seed={seed} matchupNumber={reveal.matchupNumber} done={reveal.done} />
 
       <CurrentTie reveal={reveal} story={story} muted={muted} />
 
@@ -178,8 +178,8 @@ export function DrawStage({ field, seed, seasons, onRestart }: {
           />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted">Ties so far</h2>
-          <DrawLedger ties={reveal.ledger} />
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted">Matchups so far</h2>
+          <DrawLedger matchups={reveal.ledger} />
         </div>
       </div>
 

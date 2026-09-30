@@ -16,7 +16,7 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 
 export function CupDraw() {
   const { field, loading, problem } = useCupField(CUP_YEAR)
-  // Every completed season, for each tie's head-to-head story. Not fatal if it fails: the draw runs
+  // Every completed season, for each matchup's head-to-head story. Not fatal if it fails: the draw runs
   // regardless and simply loses the storyline.
   const { data: seasons } = useAllSeasons()
   const [seed, setSeed] = useState<string | null>(null)

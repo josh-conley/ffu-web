@@ -120,7 +120,7 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [ ] **Hold the draw.** Two ways, same rules — both import `src/lib/cupDraw.mjs`, so they cannot
       diverge:
       - **Live on stream** at `/cup/draw` (unlisted operator view). Take a seed from something the
-        audience watches happen, type it in on camera, then space-bar through the 18 ties. Downloads
+        audience watches happen, type it in on camera, then space-bar through the 18 matchups. Downloads
         a sheet/CSV; the seed is the record. Afterwards still run the CLI to write the official file.
       - **Headless**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
         (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the Cup page
