@@ -18,6 +18,14 @@ const ITEM_PX = 104
  */
 const RUN_UP = 100
 
+/**
+ * CSS `linear()` easing is what lets the picture follow the braking model exactly. Browsers
+ * without it (pre-2023) would reject the whole transition and jump straight to the winner, so they
+ * get a plain ease-out instead: the reel still slows, just not quite in step with the ticks.
+ */
+const REEL_EASING =
+  typeof CSS !== 'undefined' && CSS.supports?.('transition-timing-function', REEL_EASING_CSS) ? REEL_EASING_CSS : 'ease-out'
+
 function Cell({ team }: { team: BowlTeam }) {
   return (
     <div className="flex shrink-0 flex-col items-center justify-center gap-1 border border-border bg-surface" style={{ width: ITEM_PX - 8, height: ITEM_PX - 8, marginInline: 4 }}>
@@ -75,7 +83,7 @@ export function DrawReel({ pool, winnerId, durationMs, muted }: {
         className="absolute left-1/2 top-3 flex"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: rolling ? `transform ${durationMs}ms ${REEL_EASING_CSS}` : undefined,
+          transition: rolling ? `transform ${durationMs}ms ${REEL_EASING}` : undefined,
         }}
       >
         {strip.map((team, i) => (
