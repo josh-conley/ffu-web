@@ -5,7 +5,7 @@ import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { matchupStory, matchupTag, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
-import { DrawBracket } from './DrawBracket'
+import { DrawBracket, type SlotSeeds } from './DrawBracket'
 import { DrawComplete } from './DrawComplete'
 import { DrawControls, RestartButton } from './DrawControls'
 import { DrawMatchupCard } from './DrawMatchupCard'
@@ -72,6 +72,11 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
   const result = useMemo(() => drawCup(field, seed), [field, seed])
   const reveal = useCupDrawReveal(field, result, resumeAt)
   const order = useMemo(() => bracketSlots(result), [result])
+  // Every matchup's two seeds, drawing team's first — fixed by the draw rules before anything is shown.
+  const seeds = useMemo(() => {
+    const seedOf = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
+    return result.matchups.map((m): SlotSeeds => [seedOf.get(m.a) ?? 0, seedOf.get(m.b) ?? 0])
+  }, [result])
   const { advance, drawer, drawn, settled } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
@@ -114,7 +119,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
-          <DrawBracket rounds={rounds} order={order} matchups={reveal.ledger} tags={tags} />
+          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} />
         </DrawComplete>
       ) : (
         <>
@@ -125,6 +130,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
             <DrawBracket
               rounds={rounds}
               order={order}
+              seeds={seeds}
               matchups={reveal.ledger}
               cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
             />

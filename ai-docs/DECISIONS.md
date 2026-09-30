@@ -78,7 +78,11 @@ quarterfinal pairing was unruled.
 - **Round of 18: fixed seeded bracket.** winner(1v36) v winner(18v19), 2v35 v 17v20, … 9v28 v
   10v27, so chalk gives 1v18 … 9v10. `bracketSlots` (src/lib/cupDraw.mjs) puts the draw into that
   order; the CLI writes the opening round in it and the draw page places matchups by it. Adjacent
-  pairing then does the rest. The draw's own record (sheet, check code, stream) stays in draw order.
+  pairing then does the rest. The nine games are STACKED in tree order by their top seed — 1, 8, 4,
+  5 | 2, 7, 3, 6, then 9v10 (the odd game out) — so on screen 1 and 2 sit in opposite halves and
+  chalk flows straight into the quarterfinals below. (Stacked 1, 2, 3 … the pairings were right but
+  the picture put seed 2's path directly under seed 1's.) The draw's own record (sheet, check code,
+  stream) stays in draw order.
 - **Quarterfinals: re-seeded.** The lowest-scoring Round-of-18 winner is dropped, and it can be any
   of the nine, so no fixed tree survives it. The eight survivors are ranked by draw seed and paired
   best v worst in bracket order 1v8, 4v5, 2v7, 3v6 (`reseed: true` on the round in

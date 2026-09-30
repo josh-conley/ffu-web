@@ -121,15 +121,17 @@ describe('bracketSlots', () => {
     return [seed.get(m.a), seed.get(m.b)].sort((a, b) => a - b)
   }
 
-  it.each(seeds)('places every matchup once, with k v 37-k beside 19-k v 18+k (seed %s)', (seed) => {
+  it.each(seeds)('places every matchup once, in seeded tree order (seed %s)', (seed) => {
     const result = drawCup(field, seed)
     const slots = bracketSlots(result)
     expect([...slots].sort((a, b) => a - b)).toEqual(Array.from({ length: 18 }, (_, i) => i))
-    for (let k = 0; k < 9; k++) {
-      // Adjacent slots meet next round: the k-th best matchup and the k-th worst.
-      expect(seedsOf(result, slots[2 * k])).toEqual([k + 1, 36 - k])
-      expect(seedsOf(result, slots[2 * k + 1])).toEqual([18 - k, 19 + k])
-    }
+    // Top to bottom: the Round-of-18 game each adjacent pair feeds, by its top seed. 1 and 2 are in
+    // opposite halves (1, 8, 4, 5 | 2, 7, 3, 6), with 9v10 — the odd game out — last.
+    const tops = [1, 8, 4, 5, 2, 7, 3, 6, 9]
+    tops.forEach((s, k) => {
+      expect(seedsOf(result, slots[2 * k])).toEqual([s, 37 - s])
+      expect(seedsOf(result, slots[2 * k + 1])).toEqual([19 - s, 18 + s])
+    })
   })
 
   it('puts the winner of 1v36 against the winner of 18v19 if the seeds hold', () => {

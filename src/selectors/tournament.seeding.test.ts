@@ -1,7 +1,7 @@
 import type { Game, SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
-import { bracketSlots, drawCup } from '@/lib/cupDraw.mjs'
-import { bracketPositions, resolveTournament, type ResolvedMatchup } from './tournament'
+import { bracketPositions, bracketSlots, drawCup } from '@/lib/cupDraw.mjs'
+import { resolveTournament, type ResolvedMatchup } from './tournament'
 
 // The whole Cup bracket, seeded: if every higher seed wins, the Round of 18 is 1v18 … 9v10, the
 // quarterfinals 1v8, 4v5, 2v7, 3v6, the semis 1v4 and 2v3, and the top two meet only in the final.
@@ -54,7 +54,8 @@ describe('bracketPositions', () => {
 describe('the seeded Cup bracket', () => {
   it('keeps 1 and 2 apart until the final when every higher seed wins', () => {
     const chalk = resolveTournament(tournament, seasonsScoring((seed) => 200 - seed))
-    expect(pairings(chalk, 'r18')).toEqual([[1, 18], [2, 17], [3, 16], [4, 15], [5, 14], [6, 13], [7, 12], [8, 11], [9, 10]])
+    // Stacked in bracket order: seed 1's quarter, then 8, 4, 5; seed 2's half below; 9v10 last.
+    expect(pairings(chalk, 'r18')).toEqual([[1, 18], [8, 11], [4, 15], [5, 14], [2, 17], [7, 12], [3, 16], [6, 13], [9, 10]])
     // Seed 9 is the lowest-scoring winner, so it is the one dropped.
     expect(chalk.rounds.find((r) => r.key === 'r18')!.dropped.map((d) => seedOf.get(d.ffuId))).toEqual([9])
     expect(pairings(chalk, 'r8')).toEqual([[1, 8], [4, 5], [2, 7], [3, 6]])

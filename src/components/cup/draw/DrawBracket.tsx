@@ -23,13 +23,15 @@ export interface BracketCursor {
   drawn: MatchupSide | undefined
 }
 
-/** One nameplate. Every row is the same height, filled or not, so the column never changes size. */
-function Row({ side }: { side: MatchupSide | undefined }) {
+/** One nameplate. Every row is the same height, filled or not, so the column never changes size.
+ *  Before the team is drawn it shows the seed that slot will hold — which says nothing about who. */
+function Row({ side, seed }: { side: MatchupSide | undefined; seed: number | undefined }) {
   if (!side) {
     return (
       <div className="flex h-5 items-center gap-1.5 pl-1.5">
         <span className="h-2 w-2 shrink-0 rounded-full bg-border" aria-hidden />
         <span className="h-4 flex-1 bg-surface-2" aria-hidden />
+        {seed !== undefined && <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted">{seed}</span>}
       </div>
     )
   }
@@ -43,9 +45,11 @@ function Row({ side }: { side: MatchupSide | undefined }) {
   )
 }
 
-function OpeningSlot({ a, b, current, tag }: {
+function OpeningSlot({ a, b, seeds, current, tag }: {
   a: MatchupSide | undefined
   b: MatchupSide | undefined
+  /** The two seeds this slot holds (drawing team's first). */
+  seeds: SlotSeeds | undefined
   current: boolean
   tag: string | undefined
 }) {
@@ -57,9 +61,25 @@ function OpeningSlot({ a, b, current, tag }: {
       // A ring, not a thicker border: the slot must not change size as the cursor moves.
       style={current ? { boxShadow: `0 0 0 3px ${CUP_ACCENT}` } : undefined}
     >
-      <Row side={a} />
-      <Row side={b} />
+      <Row side={a} seed={seeds?.[0]} />
+      <Row side={b} seed={seeds?.[1]} />
       {tag && <p className="pl-1.5 text-[10px] font-bold uppercase tracking-wide text-muted">{tag}</p>}
+    </div>
+  )
+}
+
+/** The seeds in one opening-round slot, drawing team's first: e.g. [1, 36]. */
+export type SlotSeeds = [number, number]
+
+/** A Round-of-18 slot before it is played: which two opening games feed it ("W 1v36"). */
+function FeederSlot({ from }: { from: (SlotSeeds | undefined)[] }) {
+  return (
+    <div className="space-y-1 border border-dashed border-border bg-surface p-2">
+      {from.map((seeds, k) => (
+        <div key={k} className="flex h-4 items-center gap-1.5 pl-1.5 font-mono text-[11px] text-muted">
+          {seeds ? `W ${seeds[0]}v${seeds[1]}` : ''}
+        </div>
+      ))}
     </div>
   )
 }
@@ -72,11 +92,13 @@ function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | u
   return { a: undefined, b: undefined }
 }
 
-export function DrawBracket({ rounds, order, matchups, cursor, tags = [] }: {
+export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] }: {
   /** The season's rounds (tournament.json), for the bracket's shape. */
   rounds: RoundOutline[]
   /** Draw-order index of the matchup in each opening-round slot, top to bottom (bracketSlots). */
   order: number[]
+  /** Seeds per matchup, in draw order. Known before the draw: seeds say where, not who. */
+  seeds: SlotSeeds[]
   /** Matchups already drawn, in draw order. */
   matchups: LedgerMatchup[]
   /** The matchup being drawn now, if any. */
@@ -85,12 +107,15 @@ export function DrawBracket({ rounds, order, matchups, cursor, tags = [] }: {
   tags?: string[]
 }) {
   const slot = (round: number, position: number) => {
-    if (round > 0) return <EmptySlot />
+    // The Round of 18 is a fixed tree off the opening round, so its slots can name their feeders.
+    // Later rounds re-seed after the lowest-winner drop, so they stay blank.
+    if (round === 1) return <FeederSlot from={[order[position * 2], order[position * 2 + 1]].map((i) => (i === undefined ? undefined : seeds[i]))} />
+    if (round > 1) return <EmptySlot />
     // Slots are in bracket order, so the draw fills them out of sequence: matchup 1 (1v36) at the
     // top, matchup 18 (18v19) right beneath it, as the seeds dictate.
     const i = order[position]
     if (i === undefined) return <EmptySlot />
-    return <OpeningSlot {...sidesOf(i, matchups, cursor)} current={cursor?.index === i} tag={tags[i]} />
+    return <OpeningSlot {...sidesOf(i, matchups, cursor)} seeds={seeds[i]} current={cursor?.index === i} tag={tags[i]} />
   }
   return <CupBracketOutline rounds={rounds} slot={slot} firstWidth="w-60" bleed={false} label="Cup bracket" />
 }

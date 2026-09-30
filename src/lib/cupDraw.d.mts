@@ -38,7 +38,9 @@ export function drawCup(field: CupField, seed: string | number): CupDrawResult
 export function drawCheckCode(result: CupDrawResult): string
 
 /**
- * Draw-order indices of the matchups, in BRACKET order (adjacent pairs meet next round), seeded so
- * the winner of 1v36 meets the winner of 18v19, 2v35 meets 17v20, and so on.
+ * Draw-order indices of the matchups, top to bottom in BRACKET order (adjacent pairs meet next
+ * round), seeded so 1 and 2 can only meet in the final.
  */
 export function bracketSlots(result: CupDrawResult): number[]
+/** Bracket positions for `n` seeds (a power of two): 8 → 1,8,4,5,2,7,3,6. */
+export function bracketPositions(n: number): number[]

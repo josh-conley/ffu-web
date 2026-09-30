@@ -124,7 +124,8 @@ it('fills the bracket\'s opening round as matchups are drawn, never ahead of the
   // Matchup 1 is on the clock: its drawer is in its slot, its opponent nowhere in the bracket.
   expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
   expect(bracket().queryByText(nameOf(expected.matchups[0]!.b))).not.toBeInTheDocument()
-  expect(slotOf(1).textContent).toBe('')
+  // Matchup 2's slot is empty but for its seeds: where, not who.
+  expect(slotOf(1).textContent).toBe('235')
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
@@ -143,6 +144,11 @@ it('places matchups in seeded bracket order, so 1v36 sits beside 18v19', () => {
   const [top, second] = slots()
   expect(within(top!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
   expect(within(second!).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
+  // …and seed 2's path starts halfway down, in the other half from seed 1.
+  expect(within(slots()[8]!).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  // The Round of 18 names what feeds it, top slot first.
+  expect(bracket().getByText('W 1v36')).toBeInTheDocument()
+  expect(bracket().getByText('W 18v19')).toBeInTheDocument()
 })
 
 it('runs a suspense spin, and a second press cuts it short', () => {

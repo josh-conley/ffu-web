@@ -123,23 +123,43 @@ function byFfuId(x, y) {
 }
 
 /**
- * Where each drawn matchup sits in the bracket: draw-order indices, listed in BRACKET order, so
- * adjacent pairs meet in the next round. Seeded so that, if every higher seed wins, the next round
- * sets the best remaining seeds against the worst: matchups are ranked by their better seed
- * (1v36 first, 18v19 last) and folded, pairing the k-th best with the k-th worst — so the winner of
- * 1v36 meets the winner of 18v19, 2v35 meets 17v20, and so on.
+ * Bracket positions for `n` seeds (a power of two), top to bottom: 1,2 → 1,4,2,3 → 1,8,4,5,2,7,3,6.
+ * Each step pairs every seed s with its mirror, so the top two sit in opposite halves.
+ */
+export function bracketPositions(n) {
+  let order = [1]
+  while (order.length < n) {
+    const size = order.length * 2
+    order = order.flatMap((s) => [s, size + 1 - s])
+  }
+  return order
+}
+
+/**
+ * Where each drawn matchup sits in the bracket: draw-order indices, top to bottom, so adjacent
+ * pairs meet in the next round. Seeded so that, if every higher seed wins, the best remaining seeds
+ * always face the worst and 1 and 2 can only meet in the final:
+ *   - Round of 18: the k-th best matchup meets the k-th worst — winner(1v36) v winner(18v19),
+ *     2v35 v 17v20, … 9v28 v 10v27 — so chalk gives 1v18 … 9v10.
+ *   - Those nine games are stacked in bracket order by their top seed, 1, 8, 4, 5 | 2, 7, 3, 6, then
+ *     9 (the odd game out: nine winners, one dropped). Chalk then flows into quarterfinals 1v8, 4v5,
+ *     2v7, 3v6 in the same order; the quarterfinals re-seed (see selectors/tournament), which in
+ *     chalk gives exactly those.
  *
  * The draw itself is in draw order (the sheet, the check code, the stream all follow it); this is
  * only where the matchups go on the bracket. The CLI writes the opening round in this order, and
- * the bracket engine pairs adjacent winners, so this one function decides the next round's pairings.
+ * the bracket engine pairs adjacent winners.
  */
 export function bracketSlots(result) {
   const seedOf = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
   const better = (m) => Math.min(seedOf.get(m.a), seedOf.get(m.b))
+  // ranked[s - 1] is the matchup whose better seed is s.
   const ranked = result.matchups.map((m, i) => ({ i, seed: better(m) })).sort((x, y) => x.seed - y.seed)
-  const slots = []
-  for (let k = 0; k < ranked.length / 2; k++) slots.push(ranked[k].i, ranked[ranked.length - 1 - k].i)
-  return slots
+  const games = ranked.length / 2
+  let tree = 1
+  while (tree * 2 <= games) tree *= 2
+  const tops = [...bracketPositions(tree), ...Array.from({ length: games - tree }, (_, k) => tree + 1 + k)]
+  return tops.flatMap((s) => [ranked[s - 1].i, ranked[ranked.length - s].i])
 }
 
 /**

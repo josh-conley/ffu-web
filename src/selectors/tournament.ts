@@ -1,3 +1,4 @@
+import { bracketPositions } from '@/lib/cupDraw.mjs'
 import type { Tier } from '@/config/types'
 import type { SeasonData, Tournament, TournamentMatchup } from '@/data'
 import { scoreFor } from './games'
@@ -77,19 +78,6 @@ function pairAdjacent(ffuIds: string[]): TournamentMatchup[] {
     if (a !== undefined && b !== undefined) pairs.push({ a, b })
   }
   return pairs
-}
-
-/**
- * Bracket positions for `n` seeds (a power of two), top to bottom: 1,2 → 1,4,2,3 → 1,8,4,5,2,7,3,6.
- * Each step pairs every seed s with its mirror (2n+1−s), so the top two can only meet in the final.
- */
-export function bracketPositions(n: number): number[] {
-  let order = [1]
-  while (order.length < n) {
-    const size = order.length * 2
-    order = order.flatMap((s) => [s, size + 1 - s])
-  }
-  return order
 }
 
 /**
