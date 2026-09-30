@@ -135,3 +135,15 @@ it('does not fake a spin when only one team is left in the bowl', () => {
   expect(card().getByText(nameOf(expected.matchups[17]!.b))).toBeInTheDocument()
   expect(card().getByText(/last team in the bowl/i)).toBeInTheDocument()
 })
+
+it('keeps the storyline\'s space on the card whether or not there is a story yet', async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  const strip = () => screen.getByRole('group', { name: /current matchup/i }).querySelector('[data-story-strip]')
+  expect(strip()).not.toBeNull()
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(strip()).not.toBeNull()
+  await user.click(screen.getByRole('button', { name: /next matchup/i }))
+  expect(strip()).not.toBeNull()
+})

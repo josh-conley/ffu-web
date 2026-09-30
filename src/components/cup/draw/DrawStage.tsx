@@ -7,7 +7,7 @@ import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawRev
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBracket, type SlotSeeds } from './DrawBracket'
 import { DrawComplete } from './DrawComplete'
-import { DrawControls, RestartButton } from './DrawControls'
+import { DrawControls, MuteButton, RestartButton } from './DrawControls'
 import { DrawMatchupCard } from './DrawMatchupCard'
 import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
@@ -16,26 +16,30 @@ import { downloadText } from './downloads'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
-// Beside or below the spinner, the Cup bracket's opening round fills in as each matchup is drawn.
+// Below the spinner, the two-sided Cup bracket's opening round fills in as each matchup is drawn.
 
 /**
  * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
  * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
  * the stage jumps as a matchup moves from on the clock to drawn.
  */
-function CurrentMatchup({ reveal, story, muted, storySlot }: {
+function CurrentMatchup({ reveal, story, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
   muted: boolean
-  /** Reserve room for the storyline (false when there is no history to tell). */
-  storySlot: boolean
 }) {
   const { drawer, drawn, phase, landing } = reveal
   if (!drawer) return null
   const revealed = phase === 'shown' || phase === 'done'
   return (
-    <div className="space-y-3">
-      <DrawMatchupCard drawer={drawer} drawn={landing ? undefined : drawn} forced={reveal.forced} />
+    <div className="space-y-2">
+      <DrawMatchupCard
+        drawer={drawer}
+        drawn={landing ? undefined : drawn}
+        forced={reveal.forced}
+        // Always a strip, empty until there is a story: the card must not grow or shrink between draws.
+        footer={story && drawn && !landing ? <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} /> : null}
+      />
       <DrawReel
         key={reveal.matchupNumber}
         pool={reveal.spinPool}
@@ -45,11 +49,6 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
         motion={phase === 'spinning' || landing ? 'spin' : 'still'}
         landed={revealed}
       />
-      {storySlot && (
-        <div className="min-h-14 border border-border bg-surface px-4 py-3">
-          {story && drawn && !landing && <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} />}
-        </div>
-      )}
     </div>
   )
 }
@@ -108,14 +107,13 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
       : downloadText(`ffu-cup-draw-${seed}.txt`, formatDrawSheet(field, result, seed), 'text/plain')
 
   return (
-    <div className="space-y-5">
-      <DrawTopBar seed={seed} matchupNumber={reveal.matchupNumber} done={reveal.done} />
-      <DrawControls
+    <div className="space-y-3">
+      <DrawTopBar
+        seed={seed}
+        matchupNumber={reveal.matchupNumber}
         done={reveal.done}
-        label={buttonLabel}
-        muted={muted}
-        onAdvance={advance}
-        onToggleMute={() => setMuted((m) => !m)}
+        controls={<DrawControls done={reveal.done} label={buttonLabel} onAdvance={advance} />}
+        tools={<MuteButton muted={muted} onToggle={() => setMuted((m) => !m)} />}
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
@@ -123,18 +121,16 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
         </DrawComplete>
       ) : (
         <>
-          {/* Side by side on a wide screen, so the call sees the spin and the bracket together;
-              stacked below that. */}
-          <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-start">
-            <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
-            <DrawBracket
-              rounds={rounds}
-              order={order}
-              seeds={seeds}
-              matchups={reveal.ledger}
-              cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
-            />
-          </div>
+          {/* Stacked: the spinner gets the full width (squeezed beside the bracket, names and the
+              reel were cut off), and the two-sided bracket is short enough to sit under it. */}
+          <CurrentMatchup reveal={reveal} story={story} muted={muted} />
+          <DrawBracket
+            rounds={rounds}
+            order={order}
+            seeds={seeds}
+            matchups={reveal.ledger}
+            cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
+          />
         </>
       )}
       <RestartButton drawnAny={settled > 0} onRestart={onRestart} />

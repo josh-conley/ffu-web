@@ -109,17 +109,19 @@ it('reveals every matchup of the CLI draw, in the same order', async () => {
 const bracket = () => within(screen.getByLabelText('Cup bracket'))
 /** The opening round's slots: the only ones the draw fills. */
 const slots = () => screen.getByLabelText('Cup bracket').querySelectorAll<HTMLElement>('[data-slot]')
+/** The opening slot at a bracket position (0 = top of the left half; 8 = top of the right). */
+const slotAt = (position: number) => screen.getByLabelText('Cup bracket').querySelector<HTMLElement>(`[data-slot="${position}"]`)!
 
 it('fills the bracket\'s opening round as matchups are drawn, never ahead of the reveal', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
   /** The bracket slot matchup `i` (draw order) lands in. */
-  const slotOf = (i: number) => slots()[bracketSlots(expected).indexOf(i)]!
+  const slotOf = (i: number) => slotAt(bracketSlots(expected).indexOf(i))
 
   expect(slots()).toHaveLength(18)
   // A bracket, not a list: every later round is there as a column, waiting.
-  for (const round of ['Round of 18', 'Quarterfinals', 'Semifinals', 'Final']) expect(bracket().getByText(round)).toBeInTheDocument()
+  for (const round of ['Round of 18', 'Quarterfinals', 'Semifinals', 'Final']) expect(bracket().getAllByText(round).length).toBeGreaterThan(0)
 
   // Matchup 1 is on the clock: its drawer is in its slot, its opponent nowhere in the bracket.
   expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
@@ -137,15 +139,15 @@ it('fills the bracket\'s opening round as matchups are drawn, never ahead of the
 })
 
 // Seeded placement: the top slot is 1v36 (matchup 1), and directly beneath it — the slot whose
-// winner it meets next — is 18v19, which is the LAST matchup drawn (Masters' sixth pick).
+// winner it meets next — is 18v19, which is the LAST matchup drawn (Masters' sixth pick). Seed 2
+// heads the other side of the two-sided bracket.
 it('places matchups in seeded bracket order, so 1v36 sits beside 18v19', () => {
   stubReducedMotion(true)
   render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
-  const [top, second] = slots()
-  expect(within(top!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
-  expect(within(second!).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
-  // …and seed 2's path starts halfway down, in the other half from seed 1.
-  expect(within(slots()[8]!).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  expect(within(slotAt(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(within(slotAt(1)).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
+  // …and seed 2's path heads the other half of the bracket from seed 1.
+  expect(within(slotAt(8)).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
   // The Round of 18 names what feeds it, top slot first.
   expect(bracket().getByText('W 1v36')).toBeInTheDocument()
   expect(bracket().getByText('W 18v19')).toBeInTheDocument()
