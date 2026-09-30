@@ -43,6 +43,8 @@ export interface DrawRevealState {
   drawn: MatchupSide | undefined
   /** The reel has just landed and is resting on the winner; it clears after LAND_MS. */
   landing: boolean
+  /** This matchup was revealed by a spin (false when it skipped straight to the result). */
+  spun: boolean
   /** Only one team could be drawn, so there was nothing to spin for. */
   forced: boolean
   /** Matchups whose result is on screen — what a reload resumes from. */
@@ -103,6 +105,7 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
   const [index, setIndex] = useState(start.index)
   const [phase, setPhase] = useState<Phase>(start.phase)
   const [landing, setLanding] = useState(false)
+  const [spun, setSpun] = useState(false)
   const spinTimer = useTimer()
   const landTimer = useTimer()
 
@@ -134,6 +137,7 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
     if (phase === 'done') return
     if (phase === 'shown') {
       landTimer.clear()
+      setSpun(false)
       // The last matchup gets its own moment on the card; the next press moves to the full results.
       if (index + 1 >= TOTAL_MATCHUPS) {
         setLanding(false)
@@ -148,6 +152,7 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
     // 'ready': start drawing — unless there is nothing to spin for (one team left) or motion is off.
     if (prefersReducedMotion() || spinPool.length <= 1) return reveal(false)
     setPhase('spinning')
+    setSpun(true)
     spinTimer.set(() => reveal(true), SPIN_MS)
   }, [phase, index, spinPool, reveal, spinTimer, landTimer])
 
@@ -165,6 +170,7 @@ export function useCupDrawReveal(field: CupField, result: CupDrawResult, resumeA
     drawer,
     drawn,
     landing,
+    spun,
     forced,
     settled,
     ledger,

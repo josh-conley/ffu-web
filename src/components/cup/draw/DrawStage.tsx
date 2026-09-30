@@ -18,24 +18,36 @@ import { downloadText } from './downloads'
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
 
-/** The matchup on the stage: nameplates, the reveal reel while it spins and lands, then the storyline. */
-function CurrentMatchup({ reveal, story, muted }: {
+/**
+ * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
+ * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
+ * the stage jumps as a matchup moves from on the clock to drawn.
+ */
+function CurrentMatchup({ reveal, story, muted, storySlot }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
   muted: boolean
+  /** Reserve room for the storyline (false when there is no history to tell). */
+  storySlot: boolean
 }) {
   const { drawer, drawn, phase, landing } = reveal
   if (!drawer) return null
-  const reelUp = (phase === 'spinning' || landing) && reveal.spinWinner !== undefined
+  const revealed = phase === 'shown' || phase === 'done'
   return (
     <div className="space-y-3">
       <DrawMatchupCard drawer={drawer} drawn={landing ? undefined : drawn} forced={reveal.forced} />
-      {reelUp && (
-        <DrawReel pool={reveal.spinPool} winnerId={reveal.spinWinner!} durationMs={SPIN_MS} muted={muted} landed={landing} />
-      )}
-      {story && drawn && !landing && (
-        <div className="border border-border bg-surface px-4 py-3">
-          <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} />
+      <DrawReel
+        key={reveal.matchupNumber}
+        pool={reveal.spinPool}
+        winnerId={phase === 'ready' ? undefined : reveal.spinWinner}
+        durationMs={SPIN_MS}
+        muted={muted}
+        motion={phase === 'spinning' || landing ? 'spin' : 'still'}
+        landed={revealed}
+      />
+      {storySlot && (
+        <div className="min-h-14 border border-border bg-surface px-4 py-3">
+          {story && drawn && !landing && <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} />}
         </div>
       )}
     </div>
@@ -119,7 +131,7 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
         />
       ) : (
         <>
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} />
+          <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
           <BowlAndLedger reveal={reveal} />
         </>
       )}

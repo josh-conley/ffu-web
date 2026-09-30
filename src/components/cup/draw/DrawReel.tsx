@@ -47,42 +47,60 @@ function Cell({ team, winner }: { team: BowlTeam; winner: boolean }) {
   )
 }
 
-export function DrawReel({ pool, winnerId, durationMs, muted, landed }: {
+/** Crests either side of the marker at rest, so the strip fills a wide screen before and after. */
+const PAD = 10
+
+/**
+ * The reel stays on screen for the whole matchup: still while a team is on the clock, spinning on
+ * Draw, then resting on the winner until the next matchup. (It used to mount only for the spin,
+ * and the stage jumped every time it came and went.)
+ *
+ * `motion` is 'spin' while the wheel is moving or just landing, 'still' otherwise. Dropping to
+ * 'still' mid-spin (the operator cut it short) removes the transition, which snaps the strip to
+ * the winner, and cancels the pending ticks.
+ */
+export function DrawReel({ pool, winnerId, durationMs, muted, motion, landed }: {
   pool: BowlTeam[]
-  winnerId: string
+  /** Undefined until the draw is under way — the result never reaches the DOM before it is drawn. */
+  winnerId: string | undefined
   durationMs: number
   muted: boolean
-  /** The spin has finished and the reel is resting: outline the winner under the marker. */
+  motion: 'spin' | 'still'
+  /** The result is in: outline the winner under the marker. */
   landed: boolean
 }) {
-  const [rolling, setRolling] = useState(false)
+  const [rolled, setRolled] = useState(false)
 
-  // Run-up, then the winner. The run-up simply CYCLES the pool rather than sampling it randomly:
-  // it looks identical in motion, and keeps the render pure — the only randomness in this whole
-  // feature belongs to drawCup, which has already run.
+  // Padding, the run-up, the winner, then padding. The run-up simply CYCLES the pool rather than
+  // sampling it randomly: it looks identical in motion, and keeps the render pure — the only
+  // randomness in this whole feature belongs to drawCup, which has already run. Before the draw
+  // the winner's slot holds an ordinary crest, far off screen.
   const strip = useMemo(() => {
     if (pool.length === 0) return []
     const cycle = (n: number, from: number) => Array.from({ length: n }, (_, i) => pool[(from + i) % pool.length]!)
-    const winner = pool.find((t) => t.ffuId === winnerId)
-    return winner ? [...cycle(RUN_UP, 0), winner, ...cycle(4, RUN_UP)] : cycle(RUN_UP, 0)
+    const end = PAD + RUN_UP
+    const winner = pool.find((t) => t.ffuId === winnerId) ?? pool[end % pool.length]!
+    return [...cycle(end, 0), winner, ...cycle(PAD, end + 1)]
   }, [pool, winnerId])
-
-  const winnerIndex = strip.length > 0 ? Math.min(RUN_UP, strip.length - 1) : 0
 
   // Flip to the landed offset on the next frame so the CSS transition actually runs.
   useEffect(() => {
-    const id = requestAnimationFrame(() => setRolling(true))
+    if (motion !== 'spin') return
+    const id = requestAnimationFrame(() => setRolled(true))
     return () => cancelAnimationFrame(id)
-  }, [])
+  }, [motion])
 
   // One tick per crest crossing the marker, timed off the SAME curve as the transition below — so
   // the wheel is heard to slow at exactly the rate it is seen to. Cancelled if the spin is cut short.
   useEffect(() => {
-    if (muted || winnerIndex <= 0) return
-    return scheduleTicks(tickTimes(winnerIndex, durationMs))
-  }, [muted, winnerIndex, durationMs])
+    if (muted || motion !== 'spin') return
+    return scheduleTicks(tickTimes(RUN_UP, durationMs))
+  }, [muted, motion, durationMs])
 
-  const offset = rolling ? -(winnerIndex * ITEM_PX + ITEM_PX / 2) : -(ITEM_PX / 2)
+  // A result shown without a spin (reduced motion, or one team left) sits on the winner at once.
+  const atEnd = winnerId !== undefined && (rolled || motion === 'still')
+  const centred = atEnd ? PAD + RUN_UP : PAD
+  const offset = -(centred * ITEM_PX + ITEM_PX / 2)
 
   return (
     <div className="relative overflow-hidden border border-border bg-surface-2/60 py-3" style={{ height: ITEM_PX + 16 }}>
@@ -94,11 +112,11 @@ export function DrawReel({ pool, winnerId, durationMs, muted, landed }: {
         className="absolute left-1/2 top-3 flex"
         style={{
           transform: `translateX(${offset}px)`,
-          transition: rolling ? `transform ${durationMs}ms ${REEL_EASING}` : undefined,
+          transition: motion === 'spin' && rolled ? `transform ${durationMs}ms ${REEL_EASING}` : undefined,
         }}
       >
         {strip.map((team, i) => (
-          <Cell key={`${team.ffuId}-${i}`} team={team} winner={landed && i === winnerIndex} />
+          <Cell key={`${team.ffuId}-${i}`} team={team} winner={landed && i === PAD + RUN_UP} />
         ))}
       </div>
     </div>
