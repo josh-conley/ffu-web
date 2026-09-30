@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { outlineTournament } from '@/selectors'
 import { DrawStage } from './DrawStage'
@@ -114,22 +114,35 @@ it('fills the bracket\'s opening round as matchups are drawn, never ahead of the
   stubReducedMotion(true)
   const user = userEvent.setup()
   render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  /** The bracket slot matchup `i` (draw order) lands in. */
+  const slotOf = (i: number) => slots()[bracketSlots(expected).indexOf(i)]!
 
   expect(slots()).toHaveLength(18)
   // A bracket, not a list: every later round is there as a column, waiting.
   for (const round of ['Round of 18', 'Quarterfinals', 'Semifinals', 'Final']) expect(bracket().getByText(round)).toBeInTheDocument()
-  // Matchup 1 is on the clock: its drawer is in slot 1, its opponent nowhere in the bracket.
-  expect(within(slots()[0]!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+
+  // Matchup 1 is on the clock: its drawer is in its slot, its opponent nowhere in the bracket.
+  expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
   expect(bracket().queryByText(nameOf(expected.matchups[0]!.b))).not.toBeInTheDocument()
-  expect(slots()[1]!.textContent).toBe('')
+  expect(slotOf(1).textContent).toBe('')
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
-  expect(within(slots()[0]!).getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
+  expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: /next matchup/i }))
-  expect(within(slots()[1]!).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  expect(within(slotOf(1)).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
   expect(bracket().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
-  expect(slots()[1]).toHaveAttribute('aria-current', 'step')
+  expect(slotOf(1)).toHaveAttribute('aria-current', 'step')
+})
+
+// Seeded placement: the top slot is 1v36 (matchup 1), and directly beneath it — the slot whose
+// winner it meets next — is 18v19, which is the LAST matchup drawn (Masters' sixth pick).
+it('places matchups in seeded bracket order, so 1v36 sits beside 18v19', () => {
+  stubReducedMotion(true)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  const [top, second] = slots()
+  expect(within(top!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(within(second!).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
 })
 
 it('runs a suspense spin, and a second press cuts it short', () => {

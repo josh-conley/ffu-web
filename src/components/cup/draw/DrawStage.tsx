@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
-import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { matchupStory, matchupTag, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
@@ -71,6 +71,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
   // that already exists — the animation cannot change who was drawn.
   const result = useMemo(() => drawCup(field, seed), [field, seed])
   const reveal = useCupDrawReveal(field, result, resumeAt)
+  const order = useMemo(() => bracketSlots(result), [result])
   const { advance, drawer, drawn, settled } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
@@ -113,7 +114,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
-          <DrawBracket rounds={rounds} matchups={reveal.ledger} tags={tags} />
+          <DrawBracket rounds={rounds} order={order} matchups={reveal.ledger} tags={tags} />
         </DrawComplete>
       ) : (
         <>
@@ -123,6 +124,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
             <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
             <DrawBracket
               rounds={rounds}
+              order={order}
               matchups={reveal.ledger}
               cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
             />

@@ -1,4 +1,4 @@
-import { drawCheckCode, drawCup, makeRng } from './cupDraw.mjs'
+import { bracketSlots, drawCheckCode, drawCup, makeRng } from './cupDraw.mjs'
 
 // The draw decides a competition that pays out, so these tests are about two things: it is
 // REPRODUCIBLE from its seed, and it always satisfies the rules the amendment guarantees.
@@ -111,5 +111,31 @@ describe('drawCheckCode', () => {
 
   it('changes when the bracket changes', () => {
     expect(drawCheckCode(drawCup(field, '47'))).not.toBe(drawCheckCode(drawCup(field, '48')))
+  })
+})
+
+describe('bracketSlots', () => {
+  const seedsOf = (result, i) => {
+    const seed = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
+    const m = result.matchups[i]
+    return [seed.get(m.a), seed.get(m.b)].sort((a, b) => a - b)
+  }
+
+  it.each(seeds)('places every matchup once, with k v 37-k beside 19-k v 18+k (seed %s)', (seed) => {
+    const result = drawCup(field, seed)
+    const slots = bracketSlots(result)
+    expect([...slots].sort((a, b) => a - b)).toEqual(Array.from({ length: 18 }, (_, i) => i))
+    for (let k = 0; k < 9; k++) {
+      // Adjacent slots meet next round: the k-th best matchup and the k-th worst.
+      expect(seedsOf(result, slots[2 * k])).toEqual([k + 1, 36 - k])
+      expect(seedsOf(result, slots[2 * k + 1])).toEqual([18 - k, 19 + k])
+    }
+  })
+
+  it('puts the winner of 1v36 against the winner of 18v19 if the seeds hold', () => {
+    const result = drawCup(field, '47')
+    const [first, second] = bracketSlots(result)
+    expect(seedsOf(result, first)).toEqual([1, 36])
+    expect(seedsOf(result, second)).toEqual([18, 19])
   })
 })

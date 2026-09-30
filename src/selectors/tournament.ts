@@ -65,8 +65,10 @@ export function weekScore(seasonsByTier: SeasonsByTier, tier: Tier, ffuId: strin
 }
 
 /**
- * Default pairing for an unauthored round: bracket-tree adjacency (winner i vs winner i+1). Isolated
- * here because the real post-drop seeding rule is still TBD — swap this one function when it lands.
+ * Default pairing for an unauthored round: bracket-tree adjacency (winner i vs winner i+1). Right
+ * for the Round of 18, because the opening round is stored in seeded bracket order (1v36 beside
+ * 18v19 — see bracketSlots). After the lowest-winner drop the tree breaks, and how the remaining
+ * eight pair up is not ruled on yet — swap this for that round when it lands.
  */
 function pairAdjacent(ffuIds: string[]): TournamentMatchup[] {
   const pairs: TournamentMatchup[] = []

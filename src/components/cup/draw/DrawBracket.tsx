@@ -8,7 +8,8 @@ import type { MatchupSide } from './DrawMatchupCard'
 // The Cup bracket, filling in as the draw goes. It is the SAME bracket /cup shows before the draw
 // (CupBracketOutline: one column per round, later rounds centred against earlier ones), with the
 // Round of 36 column rendered live: each slot empty until its matchup is drawn, the one on the
-// clock ringed. Later rounds stay empty — the draw only decides the opening round.
+// clock ringed. Later rounds stay empty — the draw only decides the opening round. Matchups sit in
+// seeded bracket order, not draw order, so adjacent slots are the ones whose winners meet next.
 
 export interface LedgerMatchup {
   a: MatchupSide
@@ -63,21 +64,33 @@ function OpeningSlot({ a, b, current, tag }: {
   )
 }
 
-export function DrawBracket({ rounds, matchups, cursor, tags = [] }: {
+/** Who is in matchup `i` so far: both teams once drawn, the drawer (and the result, once in) if on the clock. */
+function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | undefined) {
+  const done = matchups[i]
+  if (done) return { a: done.a, b: done.b }
+  if (cursor?.index === i) return { a: cursor.drawer, b: cursor.drawn }
+  return { a: undefined, b: undefined }
+}
+
+export function DrawBracket({ rounds, order, matchups, cursor, tags = [] }: {
   /** The season's rounds (tournament.json), for the bracket's shape. */
   rounds: RoundOutline[]
-  /** Matchups already drawn, in order. */
+  /** Draw-order index of the matchup in each opening-round slot, top to bottom (bracketSlots). */
+  order: number[]
+  /** Matchups already drawn, in draw order. */
   matchups: LedgerMatchup[]
   /** The matchup being drawn now, if any. */
   cursor?: BracketCursor
-  /** Optional one-line note per matchup (the head-to-head tag, once the draw is complete). */
+  /** Optional one-line note per matchup, in draw order (the head-to-head tag, once complete). */
   tags?: string[]
 }) {
-  const slot = (round: number, i: number) => {
+  const slot = (round: number, position: number) => {
     if (round > 0) return <EmptySlot />
-    const done = matchups[i]
-    const live = cursor?.index === i && !done ? cursor : undefined
-    return <OpeningSlot a={done?.a ?? live?.drawer} b={done?.b ?? live?.drawn} current={cursor?.index === i} tag={tags[i]} />
+    // Slots are in bracket order, so the draw fills them out of sequence: matchup 1 (1v36) at the
+    // top, matchup 18 (18v19) right beneath it, as the seeds dictate.
+    const i = order[position]
+    if (i === undefined) return <EmptySlot />
+    return <OpeningSlot {...sidesOf(i, matchups, cursor)} current={cursor?.index === i} tag={tags[i]} />
   }
   return <CupBracketOutline rounds={rounds} slot={slot} firstWidth="w-60" bleed={false} label="Cup bracket" />
 }

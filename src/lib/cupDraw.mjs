@@ -123,6 +123,26 @@ function byFfuId(x, y) {
 }
 
 /**
+ * Where each drawn matchup sits in the bracket: draw-order indices, listed in BRACKET order, so
+ * adjacent pairs meet in the next round. Seeded so that, if every higher seed wins, the next round
+ * sets the best remaining seeds against the worst: matchups are ranked by their better seed
+ * (1v36 first, 18v19 last) and folded, pairing the k-th best with the k-th worst — so the winner of
+ * 1v36 meets the winner of 18v19, 2v35 meets 17v20, and so on.
+ *
+ * The draw itself is in draw order (the sheet, the check code, the stream all follow it); this is
+ * only where the matchups go on the bracket. The CLI writes the opening round in this order, and
+ * the bracket engine pairs adjacent winners, so this one function decides the next round's pairings.
+ */
+export function bracketSlots(result) {
+  const seedOf = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
+  const better = (m) => Math.min(seedOf.get(m.a), seedOf.get(m.b))
+  const ranked = result.matchups.map((m, i) => ({ i, seed: better(m) })).sort((x, y) => x.seed - y.seed)
+  const slots = []
+  for (let k = 0; k < ranked.length / 2; k++) slots.push(ranked[k].i, ranked[ranked.length - 1 - k].i)
+  return slots
+}
+
+/**
  * A short fingerprint of the drawn matchups (FNV-1a over them, as 8 hex digits, "XXXX-XXXX").
  * The page shows it when the draw ends and the sheet (so the CLI) prints it: matching codes are a
  * one-glance proof that the official file is the bracket the stream showed.

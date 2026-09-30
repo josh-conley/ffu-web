@@ -150,6 +150,8 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       played. Bracket note copy updated to match.
 - [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
       variable by design, so edit the `rounds[].week` values if they move
+- [x] **Round of 18 pairing** (2026-09-30, Josh): a fixed seeded bracket, winner of 1v36 v winner of
+      18v19 and so on (DECISIONS). Confirm it matches the commissioner's amendment.
 - [ ] **Open rule question:** after the lowest-winner drop leaves 8 teams, how do they re-pair for
       the quarterfinals? The engine currently pairs adjacent winners; a round can carry authored
       `matchups` to override once ruled on

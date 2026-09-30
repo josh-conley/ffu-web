@@ -67,6 +67,23 @@ together — they are one unit.
 
 ---
 
+## 2026-09-30 — The Round of 18 is a seeded bracket: winner of 1v36 meets winner of 18v19
+
+**Context.** The seeding makes every opening matchup k v 37−k (Premier #1 draws first, and the
+first team drawn is the 36 seed). But the opening round was stored in DRAW order, and the engine
+pairs adjacent winners, so 1v36's winner would have met 2v35's: with every higher seed winning,
+seeds 1 and 2 in the Round of 18.
+
+**Decision (Josh).** Seed the bracket so that, if it goes all chalk, the Round of 18 sets the best
+remaining seeds against the worst: winner(1v36) v winner(18v19), 2v35 v 17v20, … 9v28 v 10v27. One
+function, `bracketSlots` (src/lib/cupDraw.mjs), turns the draw into bracket order; the CLI writes
+the opening round in that order, and the draw page places each matchup by it. The engine's
+adjacent pairing is then correct as-is. The draw's own record (sheet, check code, stream order)
+stays in draw order. It is a FIXED bracket (winner of that slot, whoever wins), not a re-seed.
+
+**Still open.** After the Round of 18 the lowest-scoring winner is dropped and the tree breaks
+(9 → 8); how the quarterfinals pair is not ruled on.
+
 ## 2026-09-29 — The draw sorts National itself; the page and CLI prove they agree
 
 **Context.** Sharing `drawCup` was meant to make the streamed draw and the CLI incapable of
