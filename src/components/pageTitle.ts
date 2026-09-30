@@ -10,7 +10,10 @@ export const SITE_NAME = 'Fantasy Football Union'
 const SUFFIX = 'FFU'
 
 /** Reachable pages the nav leaves out (the Cup draw is unlisted on purpose). */
-const UNLISTED: Record<string, string> = { '/cup/draw': `${CUP_NAME} Draw` }
+const UNLISTED: Record<string, string> = {
+  '/cup/draw': `${CUP_NAME} Draw`,
+  '/cup/draw/marbles': `${CUP_NAME} Marble Race`,
+}
 
 /** The season a season-scoped page is showing, as it resolves it (URL, else its default). */
 export interface TitleSeason {

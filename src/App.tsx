@@ -26,6 +26,7 @@ const RosterBuildStats = lazy(() =>
 const DraftMarket = lazy(() => import('@/pages/DraftMarket').then((m) => ({ default: m.DraftMarket })))
 const Players = lazy(() => import('@/pages/Players').then((m) => ({ default: m.Players })))
 const CupDraw = lazy(() => import('@/pages/CupDraw').then((m) => ({ default: m.CupDraw })))
+const CupMarbles = lazy(() => import('@/pages/CupMarbles').then((m) => ({ default: m.CupMarbles })))
 
 /** A lazy page's element, showing the same spinner the pages use while their data loads. */
 function page(Page: ComponentType): ReactNode {
@@ -68,6 +69,8 @@ export default function App() {
             screen-shared, so it gets the stage shell with no header. */}
         <Route element={<Layout stage />}>
           <Route path="cup/draw" element={page(CupDraw)} />
+          {/* Prototype: the marble race as an alternative reveal. Unlisted, like the draw itself. */}
+          <Route path="cup/draw/marbles" element={page(CupMarbles)} />
         </Route>
       </Routes>
     </BrowserRouter>
