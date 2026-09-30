@@ -22,9 +22,10 @@ function ClosedStamp({ tier }: { tier: CupTier }) {
 function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
   return (
     <div className={`flex flex-col items-center gap-1 border border-border p-2 transition-opacity ${dimmed ? 'opacity-25' : ''}`}>
-      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
-      <span className="w-full truncate text-center text-[11px] font-bold leading-tight">{team.name}</span>
-      <span className={`text-[9px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
+      <TeamLogo ffuId={team.ffuId} size={48} clickable={false} />
+      {/* Two lines rather than an ellipsis: a truncated name is unreadable on a stream. */}
+      <span className="line-clamp-2 min-h-[2lh] w-full break-words text-center text-sm font-bold leading-tight">{team.name}</span>
+      <span className={`text-[11px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}
       </span>
     </div>
@@ -35,10 +36,10 @@ function Crest({ team, dimmed }: { team: BowlTeam; dimmed: boolean }) {
 function Half({ tier, teams, closed }: { tier: CupTier; teams: BowlTeam[]; closed: boolean }) {
   return (
     <section className="relative flex-1">
-      <h3 className={`mb-2 text-xs font-bold uppercase tracking-widest ${LEAGUE_STYLES[tier].text}`}>
+      <h3 className={`mb-2 text-sm font-bold uppercase tracking-widest ${LEAGUE_STYLES[tier].text}`}>
         {LEAGUE_STYLES[tier].label} · {teams.length} left
       </h3>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 2xl:grid-cols-6">
         {teams.map((t) => (
           <Crest key={t.ffuId} team={t} dimmed={closed} />
         ))}

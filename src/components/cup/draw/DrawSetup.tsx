@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { CUP_ACCENT, CUP_NAME, CUP_YEAR } from '@/config'
+import { SEED_PATTERN, drawCommand } from '@/lib/drawSheet.mjs'
 import { SELECT } from '../../controls'
 
 /**
@@ -10,10 +11,12 @@ import { SELECT } from '../../controls'
 export function DrawSetup({ onStart }: { onStart: (seed: string) => void }) {
   const [seed, setSeed] = useState('')
 
+  const trimmed = seed.trim()
+  const valid = SEED_PATTERN.test(trimmed)
+
   function submit(e: FormEvent) {
     e.preventDefault()
-    const trimmed = seed.trim()
-    if (trimmed !== '') onStart(trimmed)
+    if (valid) onStart(trimmed)
   }
 
   return (
@@ -21,8 +24,8 @@ export function DrawSetup({ onStart }: { onStart: (seed: string) => void }) {
       <div className="space-y-2">
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">{CUP_NAME} Draw · {CUP_YEAR}</h1>
         <p className="text-sm text-muted">
-          Enter the seed the room just agreed on — dice on camera, a number called out in chat, tonight&apos;s
-          scoreboard. Anything nobody could have known in advance.
+          Enter the seed you published before the draw — e.g. the combined final score of an NFL game you named in
+          advance. It must be something nobody controls and nobody could have known when it was announced.
         </p>
       </div>
 
@@ -30,8 +33,8 @@ export function DrawSetup({ onStart }: { onStart: (seed: string) => void }) {
         <li>The draw is a pure function of this seed — the same number always produces the same bracket.</li>
         <li>Say it out loud and leave it on screen, so the recording proves it was fixed before a single matchup was drawn.</li>
         <li>
-          Afterwards, <code className="font-mono text-text">npm run draw-cup -- --seed {seed.trim() || '…'}</code>{' '}
-          reproduces it exactly and writes the official file.
+          Afterwards, <code className="font-mono text-text">{drawCommand(trimmed || '…')}</code> reproduces it exactly
+          and writes the official file.
         </li>
       </ol>
 
@@ -45,17 +48,22 @@ export function DrawSetup({ onStart }: { onStart: (seed: string) => void }) {
           onChange={(e) => setSeed(e.target.value)}
           placeholder="e.g. 4471"
           autoComplete="off"
-          className={`${SELECT} w-48 font-mono`}
+          aria-describedby="cup-seed-rule"
+          aria-invalid={trimmed !== '' && !valid}
+          className={`${SELECT} w-56 font-mono`}
         />
         <button
           type="submit"
-          disabled={seed.trim() === ''}
+          disabled={!valid}
           className="min-h-11 border px-5 py-1.5 text-sm font-extrabold uppercase tracking-wide text-white transition-opacity disabled:opacity-40 md:min-h-0"
           style={{ backgroundColor: CUP_ACCENT, borderColor: CUP_ACCENT }}
         >
           Begin the draw
         </button>
       </div>
+      <p id="cup-seed-rule" className={`text-xs ${trimmed !== '' && !valid ? 'font-bold text-negative' : 'text-muted'}`}>
+        Letters, digits, spaces and - _ . : # only, so the command above can be pasted into any terminal.
+      </p>
     </form>
   )
 }

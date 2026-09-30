@@ -1,6 +1,6 @@
 import type { Game, SeasonData } from '@/data'
 import type { Tier } from '@/config'
-import { matchupStory } from './matchupStory'
+import { matchupStory, matchupTag } from './matchupStory'
 
 // Two teams, a handful of seasons, so the counts and the "last meeting" are checkable by eye.
 const game = (week: number, a: number, b: number, isPlayoff = false): Game => ({
@@ -55,5 +55,16 @@ describe('matchupStory', () => {
     const seasons = [season('2024', 'PREMIER', [game(1, 100, 100)])]
     const story = matchupStory(seasons, 'a', 'b')
     expect(story).toMatchObject({ meetings: 1, aWins: 0, bWins: 0, ties: 1 })
+  })
+})
+
+describe('matchupTag', () => {
+  const base = { meetings: 5, aWins: 3, bWins: 2, ties: 0, playoffRematch: false }
+
+  it('leads with a first meeting, then a playoff rematch, then the series', () => {
+    expect(matchupTag({ ...base, meetings: 0, aWins: 0, bWins: 0 })).toBe('First meeting')
+    expect(matchupTag({ ...base, playoffRematch: true })).toBe('Playoff rematch')
+    expect(matchupTag(base)).toBe('3–2 H2H')
+    expect(matchupTag({ ...base, ties: 1 })).toBe('3–2–1 H2H')
   })
 })

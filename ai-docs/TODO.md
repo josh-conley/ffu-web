@@ -119,9 +119,15 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       season's 2026 prizes.txt is a separate outstanding item above
 - [ ] **Hold the draw.** Two ways, same rules — both import `src/lib/cupDraw.mjs`, so they cannot
       diverge:
-      - **Live on stream** at `/cup/draw` (unlisted operator view). Take a seed from something the
-        audience watches happen, type it in on camera, then space-bar through the 18 matchups. Downloads
-        a sheet/CSV; the seed is the record. Afterwards still run the CLI to write the official file.
+      - **Live on stream** at `/cup/draw` (unlisted operator view, no site header). Type in the
+        published seed on camera, then space-bar through the 18 matchups. The seed and position
+        live in the URL (`?seed=…&at=N`), so a reload resumes where it was. When it ends, the page
+        shows all 18 (copy as image for the FFUN), the sheet/CSV downloads, and a **check code**.
+        Afterwards run the CLI to write the official file: its sheet prints the same check code,
+        and it must match the one the stream showed.
+      - [ ] **Dress rehearsal** before the night: a full 18-matchup run on the preview with a
+        throwaway seed, then `npm run draw-cup -- --seed "<same>" --dry-run`, and compare check
+        codes. Also check the streaming machine does NOT have reduced motion on (it skips the spin).
       - **Headless**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
         (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the Cup page
         flips from outline to live bracket on its own. Rehearse first with `--dry-run`.

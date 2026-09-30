@@ -9,8 +9,11 @@ import { PreviewBanner } from './PreviewBanner'
 import { TeamProfileProvider } from './TeamProfileProvider'
 
 /** App shell: skip link + persistent header wrapping routed pages. Owns the tab title and the
- *  focus move on navigation, so no page has to remember either. */
-export function Layout() {
+ *  focus move on navigation, so no page has to remember either.
+ *
+ *  `stage` drops the header and the width cap, for a page that is screen-shared rather than
+ *  browsed (the live Cup draw): at 720p the nav alone pushed the bowl below the fold. */
+export function Layout({ stage = false }: { stage?: boolean }) {
   const mainRef = useRef<HTMLElement>(null)
   usePageTitle()
   useRouteFocus(mainRef)
@@ -34,8 +37,13 @@ export function Layout() {
           Skip to content
         </a>
         <PreviewBanner preview={PREVIEW_BUILD} />
-        <Header />
-        <main id="main" ref={mainRef} tabIndex={-1} className="mx-auto max-w-5xl px-4 py-8 focus:outline-none">
+        {!stage && <Header />}
+        <main
+          id="main"
+          ref={mainRef}
+          tabIndex={-1}
+          className={`mx-auto px-4 focus:outline-none ${stage ? 'max-w-screen-2xl py-4 sm:px-6' : 'max-w-5xl py-8'}`}
+        >
           <Outlet />
         </main>
       </div>

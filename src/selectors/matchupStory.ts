@@ -41,3 +41,14 @@ export function matchupStory(seasons: SeasonData[], a: string, b: string): Match
     playoffRematch: last?.isPlayoff === true,
   }
 }
+
+/**
+ * The story as one short tag, for the end-of-draw panel where there is a row, not a card:
+ * "Playoff rematch" / "First meeting" / "3–2 H2H" (drawing side first).
+ */
+export function matchupTag(story: MatchupStory): string {
+  if (story.meetings === 0) return 'First meeting'
+  if (story.playoffRematch) return 'Playoff rematch'
+  const tied = story.ties > 0 ? `–${story.ties}` : ''
+  return `${story.aWins}–${story.bWins}${tied} H2H`
+}

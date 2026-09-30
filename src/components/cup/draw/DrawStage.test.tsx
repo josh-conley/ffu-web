@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { DrawStage } from './DrawStage'
 
@@ -82,9 +82,12 @@ it('reveals every matchup of the CLI draw, in the same order', async () => {
     if (i < 17) await user.click(screen.getByRole('button', { name: /next matchup/i }))
   }
 
-  expect(screen.getByText(/the draw is complete/i)).toBeInTheDocument()
-  const ledger = screen.getByRole('list')
-  expect(ledger.querySelectorAll('li')).toHaveLength(18)
+  // The 18th gets its own moment on the card; one more press brings up the full results.
+  expect(screen.queryByRole('region', { name: /draw complete/i })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: /show all matchups/i }))
+  const results = within(screen.getByRole('region', { name: /draw complete/i }))
+  expect(results.getByRole('list').querySelectorAll('li')).toHaveLength(18)
+  expect(results.getAllByText(drawCheckCode(expected)).length).toBeGreaterThan(0)
 })
 
 it('empties the Masters half of the bowl once Premier has finished drawing', async () => {
@@ -140,7 +143,7 @@ it('downloads a sheet identical to the CLI output', async () => {
     revokeObjectURL: () => {},
   })
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
 
   await user.click(screen.getByRole('button', { name: /download sheet/i }))
   expect(captured).toBeDefined()

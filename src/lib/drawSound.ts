@@ -37,6 +37,9 @@ function noiseBuffer(audio: AudioContext): AudioBuffer {
   return buffer
 }
 
+const TICK = { hz: 2200, gain: 0.22, decay: 0.03 }
+const CLUNK = { hz: 900, gain: 0.45, decay: 0.07 }
+
 /**
  * Schedules one tick per entry in `offsetsMs`, relative to now. Returns a cancel function for when
  * the operator cuts a spin short — otherwise the wheel would keep ticking after it had stopped.
@@ -50,7 +53,10 @@ export function scheduleTicks(offsetsMs: number[]): () => void {
   const now = audio.currentTime
   const sources: AudioBufferSourceNode[] = []
 
-  for (const offset of offsetsMs) {
+  offsetsMs.forEach((offset, i) => {
+    // The last tick is the flapper settling against its peg: lower, louder and longer, so the ear
+    // hears the wheel STOP rather than just run out of ticks.
+    const tone = i === offsetsMs.length - 1 ? CLUNK : TICK
     const at = now + offset / 1000
     const src = audio.createBufferSource()
     src.buffer = buffer
@@ -58,18 +64,18 @@ export function scheduleTicks(offsetsMs: number[]): () => void {
     // Narrow bandpass = the woody "tock" of a peg rather than a hiss.
     const band = audio.createBiquadFilter()
     band.type = 'bandpass'
-    band.frequency.setValueAtTime(2200, at)
+    band.frequency.setValueAtTime(tone.hz, at)
     band.Q.setValueAtTime(7, at)
 
     const vol = audio.createGain()
-    vol.gain.setValueAtTime(0.22, at)
-    vol.gain.exponentialRampToValueAtTime(0.0001, at + 0.03)
+    vol.gain.setValueAtTime(tone.gain, at)
+    vol.gain.exponentialRampToValueAtTime(0.0001, at + tone.decay)
 
     src.connect(band).connect(vol).connect(audio.destination)
     src.start(at)
-    src.stop(at + 0.06)
+    src.stop(at + tone.decay * 2)
     sources.push(src)
-  }
+  })
 
   return () => {
     for (const src of sources) {

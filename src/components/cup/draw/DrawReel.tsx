@@ -11,7 +11,7 @@ import { TeamLogo } from '../../TeamLogo'
 // built to arrive at it. Swappable: it takes the eligible pool and the winner, which is all any
 // reveal treatment needs, so a different one can drop straight in.
 
-const ITEM_PX = 104
+const ITEM_PX = 128
 /**
  * Crests scrolled past before landing. Scaled with SPIN_MS so the wheel keeps a readable pace
  * (~28 crests/sec at speed) for the whole of the fast phase instead of easing off early.
@@ -26,23 +26,34 @@ const RUN_UP = 100
 const REEL_EASING =
   typeof CSS !== 'undefined' && CSS.supports?.('transition-timing-function', REEL_EASING_CSS) ? REEL_EASING_CSS : 'ease-out'
 
-function Cell({ team }: { team: BowlTeam }) {
+function Cell({ team, winner }: { team: BowlTeam; winner: boolean }) {
   return (
-    <div className="flex shrink-0 flex-col items-center justify-center gap-1 border border-border bg-surface" style={{ width: ITEM_PX - 8, height: ITEM_PX - 8, marginInline: 4 }}>
-      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
-      <span className="w-full truncate px-1 text-center text-[10px] font-bold leading-tight">{team.name}</span>
-      <span className={`text-[8px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
+    <div
+      className="flex shrink-0 flex-col items-center justify-center gap-1 border bg-surface transition-colors"
+      style={{
+        width: ITEM_PX - 8,
+        height: ITEM_PX - 8,
+        marginInline: 4,
+        borderColor: winner ? CUP_ACCENT : 'var(--color-border)',
+        borderWidth: winner ? 3 : 1,
+      }}
+    >
+      <TeamLogo ffuId={team.ffuId} size={48} clickable={false} />
+      <span className="w-full truncate px-1 text-center text-xs font-bold leading-tight">{team.name}</span>
+      <span className={`text-[10px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}
       </span>
     </div>
   )
 }
 
-export function DrawReel({ pool, winnerId, durationMs, muted }: {
+export function DrawReel({ pool, winnerId, durationMs, muted, landed }: {
   pool: BowlTeam[]
   winnerId: string
   durationMs: number
   muted: boolean
+  /** The spin has finished and the reel is resting: outline the winner under the marker. */
+  landed: boolean
 }) {
   const [rolling, setRolling] = useState(false)
 
@@ -87,7 +98,7 @@ export function DrawReel({ pool, winnerId, durationMs, muted }: {
         }}
       >
         {strip.map((team, i) => (
-          <Cell key={`${team.ffuId}-${i}`} team={team} />
+          <Cell key={`${team.ffuId}-${i}`} team={team} winner={landed && i === winnerIndex} />
         ))}
       </div>
     </div>
