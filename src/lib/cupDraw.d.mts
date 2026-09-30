@@ -9,7 +9,7 @@ export interface DrawTeam {
   name: string
 }
 
-/** PREMIER and MASTERS must be in DRAFT ORDER; NATIONAL's order is irrelevant (it never draws). */
+/** PREMIER and MASTERS must be in DRAFT ORDER; NATIONAL may be in any order (drawCup sorts it). */
 export type CupField = Record<CupTier, DrawTeam[]>
 
 export interface DrawnParticipant {
@@ -34,3 +34,5 @@ export interface CupDrawResult {
 
 export function makeRng(seed: string | number): () => number
 export function drawCup(field: CupField, seed: string | number): CupDrawResult
+/** Short fingerprint of the drawn matchups, e.g. "3F2A-9C01" — the same on the page and in the CLI. */
+export function drawCheckCode(result: CupDrawResult): string

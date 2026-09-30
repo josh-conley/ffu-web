@@ -67,6 +67,21 @@ together — they are one unit.
 
 ---
 
+## 2026-09-29 — The draw sorts National itself; the page and CLI prove they agree
+
+**Context.** Sharing `drawCup` was meant to make the streamed draw and the CLI incapable of
+disagreeing. They disagreed anyway, for every seed: opponents are picked by POSITION in the pool,
+and the page handed National over sorted by draft slot while the CLI kept Sleeper's `/rosters`
+order. "National's order is irrelevant" was true for seeding and false for the draw.
+
+**Decision.** `drawCup` sorts National by ffuId itself, so no caller's ordering can matter, with a
+test that reordering National leaves the bracket unchanged. Masters keeps the caller's draft order,
+because that order is a rule. The page also shows a **check code** (a short hash of the 18 matchups)
+when the draw ends, and the sheet prints it, so the CLI's output can be matched to the stream at
+a glance. Seeds are limited to letters, digits, spaces and `- _ . : #` (page and CLI alike): all
+literal inside double quotes in any shell, so the command shown can be pasted anywhere, and it is
+shown in its real case (the top bar used to uppercase it, and the seed is case-sensitive).
+
 ## 2026-08-21 — The streamed draw reuses the algorithm, not just the rules
 
 **Context.** The commissioner wants the Cup draw run as a live streamed event with some fanfare,

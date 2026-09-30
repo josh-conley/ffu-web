@@ -2,7 +2,22 @@
 // text read out on stream, the file downloaded from the page, and the terminal output are the same
 // bytes. Pure string building — no I/O, no DOM.
 
+import { drawCheckCode } from './cupDraw.mjs'
+
 const LABEL = { PREMIER: 'PL', MASTERS: 'ML', NATIONAL: 'NL' }
+
+/**
+ * Characters a seed may use. Deliberately narrow: every one is literal inside double quotes in
+ * both POSIX shells and Windows cmd, so the command below can be pasted anywhere and re-run the
+ * exact draw. A seed like "week4 SNF 51" is fine; `$`, quotes and backslashes are not.
+ */
+export const SEED_PATTERN = /^[A-Za-z0-9 _.:#-]+$/
+
+/** The command that reproduces a draw and writes the official file. Quoted whenever it has a space. */
+export function drawCommand(seed) {
+  const s = String(seed)
+  return `npm run draw-cup -- --seed ${/^[A-Za-z0-9_.:#-]+$/.test(s) ? s : `"${s}"`}`
+}
 
 /** Lookup helpers built once from a field + result, so each formatter stays a simple map. */
 function index(field, result) {
@@ -20,7 +35,7 @@ export function formatDrawSheet(field, result, seed) {
   const { nameOf, seedOf, tierOf } = index(field, result)
   const side = (id) => `${nameOf.get(id)} (${LABEL[tierOf.get(id)]}, ${seedOf.get(id)})`
 
-  const lines = [`FFU CUP — ROUND OF 36 DRAW`, `Seed: ${seed}`, '']
+  const lines = [`FFU CUP — ROUND OF 36 DRAW`, `Seed: ${seed}`, `Check: ${drawCheckCode(result)}`, '']
   result.matchups.forEach((m, i) => {
     if (i === 12) lines.push('  — Masters draws the remaining National teams —')
     lines.push(`  ${String(i + 1).padStart(2)}. ${side(m.a)}  v  ${side(m.b)}`)

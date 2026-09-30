@@ -117,13 +117,33 @@ function verify(participants, matchups, tierOf) {
   assert(counts['MASTERS-NATIONAL'] === 6, `expected 6 Masters–National matchups, got ${counts['MASTERS-NATIONAL'] ?? 0}`)
 }
 
+/** Code-unit order, not localeCompare: it must sort identically on every machine and locale. */
+function byFfuId(x, y) {
+  return x.ffuId < y.ffuId ? -1 : x.ffuId > y.ffuId ? 1 : 0
+}
+
+/**
+ * A short fingerprint of the drawn matchups (FNV-1a over them, as 8 hex digits, "XXXX-XXXX").
+ * The page shows it when the draw ends and the sheet (so the CLI) prints it: matching codes are a
+ * one-glance proof that the official file is the bracket the stream showed.
+ */
+export function drawCheckCode(result) {
+  let h = 0x811c9dc5
+  const text = result.matchups.map((m) => `${m.a}>${m.b}`).join('|')
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  const hex = (h >>> 0).toString(16).toUpperCase().padStart(8, '0')
+  return `${hex.slice(0, 4)}-${hex.slice(4)}`
+}
+
 /**
  * Conducts the draw.
  *
  * @param {{PREMIER: Team[], MASTERS: Team[], NATIONAL: Team[]}} field — PREMIER and MASTERS must be
- *        in DRAFT ORDER (that sets both who draws first and their seeds). NATIONAL's order is
- *        irrelevant: National teams never draw, they are only ever drawn.
- *        Team = { ffuId, name }
+ *        in DRAFT ORDER (that sets both who draws first and their seeds). NATIONAL may come in any
+ *        order: it is re-sorted here (see below). Team = { ffuId, name }
  * @param {string|number} seed — the publicly committed seed.
  * @returns {{participants, matchups, drawnOrder}} participants are seed-ordered (1 → 36).
  */
@@ -132,7 +152,13 @@ export function drawCup(field, seed) {
   const rng = makeRng(seed)
 
   const mastersPool = [...field.MASTERS]
-  const nationalPool = [...field.NATIONAL]
+  // National never draws, but its ORDER still matters: opponents are picked by position in the
+  // pool, so two callers handing National over in different orders get different brackets from
+  // the same seed. That happened (2026-09-29): the page sorted it by draft slot, the CLI kept
+  // Sleeper's roster order, and they disagreed for every seed. Sorting by ffuId here, inside the
+  // one implementation, means no caller can get it wrong again. (Masters keeps its draft order —
+  // that order is a rule, and both callers already supply it.)
+  const nationalPool = [...field.NATIONAL].sort(byFfuId)
   const drawnOrder = []
 
   const firstTies = premierDraws(field.PREMIER, mastersPool, nationalPool, rng, drawnOrder)

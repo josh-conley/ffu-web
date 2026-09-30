@@ -16,7 +16,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { drawCup } from '../src/lib/cupDraw.mjs'
-import { formatDrawSheet } from '../src/lib/drawSheet.mjs'
+import { SEED_PATTERN, formatDrawSheet } from '../src/lib/drawSheet.mjs'
 import { ROOT, TIERS, buildMemberIndex, leagueIdsFor, sleeperApi as api } from './lib/ffuConfig.mjs'
 
 /** National never draws — it is only ever drawn — so its draft order is irrelevant to the Cup. */
@@ -36,6 +36,7 @@ function parseArgs(argv) {
     else die(`Unknown argument: ${arg}`)
   }
   if (args.seed === undefined || args.seed === '') die('--seed is required (and should be published before the draw)')
+  if (!SEED_PATTERN.test(args.seed)) die('--seed may only use letters, digits, spaces and - _ . : # (the same rule as the draw page)')
   return args
 }
 
