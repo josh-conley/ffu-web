@@ -23,12 +23,10 @@ import { downloadText } from './downloads'
  * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
  * the stage jumps as a matchup moves from on the clock to drawn.
  */
-function CurrentMatchup({ reveal, story, muted, storySlot }: {
+function CurrentMatchup({ reveal, story, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
   muted: boolean
-  /** Reserve room for the storyline (false when there is no history to tell). */
-  storySlot: boolean
 }) {
   const { drawer, drawn, phase, landing } = reveal
   if (!drawer) return null
@@ -39,7 +37,8 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
         drawer={drawer}
         drawn={landing ? undefined : drawn}
         forced={reveal.forced}
-        footer={storySlot ? story && drawn && !landing && <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} /> : undefined}
+        // Always a strip, empty until there is a story: the card must not grow or shrink between draws.
+        footer={story && drawn && !landing ? <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} /> : null}
       />
       <DrawReel
         key={reveal.matchupNumber}
@@ -124,7 +123,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
         <>
           {/* Stacked: the spinner gets the full width (squeezed beside the bracket, names and the
               reel were cut off), and the two-sided bracket is short enough to sit under it. */}
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
+          <CurrentMatchup reveal={reveal} story={story} muted={muted} />
           <DrawBracket
             rounds={rounds}
             order={order}

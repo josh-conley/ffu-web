@@ -43,8 +43,8 @@ export function DrawMatchupCard({ drawer, drawn, forced, footer }: {
   drawn: MatchupSide | undefined
   /** Only one team was left to draw. */
   forced: boolean
-  /** The storyline strip along the bottom. Undefined leaves no strip; null/false keeps its room empty. */
-  footer?: ReactNode
+  /** The storyline along the bottom; its strip is always reserved, so null just leaves it empty. */
+  footer: ReactNode
 }) {
   // The matchup number lives in the top bar only — it used to appear three times on one screen.
   const label = !drawn ? 'On the clock' : forced ? 'Last team in the bowl' : 'Drawn'
@@ -63,8 +63,11 @@ export function DrawMatchupCard({ drawer, drawn, forced, footer }: {
         <span className="shrink-0 text-center text-sm font-extrabold uppercase tracking-widest text-muted">v</span>
         {drawn ? <Side side={drawn} /> : <Pending />}
       </div>
-      {/* Reserved height, so the card doesn't grow when the storyline arrives. */}
-      {footer !== undefined && <div className="mt-2 min-h-7 border-t border-border pt-2">{footer}</div>}
+      {/* Always there, with its height reserved, so the card doesn't grow when the storyline arrives
+          or shrink when the next matchup clears it. */}
+      <div data-story-strip className="mt-2 flex min-h-9 items-center border-t border-border pt-2">
+        {footer}
+      </div>
     </div>
   )
 }
