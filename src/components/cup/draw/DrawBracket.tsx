@@ -12,8 +12,7 @@ export type { LedgerMatchup, SlotSeeds } from './DrawBracketSlots'
 // glance that seeds 1 and 2 can only meet in the final.
 //
 // Slots are in seeded bracket order (bracketSlots): positions 0–7 are the left half, 8–15 the right,
-// and 16–17 — the ninth Round-of-18 game, 9v28 against 10v27 — the odd one out, shown under the
-// final. The Round of 18 names its feeders; later rounds stay blank because the quarterfinals
+// and 16–17 — the ninth Round-of-18 game, 9v28 against 10v27 — sit at the foot of the left half. The Round of 18 names its feeders; later rounds stay blank because the quarterfinals
 // re-seed after the lowest-winner drop.
 
 /** Where the draw is: the matchup on the clock, and its opponent once revealed. */
@@ -80,11 +79,17 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] 
     return <FeederSlot key={game} from={from} />
   }
 
-  /** One wing: its eight opening slots, four Round-of-18 games, two quarterfinals, one semi. */
+  /**
+   * One wing: its opening slots, Round-of-18 games, two quarterfinals and a semi. The left wing also
+   * carries the ninth Round-of-18 game (9v28 against 10v27) at its foot: nine games can't split
+   * evenly, and seed 9 sits in seed 1's half of a seeded bracket.
+   */
   const wing = (side: 0 | 1) => {
+    const openings = side === 0 ? [...range(0, HALF), ...range(2 * HALF, 2)] : range(HALF, HALF)
+    const games = side === 0 ? [...range(0, 4), 8] : range(4, 4)
     const columns = [
-      <Column key="r36" round={r36} width={WIDE}>{range(side * HALF, HALF).map(opening)}</Column>,
-      <Column key="r18" round={r18} width={NARROW}>{range(side * 4, 4).map(feeder)}</Column>,
+      <Column key="r36" round={r36} width={WIDE}>{openings.map(opening)}</Column>,
+      <Column key="r18" round={r18} width={NARROW}>{games.map(feeder)}</Column>,
       <Column key="qf" round={qf} width={NARROW}>{blanks(2)}</Column>,
       <Column key="sf" round={sf} width={NARROW}>{blanks(1)}</Column>,
     ]
@@ -98,12 +103,6 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] 
           {wing(0)}
           <Column round={final} width={WIDE}>
             {blanks(1)}
-            <div className="space-y-1.5 border-t border-border pt-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted">9th {r18?.label} game</p>
-              {opening(16)}
-              {opening(17)}
-              {feeder(8)}
-            </div>
           </Column>
           {wing(1)}
         </div>
