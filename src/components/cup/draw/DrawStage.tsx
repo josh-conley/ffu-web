@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
-import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory } from '@/selectors'
+import { matchupStory, matchupTag, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
-import { DrawBowl } from './DrawBowl'
+import { DrawBracket, type SlotSeeds } from './DrawBracket'
 import { DrawComplete } from './DrawComplete'
 import { DrawControls, RestartButton } from './DrawControls'
-import { DrawLedger } from './DrawLedger'
 import { DrawMatchupCard } from './DrawMatchupCard'
 import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
@@ -17,6 +16,7 @@ import { downloadText } from './downloads'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
+// Beside or below the spinner, the Cup bracket's opening round fills in as each matchup is drawn.
 
 /**
  * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
@@ -54,29 +54,10 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
   )
 }
 
-/** Mid-draw: who is left to be drawn, and what has been drawn so far. */
-function BowlAndLedger({ reveal }: { reveal: ReturnType<typeof useCupDrawReveal> }) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-      <div className="space-y-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted">The bowl</h2>
-        <DrawBowl
-          masters={reveal.mastersBowl}
-          national={reveal.nationalBowl}
-          mastersClosed={reveal.mastersClosed}
-          nationalClosed={reveal.nationalClosed}
-        />
-      </div>
-      <div className="space-y-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Matchups so far</h2>
-        <DrawLedger matchups={reveal.ledger} />
-      </div>
-    </div>
-  )
-}
-
-export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
+export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
+  /** The season's rounds, for the bracket's shape. */
+  rounds: RoundOutline[]
   seed: string
   /** Completed seasons, for each matchup's head-to-head story. Empty just hides the storyline. */
   seasons: SeasonData[]
@@ -90,6 +71,12 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
   // that already exists — the animation cannot change who was drawn.
   const result = useMemo(() => drawCup(field, seed), [field, seed])
   const reveal = useCupDrawReveal(field, result, resumeAt)
+  const order = useMemo(() => bracketSlots(result), [result])
+  // Every matchup's two seeds, drawing team's first — fixed by the draw rules before anything is shown.
+  const seeds = useMemo(() => {
+    const seedOf = new Map(result.participants.map((p) => [p.ffuId, p.seed]))
+    return result.matchups.map((m): SlotSeeds => [seedOf.get(m.a) ?? 0, seedOf.get(m.b) ?? 0])
+  }, [result])
   const { advance, drawer, drawn, settled } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
@@ -100,6 +87,15 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
   const story = useMemo(
     () => (drawer && drawn && seasons.length > 0 ? matchupStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
     [seasons, drawer, drawn],
+  )
+
+  // Head-to-head tags for the finished bracket (the FFUN screenshot); not needed until the end.
+  const tags = useMemo(
+    () =>
+      reveal.done && seasons.length > 0
+        ? reveal.ledger.map((m) => matchupTag(matchupStory(seasons, m.a.ffuId, m.b.ffuId)))
+        : [],
+    [reveal.done, reveal.ledger, seasons],
   )
 
   const lastShown = reveal.phase === 'shown' && reveal.matchupNumber === TOTAL_MATCHUPS
@@ -122,17 +118,23 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
         onToggleMute={() => setMuted((m) => !m)}
       />
       {reveal.done ? (
-        <DrawComplete
-          seed={seed}
-          checkCode={drawCheckCode(result)}
-          matchups={reveal.ledger}
-          seasons={seasons}
-          onDownload={download}
-        />
+        <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
+          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} />
+        </DrawComplete>
       ) : (
         <>
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
-          <BowlAndLedger reveal={reveal} />
+          {/* Side by side on a wide screen, so the call sees the spin and the bracket together;
+              stacked below that. */}
+          <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-start">
+            <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
+            <DrawBracket
+              rounds={rounds}
+              order={order}
+              seeds={seeds}
+              matchups={reveal.ledger}
+              cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
+            />
+          </div>
         </>
       )}
       <RestartButton drawnAny={settled > 0} onRestart={onRestart} />

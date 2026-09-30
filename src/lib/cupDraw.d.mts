@@ -36,3 +36,11 @@ export function makeRng(seed: string | number): () => number
 export function drawCup(field: CupField, seed: string | number): CupDrawResult
 /** Short fingerprint of the drawn matchups, e.g. "3F2A-9C01" — the same on the page and in the CLI. */
 export function drawCheckCode(result: CupDrawResult): string
+
+/**
+ * Draw-order indices of the matchups, top to bottom in BRACKET order (adjacent pairs meet next
+ * round), seeded so 1 and 2 can only meet in the final.
+ */
+export function bracketSlots(result: CupDrawResult): number[]
+/** Bracket positions for `n` seeds (a power of two): 8 → 1,8,4,5,2,7,3,6. */
+export function bracketPositions(n: number): number[]

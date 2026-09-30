@@ -1,3 +1,4 @@
+import { bracketPositions } from '@/lib/cupDraw.mjs'
 import type { Tier } from '@/config/types'
 import type { SeasonData, Tournament, TournamentMatchup } from '@/data'
 import { scoreFor } from './games'
@@ -65,8 +66,9 @@ export function weekScore(seasonsByTier: SeasonsByTier, tier: Tier, ffuId: strin
 }
 
 /**
- * Default pairing for an unauthored round: bracket-tree adjacency (winner i vs winner i+1). Isolated
- * here because the real post-drop seeding rule is still TBD — swap this one function when it lands.
+ * Default pairing for an unauthored round: bracket-tree adjacency (winner i vs winner i+1). Right
+ * for the Round of 18, because the opening round is stored in seeded bracket order (1v36 beside
+ * 18v19 — see bracketSlots), and for the rounds after a re-seed, which is placed in bracket order.
  */
 function pairAdjacent(ffuIds: string[]): TournamentMatchup[] {
   const pairs: TournamentMatchup[] = []
@@ -75,6 +77,24 @@ function pairAdjacent(ffuIds: string[]): TournamentMatchup[] {
     const b = ffuIds[i + 1]
     if (a !== undefined && b !== undefined) pairs.push({ a, b })
   }
+  return pairs
+}
+
+/**
+ * Pairing for a re-seeded round: entrants ranked by draw seed, best v worst, in bracket order. A
+ * field that isn't a power of two falls back to the plain fold (1vN, 2vN−1, …); a team with no
+ * seed (the draw not held) sorts last.
+ */
+function pairReseeded(ffuIds: string[], seedOf: Map<string, number>): TournamentMatchup[] {
+  const ranked = [...ffuIds].sort((x, y) => (seedOf.get(x) ?? Infinity) - (seedOf.get(y) ?? Infinity))
+  const n = ranked.length
+  const powerOfTwo = n > 0 && (n & (n - 1)) === 0
+  if (!powerOfTwo) {
+    return Array.from({ length: Math.floor(n / 2) }, (_, k) => ({ a: ranked[k]!, b: ranked[n - 1 - k]! }))
+  }
+  const positions = bracketPositions(n)
+  const pairs: TournamentMatchup[] = []
+  for (let i = 0; i < n; i += 2) pairs.push({ a: ranked[positions[i]! - 1]!, b: ranked[positions[i + 1]! - 1]! })
   return pairs
 }
 
@@ -145,19 +165,24 @@ export function outlineTournament(t: Tournament): RoundOutline[] {
 
 export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): ResolvedTournament {
   const tierOf = new Map(t.participants.map((p) => [p.ffuId, p.tier]))
+  const seedOf = new Map(t.participants.flatMap((p) => (p.seed !== undefined ? [[p.ffuId, p.seed] as const] : [])))
   const rounds: ResolvedRound[] = []
   let advancers: Advancer[] = []
 
   for (const round of t.rounds) {
-    const { pool, droppedId } = applyDrop(advancers, round.dropLowestWinner === true)
-    // Authored pairings override the computed ones (e.g. a bespoke post-drop seed).
-    const pairs = round.matchups ?? pairAdjacent(pool.map((a) => a.ffuId))
+    // A round is only paired once the previous one is fully decided: pairing a partial field would
+    // put the wrong teams together (and the drop needs every winner's score).
+    const previousRound = rounds[rounds.length - 1]
+    const settled = previousRound === undefined || advancers.length === previousRound.matchups.length
+    const { pool, droppedId } = settled ? applyDrop(advancers, round.dropLowestWinner === true) : { pool: [] }
+    const ids = pool.map((a) => a.ffuId)
+    // Authored pairings override the computed ones.
+    const pairs = round.matchups ?? (round.reseed ? pairReseeded(ids, seedOf) : pairAdjacent(ids))
     const matchups = pairs.map((m) => resolveMatchup(tierOf, seasonsByTier, m, round.week))
     // Attribute the culled winner to the round it actually played and won (see ResolvedRound.dropped),
     // and score it in THAT week — scoring it in this round's week would report a game it never played.
-    const previous = rounds[rounds.length - 1]
-    if (droppedId !== undefined && previous !== undefined) {
-      previous.dropped = [resolveSide(tierOf, seasonsByTier, droppedId, previous.week)]
+    if (droppedId !== undefined && previousRound !== undefined) {
+      previousRound.dropped = [resolveSide(tierOf, seasonsByTier, droppedId, previousRound.week)]
     }
     rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped: [] })
     advancers = advancersOf(matchups)

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { CUP_ACCENT } from '@/config'
 import { scheduleTicks } from '@/lib/drawSound'
 import { REEL_EASING_CSS, tickTimes } from '@/lib/reelTiming'
-import type { BowlTeam } from './DrawBowl'
+import type { BowlSlot } from '@/selectors'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
 
@@ -26,7 +26,7 @@ const RUN_UP = 100
 const REEL_EASING =
   typeof CSS !== 'undefined' && CSS.supports?.('transition-timing-function', REEL_EASING_CSS) ? REEL_EASING_CSS : 'ease-out'
 
-function Cell({ team, winner }: { team: BowlTeam; winner: boolean }) {
+function Cell({ team, winner }: { team: BowlSlot; winner: boolean }) {
   return (
     <div
       className="flex shrink-0 flex-col items-center justify-center gap-1 border bg-surface transition-colors"
@@ -60,7 +60,7 @@ const PAD = 10
  * the winner, and cancels the pending ticks.
  */
 export function DrawReel({ pool, winnerId, durationMs, muted, motion, landed }: {
-  pool: BowlTeam[]
+  pool: BowlSlot[]
   /** Undefined until the draw is under way — the result never reaches the DOM before it is drawn. */
   winnerId: string | undefined
   durationMs: number

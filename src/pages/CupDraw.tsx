@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CUP_YEAR } from '@/config'
 import { SEED_PATTERN } from '@/lib/drawSheet.mjs'
+import { useCup } from '@/hooks/useCup'
 import { useCupField } from '@/hooks/useCupField'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { DrawSetup } from '@/components/cup/draw/DrawSetup'
@@ -45,8 +46,10 @@ export function CupDraw() {
   // regardless and simply loses the storyline.
   const { data: seasons } = useAllSeasons()
   const { seed, at, start, restart, progress } = useDrawParams()
+  // The bracket's shape (rounds and weeks) comes from the season's tournament.json, as on /cup.
+  const cup = useCup(CUP_YEAR)
 
-  if (loading) return <LoadingSpinner />
+  if (loading || cup.loading) return <LoadingSpinner />
   if (problem !== undefined || field === undefined) {
     return <ErrorMessage error={problem ?? `No field available for ${CUP_YEAR}.`} />
   }
@@ -55,6 +58,7 @@ export function CupDraw() {
     <DrawStage
       key={seed}
       field={field}
+      rounds={cup.outline}
       seed={seed}
       seasons={seasons ?? []}
       resumeAt={at}

@@ -234,7 +234,16 @@ export interface TournamentRound {
    */
   dropLowestWinner?: boolean
   /**
-   * Authored pairings. The opening round is always authored; later rounds normally OMIT this and
+   * Re-seed before pairing: rank the round's entrants by their draw seed and pair best v worst,
+   * placed in bracket order (for eight: 1v8, 4v5, 2v7, 3v6), so the rounds after it, paired by
+   * adjacency, keep the top seeds apart until the final. Needed where the tree breaks — after the
+   * lowest-winner drop, any of the nine winners may be the one removed.
+   */
+  reseed?: boolean
+  /**
+   * Authored pairings, in BRACKET order: adjacent matchups' winners meet in the next round (the
+   * draw writes the opening round seeded this way — see bracketSlots in src/lib/cupDraw.mjs). The
+   * opening round is always authored; later rounds normally OMIT this and
    * are computed by the advancement engine (selectors/tournament). Present here only to OVERRIDE
    * the computed pairing when the commissioner sets one explicitly (e.g. a bespoke post-drop seed).
    */

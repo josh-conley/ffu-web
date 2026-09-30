@@ -67,6 +67,34 @@ together — they are one unit.
 
 ---
 
+## 2026-09-30 — The Cup bracket is seeded end to end: 1 and 2 can only meet in the final
+
+**Context.** The seeding makes every opening matchup k v 37−k (Premier #1 draws first, and the
+first team drawn is the 36 seed). But the opening round was stored in DRAW order, and the engine
+paired adjacent winners, so 1v36's winner would have met 2v35's; and after the Round of 18 the
+quarterfinal pairing was unruled.
+
+**Decision (Josh).** If every higher seed wins, the best remaining seeds always face the worst:
+- **Round of 18: fixed seeded bracket.** winner(1v36) v winner(18v19), 2v35 v 17v20, … 9v28 v
+  10v27, so chalk gives 1v18 … 9v10. `bracketSlots` (src/lib/cupDraw.mjs) puts the draw into that
+  order; the CLI writes the opening round in it and the draw page places matchups by it. Adjacent
+  pairing then does the rest. The nine games are STACKED in tree order by their top seed — 1, 8, 4,
+  5 | 2, 7, 3, 6, then 9v10 (the odd game out) — so on screen 1 and 2 sit in opposite halves and
+  chalk flows straight into the quarterfinals below. (Stacked 1, 2, 3 … the pairings were right but
+  the picture put seed 2's path directly under seed 1's.) The draw's own record (sheet, check code,
+  stream) stays in draw order.
+- **Quarterfinals: re-seeded.** The lowest-scoring Round-of-18 winner is dropped, and it can be any
+  of the nine, so no fixed tree survives it. The eight survivors are ranked by draw seed and paired
+  best v worst in bracket order 1v8, 4v5, 2v7, 3v6 (`reseed: true` on the round in
+  tournament.json; `pairReseeded` in selectors/tournament).
+- **Semifinals and final: fixed** from the quarterfinals by adjacency: chalk gives 1v4 and 2v3,
+  then 1v2.
+Also: a round is only paired once the previous one is fully decided (a partial field would pair the
+wrong teams, and the drop needs every winner's score).
+
+**To confirm** with the commissioner against the amendment; the public Format & Rules copy does not
+describe the pairings yet.
+
 ## 2026-09-29 — The draw sorts National itself; the page and CLI prove they agree
 
 **Context.** Sharing `drawCup` was meant to make the streamed draw and the CLI incapable of

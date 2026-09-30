@@ -15,7 +15,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { drawCup } from '../src/lib/cupDraw.mjs'
+import { bracketSlots, drawCup } from '../src/lib/cupDraw.mjs'
 import { SEED_PATTERN, formatDrawSheet } from '../src/lib/drawSheet.mjs'
 import { ROOT, TIERS, buildMemberIndex, leagueIdsFor, sleeperApi as api } from './lib/ffuConfig.mjs'
 
@@ -104,7 +104,9 @@ function writeTournament(year, result, force) {
   tournament.participants = result.participants
   const opening = tournament.rounds[0]
   if (!opening) die(`${year} tournament.json has no rounds`)
-  opening.matchups = result.matchups
+  // In BRACKET order, not draw order: the engine pairs adjacent winners, so this is what makes the
+  // winner of 1v36 meet the winner of 18v19 (see bracketSlots).
+  opening.matchups = bracketSlots(result).map((i) => result.matchups[i])
   writeFileSync(path, `${JSON.stringify(tournament, null, 2)}\n`)
   console.log(`\n✓ Wrote ${result.participants.length} participants + ${result.matchups.length} opening matchups to public/data/${year}/tournament.json`)
   console.log('  Commit it together with the seed, so the draw can be re-run and verified.\n')

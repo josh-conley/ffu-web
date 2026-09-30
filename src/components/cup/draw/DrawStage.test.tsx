@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
+import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawSheet } from '@/lib/drawSheet.mjs'
+import { outlineTournament } from '@/selectors'
 import { DrawStage } from './DrawStage'
 
 // The point of these: the streamed draw must be the SAME draw as `npm run draw-cup`. The page
@@ -11,6 +12,21 @@ import { DrawStage } from './DrawStage'
 const mk = (prefix: string) => Array.from({ length: 12 }, (_, i) => ({ ffuId: `${prefix}-${i + 1}`, name: `${prefix.toUpperCase()} ${i + 1}` }))
 const field: CupField = { PREMIER: mk('p'), MASTERS: mk('m'), NATIONAL: mk('n') }
 const SEED = '4471'
+/** The 2026 bracket's shape: 36 → 18 → (drop one) 8 → 4 → 2. */
+const ROUNDS = outlineTournament({
+  schemaVersion: 1,
+  name: 'FFU Cup',
+  year: '2026',
+  fieldSize: 36,
+  participants: [],
+  rounds: [
+    { key: 'r36', label: 'Round of 36', week: 6 },
+    { key: 'r18', label: 'Round of 18', week: 7 },
+    { key: 'r8', label: 'Quarterfinals', week: 8, dropLowestWinner: true },
+    { key: 'r4', label: 'Semifinals', week: 10 },
+    { key: 'final', label: 'Final', week: 12 },
+  ],
+})
 const expected = drawCup(field, SEED)
 
 /** Reduced motion skips the suspense spin, so a test can walk 18 matchups without burning 30 seconds. */
@@ -38,7 +54,7 @@ const card = () => within(screen.getByRole('group', { name: /current matchup/i }
 it('does not show the opponent until the matchup is actually drawn', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   const firstOpponent = nameOf(expected.matchups[0]!.b)
   expect(card().getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
@@ -52,7 +68,7 @@ it('does not show the opponent until the matchup is actually drawn', async () =>
 it('holds a revealed matchup on screen, then hides the next opponent again', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   // The result stays up for the operator to talk over, rather than vanishing into the ledger.
@@ -66,7 +82,7 @@ it('holds a revealed matchup on screen, then hides the next opponent again', asy
 it('reveals every matchup of the CLI draw, in the same order', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
   expect(screen.getAllByText(/matchup 1 of 18/i).length).toBeGreaterThan(0)
@@ -86,31 +102,60 @@ it('reveals every matchup of the CLI draw, in the same order', async () => {
   expect(screen.queryByRole('region', { name: /draw complete/i })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /show all matchups/i }))
   const results = within(screen.getByRole('region', { name: /draw complete/i }))
-  expect(results.getByRole('list').querySelectorAll('li')).toHaveLength(18)
+  expect(results.getByLabelText('Cup bracket').querySelectorAll('[data-slot]')).toHaveLength(18)
   expect(results.getAllByText(drawCheckCode(expected)).length).toBeGreaterThan(0)
 })
 
-it('empties the Masters half of the bowl once Premier has finished drawing', async () => {
+const bracket = () => within(screen.getByLabelText('Cup bracket'))
+/** The opening round's slots: the only ones the draw fills. */
+const slots = () => screen.getByLabelText('Cup bracket').querySelectorAll<HTMLElement>('[data-slot]')
+
+it('fills the bracket\'s opening round as matchups are drawn, never ahead of the reveal', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  /** The bracket slot matchup `i` (draw order) lands in. */
+  const slotOf = (i: number) => slots()[bracketSlots(expected).indexOf(i)]!
 
-  expect(screen.getByText(/Masters · 12 left/i)).toBeInTheDocument()
-  for (let i = 0; i < 12; i++) {
-    await user.click(screen.getByRole('button', { name: /^draw$/i }))
-    await user.click(screen.getByRole('button', { name: /next matchup/i }))
-  }
+  expect(slots()).toHaveLength(18)
+  // A bracket, not a list: every later round is there as a column, waiting.
+  for (const round of ['Round of 18', 'Quarterfinals', 'Semifinals', 'Final']) expect(bracket().getByText(round)).toBeInTheDocument()
 
-  // Phase two: the leftover Masters teams are drawers now, so nothing of theirs is left to draw.
-  expect(screen.getByText(/Masters · 0 left/i)).toBeInTheDocument()
-  expect(screen.getByText(/National · 6 left/i)).toBeInTheDocument()
+  // Matchup 1 is on the clock: its drawer is in its slot, its opponent nowhere in the bracket.
+  expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(bracket().queryByText(nameOf(expected.matchups[0]!.b))).not.toBeInTheDocument()
+  // Matchup 2's slot is empty but for its seeds: where, not who.
+  expect(slotOf(1).textContent).toBe('235')
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(within(slotOf(0)).getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /next matchup/i }))
+  expect(within(slotOf(1)).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  expect(bracket().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
+  expect(slotOf(1)).toHaveAttribute('aria-current', 'step')
+})
+
+// Seeded placement: the top slot is 1v36 (matchup 1), and directly beneath it — the slot whose
+// winner it meets next — is 18v19, which is the LAST matchup drawn (Masters' sixth pick).
+it('places matchups in seeded bracket order, so 1v36 sits beside 18v19', () => {
+  stubReducedMotion(true)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  const [top, second] = slots()
+  expect(within(top!).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
+  expect(within(second!).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
+  // …and seed 2's path starts halfway down, in the other half from seed 1.
+  expect(within(slots()[8]!).getByText(nameOf(expected.matchups[1]!.a))).toBeInTheDocument()
+  // The Round of 18 names what feeds it, top slot first.
+  expect(bracket().getByText('W 1v36')).toBeInTheDocument()
+  expect(bracket().getByText('W 18v19')).toBeInTheDocument()
 })
 
 it('runs a suspense spin, and a second press cuts it short', () => {
   stubReducedMotion(false)
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
@@ -143,7 +188,7 @@ it('downloads a sheet identical to the CLI output', async () => {
     revokeObjectURL: () => {},
   })
   const user = userEvent.setup()
-  render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
 
   await user.click(screen.getByRole('button', { name: /download sheet/i }))
   expect(captured).toBeDefined()
@@ -174,7 +219,7 @@ it('tells the story of a matchup once it is revealed', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   const seasons = [seasonWith('2024', [{ week: 3, a: 120, b: 100 }, { week: 15, a: 90, b: 130, isPlayoff: true }])]
-  render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} onRestart={() => {}} />)
 
   // Nothing before the draw — the story belongs to the reveal.
   expect(screen.queryByText(/met 2 times/i)).not.toBeInTheDocument()
@@ -190,7 +235,7 @@ it('says so when two teams have never met', async () => {
   const user = userEvent.setup()
   // Seasons that contain neither of matchup 1's teams.
   const seasons = [{ ...seasonWith('2024', []), games: [] }]
-  render(<DrawStage field={field} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(screen.getByText(/first ever meeting/i)).toBeInTheDocument()
@@ -223,7 +268,7 @@ it('ticks the wheel while it spins, and stops ticking if the spin is cut short',
   })
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
 
     // A tick per crest of the run-up, not a fixed count.
@@ -248,7 +293,7 @@ it('schedules no ticks when muted', () => {
   })
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /mute the wheel/i }))
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(contextsCreated).toBe(0)
