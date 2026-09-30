@@ -12,7 +12,7 @@
 // real wheel audibly winds down.
 
 /** Share of the run spent at full speed before the brake comes on. */
-const CRUISE = 0.45
+const CRUISE = 0.3
 
 /** Full speed, in reel-lengths per run, chosen so cruise + brake covers exactly the whole strip. */
 const SPEED = 2 / (1 + CRUISE)
