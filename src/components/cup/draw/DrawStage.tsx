@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
 import { drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory, matchupTag } from '@/selectors'
+import { matchupStory, matchupTag, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBracket } from './DrawBracket'
@@ -16,7 +16,7 @@ import { downloadText } from './downloads'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
-// Below the spinner, the Round of 36 bracket fills in as each matchup is drawn.
+// Beside or below the spinner, the Cup bracket's opening round fills in as each matchup is drawn.
 
 /**
  * The matchup on the stage: nameplates, the reel, then the storyline. Every part keeps its place
@@ -54,8 +54,10 @@ function CurrentMatchup({ reveal, story, muted, storySlot }: {
   )
 }
 
-export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
+export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
+  /** The season's rounds, for the bracket's shape. */
+  rounds: RoundOutline[]
   seed: string
   /** Completed seasons, for each matchup's head-to-head story. Empty just hides the storyline. */
   seasons: SeasonData[]
@@ -111,15 +113,20 @@ export function DrawStage({ field, seed, seasons, onRestart, resumeAt = 0, onPro
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
-          <DrawBracket matchups={reveal.ledger} tags={tags} />
+          <DrawBracket rounds={rounds} matchups={reveal.ledger} tags={tags} />
         </DrawComplete>
       ) : (
         <>
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
-          <DrawBracket
-            matchups={reveal.ledger}
-            cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
-          />
+          {/* Side by side on a wide screen, so the call sees the spin and the bracket together;
+              stacked below that. */}
+          <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_auto] 2xl:items-start">
+            <CurrentMatchup reveal={reveal} story={story} muted={muted} storySlot={seasons.length > 0} />
+            <DrawBracket
+              rounds={rounds}
+              matchups={reveal.ledger}
+              cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
+            />
+          </div>
         </>
       )}
       <RestartButton drawnAny={settled > 0} onRestart={onRestart} />
