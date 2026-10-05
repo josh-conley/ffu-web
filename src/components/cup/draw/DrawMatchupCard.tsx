@@ -21,11 +21,11 @@ function Ratings({ rating }: { rating: DrawRating | undefined }) {
   return (
     <div className="flex gap-4 font-mono text-sm tabular-nums text-muted">
       <span>
-        <span className="font-sans text-xs font-bold uppercase tracking-widest">Season </span>
+        <span className="font-sans text-xs font-bold uppercase tracking-widest">Season UPR </span>
         <span className="font-bold text-text">{uprText(rating?.current)}</span>
       </span>
       <span>
-        <span className="font-sans text-xs font-bold uppercase tracking-widest">Career Avg </span>
+        <span className="font-sans text-xs font-bold uppercase tracking-widest">Career Avg UPR </span>
         <span className="font-bold text-text">{uprText(rating?.allTime)}</span>
       </span>
     </div>
