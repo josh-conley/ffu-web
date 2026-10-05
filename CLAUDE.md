@@ -111,7 +111,9 @@ push after every green change** without being asked. Where it goes depends on wh
 
 **Who pushes where** (Josh is the repo owner, GitHub `josh-conley`; the commissioner also works here):
 - **Anything visible on the site** (pages, components, styling, selectors, live-data features): **one
-  change, one branch, one PR**, so each change ships on its own:
+  change, one branch, one PR**, so each change ships on its own. A "change" is one REQUEST: several
+  items asked for in one message go on ONE branch and ONE PR (separate commits), not a branch each.
+  Split only when asked.
   1. Branch `preview/<name>` from the latest `origin/main`: a short kebab-case name, 20 characters
      or fewer (e.g. `preview/playoff-odds`) so Cloudflare doesn't cut it short in the URL.
   2. Commit (gates green), push, and open a PR into `main`. `preview-deploy.yml` deploys it to
