@@ -16,16 +16,16 @@ export interface MatchupSide {
 
 const uprText = (n: number | undefined) => (n === undefined ? '—' : n.toFixed(1))
 
-/** This season's and all-time UPR — the quickest read on how the two teams match up. */
+/** Season UPR and career average UPR — the quickest read on how the two teams match up. */
 function Ratings({ rating }: { rating: DrawRating | undefined }) {
   return (
     <div className="flex gap-4 font-mono text-sm tabular-nums text-muted">
       <span>
-        <span className="font-sans text-xs font-bold uppercase tracking-widest">UPR </span>
+        <span className="font-sans text-xs font-bold uppercase tracking-widest">Season </span>
         <span className="font-bold text-text">{uprText(rating?.current)}</span>
       </span>
       <span>
-        <span className="font-sans text-xs font-bold uppercase tracking-widest">All-time </span>
+        <span className="font-sans text-xs font-bold uppercase tracking-widest">Career Avg </span>
         <span className="font-bold text-text">{uprText(rating?.allTime)}</span>
       </span>
     </div>
