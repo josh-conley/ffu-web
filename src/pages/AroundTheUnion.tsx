@@ -17,6 +17,7 @@ import {
   prizeRaceLeaders,
   seasonsThroughWeek,
   topScoresForWeek,
+  uprTable,
   weekMovers,
   weekNotes,
   type MilestoneStanding,
@@ -29,6 +30,7 @@ import { WeekMovers } from '@/components/recap/WeekMovers'
 import { WeekPrizeRaces } from '@/components/recap/WeekPrizeRaces'
 import { WeekStories } from '@/components/recap/WeekStories'
 import { WeekStreaks } from '@/components/recap/WeekStreaks'
+import { WeekUprTable } from '@/components/recap/WeekUprTable'
 import { SELECT, segButton } from '@/components/controls'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -87,6 +89,7 @@ function WeekBlocks({
   const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
   const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
   const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
+  const upr = useMemo(() => (week === undefined ? [] : uprTable(yearSeasons, year, week)), [yearSeasons, year, week])
   const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
   const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
   const prizes = useMemo(
@@ -119,6 +122,7 @@ function WeekBlocks({
         layout={layout}
         copyFilename={capture('around-the-union')}
       />
+      <WeekUprTable {...common} rows={upr} copyFilename={capture('upr')} />
       <WeekLowScores {...common} scores={lows} copyFilename={capture('lowest-scores')} />
       <WeekPrizeRaces {...common} {...prizes} copyFilename={capture('prize-races')} />
       <WeekStories {...common} notes={notes} copyFilename={capture('week-in-review')} />
