@@ -1,4 +1,7 @@
+import type { SeasonData } from '@/data'
 import type { CupDrawResult, CupField, CupTier } from '@/lib/cupDraw.mjs'
+import { careerUpr } from './career'
+import { seasonUpr } from './upr'
 
 // Pure derivations behind the live draw's stage. The DRAW itself is decided by src/lib/cupDraw.mjs;
 // everything here just describes what the audience should be looking at after N ties have been
@@ -70,4 +73,27 @@ export function eligibleForSpin(bowl: BowlState): BowlSlot[] {
   if (bowl.mastersClosed) return bowl.nationalBowl
   if (bowl.nationalClosed) return bowl.mastersBowl
   return [...bowl.mastersBowl, ...bowl.nationalBowl]
+}
+
+/** A drawn team's form on the night: this season's UPR, and its career (all-time) UPR. */
+export interface DrawRating {
+  /** Undefined until the season has `UPR_MIN_WEEKS` weeks in the book (or the team hasn't played). */
+  current: number | undefined
+  /** The same number the Stats page shows as Avg UPR — the mean of every season's UPR, this one included. */
+  allTime: number | undefined
+}
+
+/** ffuId → its ratings, over every season loaded. `year` is the Cup's season (the "current" one). */
+export function drawRatings(seasons: SeasonData[], year: string): Map<string, DrawRating> {
+  const current = new Map<string, number>()
+  for (const season of seasons) {
+    if (season.year !== year) continue
+    for (const [id, upr] of seasonUpr(season)) current.set(id, upr)
+  }
+  const allTime = careerUpr(seasons)
+  const out = new Map<string, DrawRating>()
+  for (const id of new Set([...current.keys(), ...allTime.keys()])) {
+    out.set(id, { current: current.get(id), allTime: allTime.get(id) })
+  }
+  return out
 }

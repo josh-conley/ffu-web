@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { SeasonData } from '@/data'
 import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory, matchupTag, type RoundOutline } from '@/selectors'
+import { matchupStory, matchupTag, type DrawRating, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBracket, type SlotSeeds } from './DrawBracket'
@@ -23,9 +23,10 @@ import { downloadText } from './downloads'
  * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
  * the stage jumps as a matchup moves from on the clock to drawn.
  */
-function CurrentMatchup({ reveal, story, muted }: {
+function CurrentMatchup({ reveal, story, ratings, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
+  ratings: Map<string, DrawRating>
   muted: boolean
 }) {
   const { drawer, drawn, phase, landing } = reveal
@@ -37,6 +38,7 @@ function CurrentMatchup({ reveal, story, muted }: {
         drawer={drawer}
         drawn={landing ? undefined : drawn}
         forced={reveal.forced}
+        ratings={ratings}
         // Always a strip, empty until there is a story: the card must not grow or shrink between draws.
         footer={story && drawn && !landing ? <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} /> : null}
       />
@@ -53,13 +55,17 @@ function CurrentMatchup({ reveal, story, muted }: {
   )
 }
 
-export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 0, onProgress }: {
+const NO_RATINGS = new Map<string, DrawRating>()
+
+export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
   /** The season's rounds, for the bracket's shape. */
   rounds: RoundOutline[]
   seed: string
   /** Completed seasons, for each matchup's head-to-head story. Empty just hides the storyline. */
   seasons: SeasonData[]
+  /** Each team's current and all-time UPR. Empty shows dashes. */
+  ratings?: Map<string, DrawRating>
   onRestart: () => void
   /** Matchups already shown, when resuming a draw after a reload. */
   resumeAt?: number
@@ -123,7 +129,7 @@ export function DrawStage({ field, rounds, seed, seasons, onRestart, resumeAt = 
         <>
           {/* Stacked: the spinner gets the full width (squeezed beside the bracket, names and the
               reel were cut off), and the two-sided bracket is short enough to sit under it. */}
-          <CurrentMatchup reveal={reveal} story={story} muted={muted} />
+          <CurrentMatchup reveal={reveal} story={story} ratings={ratings} muted={muted} />
           <DrawBracket
             rounds={rounds}
             order={order}
