@@ -153,12 +153,9 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [x] **Bracket seeding** (2026-09-30, Josh): Round of 18 a fixed seeded bracket (winner of 1v36 v
       winner of 18v19 …); quarterfinals re-seeded after the drop (1v8, 4v5, 2v7, 3v6); semis and
       final fixed from there, so 1 and 2 can only meet in the final (DECISIONS).
-- [ ] Confirm the bracket seeding with the commissioner against the amendment, and add a line on
-      it to the Format & Rules copy (`CUP_ROUND_RULES` in src/config/cup.ts) once he agrees. Open
-      alternative (Josh, 2026-09-30): re-seed EVERY round (best remaining seed v worst). That is
-      `"reseed": true` on each round in public/data/2026/tournament.json — no engine change — but
-      the draw page's "W 1v36" Round-of-18 labels and tree-order stacking assume a fixed Round of
-      18, so drop the labels if he picks it
+- [x] **Quarterfinal re-seed confirmed** (2026-10-04, Josh): re-seed the eight survivors by draw
+      seed (1v8, 4v5, 2v7, 3v6), semis and final fixed from there. Now in the Format & Rules copy
+      (`CUP_ROUND_RULES.r8`). The re-seed-every-round alternative was not taken.
 - [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
       decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
