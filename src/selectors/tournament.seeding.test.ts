@@ -1,6 +1,6 @@
 import type { Game, SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
-import { bracketPositions, bracketSlots, drawCup } from '@/lib/cupDraw.mjs'
+import { bracketPositions, bracketSlots, drawCup, makeRng } from '@/lib/cupDraw.mjs'
 import { resolveTournament, type ResolvedMatchup } from './tournament'
 
 // The whole Cup bracket, seeded: if every higher seed wins, the Round of 18 is 1v18 … 9v10, the
@@ -70,6 +70,30 @@ describe('the seeded Cup bracket', () => {
     expect(t.rounds.find((r) => r.key === 'r18')!.dropped.map((d) => seedOf.get(d.ffuId))).toEqual([3])
     // Survivors 1,2,4,5,6,7,8,9 → ranked 1–8 → best v worst, in bracket order.
     expect(pairings(t, 'r8')).toEqual([[1, 9], [5, 6], [2, 8], [4, 7]])
+  })
+
+  it('keeps the two best seeds left apart until the final, whatever the upsets', () => {
+    // Random scores every week: any team can win, and any Round-of-18 winner can be the one dropped.
+    const rng = makeRng('upsets')
+    let decided = 0
+    for (let trial = 0; trial < 200; trial++) {
+      const scores = new Map<string, number>()
+      const t = resolveTournament(tournament, seasonsScoring((seed, week) => {
+        const key = `${seed}-${week}`
+        if (!scores.has(key)) scores.set(key, Math.round(rng() * 10000) / 100)
+        return scores.get(key)
+      }))
+      const qf = pairings(t, 'r8')
+      if (qf.length !== 4) continue // a tie left a round undecided
+      decided++
+      const ranked = qf.flat().sort((x, y) => x - y)
+      const half = (seed: number) => (qf.findIndex((m) => m.includes(seed)) < 2 ? 'top' : 'bottom')
+      expect(half(ranked[0]!)).not.toBe(half(ranked[1]!))
+      // And the quarterfinals are best v worst among the eight: 1v8, 4v5, 2v7, 3v6 by rank.
+      const rankOf = (seed: number) => ranked.indexOf(seed) + 1
+      expect(qf.map((m) => m.map(rankOf))).toEqual([[1, 8], [4, 5], [2, 7], [3, 6]])
+    }
+    expect(decided).toBeGreaterThan(190)
   })
 
   it('pairs no round until the one before it is fully decided', () => {

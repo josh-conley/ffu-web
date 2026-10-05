@@ -35,7 +35,7 @@ export const CUP_DISCORD_ROLE = 'FA Cup Winner'
 export const CUP_ROUND_RULES: Record<CupRoundKey, string> = {
   r36: 'All 36 teams compete. Winners advance and are awarded prizing.',
   r18: 'Winners advance and are awarded prizing — except the lowest-scoring winner of the round, who is eliminated alongside the losers.',
-  r8: 'Winners advance and are awarded prizing.',
+  r8: 'The eight teams left are re-seeded by their draw seed, best against worst (1v8, 4v5, 2v7, 3v6), so the two highest seeds remaining can only meet in the final. Winners advance and are awarded prizing.',
   r4: 'Winners advance and are awarded prizing.',
   final: 'The winner is awarded prizing, the blue Discord role, and a diamond in the trophy case.',
 }
