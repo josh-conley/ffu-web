@@ -1,6 +1,7 @@
 import { drawCup } from '@/lib/cupDraw.mjs'
 import type { CupField } from '@/lib/cupDraw.mjs'
-import { bowlAfter, eligibleForSpin, tierIndex } from './cupDrawView'
+import type { Game, SeasonData } from '@/data'
+import { bowlAfter, drawRatings, eligibleForSpin, tierIndex } from './cupDrawView'
 
 const mk = (prefix: string) => Array.from({ length: 12 }, (_, i) => ({ ffuId: `${prefix}-${i + 1}`, name: `${prefix} ${i + 1}` }))
 const field: CupField = { PREMIER: mk('p'), MASTERS: mk('m'), NATIONAL: mk('n') }
@@ -71,5 +72,28 @@ describe('eligibleForSpin', () => {
       if (bowl.mastersClosed) expect(eligible.every((t) => t.tier === 'NATIONAL')).toBe(true)
       if (bowl.nationalClosed) expect(eligible.every((t) => t.tier === 'MASTERS')).toBe(true)
     }
+  })
+})
+
+describe('drawRatings', () => {
+  /** A season where `a` scores `a` and `b` scores `b` every week, for `weeks` weeks. */
+  const season = (year: string, weeks: number, a: number, b: number): SeasonData => {
+    const games: Game[] = Array.from({ length: weeks }, (_, i) => ({
+      week: i + 1,
+      isPlayoff: false,
+      participants: [{ memberId: 'a', score: a }, { memberId: 'b', score: b }],
+    }))
+    return { schemaVersion: 1, tier: 'PREMIER', year, era: 'sleeper', platformLeagueId: 'x', teams: [], games }
+  }
+
+  it("gives this season's UPR as current and the career mean as all-time", () => {
+    // a: 100/game, 3-0 → (600 + 400 + 400) / 10 = 140. Last year 50/game, 0-14 → (300 + 200) / 10 = 50.
+    const r = drawRatings([season('2025', 14, 50, 60), season('2026', 3, 100, 90)], '2026')
+    expect(r.get('a')).toEqual({ current: 140, allTime: 95 })
+  })
+
+  it('leaves current empty before the season has earned a UPR', () => {
+    const r = drawRatings([season('2025', 14, 50, 60), season('2026', 2, 100, 90)], '2026')
+    expect(r.get('a')).toEqual({ current: undefined, allTime: 50 })
   })
 })

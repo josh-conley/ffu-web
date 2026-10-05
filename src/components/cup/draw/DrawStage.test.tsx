@@ -304,3 +304,20 @@ it('schedules no ticks when muted', () => {
     vi.unstubAllGlobals()
   }
 })
+
+it("shows each side's current and all-time UPR on the card", async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  const { a, b } = expected.matchups[0]!
+  const ratings = new Map([
+    [a, { current: 162.48, allTime: 148.31 }],
+    [b, { current: undefined, allTime: 131.04 }],
+  ])
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} ratings={ratings} onRestart={() => {}} />)
+  expect(card().getByText('162.5')).toBeInTheDocument()
+  expect(card().getByText('148.3')).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  expect(card().getByText('131.0')).toBeInTheDocument()
+  expect(card().getByText('—')).toBeInTheDocument()
+})
