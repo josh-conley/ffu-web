@@ -70,21 +70,6 @@ export function standingsThroughPreviousWeek(data: LiveSeasonData, throughWeek =
 }
 
 /**
- * Which live section the home page leads with.
- *
- * Sleeper rolls its week over on Tuesday morning, once Monday Night Football is done. Tuesday still
- * belongs to the week that just ended: people come to see how their game finished, so the matchups
- * stay up, showing that week's finals (see finishedWeekOnShow). Wednesday, with the results digested,
- * leads with the standings they produced. Thursday on, the new week's matchups are either in
- * progress or about to be.
- *
- * Local day deliberately, like seasonHasStarted: it should be Wednesday where the reader is.
- */
-export function homeLiveSection(now: Date = new Date()): 'standings' | 'matchups' {
-  return now.getDay() === 3 ? 'standings' : 'matchups'
-}
-
-/**
  * The finished week the home page's matchups show instead of the current one, or undefined to show
  * the current week. Only on a Tuesday, and only once Sleeper has actually rolled over: the current
  * week has no points on the board yet, so its matchups would be all 0.00 while last week's finals are

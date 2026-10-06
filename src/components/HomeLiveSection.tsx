@@ -4,7 +4,6 @@ import type { LiveSeasonData } from '@/data'
 import { useAfterIdle } from '@/hooks/useAfterIdle'
 import { useLiveProjections } from '@/hooks/useLiveProjections'
 import { CurrentWeekMatchups, type OpenGame } from './CurrentWeekMatchups'
-import { CurrentWeekStandings } from './CurrentWeekStandings'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 import { TabPanel, Tabs, type TabDef } from './Tabs'
 
@@ -51,9 +50,9 @@ function LeagueGrid({ children }: { children: ReactNode }) {
 }
 
 /**
- * The one live block on the home page: this week's matchups (on Tuesday, last week's finals), or —
- * on Wednesdays, once a week has finished — the standings they produced. One or the other, never
- * both, so the page leads with whichever is actually worth reading that day (see homeLiveSection).
+ * The one live block on the home page: this week's matchups, every day of the week. Tuesday adds a
+ * tab for the week just finished, and opens on it (see LiveBlock). Standings used to replace the
+ * matchups on Wednesdays; Josh dropped that on 2026-10-05, since the new week's games are the news.
  *
  * Projections wait until the scores have painted (useAfterIdle): their feed is ~237KB gzipped, and
  * the scores are what the reader came for.
@@ -61,7 +60,6 @@ function LeagueGrid({ children }: { children: ReactNode }) {
 export function HomeLiveSection({
   tiers,
   week,
-  showStandings,
   final = false,
   asOf,
   onOpen,
@@ -69,7 +67,6 @@ export function HomeLiveSection({
 }: {
   tiers: LiveTier[]
   week: number | undefined
-  showStandings: boolean
   /** The matchups are a finished week's (Tuesday): headed as final, and nothing left to project. */
   final?: boolean
   /** When the scores were last read; each new read refreshes the projections beside them. */
@@ -77,14 +74,14 @@ export function HomeLiveSection({
   onOpen: (open: OpenGame) => void
   weekTabs?: WeekTabs
 }) {
-  const projecting = !showStandings && !final
+  const projecting = !final
   const painted = useAfterIdle(projecting)
   const projections = useLiveProjections(
     tiers.map((t) => t.data),
     projecting && painted,
     asOf,
   )
-  const heading = showStandings ? `Standings${week ? ` — Through Week ${week - 1}` : ''}` : week ? `Week ${week}${final ? ' · Final' : ''}` : 'This Week'
+  const heading = week ? `Week ${week}${final ? ' · Final' : ''}` : 'This Week'
   return (
     <section className="space-y-3">
       <h2 className={HEADING}>{heading}</h2>
@@ -95,11 +92,7 @@ export function HomeLiveSection({
           {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}
           {tiers.map(({ tier, data }) => (
             <div key={tier} id={leagueAnchor(tier)} className="min-w-0 scroll-mt-24">
-              {showStandings ? (
-                <CurrentWeekStandings tier={tier} data={data} />
-              ) : (
-                <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} final={final} />
-              )}
+              <CurrentWeekMatchups tier={tier} data={data} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} final={final} />
             </div>
           ))}
         </LeagueGrid>

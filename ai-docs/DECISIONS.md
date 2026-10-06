@@ -5,6 +5,17 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-10-05 — Wednesday shows the current week's matchups; the home standings are gone
+
+**Decision (Josh).** Supersedes the Wednesday half of the 2026-09-29 entry below. Wednesday now
+shows the new week's matchups like every other day; only Tuesday differs (its "Week N · Final" tab).
+`homeLiveSection` and `CurrentWeekStandings` were deleted, and the live week polls every day.
+
+**Why.** By Wednesday the new week's games are the news; the full standings are a click away.
+
+**Left behind.** `DataTable`'s `fit` mode now has no caller (it existed for those standings). Kept
+for now; remove it if nothing picks it up.
+
 ## 2026-09-28 — Fonts: Inter + IBM Plex Mono, self-hosted
 
 The Barlow / JetBrains Mono `@import` had silently never loaded, so the site had always rendered in

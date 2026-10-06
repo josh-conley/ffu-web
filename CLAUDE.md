@@ -153,9 +153,8 @@ push after every green change** without being asked. Where it goes depends on wh
   nav is motif-free. Keep semantic colors (green winner/Active, the QB/RB/WR position colors).
   Shared button/select styles live in `src/components/controls.ts`.
 - **Tables stay tables** on a phone: horizontal scroll (a pinned first column is fine), never a
-  stacked-card layout. Two deliberate exceptions: the home page has no horizontal scroll anywhere
-  (`DataTable`'s `fit` mode), and its per-league standings put record and points under the team
-  name. Don't generalise either to the wide pages.
+  stacked-card layout. One deliberate exception: the home page has no horizontal scroll anywhere.
+  Don't generalise it to the wide pages.
 
 **Working style:** don't over-verify with browser screenshots — they're context-expensive. The user runs
 the live site and will eyeball/flag issues; only screenshot when they're away or it's genuinely ambiguous,
