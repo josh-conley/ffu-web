@@ -35,13 +35,13 @@ function tierOf(url: string): Tier | undefined {
 }
 
 beforeAll(() => {
-  // A Wednesday, so the live block leads with the standings rather than the matchups (homeLiveSection).
+  // A Wednesday: the live block shows the week now being played, as it does every day but Tuesday.
   vi.setSystemTime(new Date('2026-09-23T15:00:00Z'))
   vi.stubGlobal('fetch', (url: string) => {
     if (url.includes('/state/nfl')) return ok({ week: 3, season_type: 'regular', season: year, season_start_date: '2026-09-09' })
     const tier = tierOf(url)
     if (tier && url.includes('/rosters')) return ok(rosters(tier))
-    // Week 1 and 2 are complete (the standings read those); week 3 is the one being played.
+    // Week 1 and 2 are complete; week 3 is the one being played.
     if (tier && url.includes('/matchups/')) return ok(matchups(url.endsWith('/1') ? 120 : 90))
     if (url.includes('/drafts')) return ok([])
     return FILES[url] === undefined ? notFound() : ok(FILES[url])
@@ -52,15 +52,14 @@ afterAll(() => {
   vi.unstubAllGlobals()
 })
 
-it('leads with the standings the completed weeks produced', async () => {
+it("shows the current week's matchups on a Wednesday, not the standings", async () => {
   render(
     <MemoryRouter>
       <Overview />
     </MemoryRouter>,
   )
-  await waitFor(() => expect(screen.getByText(/^Standings — Through Week 2$/)).toBeInTheDocument())
-  // One row per team, with the record and both points totals under the name (1 win, 1 loss each).
-  expect(screen.getAllByText('1-1 · 210.00 PF · 200.00 PA').length).toBe(3)
+  await waitFor(() => expect(screen.getByText(/^Week 3$/)).toBeInTheDocument())
+  expect(screen.queryByText(/^Standings/)).not.toBeInTheDocument()
 })
 
 it('puts the live week above the Cup and Around the Union, with a jump link to each league', async () => {
@@ -69,7 +68,7 @@ it('puts the live week above the Cup and Around the Union, with a jump link to e
       <Overview />
     </MemoryRouter>,
   )
-  const heading = await screen.findByText(/^Standings — Through Week 2$/)
+  const heading = await screen.findByText(/^Week 3$/)
   const cup = screen.getAllByRole('link').find((a) => a.getAttribute('href')?.startsWith('/cup'))
   expect(cup).toBeDefined()
   expect(heading.compareDocumentPosition(cup!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
