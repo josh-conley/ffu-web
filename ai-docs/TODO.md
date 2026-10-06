@@ -232,6 +232,181 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       run: (a) only ONE of the two schedules fired that day (the 14:00 UTC one at 14:20; the 10:00
       run never appeared, as GitHub can drop scheduled runs under load), and (b) the claude.ai
       routine above still needs deleting once a Tuesday goes green.
+- [ ] **Weekly refresh publishes itself via `DATA_REFRESH_TOKEN` (workflow changed 2026-10-05).**
+      From 2026-09-29 the run went red after opening its PR: the workflow token's PR got no `verify`
+      run, so each Tuesday was merged by hand. Now `refresh-season.yml` checks out, pushes, opens the
+      PR, waits for `verify` and merges with a fine-grained token (this repo only; Contents + Pull
+      requests read/write), and the merge starts `deploy.yml` on its own. The dispatched-`verify` step,
+      `ci.yml`'s `workflow_dispatch` and the manual deploy step are gone. **Left to do (Josh):**
+      create the token and add it as the repo secret `DATA_REFRESH_TOKEN` (the run fails with a
+      pointer here until then); test with Actions → "Refresh live season" → Run workflow; put the
+      token's expiry date here so it gets renewed; delete the claude.ai routine once a Tuesday goes green.
+- [ ] **Next preseason:** a proper announcement section (likely on Overview, near the top) for the
+      upcoming/live draft. Content/timing TBD. For 2026 the Upcoming Drafts + 2026 Leagues sections
+      below did the job
+- [x] Draft date + time per tier, live from Sleeper (2026-08-07): `useDraftSchedules` →
+      `fetchDraftSchedules` reads `/league/{id}/drafts` and `UpcomingDrafts` renders each tier's
+      `start_time` (viewer's timezone, zone named) or TBD when the commissioner hasn't set one.
+      Deliberately NOT copied into config — Masters/National fill in on their own when set.
+      Dates are read live, so they follow the commissioner: as of 2026-08-20 all three are set —
+      Masters Sun Aug 30 9:15 PM ET, National Wed Sep 2 8:00 PM ET, Premier Mon Sep 7 2:00 PM ET
+      (Premier moved from the Aug 22 date noted here on 2026-08-07).
+- [x] "2026 Leagues" section under Upcoming Drafts: who's signed up per tier, tagged Promoted /
+      Relegated / Returning / New vs the last completed season (2026-07-28). Live from Sleeper via
+      `useLeagueRosters` + the `upcomingRosters` selector; disappears on its own once 2026 moves out
+      of `LIVE_LEAGUE_IDS` into `SEASONS`.
+
+## Members directory reads the current season's rosters
+
+- [x] **Done 2026-09-09.** The directory grouped members by their finish in the last COMPLETED
+      season, so all preseason and all September it showed everyone in the tier they had just left.
+      Measured against live Sleeper that day it was wrong for 20 members: 12 in the wrong tier
+      (Raging Rhinos, Head Cow and the Tooth Tuggers still in Masters after promotion; CamDelphia,
+      El Guapo Puto and Pottsville still in Premier after relegation), 4 new members missing
+      entirely, and 4 departed members still listed as active.
+      Who is in which league is a fact about SIGNUPS, not about games — Sleeper knows it from the
+      day the commissioner creates the leagues, months before week 1. `membersByLeague(seasons,
+      currentRosters)` now takes the live rosters (`useLeagueRosters`, the same hook the home page
+      already used) and groups off them, falling back to last-season finishes only when Sleeper
+      gives us nothing. Verified against live 2026: 12/12/12, promotions and relegations correct,
+      the four newcomers present, the four departures moved to past members.
+- [x] A first-time member now has a directory entry and an openable detail page (`membersById`
+      builds the lookup from the groups, so anything listed can be opened; `MemberDetail` shows a
+      short "playing their first FFU season" panel instead of a wall of zeroes and empty tables).
+      This closes the old "Joining 2026" item — they appear in their actual tier rather than a
+      separate group, which is what the commissioner's rosters actually say.
+- [ ] Sleeper's `league.status` is still not read. Not needed for the above (rosters alone are
+      enough), but it would let membership views distinguish "signed up" from "drafted" if that
+      ever matters. Deferred.
+- [ ] `currentLeague(c)` (used by `TeamProfileModal`) still answers from the last completed season.
+      Same staleness, smaller blast radius — worth pointing at the rosters too when convenient.
+
+## FFU Cup (inaugural, 2026)
+
+Page is `/cup` (was `/tournament`, which redirects). Rules live in `src/config/cup.ts`; the season's
+weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS.md` (2026-08-20).
+
+- [x] Amendment applied: name, 5-round schedule (wks 6/7/8/10/12), round rules, draw + seeding
+      procedure, winner's spoils (2026-08-20). Page opens on the Bracket tab (an outline of empty
+      slots until the draw) with everything else under Format & Rules; `?view=` keeps tabs linkable
+- [x] **Cup prize amounts** (2026-08-20): $10/$20/$40/$60/$100 per round won, in
+      `PRIZE_SCHEDULES['2026'].cup`. NB that entry's `tiers` is still empty — the regular
+      season's 2026 prizes.txt is a separate outstanding item above
+- [ ] **Hold the draw.** Two ways, same rules — both import `src/lib/cupDraw.mjs`, so they cannot
+      diverge:
+      - **Live on stream** at `/cup/draw` (unlisted operator view, no site header). Type in the
+        published seed on camera, then space-bar through the 18 matchups. The seed and position
+        live in the URL (`?seed=…&at=N`), so a reload resumes where it was. When it ends, the page
+        shows all 18 (copy as image for the FFUN), the sheet/CSV downloads, and a **check code**.
+        Afterwards run the CLI to write the official file: its sheet prints the same check code,
+        and it must match the one the stream showed.
+      - [ ] **Dress rehearsal** before the night: a full 18-matchup run on the preview with a
+        throwaway seed, then `npm run draw-cup -- --seed "<same>" --dry-run`, and compare check
+        codes. Also check the streaming machine does NOT have reduced motion on (it skips the spin).
+      - **Headless**: `npm run draw-cup -- --seed <published seed>` writes the 36 participants
+        (with seeds) + the opening ties into `public/data/2026/tournament.json`, and the Cup page
+        flips from outline to live bracket on its own. Rehearse first with `--dry-run`.
+      - Publish the seed BEFORE drawing — a number nobody controls and nobody knows yet (e.g. the
+        combined final score of an announced NFL game). That is what makes the draw checkable:
+        anyone can re-run the same command and diff the result.
+      - Wait until Premier's and Masters' draft orders are FINAL on Sleeper. The script reads them
+        live, and a pre-draft order can still be changed by the commissioner. (National's order is
+        irrelevant — National teams never draw, they are only drawn.)
+      - Verified 2026-08-20 against live Sleeper: all 36 owners resolve to registry members and both
+        drawing tiers already have an order set, so the pipeline runs end to end today
+- [x] **Elimination counts fixed** (2026-09-09). The Schedule table read 9 eliminated in the Round
+      of 18 and 5 in the quarterfinals; the commissioner is right that it is **10 and 4**. The
+      bracket engine was always correct — only the attribution was off. `dropLowestWinner` rides on
+      the round that INHERITS the shrunken field (r8), and both `outlineTournament` and
+      `resolveTournament` credited the culled team to that round. But the team wins its game in the
+      Round of 18 and is eliminated there, which is what `CUP_ROUND_RULES.r18` already said. The
+      drop now attaches to the round the team actually played, which also fixes a second bug: the
+      resolved bracket had been scoring the dropped team in the quarterfinal week, a game it never
+      played. Bracket note copy updated to match.
+- [ ] Confirm the tournament weeks with the commissioner once Draft Day is finalized; they are
+      variable by design, so edit the `rounds[].week` values if they move
+- [x] **Bracket seeding** (2026-09-30, Josh): Round of 18 a fixed seeded bracket (winner of 1v36 v
+      winner of 18v19 …); quarterfinals re-seeded after the drop (1v8, 4v5, 2v7, 3v6); semis and
+      final fixed from there, so 1 and 2 can only meet in the final (DECISIONS).
+- [x] **Quarterfinal re-seed confirmed** (2026-10-04, Josh): re-seed the eight survivors by draw
+      seed (1v8, 4v5, 2v7, 3v6), semis and final fixed from there. Now in the Format & Rules copy
+      (`CUP_ROUND_RULES.r8`). The re-seed-every-round alternative was not taken.
+- [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
+      decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
+- [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
+      for "FFU Cup Winner"
+
+## 2026 in-season data — static drafts, and how live the rest of the site gets
+
+Both from the commissioner's list (2026-09-09). They are one question wearing two hats: how much of
+2026 comes from static files vs. live Sleeper calls. **Needs a decision before building.**
+
+- [x] **Done 2026-09-09.** `npm run backfill-drafts` (`scripts/backfill-drafts.mjs`) wrote all
+      three completed 2026 drafts — 180 picks each — into `public/data/2026/{tier}.draft.json`.
+      `/drafts` no longer polls Sleeper for them: `useDraftSource` tries the static file first and
+      falls back to live only when there isn't one, so draft night still works with no file present
+      and the finished board takes over by itself the moment one is written. A tier whose draft
+      isn't `complete` on Sleeper is skipped rather than written half-finished.
+      Pure mapping in `scripts/lib/sleeperDraft.mjs` (unit-tested), the twin of the client-side
+      mapping in `src/data/liveDrafts.ts`; `--verify <year>` rebuilds a completed year from Sleeper
+      and diffs it, which keeps the two from drifting. 2025 reproduces exactly (540 picks).
+- [ ] **Draft `type` is `unknown` for 2021–2025.** Found by the verify harness: the legacy migration
+      never captured it for Sleeper-era drafts, though Sleeper reports `snake` and always has (the
+      ESPN-era 2018–2020 files do say `snake`). Purely cosmetic today — nothing reads `type` — but
+      it is wrong data, and `backfill-drafts` could set it from Sleeper in one pass over the 15
+      files. Not done unasked, since it edits already-backfilled seasons.
+- [x] **Decided + built (2026-09-09): option 2, the weekly static refresh.**
+      `npm run refresh-season` (`scripts/refresh-live-season.mjs`) writes the season being played
+      into `public/data/{year}/{tier}.json` and updates `seasons.json`, so 2026 becomes an ordinary
+      season and every page picks it up with no code change. **Completed weeks only** — the week in
+      progress stays with the home page's This Week section, which never writes anything down. Pure
+      mapping lives in `scripts/lib/sleeperSeason.mjs` (unit-tested); config/Sleeper helpers shared
+      with `draw-cup.mjs` in `scripts/lib/ffuConfig.mjs`. Full rationale in `ai-docs/DECISIONS.md`.
+      Verified by rebuilding 2025/2024/2022 from Sleeper and diffing: 252 regular-season games each,
+      exact.
+- [x] **Shell written and 2026 registered (2026-09-09).** The season file no longer waits for a
+      completed week: league metadata, teams and divisions (Diamond/Platinum/Gold) are facts from
+      the day the leagues were created, so `public/data/2026/{tier}.json` now exists with
+      `games: []` and fills in weekly. 2026 is in `src/config/seasons.ts`. See
+      `ai-docs/DECISIONS.md` for the `hasBeenPlayed` invariant this required and the five guards
+      that hang off it.
+- [x] **First real games landed — by hand, 2026-09-17.** Both 09-15 runs of the claude.ai routine
+      fired and reported success, but its cloud environment's egress allowlist blocks
+      `api.sleeper.app` (`403 Host not in allowlist`), so nothing was fetched. Even with network,
+      week 1 would have stopped at the gates: three tests pinned counts over the live data (Stats
+      row count, Matchups "Upcoming" count, Minutemen tenure) and one exposed a real bug —
+      `upcomingRosters` compared 2026 against itself once it had games, wiping every
+      Promoted/Relegated/New tag on the home page. All fixed; those tests now derive from the data.
+- [x] **Weekly refresh is a GitHub Action (2026-09-17)** — `.github/workflows/refresh-season.yml`,
+      replacing the claude.ai routine (`trig_01Uj2kArjPCPNQ43h9py8hBP`, now **disabled**; delete it
+      once the Action has had a good Tuesday). Why: the job is fixed steps, a failure should be a
+      red ✗ + email rather than a "successful" AI session, runners reach Sleeper with no allowlist,
+      and the schedule + steps live in the repo instead of a prompt that went stale silently.
+      Tuesdays 10:00 + 14:00 UTC (6am/10am ET; an hour earlier after 1 Nov), **September–December
+      only**: the second run is a safety net for Sleeper rolling its week late and no-ops if the
+      first committed; January is excluded because the script defaults to the calendar year and
+      refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
+      Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
+      → `scripts/check-season-refresh.mjs` (the judgment the
+      routine's prompt used to carry, now code: fails on a changed/removed completed score or any
+      file outside `public/data/<year>/`, warns in the job summary if the schedule changed; pure
+      diff in `scripts/lib/seasonDiff.mjs`, unit-tested) → typecheck/lint/test → commit as
+      github-actions[bot] + push → `gh workflow run deploy.yml`. That last step is required: a push
+      made with `GITHUB_TOKEN` does not trigger other workflows, so `deploy.yml`'s `on: push` never
+      fires for the bot's commit.
+- [x] **Lineups land weekly too (2026-09-17).** The refresh wrote games but never lineups, so every
+      2026 game opened the Matchups modal on "Lineups aren't available for this game".
+      `backfill-lineups.mjs` narrowed to one year used to be a *trial* that skipped players.json and
+      the manifest; it now merges the players it saw into players.json (replacing it from a subset
+      would drop everyone the other seasons resolve) and sets `hasLineups` for what it wrote, so
+      completed seasons are untouched and reruns are byte-identical. Its own check — starter sums
+      vs the stored game score — passed for all three tiers in week 1.
+- [ ] **First scheduled run went red (2026-09-22)** on `npm test`, not on data: two tests assumed
+      the live season was one week old. Fixed the same day in `648c047`, and week 2 was committed by
+      hand. Two things to watch on **2026-09-29**, which is the Action's first real chance at a clean
+      run: (a) only ONE of the two schedules fired that day (the 14:00 UTC one at 14:20; the 10:00
+      run never appeared, as GitHub can drop scheduled runs under load), and (b) the claude.ai
+      routine above still needs deleting once a Tuesday goes green.
 - [ ] **Weekly refresh can't publish on its own yet (since 2026-09-29).** Refresh, check and all
       gates pass; publishing to `main` fails. The `main` ruleset (created 2026-09-25) requires
       `verify` and lets only admins bypass it. The workflow token triggers no CI, and a `verify`
