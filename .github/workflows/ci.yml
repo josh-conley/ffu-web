@@ -4,9 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Started by refresh-season.yml on its bot/data-refresh commit: a workflow-token push fires no
-  # push event, and main's ruleset needs `verify` green on a commit before main can move to it.
-  workflow_dispatch:
 
 # Charter §10: nothing merges red — lint + typecheck + tests + build all gate.
 jobs:
