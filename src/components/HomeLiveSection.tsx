@@ -81,7 +81,8 @@ export function HomeLiveSection({
     projecting && painted,
     asOf,
   )
-  const heading = week ? `Week ${week}${final ? ' · Final' : ''}` : 'This Week'
+  // On Tuesday the tabs already name both weeks, so the heading just says what the section is.
+  const heading = weekTabs ? 'Matchups' : week ? `Week ${week}${final ? ' · Final' : ''}` : 'This Week'
   return (
     <section className="space-y-3">
       <h2 className={HEADING}>{heading}</h2>
