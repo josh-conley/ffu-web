@@ -110,10 +110,13 @@ push after every green change** without being asked. Where it goes depends on wh
 `pkill vite`; an agent server uses `:5199`.
 
 **Who pushes where** (Josh is the repo owner, GitHub `josh-conley`; the commissioner also works here):
-- **Anything visible on the site** (pages, components, styling, selectors, live-data features): **one
-  change, one branch, one PR**, so each change ships on its own. A "change" is one REQUEST: several
-  items asked for in one message go on ONE branch and ONE PR (separate commits), not a branch each.
-  Split only when asked.
+- **Josh's sessions: straight to `main` by default** (since 2026-10-06), visible changes included:
+  gates green, commit, push. `deploy.yml` runs the gates again before publishing, so a red commit
+  never goes live. A cloud session on its own branch fast-forwards `main` and pushes it.
+- **Except big changes: preview branch + PR.** A major overhaul or a large edit to something
+  existing (a page redesign, a rework of a core selector or shared component, a change across many
+  files) still gets a preview, as does anything Josh asks to see first. Not sure whether it counts?
+  Ask before pushing. One request is one branch, even with several items in it (separate commits).
   1. Branch `preview/<name>` from the latest `origin/main`: a short kebab-case name, 20 characters
      or fewer (e.g. `preview/playoff-odds`) so Cloudflare doesn't cut it short in the URL.
   2. Commit (gates green), push, and open a PR into `main`. `preview-deploy.yml` deploys it to
@@ -126,10 +129,7 @@ push after every green change** without being asked. Where it goes depends on wh
      merging, CI must be green and the branch up to date (if `main` moved and conflicts, merge
      `main` in, never rebase or force-push, and let the preview redeploy); then merge with a
      **merge commit** and delete the branch.
-- **Straight to `main`**, no preview: docs (`CLAUDE.md`, `ai-docs/`), workflows and tooling,
-  test-only changes, urgent fixes while the site is broken, or when he says "just ship it". **Josh
-  only**: the commissioner's changes always go through a `preview/` branch and PR. A cloud session
-  on its own branch fast-forwards `main` and pushes it. `deploy.yml` runs the gates before publishing, so a red commit never goes live.
+- **The commissioner's changes always go through a `preview/` branch and PR**, whatever their size.
 - **`auto/requests`** is the Discord bot's rolling branch (served at `preview.ffunion.com`, kept in
   sync with `main` by `sync-requests.yml`). Sessions don't put their own work there.
 - **Whose session is it?** Cloud sessions set `git config user.name`/`user.email` from the GitHub
