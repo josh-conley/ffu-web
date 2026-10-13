@@ -3,9 +3,9 @@ import { CUP_ACCENT, CUP_FIELD_SIZE, CUP_INAUGURAL_YEAR, CUP_NAME, CUP_YEAR } fr
 import { useCup } from '@/hooks/useCup'
 import { useUrlState } from '@/hooks/useUrlState'
 import { Tabs, TabPanel, type TabDef } from '@/components/Tabs'
-import { TournamentBoxScore } from '@/components/TournamentBoxScore'
 import type { OpenMatchup } from '@/components/TournamentBracket'
 import { CupBracketPanel } from '@/components/cup/CupBracketPanel'
+import { CupMatchupModal } from '@/components/cup/CupMatchupModal'
 import { CupFormatPanel } from '@/components/cup/CupFormatPanel'
 import { CupFacts } from '@/components/cup/parts'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -68,11 +68,8 @@ export function Cup() {
       )}
 
       {open && openMatchup && (
-        <TournamentBoxScore
-          year={CUP_YEAR}
-          week={open.round.week}
-          label={open.round.label}
-          matchup={openMatchup}
+        <CupMatchupModal
+          game={{ year: CUP_YEAR, week: open.round.week, label: open.round.label, a: openMatchup.a, b: openMatchup.b }}
           onClose={() => setOpen(null)}
         />
       )}

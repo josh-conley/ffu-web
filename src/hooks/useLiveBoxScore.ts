@@ -22,7 +22,7 @@ function allPlayerIds(lineups: LiveLineups): string[] {
 }
 
 interface Read {
-  game: { leagueId: string; year: string; week: number; memberIds: [string, string] }
+  game: { leagueIds: readonly [string, string]; year: string; week: number; memberIds: [string, string] }
   poll: boolean
   manual: boolean
 }
@@ -32,10 +32,10 @@ interface Read {
  * CDN only while NFL games are on. A Refresh always reads past every cache, or it would get back
  * the answer already on screen.
  */
-async function readLineups({ game: { leagueId, year, week, memberIds }, poll, manual }: Read) {
+async function readLineups({ game: { leagueIds, year, week, memberIds }, poll, manual }: Read) {
   const clocks: NflGameClock[] | undefined = poll ? await readGameClocks(year, week) : undefined
   const fresh = poll ? readFresh(clocks, manual) : manual
-  return { ...(await fetchLiveLineups(leagueId, week, memberIds, { fresh })), asOf: Date.now(), clocks }
+  return { ...(await fetchLiveLineups(leagueIds, week, memberIds, { fresh })), asOf: Date.now(), clocks }
 }
 
 /**
@@ -54,7 +54,7 @@ export function useLiveBoxScore(
 ): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
   const players = usePlayers(true)
   const lineups = usePoll(
-    `live-lineups:${game.leagueId}:${game.week}:${game.memberIds.join(',')}`,
+    `live-lineups:${game.leagueIds.join(',')}:${game.week}:${game.memberIds.join(',')}`,
     ({ manual }) => readLineups({ game, poll, manual }),
     true,
     liveScoreInterval,

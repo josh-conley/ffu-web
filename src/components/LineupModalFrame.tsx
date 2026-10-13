@@ -31,7 +31,7 @@ export function LineupModalFrame({
   onClose,
   children,
 }: {
-  title: string
+  title: ReactNode
   memberIds: readonly string[]
   /** A control for the title bar, beside the close button. */
   action?: ReactNode

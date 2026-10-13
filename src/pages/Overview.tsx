@@ -138,7 +138,7 @@ export function Overview() {
       {!historyFailed && <Champions seasons={allSeasons} loading={loading} />}
       {open && (
         <LiveLineupModal
-          leagueId={open.leagueId}
+          leagueIds={[open.leagueId, open.leagueId]}
           year={open.year}
           week={open.game.week}
           memberIds={open.game.participants.map((p) => p.memberId) as [string, string]}

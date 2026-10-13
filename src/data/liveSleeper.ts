@@ -215,12 +215,20 @@ export interface LiveLineups extends Omit<LiveWeekLineups, 'teams'> {
   teams: [TeamLineup, TeamLineup]
 }
 
-/** Starters + bench for one game (the two named members), for the live box-score modal. */
-export async function fetchLiveLineups(leagueId: string, week: number, memberIds: [string, string], options: ReadOptions = {}): Promise<LiveLineups> {
-  const { teams, ...rest } = await fetchLiveWeekLineups(leagueId, week, options)
+/**
+ * Starters + bench for one game (the two named members), for the live box-score modal. Each team is
+ * read from its own league (`leagueIds`, in `memberIds` order): the same league twice for a league
+ * game, two different ones for a Cup game. A league named twice is read once. The slots and scoring
+ * come from the first team's league; every FFU league uses the same ones.
+ */
+export async function fetchLiveLineups(leagueIds: readonly [string, string], week: number, memberIds: [string, string], options: ReadOptions = {}): Promise<LiveLineups> {
+  const [l0, l1] = leagueIds
+  const first = fetchLiveWeekLineups(l0, week, options)
+  const [a, b] = await Promise.all([first, l1 === l0 ? first : fetchLiveWeekLineups(l1, week, options)])
   const [m0, m1] = memberIds
-  const lineupOf = (memberId: string): TeamLineup => teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [], reserve: [] }
-  return { ...rest, teams: [lineupOf(m0), lineupOf(m1)] }
+  const lineupOf = (memberId: string, { teams }: LiveWeekLineups): TeamLineup =>
+    teams.find((t) => t.memberId === memberId) ?? { memberId, starters: [], bench: [], reserve: [] }
+  return { slots: a.slots, scoring: a.scoring, teams: [lineupOf(m0, a), lineupOf(m1, b)] }
 }
 
 interface RawSleeperPlayer {

@@ -7,12 +7,15 @@ import { useEffect } from 'react'
  * (after clicking CSV, the next press downloaded the whole answer sheet), and a held key
  * auto-repeated through Draw → Reveal → Next. So: a focused button is blurred and the press still
  * advances the draw, and repeats are ignored. Enter on a button keeps its normal meaning, so the
- * page stays usable from the keyboard; only the text input is left alone entirely.
+ * page stays usable from the keyboard; only the text input, and an open matchup modal, are left
+ * alone entirely.
  */
 export function useSpaceToAdvance(advance: () => void): void {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.code !== 'Space' && e.code !== 'Enter') return
+      // A matchup opened from the bracket: its keys are its own (space scrolls it, Enter presses).
+      if (document.querySelector('dialog[open]')) return
       const el = document.activeElement
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return
       if (el instanceof HTMLButtonElement) {

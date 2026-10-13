@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { LAND_MS, SPIN_MS } from '@/hooks/useCupDrawReveal'
 import { outlineTournament } from '@/selectors'
+import { MemoryRouter } from 'react-router-dom'
 import { DrawStage } from './DrawStage'
 
 // The ways the live draw could go wrong on camera for the OPERATOR, as opposed to the draw itself
@@ -146,4 +147,27 @@ it('keeps the storyline\'s space on the card whether or not there is a story yet
   expect(strip()).not.toBeNull()
   await user.click(screen.getByRole('button', { name: /next matchup/i }))
   expect(strip()).not.toBeNull()
+})
+
+it('opens a drawn matchup from the bracket, and leaves the draw alone while it is open', async () => {
+  stubReducedMotion(true)
+  // Nothing to serve: the modal's Sleeper read fails and it says so, which is all this needs.
+  vi.stubGlobal('fetch', () => Promise.resolve({ ok: false, status: 404, json: async () => ({}) } as Response))
+  const progress = vi.fn()
+  const user = userEvent.setup()
+  render(
+    <MemoryRouter>
+      <DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={2} onProgress={progress} />
+    </MemoryRouter>,
+  )
+
+  // Drawn matchups open; the one on the clock does not.
+  const first = expected.matchups[0]!
+  expect(screen.getAllByRole('button', { name: /open the matchup/i })).toHaveLength(2)
+  await user.click(screen.getByRole('button', { name: `${nameOf(first.a)} v ${nameOf(first.b)}: open the matchup` }))
+  const dialog = await screen.findByRole('dialog', { name: /game lineups/i })
+  expect(within(dialog).getByText(/Round of 36 · Week 6/)).toBeInTheDocument()
+
+  fireEvent.keyDown(window, { code: 'Space' })
+  expect(progress).toHaveBeenLastCalledWith(2)
 })

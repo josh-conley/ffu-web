@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { FaUpRightFromSquare } from 'react-icons/fa6'
 import { LiveBoxScoreBody } from './LiveBoxScoreBody'
 import type { LiveGameRef } from './liveGame'
@@ -18,10 +19,13 @@ import { usePopOut } from './popOut'
  */
 export function LiveLineupModal({
   scoreOf,
+  title,
   onClose,
   ...game
 }: LiveGameRef & {
   scoreOf?: (memberId: string) => number | undefined
+  /** The title bar's text; "Week N · Live" by default. */
+  title?: ReactNode
   onClose: () => void
 }) {
   const popOut = usePopOut()
@@ -38,7 +42,7 @@ export function LiveLineupModal({
     </button>
   )
   return (
-    <LineupModalFrame title={`Week ${game.week} · Live`} memberIds={game.memberIds} action={action || undefined} onClose={onClose}>
+    <LineupModalFrame title={title ?? `Week ${game.week} · Live`} memberIds={game.memberIds} action={action || undefined} onClose={onClose}>
       <LiveBoxScoreBody game={game} scoreOf={scoreOf} />
     </LineupModalFrame>
   )

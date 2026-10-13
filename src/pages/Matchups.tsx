@@ -180,7 +180,7 @@ function MatchupsContent({ season, year, member, liveWeek }: { season: SeasonDat
       {open && <LineupModal tier={season.tier} year={year} game={open} onClose={() => setOpen(null)} />}
       {openFixture && liveLeagueId && (
         <LiveLineupModal
-          leagueId={liveLeagueId}
+          leagueIds={[liveLeagueId, liveLeagueId]}
           year={year}
           week={openFixture.fixture.week}
           memberIds={openFixture.fixture.memberIds as [string, string]}
