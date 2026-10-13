@@ -42,3 +42,17 @@ export const CUP_ROUND_RULES: Record<CupRoundKey, string> = {
 
 /** Narrows a round key coming from per-season data to one the rules know about. */
 export const isCupRoundKey = (key: string): key is CupRoundKey => key in CUP_ROUND_RULES
+
+/**
+ * Pick'em points for each correct pick, by round: doubling, so every round is worth the same in
+ * total (18×1, 9×2, 4×4, 2×8, 1×16) and the champion pick alone matches a whole Round of 36. Josh's
+ * call (2026-10-13). The drop pick (which Round of 18 winner is culled) earns nothing on its own —
+ * it only shapes the member's quarterfinals.
+ */
+export const CUP_PICKEM_POINTS: Record<CupRoundKey, number> = { r36: 1, r18: 2, r8: 4, r4: 8, final: 16 }
+
+/**
+ * Where the pick'em Worker (workers/pickem) answers. Empty = no pick'em API, so the tab never
+ * shows. Set once the Worker has its first deploy (its workers.dev URL is in that run's summary).
+ */
+export const CUP_PICKEM_API = ''

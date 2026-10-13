@@ -1,4 +1,4 @@
-import { bracketPositions } from '@/lib/cupDraw.mjs'
+import { pairAdjacent, pairReseeded } from '@/lib/cupPairing'
 import type { Tier } from '@/config/types'
 import type { SeasonData, Tournament, TournamentMatchup } from '@/data'
 import { scoreFor } from './games'
@@ -63,39 +63,6 @@ export function weekScore(seasonsByTier: SeasonsByTier, tier: Tier, ffuId: strin
     if (score !== undefined) return score
   }
   return undefined
-}
-
-/**
- * Default pairing for an unauthored round: bracket-tree adjacency (winner i vs winner i+1). Right
- * for the Round of 18, because the opening round is stored in seeded bracket order (1v36 beside
- * 18v19 — see bracketSlots), and for the rounds after a re-seed, which is placed in bracket order.
- */
-function pairAdjacent(ffuIds: string[]): TournamentMatchup[] {
-  const pairs: TournamentMatchup[] = []
-  for (let i = 0; i + 1 < ffuIds.length; i += 2) {
-    const a = ffuIds[i]
-    const b = ffuIds[i + 1]
-    if (a !== undefined && b !== undefined) pairs.push({ a, b })
-  }
-  return pairs
-}
-
-/**
- * Pairing for a re-seeded round: entrants ranked by draw seed, best v worst, in bracket order. A
- * field that isn't a power of two falls back to the plain fold (1vN, 2vN−1, …); a team with no
- * seed (the draw not held) sorts last.
- */
-function pairReseeded(ffuIds: string[], seedOf: Map<string, number>): TournamentMatchup[] {
-  const ranked = [...ffuIds].sort((x, y) => (seedOf.get(x) ?? Infinity) - (seedOf.get(y) ?? Infinity))
-  const n = ranked.length
-  const powerOfTwo = n > 0 && (n & (n - 1)) === 0
-  if (!powerOfTwo) {
-    return Array.from({ length: Math.floor(n / 2) }, (_, k) => ({ a: ranked[k]!, b: ranked[n - 1 - k]! }))
-  }
-  const positions = bracketPositions(n)
-  const pairs: TournamentMatchup[] = []
-  for (let i = 0; i < n; i += 2) pairs.push({ a: ranked[positions[i]! - 1]!, b: ranked[positions[i + 1]! - 1]! })
-  return pairs
 }
 
 function resolveSide(tierOf: Map<string, Tier>, seasons: SeasonsByTier, ffuId: string, week: number): ResolvedSide {
