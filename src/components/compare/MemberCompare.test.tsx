@@ -74,3 +74,26 @@ it('says so when the pair have never met', () => {
   renderCompare(A, 'ffu-003')
   expect(screen.getByText('They have never met.')).toBeInTheDocument()
 })
+
+it('compares the latest season above the career, each team in its own league', () => {
+  renderCompare()
+  const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+  expect(headings.indexOf('2024 Season')).toBeLessThan(headings.indexOf('Career'))
+  const season = screen.getByRole('table', { name: '2024 season comparison' })
+  // Regular-season standing (8-6 tops the table), both in National: one league, so it's a contest.
+  const standing = within(season).getByRole('rowheader', { name: 'Standing' }).closest('tr')!
+  expect(standing).toHaveTextContent('12th of 12')
+  expect(standing.querySelector('.text-positive')).toHaveTextContent('1st of 12')
+})
+
+it('sets the pair against each other: real meetings, every week, and common opponents', () => {
+  renderCompare()
+  const career = screen.getByRole('table', { name: 'Career comparison' })
+  const row = (name: string) => within(career).getByRole('rowheader', { name }).closest('tr')!
+  const cells = (name: string) => [...row(name).children].map((c) => c.textContent)
+  expect(cells('Head-to-Head')).toEqual(['2', 'Head-to-Head', '1'])
+  // The only regular-season weeks both have a score on file: 2023 wk1 (130–100) and 2024 wk4 (90–110).
+  expect(cells('Every-Week Series')).toEqual(['1', 'Every-Week Series', '1'])
+  // The filler teams play no games here, so there is no common opponent to compare against.
+  expect(cells('Vs Common Opp.')).toEqual(['—', 'Vs Common Opp.', '—'])
+})
