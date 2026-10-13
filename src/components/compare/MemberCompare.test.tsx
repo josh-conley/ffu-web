@@ -82,8 +82,8 @@ it('compares the latest season above the career, each team in its own league', (
   const season = screen.getByRole('table', { name: '2024 season comparison' })
   // Regular-season standing (8-6 tops the table), both in National: one league, so it's a contest.
   const standing = within(season).getByRole('rowheader', { name: 'Standing' }).closest('tr')!
-  expect(standing).toHaveTextContent('12th of 12')
-  expect(standing.querySelector('.text-positive')).toHaveTextContent('1st of 12')
+  expect(standing).toHaveTextContent('12th')
+  expect(standing.querySelector('.text-positive')).toHaveTextContent(/^1st$/)
 })
 
 it('sets the pair against each other: real meetings, every week, and common opponents', () => {

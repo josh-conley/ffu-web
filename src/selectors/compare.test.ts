@@ -78,7 +78,7 @@ describe('memberComparison · season', () => {
   it('compares the latest season, each member in the league they played it in', () => {
     const { season } = memberComparison(seasons, [], 'a', 'b')
     expect(season?.year).toBe('2024')
-    expect(season?.a).toMatchObject({ tier: 'MASTERS', rank: 2, leagueSize: 2 })
+    expect(season?.a).toMatchObject({ tier: 'MASTERS', rank: 2 })
     expect(season?.b).toMatchObject({ tier: 'MASTERS', rank: 1 })
   })
 

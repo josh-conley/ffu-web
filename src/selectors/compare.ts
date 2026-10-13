@@ -56,9 +56,8 @@ export interface SeasonSide {
   tier: Tier
   /** Sleeper's stored record and points for the season — as the Standings page shows them. */
   team: SeasonTeam
-  /** Regular-season standing in their league, and how many teams it has. */
+  /** Regular-season standing in their league. */
   rank: number
-  leagueSize: number
   upr: number | undefined
 }
 
@@ -133,7 +132,7 @@ function careersByTier(played: SeasonData[]): Record<Tier, Map<string, CareerSta
 function seasonSide(seasons: SeasonData[], memberId: string): SeasonSide | undefined {
   for (const season of seasons) {
     const row = regularSeasonStandings(season).find((r) => r.team.memberId === memberId)
-    if (row) return { memberId, tier: season.tier, team: row.team, rank: row.rank, leagueSize: season.teams.length, upr: seasonUpr(season).get(memberId) }
+    if (row) return { memberId, tier: season.tier, team: row.team, rank: row.rank, upr: seasonUpr(season).get(memberId) }
   }
   return undefined
 }

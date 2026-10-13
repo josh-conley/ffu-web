@@ -54,7 +54,7 @@ export function SeasonCompare({ aId, bId, season, h2h }: { aId: string; bId: str
         title="Regular-season place in their own league"
         a={a}
         b={b}
-        show={(s) => `${ordinal(s.rank)} of ${s.leagueSize}`}
+        show={(s) => ordinal(s.rank)}
         value={sameLeague ? (s) => s.rank : undefined}
         better="low"
       />
