@@ -26,11 +26,18 @@ function TierCard({ tier, a, b, aId, bId }: { tier: Tier; a: CareerStats | undef
       <h3 className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest ${style.solidHeader}`}>{style.label}</h3>
       <table className="w-full table-fixed text-sm">
         <caption className="sr-only">{`${style.label} comparison`}</caption>
+        {/* A fixed label column with the figures aligned to it: one league alone fills the row,
+            and its figures must not drift to the card's edges. */}
+        <colgroup>
+          <col />
+          <col className="w-24" />
+          <col />
+        </colgroup>
         <thead>
           <tr className="text-[11px] font-bold uppercase tracking-wider text-muted">
-            <th scope="col" className="w-[38%] px-3 pt-2 text-right">{teamAbbr(aId)}</th>
+            <th scope="col" className="px-3 pt-2 text-right">{teamAbbr(aId)}</th>
             <td />
-            <th scope="col" className="w-[38%] px-3 pt-2 text-left">{teamAbbr(bId)}</th>
+            <th scope="col" className="px-3 pt-2 text-left">{teamAbbr(bId)}</th>
           </tr>
         </thead>
         <tbody>

@@ -35,14 +35,15 @@ const tierCountLabel = (tiers: Tier[]): string =>
  * One small dot per occurrence, colored by tier — a compact "which leagues" breakdown (e.g.
  * playoff appearances). `upcoming` appends a HOLLOW dot for a season that hasn't been played yet:
  * filled = played, ring = signed up. It is deliberately excluded from the counts in the label,
- * which describe completed seasons only.
+ * which describe completed seasons only. Wraps onto a second line in a cell too narrow for a long
+ * career (a flex parent never squeezes it, so elsewhere it stays on one line).
  */
 export function TierDots({ tiers, upcoming }: { tiers: Tier[]; upcoming?: Tier }) {
   if (tiers.length === 0 && upcoming === undefined) return null
   const played = tierCountLabel(tiers)
   const label = upcoming ? [played, `${LEAGUE_STYLES[upcoming].label} (upcoming)`].filter(Boolean).join(' · ') : played
   return (
-    <span className="inline-flex shrink-0 items-center gap-0.5" aria-label={label} title={label}>
+    <span className="inline-flex shrink-0 flex-wrap items-center gap-0.5" aria-label={label} title={label}>
       {tiers.map((tier, i) => (
         <span key={i} className={`size-1.5 rounded-full ${LEAGUE_STYLES[tier].dot}`} />
       ))}

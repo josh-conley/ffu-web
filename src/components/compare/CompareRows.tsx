@@ -2,26 +2,17 @@ import type { ReactNode } from 'react'
 import type { CareerStats } from '@/selectors'
 import { HARDWARE, type HardwareKind } from '../hardware'
 import { LEAGUE_STYLES } from '../leagues'
+import { BETTER_TEXT, leaderOf, type Better } from './better'
 
 // The rows every part of the Compare view is built from: one figure per member either side of a
 // centred label, the better one in green. The same convention as the old Compare table, so a
 // glance down either column still reads as "who's ahead where".
 
-/** Which way is better: more (wins), fewer (average finish), or neither (seasons played). */
-export type Better = 'high' | 'low' | 'none'
-
-export const BETTER_TEXT = 'font-bold text-positive'
-
-function leaderOf([a, b]: readonly [number, number], better: Better): 'a' | 'b' | undefined {
-  if (better === 'none' || a === b) return undefined
-  return (better === 'high' ? a > b : a < b) ? 'a' : 'b'
-}
-
-/** A group's heading inside a compare table. */
-export function GroupRow({ label }: { label: string }) {
+/** A group's heading inside a compare table, across all of its columns. */
+export function GroupRow({ label, span = 3 }: { label: string; span?: number }) {
   return (
     <tr>
-      <th scope="colgroup" colSpan={3} className="bg-surface-2 px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-widest text-muted">
+      <th scope="colgroup" colSpan={span} className="bg-surface-2 px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-widest text-muted">
         {label}
       </th>
     </tr>
@@ -90,16 +81,26 @@ export function HardwareRow({ label, kind, a, b, better = 'high' }: { label: str
   )
 }
 
+/** Every compare table's card: full width, so its edges sit under the section heading's. */
+export const COMPARE_FRAME = 'border border-border bg-surface shadow-sm'
+
+/**
+ * The centre label column, 144px from `sm` up: the header's "vs" gap, so the label's edges line
+ * up with the nameplates' inner edges. The figure columns either side are fixed and centred on it,
+ * and the outermost columns take the spare width, so a wide page never drifts the figures apart.
+ */
+export const LABEL_COL = 'w-[20%] sm:w-36'
+
 /** The compare table's frame, headed by each side's short name so a long table stays readable. */
 export function CompareTable({ aLabel, bLabel, caption, children }: { aLabel: string; bLabel: string; caption: string; children: ReactNode }) {
   return (
-    <div className="border border-border bg-surface shadow-sm">
+    <div className={`${COMPARE_FRAME} overflow-x-auto`}>
       <table className="w-full table-fixed text-sm">
         <caption className="sr-only">{caption}</caption>
         <colgroup>
-          <col className="w-[42%]" />
           <col />
-          <col className="w-[42%]" />
+          <col className={LABEL_COL} />
+          <col />
         </colgroup>
         <thead>
           <tr className="text-xs font-bold uppercase tracking-wider">

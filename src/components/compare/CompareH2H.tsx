@@ -3,7 +3,7 @@ import { meetingOrder, type H2HMeeting, type H2HRecord, type SeriesBreakdown, ty
 import { formatPoints } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
 import { teamAbbr } from '../seriesText'
-import { BETTER_TEXT } from './CompareRows'
+import { BETTER_TEXT } from './better'
 
 // The pair's own games: the series broken down as tiles, then every meeting, newest first. All
 // from member `a`'s side, the side on the left everywhere else in the view.
@@ -51,10 +51,12 @@ function SeriesTiles({ h2h, series }: { h2h: H2HRecord; series: SeriesBreakdown 
 
 function Meetings({ h2h }: { h2h: H2HRecord }) {
   const newestFirst = [...h2h.meetings].sort((x, y) => meetingOrder(y) - meetingOrder(x))
-  const TH = 'px-3 py-2 font-bold'
+  // Columns hug their content and a trailing empty one takes the spare width, so the scores sit
+  // beside the date instead of across the card. Nothing wraps: on a phone the table scrolls.
+  const TH = 'w-px px-3 py-2 font-bold'
   return (
     <div className="overflow-x-auto border border-border bg-surface shadow-sm">
-      <table className="w-max min-w-full text-sm">
+      <table className="w-full whitespace-nowrap text-sm">
         <caption className="sr-only">Every meeting</caption>
         <thead className="bg-surface-2">
           <tr className="text-xs uppercase tracking-wider text-muted">
@@ -63,6 +65,7 @@ function Meetings({ h2h }: { h2h: H2HRecord }) {
             <th scope="col" className={`${TH} text-right`}>{name(h2h.memberId)}</th>
             <th scope="col" className={`${TH} text-right`}>{name(h2h.opponentId)}</th>
             <th scope="col" className={`${TH} text-right`}>Margin</th>
+            <th aria-hidden="true" />
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -76,6 +79,7 @@ function Meetings({ h2h }: { h2h: H2HRecord }) {
               <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'W' ? BETTER_TEXT : ''}`}>{formatPoints(m.score)}</td>
               <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'L' ? BETTER_TEXT : ''}`}>{formatPoints(m.opponentScore)}</td>
               <td className="px-3 py-2 text-right tabular-nums text-muted">{formatPoints(Math.abs(m.score - m.opponentScore))}</td>
+              <td aria-hidden="true" />
             </tr>
           ))}
         </tbody>

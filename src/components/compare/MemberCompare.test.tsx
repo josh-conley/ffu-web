@@ -27,13 +27,35 @@ const seasons = [
 
 const renderCompare = (a = A, b = B) => render(<MemberCompare comparison={memberComparison(seasons, [], a, b)} />)
 
-it('marks the better career figure in green', () => {
+const both = () => screen.getByRole('table', { name: '2024 season and career comparison' })
+/** A row's cells, in order: a's career, a's season, the label, b's season, b's career. */
+const cells = (name: string) => [...within(both()).getByRole('rowheader', { name }).closest('tr')!.children] as HTMLElement[]
+const green = (cell: HTMLElement | undefined) => cell!.querySelector('.text-positive')
+
+it('sets the season beside the career, the better of each pair in green', () => {
   renderCompare()
-  const tape = screen.getByRole('table', { name: 'Career comparison' })
-  const winPct = within(tape).getByRole('rowheader', { name: 'Win %' }).closest('tr')!
-  const [aCell, , bCell] = [...winPct.children] as HTMLElement[]
-  expect(aCell!.querySelector('.text-positive')).toHaveTextContent('67.9%')
-  expect(bCell!.querySelector('.text-positive')).toBeNull()
+  // Career 19-9 (67.9%) vs 8-20; 2024 alone 8-6 vs 3-11.
+  const [aCareer, aSeason, , bSeason, bCareer] = cells('Win %')
+  expect(green(aCareer)).toHaveTextContent('67.9%')
+  expect(green(aSeason)).toHaveTextContent('57.1%')
+  expect(bSeason).toHaveTextContent('21.4%')
+  expect(green(bSeason)).toBeNull()
+  expect(green(bCareer)).toBeNull()
+})
+
+it('shows this season\'s league beside a dot per career season, in that season\'s league', () => {
+  renderCompare()
+  const [aCareer, aSeason, , bSeason] = cells('League')
+  expect(aSeason).toHaveTextContent('National')
+  expect(bSeason).toHaveTextContent('National')
+  expect(within(aCareer!).getByLabelText(/Premier/)).toBeInTheDocument()
+})
+
+it('leaves the career cells of a season-only row blank', () => {
+  renderCompare()
+  const [aCareer, , , , bCareer] = cells('Standing')
+  expect(aCareer).toBeEmptyDOMElement()
+  expect(bCareer).toBeEmptyDOMElement()
 })
 
 it('draws hardware as league-colored icons, a toilet for last place', () => {
@@ -75,25 +97,23 @@ it('says so when the pair have never met', () => {
   expect(screen.getByText('They have never met.')).toBeInTheDocument()
 })
 
-it('compares the latest season above the career, each team in its own league', () => {
+it('compares the latest season beside the career, each team in its own league', () => {
   renderCompare()
   const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-  expect(headings.indexOf('2024 Season')).toBeLessThan(headings.indexOf('Career'))
-  const season = screen.getByRole('table', { name: '2024 season comparison' })
+  expect(headings.indexOf('2024 Season & Career')).toBeLessThan(headings.indexOf('Career'))
   // Regular-season standing (8-6 tops the table), both in National: one league, so it's a contest.
-  const standing = within(season).getByRole('rowheader', { name: 'Standing' }).closest('tr')!
-  expect(standing).toHaveTextContent('12th')
-  expect(standing.querySelector('.text-positive')).toHaveTextContent(/^1st$/)
+  const [, aSeason, , bSeason] = cells('Standing')
+  expect(green(aSeason)).toHaveTextContent(/^1st$/)
+  expect(bSeason).toHaveTextContent('12th')
 })
 
 it('sets the pair against each other: real meetings, every week, and common opponents', () => {
   renderCompare()
-  const career = screen.getByRole('table', { name: 'Career comparison' })
-  const row = (name: string) => within(career).getByRole('rowheader', { name }).closest('tr')!
-  const cells = (name: string) => [...row(name).children].map((c) => c.textContent)
-  expect(cells('Head-to-Head')).toEqual(['2', 'Head-to-Head', '1'])
+  const text = (name: string) => cells(name).map((c) => c.textContent)
+  // All time 2-1 (two in 2023, one in 2024); 2024 alone 0-1.
+  expect(text('Head-to-Head')).toEqual(['2', '0', 'Head-to-Head', '1', '1'])
   // The only regular-season weeks both have a score on file: 2023 wk1 (130–100) and 2024 wk4 (90–110).
-  expect(cells('Every-Week Series')).toEqual(['1', 'Every-Week Series', '1'])
+  expect(text('Every-Week Series')).toEqual(['1', '0', 'Every-Week Series', '1', '1'])
   // The filler teams play no games here, so there is no common opponent to compare against.
-  expect(cells('Vs Common Opp.')).toEqual(['—', 'Vs Common Opp.', '—'])
+  expect(text('Vs Common Opp.')).toEqual(['—', '—', 'Vs Common Opp.', '—', '—'])
 })
