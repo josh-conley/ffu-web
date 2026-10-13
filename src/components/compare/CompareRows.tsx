@@ -17,18 +17,6 @@ function leaderOf([a, b]: readonly [number, number], better: Better): 'a' | 'b' 
   return (better === 'high' ? a > b : a < b) ? 'a' : 'b'
 }
 
-/** A thin track under a figure, filled toward the centre in proportion to the larger of the two. */
-function Bar({ share, lead, side }: { share: number; lead: boolean; side: 'a' | 'b' }) {
-  return (
-    <span className="mt-1 block h-1 w-full bg-surface-2" aria-hidden>
-      <span
-        className={`block h-full ${lead ? 'bg-positive' : 'bg-muted/40'} ${side === 'a' ? 'ml-auto' : ''}`}
-        style={{ width: `${Math.max(0, Math.min(1, share)) * 100}%` }}
-      />
-    </span>
-  )
-}
-
 /** A group's heading inside a compare table. */
 export function GroupRow({ label }: { label: string }) {
   return (
@@ -40,37 +28,33 @@ export function GroupRow({ label }: { label: string }) {
   )
 }
 
-export function StatRow({ label, title, a, b, values, better = 'high', bar = false, extra }: {
+export function StatRow({ label, title, a, b, values, better = 'high', extra }: {
   label: string
   /** Hover text for the label: what the figure means. */
   title?: string
   /** Each side's figure, formatted. */
   a: ReactNode
   b: ReactNode
-  /** The numbers behind the figures, to pick the better one (and size the bars). */
+  /** The numbers behind the figures, to pick the better one. */
   values?: readonly [number, number]
   better?: Better
-  /** Draw a proportion bar under each figure. Only for figures that are never negative. */
-  bar?: boolean
   /** Something to show under each figure (e.g. the leagues of their playoff trips). */
   extra?: readonly [ReactNode, ReactNode]
 }) {
   const lead = values ? leaderOf(values, better) : undefined
-  const max = values ? Math.max(values[0], values[1]) : 0
-  const cell = (side: 'a' | 'b', figure: ReactNode, value: number | undefined, under: ReactNode) => (
+  const cell = (side: 'a' | 'b', figure: ReactNode, under: ReactNode) => (
     <td className={`px-3 py-2 ${side === 'a' ? 'text-right' : 'text-left'}`}>
       <span className={`font-mono tabular-nums ${lead === side ? BETTER_TEXT : ''}`}>{figure}</span>
       {under && <span className={`mt-0.5 flex ${side === 'a' ? 'justify-end' : ''}`}>{under}</span>}
-      {bar && value !== undefined && max > 0 && <Bar share={value / max} lead={lead === side} side={side} />}
     </td>
   )
   return (
     <tr className="border-t border-border">
-      {cell('a', a, values?.[0], extra?.[0])}
+      {cell('a', a, extra?.[0])}
       <th scope="row" title={title} className="px-1 py-2 text-center text-[11px] font-bold uppercase leading-tight tracking-wide text-muted">
         {label}
       </th>
-      {cell('b', b, values?.[1], extra?.[1])}
+      {cell('b', b, extra?.[1])}
     </tr>
   )
 }

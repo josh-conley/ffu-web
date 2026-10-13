@@ -22,7 +22,7 @@ function ResultRows({ a, b }: { a: CareerStats; b: CareerStats }) {
       <GroupRow label="Results" />
       <StatRow label="Seasons" a={a.seasons} b={b.seasons} values={[a.seasons, b.seasons]} better="none" />
       <StatRow label="Record" a={recordLabel(a)} b={recordLabel(b)} values={[a.wins, b.wins]} />
-      <StatRow label="Win %" a={pct(a.winPct)} b={pct(b.winPct)} values={[a.winPct, b.winPct]} bar />
+      <StatRow label="Win %" a={pct(a.winPct)} b={pct(b.winPct)} values={[a.winPct, b.winPct]} />
       <StatRow
         label="Playoffs"
         title="Seasons they reached the championship bracket, each dot in that season's league"
@@ -57,8 +57,8 @@ function ScoringRows({ a, b }: { a: CareerStats; b: CareerStats }) {
   return (
     <>
       <GroupRow label="Scoring" />
-      <StatRow label="PPG" title="Points per game" a={ppgA?.toFixed(2) ?? dash} b={ppgB?.toFixed(2) ?? dash} values={[ppgA ?? 0, ppgB ?? 0]} bar />
-      <StatRow label="Points For" a={formatPoints(a.pointsFor)} b={formatPoints(b.pointsFor)} values={[a.pointsFor, b.pointsFor]} bar />
+      <StatRow label="PPG" title="Points per game" a={ppgA?.toFixed(2) ?? dash} b={ppgB?.toFixed(2) ?? dash} values={[ppgA ?? 0, ppgB ?? 0]} />
+      <StatRow label="Points For" a={formatPoints(a.pointsFor)} b={formatPoints(b.pointsFor)} values={[a.pointsFor, b.pointsFor]} />
       <StatRow label="Point Diff" a={signed(diff(a))} b={signed(diff(b))} values={[diff(a), diff(b)]} />
       <StatRow label="High Game" a={game(a.careerHighGame)} b={game(b.careerHighGame)} values={[a.careerHighGame ?? 0, b.careerHighGame ?? 0]} />
       <StatRow label="Low Game" a={game(a.careerLowGame)} b={game(b.careerLowGame)} />
@@ -73,7 +73,7 @@ function StandingRows({ a, b }: { a: CompareSide; b: CompareSide }) {
   return (
     <>
       <GroupRow label="Standing" />
-      <StatRow label="Avg UPR" title="Union Power Rating, averaged over their seasons" a={a.upr?.toFixed(2) ?? dash} b={b.upr?.toFixed(2) ?? dash} values={pair(a, b, (s) => s.upr ?? 0)} bar />
+      <StatRow label="Avg UPR" title="Union Power Rating, averaged over their seasons" a={a.upr?.toFixed(2) ?? dash} b={b.upr?.toFixed(2) ?? dash} values={pair(a, b, (s) => s.upr ?? 0)} />
       <StatRow label="Avg Finish" a={a.career.averageSeasonRank?.toFixed(1) ?? dash} b={b.career.averageSeasonRank?.toFixed(1) ?? dash} values={pair(a, b, finish)} better="low" />
       <StatRow label="Best Finish" a={a.career.bestFinish ? ordinal(a.career.bestFinish) : dash} b={b.career.bestFinish ? ordinal(b.career.bestFinish) : dash} values={pair(a, b, best)} better="low" />
       <GroupRow label="Money" />
@@ -83,7 +83,6 @@ function StandingRows({ a, b }: { a: CompareSide; b: CompareSide }) {
         a={usd(a.winnings)}
         b={usd(b.winnings)}
         values={pair(a, b, (s) => s.winnings)}
-        bar
       />
     </>
   )
