@@ -32,7 +32,6 @@ function Legend() {
           {LEAGUE_STYLES[tier].label}
         </span>
       ))}
-      <span>Number = final finish · H2H = their games that year · Every wk = every week both played, higher score wins</span>
     </div>
   )
 }

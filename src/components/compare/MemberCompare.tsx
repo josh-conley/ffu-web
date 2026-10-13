@@ -20,11 +20,11 @@ export function MemberCompare({ comparison }: { comparison: MemberComparison }) 
     <div className="space-y-8">
       <CompareHeader a={a} b={b} h2h={h2h} />
       {season && (
-        <MemberSection title={`${season.year} Season`} note="Each team in the league it is playing this season. The better figure is in green.">
+        <MemberSection title={`${season.year} Season`}>
           <SeasonCompare aId={a.memberId} bId={b.memberId} season={season} h2h={series.byYear[season.year]} />
         </MemberSection>
       )}
-      <MemberSection title="Career" note="Whole careers, every league.">
+      <MemberSection title="Career">
         <CareerCompare comparison={comparison} />
       </MemberSection>
       <MemberSection title="By League">
