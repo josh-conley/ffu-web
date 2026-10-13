@@ -2,7 +2,7 @@ import { getMember } from '@/config'
 import { winPct, type CommonOpponents, type WinLoss } from '@/selectors'
 import { recordLabel } from '../format'
 import { teamAbbr } from '../seriesText'
-import { BETTER_TEXT } from './CompareRows'
+import { BETTER_TEXT } from './better'
 
 // Every team both members have played, each side's record against it: the detail behind the
 // "Vs Common Opp." rows. Folded away by default, since a long rivalry has thirty-odd of them.

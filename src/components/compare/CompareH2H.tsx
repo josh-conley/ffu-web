@@ -3,7 +3,7 @@ import { meetingOrder, type H2HMeeting, type H2HRecord, type SeriesBreakdown, ty
 import { formatPoints } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
 import { teamAbbr } from '../seriesText'
-import { BETTER_TEXT } from './CompareRows'
+import { BETTER_TEXT } from './better'
 
 // The pair's own games: the series broken down as tiles, then every meeting, newest first. All
 // from member `a`'s side, the side on the left everywhere else in the view.

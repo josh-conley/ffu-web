@@ -82,6 +82,12 @@ describe('memberComparison · season', () => {
     expect(season?.b).toMatchObject({ tier: 'MASTERS', rank: 1 })
   })
 
+  it('carries each side\'s best and worst game of that season only', () => {
+    const { season } = memberComparison(seasons, [], 'a', 'b')
+    expect(season?.a?.highLow).toEqual({ high: 100, low: 80 })
+    expect(season?.b?.highLow).toEqual({ high: 101, low: 95 })
+  })
+
   it('leaves out a member who sat that season out', () => {
     expect(memberComparison(seasons, [], 'a', 'new').season?.b).toBeUndefined()
   })

@@ -1,7 +1,7 @@
 import type { SeasonData, SeasonTeam, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
 import { careerStats, careerUpr, emptyCareer, type CareerStats } from './career'
-import { hasBeenPlayed } from './games'
+import { hasBeenPlayed, seasonHighLow } from './games'
 import { headToHead, lastMeeting, type H2HMeeting, type H2HRecord } from './headToHead'
 import { careerWinnings } from './prizes'
 import { commonOpponents, weeklySeries, type CommonOpponents, type WeeklySeries } from './pairRecords'
@@ -59,6 +59,8 @@ export interface SeasonSide {
   /** Regular-season standing in their league. */
   rank: number
   upr: number | undefined
+  /** Their best and worst single-game score that season (playoffs included, as in a career). */
+  highLow: { high: number; low: number } | undefined
 }
 
 /** The most recent season, side by side: the "this season" half of the Compare view. */
@@ -132,7 +134,8 @@ function careersByTier(played: SeasonData[]): Record<Tier, Map<string, CareerSta
 function seasonSide(seasons: SeasonData[], memberId: string): SeasonSide | undefined {
   for (const season of seasons) {
     const row = regularSeasonStandings(season).find((r) => r.team.memberId === memberId)
-    if (row) return { memberId, tier: season.tier, team: row.team, rank: row.rank, upr: seasonUpr(season).get(memberId) }
+    if (!row) continue
+    return { memberId, tier: season.tier, team: row.team, rank: row.rank, upr: seasonUpr(season).get(memberId), highLow: seasonHighLow(season).get(memberId) }
   }
   return undefined
 }
