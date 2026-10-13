@@ -9,13 +9,13 @@
       "memberId": "ffu-012",
       "divisionId": 1,
       "record": {
-        "wins": 1,
+        "wins": 2,
         "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 402.75,
-        "against": 514.4
+        "for": 555.95,
+        "against": 570.2
       },
       "promoted": false,
       "relegated": false
@@ -24,13 +24,13 @@
       "memberId": "ffu-056",
       "divisionId": 2,
       "record": {
-        "wins": 2,
+        "wins": 3,
         "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 459.85,
-        "against": 452.05
+        "for": 603.95,
+        "against": 560.5
       },
       "promoted": false,
       "relegated": false
@@ -40,12 +40,12 @@
       "divisionId": 3,
       "record": {
         "wins": 2,
-        "losses": 2,
+        "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 548.85,
-        "against": 555.75
+        "for": 644.35,
+        "against": 659
       },
       "promoted": false,
       "relegated": false
@@ -54,13 +54,13 @@
       "memberId": "ffu-025",
       "divisionId": 1,
       "record": {
-        "wins": 1,
+        "wins": 2,
         "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 443.55,
-        "against": 520.3
+        "for": 594.8,
+        "against": 645
       },
       "promoted": false,
       "relegated": false
@@ -70,12 +70,12 @@
       "divisionId": 1,
       "record": {
         "wins": 3,
-        "losses": 1,
+        "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 461.75,
-        "against": 461.05
+        "for": 570.2,
+        "against": 605.15
       },
       "promoted": false,
       "relegated": false
@@ -85,12 +85,12 @@
       "divisionId": 2,
       "record": {
         "wins": 2,
-        "losses": 2,
+        "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 495.25,
-        "against": 467
+        "for": 613.5,
+        "against": 596.25
       },
       "promoted": false,
       "relegated": false
@@ -99,13 +99,13 @@
       "memberId": "ffu-054",
       "divisionId": 2,
       "record": {
-        "wins": 2,
+        "wins": 3,
         "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 485.8,
-        "against": 498.9
+        "for": 589.05,
+        "against": 594.4
       },
       "promoted": false,
       "relegated": false
@@ -115,12 +115,12 @@
       "divisionId": 3,
       "record": {
         "wins": 2,
-        "losses": 2,
+        "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 456.65,
-        "against": 485.5
+        "for": 512.45,
+        "against": 638.7
       },
       "promoted": false,
       "relegated": false
@@ -129,13 +129,13 @@
       "memberId": "ffu-059",
       "divisionId": 3,
       "record": {
-        "wins": 2,
+        "wins": 3,
         "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 465.15,
-        "against": 513.2
+        "for": 640.2,
+        "against": 630.7
       },
       "promoted": false,
       "relegated": false
@@ -144,13 +144,13 @@
       "memberId": "ffu-058",
       "divisionId": 1,
       "record": {
-        "wins": 2,
+        "wins": 3,
         "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 592.65,
-        "against": 446.1
+        "for": 721.9,
+        "against": 564.35
       },
       "promoted": false,
       "relegated": false
@@ -160,12 +160,12 @@
       "divisionId": 2,
       "record": {
         "wins": 3,
-        "losses": 1,
+        "losses": 2,
         "ties": 0
       },
       "points": {
-        "for": 597.35,
-        "against": 521.45
+        "for": 714.85,
+        "against": 696.5
       },
       "promoted": false,
       "relegated": false
@@ -175,12 +175,12 @@
       "divisionId": 3,
       "record": {
         "wins": 2,
-        "losses": 2,
+        "losses": 3,
         "ties": 0
       },
       "points": {
-        "for": 540.35,
-        "against": 514.25
+        "for": 665.05,
+        "against": 665.5
       },
       "promoted": false,
       "relegated": false
@@ -520,6 +520,90 @@
         {
           "memberId": "ffu-058",
           "score": 113.05
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-012",
+          "score": 153.2
+        },
+        {
+          "memberId": "ffu-057",
+          "score": 55.8
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-024",
+          "score": 118.25
+        },
+        {
+          "memberId": "ffu-058",
+          "score": 129.25
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-025",
+          "score": 151.25
+        },
+        {
+          "memberId": "ffu-060",
+          "score": 124.7
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-042",
+          "score": 95.5
+        },
+        {
+          "memberId": "ffu-054",
+          "score": 103.25
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-056",
+          "score": 144.1
+        },
+        {
+          "memberId": "ffu-052",
+          "score": 108.45
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "isPlayoff": false,
+      "participants": [
+        {
+          "memberId": "ffu-059",
+          "score": 175.05
+        },
+        {
+          "memberId": "ffu-019",
+          "score": 117.5
         }
       ]
     }
