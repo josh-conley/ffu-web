@@ -207,9 +207,9 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       once the Action has had a good Tuesday). Why: the job is fixed steps, a failure should be a
       red ✗ + email rather than a "successful" AI session, runners reach Sleeper with no allowlist,
       and the schedule + steps live in the repo instead of a prompt that went stale silently.
-      Tuesdays 10:00 + 14:00 UTC (6am/10am ET; an hour earlier after 1 Nov), **September–December
-      only**: the second run is a safety net for Sleeper rolling its week late and no-ops if the
-      first committed; January is excluded because the script defaults to the calendar year and
+      Tuesdays 9:05am + 1:05pm ET (2026-10-13: was 6am/10am ET; the cron is split by DST so it
+      stays 9am Eastern), **September–December only**: the second run is a safety net for GitHub
+      dropping or delaying scheduled runs (it has, most Tuesdays) and no-ops if the first committed; January is excluded because the script defaults to the calendar year and
       refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
       Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
       → `scripts/check-season-refresh.mjs` (the judgment the
@@ -382,9 +382,9 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       once the Action has had a good Tuesday). Why: the job is fixed steps, a failure should be a
       red ✗ + email rather than a "successful" AI session, runners reach Sleeper with no allowlist,
       and the schedule + steps live in the repo instead of a prompt that went stale silently.
-      Tuesdays 10:00 + 14:00 UTC (6am/10am ET; an hour earlier after 1 Nov), **September–December
-      only**: the second run is a safety net for Sleeper rolling its week late and no-ops if the
-      first committed; January is excluded because the script defaults to the calendar year and
+      Tuesdays 9:05am + 1:05pm ET (2026-10-13: was 6am/10am ET; the cron is split by DST so it
+      stays 9am Eastern), **September–December only**: the second run is a safety net for GitHub
+      dropping or delaying scheduled runs (it has, most Tuesdays) and no-ops if the first committed; January is excluded because the script defaults to the calendar year and
       refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
       Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
       → `scripts/check-season-refresh.mjs` (the judgment the
