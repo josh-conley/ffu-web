@@ -42,10 +42,10 @@ it('swaps the box score for the two teams\' Compare view, and back', async () =>
   const dialog = renderModal()
 
   await user.click(within(dialog).getByRole('button', { name: 'Compare' }))
-  expect(await within(dialog).findByRole('heading', { name: 'Tale of the Tape' })).toBeInTheDocument()
+  expect(await within(dialog).findByRole('heading', { name: 'Career' })).toBeInTheDocument()
   expect(within(dialog).queryByText('The box score')).not.toBeVisible()
 
   await user.click(within(dialog).getByRole('button', { name: 'Matchup' }))
   expect(within(dialog).getByText('The box score')).toBeVisible()
-  expect(within(dialog).queryByRole('heading', { name: 'Tale of the Tape' })).not.toBeInTheDocument()
+  expect(within(dialog).queryByRole('heading', { name: 'Career' })).not.toBeInTheDocument()
 })

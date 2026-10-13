@@ -5,7 +5,7 @@ import { TierDots } from '../Trophies'
 import { CompareTable, GroupRow, HardwareRow, StatRow } from './CompareRows'
 
 // The whole-career comparison, every league together, in the groups the Stats page uses: results,
-// hardware, scoring, standing and money. Same figures as the Stats table's "All leagues" row for
+// trophy case, scoring, standing and money. Same figures as the Stats table's "All leagues" row for
 // each member, so the two pages can never disagree.
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
@@ -39,7 +39,7 @@ function ResultRows({ a, b }: { a: CareerStats; b: CareerStats }) {
 function HardwareRows({ a, b }: { a: CareerStats; b: CareerStats }) {
   return (
     <>
-      <GroupRow label="Hardware" />
+      <GroupRow label="Trophy Case" />
       <HardwareRow label="Titles" kind="title" a={a} b={b} />
       <HardwareRow label="2nd" kind="second" a={a} b={b} />
       <HardwareRow label="3rd" kind="third" a={a} b={b} />
@@ -89,7 +89,7 @@ function StandingRows({ a, b }: { a: CompareSide; b: CompareSide }) {
 }
 
 /** Every career figure side by side, the better one in green. */
-export function TaleOfTheTape({ a, b }: { a: CompareSide; b: CompareSide }) {
+export function CareerCompare({ a, b }: { a: CompareSide; b: CompareSide }) {
   return (
     <CompareTable aLabel={teamAbbr(a.memberId)} bLabel={teamAbbr(b.memberId)} caption="Career comparison">
       <ResultRows a={a.career} b={b.career} />

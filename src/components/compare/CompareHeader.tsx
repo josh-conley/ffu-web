@@ -4,7 +4,6 @@ import { LEAGUE_STYLES } from '../leagues'
 import { LeagueBadge } from '../LeagueBadge'
 import { seriesHeadline } from '../seriesText'
 import { TeamLogo } from '../TeamLogo'
-import { TrophyCase } from '../TrophyCase'
 
 // The top of the Compare view: each member's nameplate, striped in the league they play in now,
 // either side of the all-time series. Names are deliberately not links: the view also opens inside
@@ -42,20 +41,6 @@ export function CompareHeader({ a, b, h2h }: { a: CompareSide; b: CompareSide; h
         <span className="text-[11px] font-semibold leading-tight text-muted">{seriesHeadline(seriesStanding(h2h))}</span>
       </div>
       <Plate side={b} />
-    </div>
-  )
-}
-
-/** Both trophy cases, side by side, split by a rule. */
-export function CompareTrophies({ a, b }: { a: CompareSide; b: CompareSide }) {
-  return (
-    <div className="grid grid-cols-2 divide-x divide-border border border-border bg-surface shadow-sm">
-      {[a, b].map((side) => (
-        <div key={side.memberId} className="space-y-2 p-3">
-          <p className="text-xs font-bold uppercase tracking-wider">{getMember(side.memberId)?.name ?? side.memberId}</p>
-          <TrophyCase career={side.career} />
-        </div>
-      ))}
     </div>
   )
 }
