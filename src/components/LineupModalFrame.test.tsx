@@ -29,12 +29,10 @@ function renderModal() {
   return screen.getByRole('dialog', { name: 'Game lineups' })
 }
 
-it('puts the Compare switch between the two profile links', () => {
-  const footer = renderModal().querySelector('footer')!
-  const [first, middle, last] = [...footer.children]
-  expect(first).toHaveTextContent(/profile →/)
-  expect(middle).toHaveAccessibleName('Compare')
-  expect(last).toHaveTextContent(/profile →/)
+it('puts the Compare switch in the title bar, and a profile link per team at the foot', () => {
+  const dialog = renderModal()
+  expect(within(dialog.querySelector('header')!).getByRole('button', { name: 'Compare' })).toBeInTheDocument()
+  expect(within(dialog.querySelector('footer')!).getAllByRole('link', { name: /profile →/ })).toHaveLength(2)
 })
 
 it('swaps the box score for the two teams\' Compare view, and back', async () => {

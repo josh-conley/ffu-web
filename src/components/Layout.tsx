@@ -4,7 +4,6 @@ import { PREVIEW_BUILD } from '@/config'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useRouteFocus } from '@/hooks/useRouteFocus'
 import { Header } from './Header'
-import { PopOutProvider } from './PopOutProvider'
 import { PreviewBanner } from './PreviewBanner'
 import { TeamProfileProvider } from './TeamProfileProvider'
 
@@ -27,7 +26,6 @@ export function Layout({ stage = false }: { stage?: boolean }) {
 
   return (
     <TeamProfileProvider>
-      <PopOutProvider>
       <div className="min-h-screen bg-bg text-text">
         <a
           href="#main"
@@ -47,7 +45,6 @@ export function Layout({ stage = false }: { stage?: boolean }) {
           <Outlet />
         </main>
       </div>
-      </PopOutProvider>
     </TeamProfileProvider>
   )
 }
