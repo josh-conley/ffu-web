@@ -4,8 +4,7 @@ import { type LiveWeekContext, playerGame, starterPoints, teamLiveProjection, wi
 import type { BoxScoreSide, PlayerLiveInfo } from './BoxScore'
 import { gameNote } from './format'
 
-// A live game's box-score state, apart from its rendering (LiveBoxScoreBody) so the pop-out can
-// hold the state itself for its Refresh button.
+// A live game's box-score state, apart from its rendering (LiveBoxScoreBody).
 
 /** One live game: the week, its two teams, and each team's league. */
 export interface LiveGameRef {
@@ -38,11 +37,10 @@ function sidesFor(data: LiveBoxScore, nfl: NflWeek | undefined, ctx: LiveWeekCon
 }
 
 /** The box score's inputs, loaded: the lineups, and the NFL week's detail once it arrives. */
-export function useLiveGame(game: LiveGameRef, scoreOf: ScoreOf | undefined, poll: boolean) {
+export function useLiveGame(game: LiveGameRef, scoreOf: ScoreOf | undefined) {
   const { year, week } = game
-  const { data, loading, refresh } = useLiveBoxScore(game, { poll })
-  const nfl = useNflWeek(year, week, true, poll ? data?.asOf : undefined)
+  const { data, loading } = useLiveBoxScore(game)
+  const nfl = useNflWeek(year, week, true)
   const ctx: LiveWeekContext | undefined = data && nfl ? { ...nfl, scoring: data.scoring } : undefined
-  return { data, loading, refresh, sides: data ? sidesFor(data, nfl, ctx, scoreOf) : [], liveOf: ctx && liveOfFor(ctx) }
+  return { data, loading, sides: data ? sidesFor(data, nfl, ctx, scoreOf) : [], liveOf: ctx && liveOfFor(ctx) }
 }
-

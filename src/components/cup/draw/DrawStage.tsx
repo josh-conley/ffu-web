@@ -5,6 +5,7 @@ import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDr
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { cupGameSource, matchupStory, matchupTag, type DrawRating, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
+import { useFormGoingInto, type FormOf } from '@/hooks/useFormGoingInto'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBracket, type SlotSeeds } from './DrawBracket'
 import { DrawComplete } from './DrawComplete'
@@ -14,6 +15,7 @@ import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
 import { MatchupStoryLine } from './MatchupStoryLine'
 import { downloadText } from './downloads'
+import { recordLabel } from '../../format'
 import { CupMatchupModal } from '../CupMatchupModal'
 import type { LedgerMatchup } from './DrawBracketSlots'
 
@@ -26,10 +28,11 @@ import type { LedgerMatchup } from './DrawBracketSlots'
  * for the whole matchup — the reel stays up, and the storyline has a reserved slot — so nothing on
  * the stage jumps as a matchup moves from on the clock to drawn.
  */
-function CurrentMatchup({ reveal, story, ratings, muted }: {
+function CurrentMatchup({ reveal, story, ratings, recordOf, muted }: {
   reveal: ReturnType<typeof useCupDrawReveal>
   story: ReturnType<typeof matchupStory> | undefined
   ratings: Map<string, DrawRating>
+  recordOf: (ffuId: string) => string | undefined
   muted: boolean
 }) {
   const { drawer, drawn, phase, landing } = reveal
@@ -42,6 +45,7 @@ function CurrentMatchup({ reveal, story, ratings, muted }: {
         drawn={landing ? undefined : drawn}
         forced={reveal.forced}
         ratings={ratings}
+        recordOf={recordOf}
         // Always a strip, empty until there is a story: the card must not grow or shrink between draws.
         footer={story && drawn && !landing ? <MatchupStoryLine story={story} aName={drawer.name} bName={drawn.name} /> : null}
       />
@@ -61,18 +65,34 @@ function CurrentMatchup({ reveal, story, ratings, muted }: {
 const NO_RATINGS = new Map<string, DrawRating>()
 
 /**
+ * Each team's record and UPR going into the opening round, from this season's games: its record on
+ * the card as it is drawn, both atop the matchup modal. (Not in the bracket: the whole bracket has
+ * to fit on the stream's one screen.)
+ */
+function useOpeningForm(seasons: SeasonData[], opening: RoundOutline | undefined) {
+  const thisSeason = useMemo(() => seasons.filter((s) => s.year === CUP_YEAR), [seasons])
+  const week = opening?.week ?? 1
+  const formOf = useFormGoingInto(thisSeason, [week])
+  const recordOf = (ffuId: string) => {
+    const form = formOf(ffuId, week)
+    return form && recordLabel(form.totals)
+  }
+  return { formOf, recordOf }
+}
+
+/**
  * A drawn matchup opened from the bracket: its opening-round game, as a matchup modal. Open only
  * while the season is live (before week 6 Sleeper already has both lineups for it); a draw replayed
  * for an old season has no lineups to show, so its slots stay plain.
  */
-function useDrawnGame(opening: RoundOutline | undefined, ledger: LedgerMatchup[]) {
+function useDrawnGame(opening: RoundOutline | undefined, ledger: LedgerMatchup[], formOf: FormOf) {
   const [index, setIndex] = useState<number | null>(null)
   const first = ledger[0]
   // Every opening game is the same week of the same season, so one answers for all of them.
   const openable = opening !== undefined && first !== undefined && cupGameSource(CUP_YEAR, first.a, first.b) !== undefined
   const open = index === null ? undefined : ledger[index]
   const modal = open && opening && (
-    <CupMatchupModal game={{ year: CUP_YEAR, week: opening.week, label: opening.label, a: open.a, b: open.b }} onClose={() => setIndex(null)} />
+    <CupMatchupModal game={{ year: CUP_YEAR, week: opening.week, label: opening.label, a: open.a, b: open.b }} formOf={formOf} onClose={() => setIndex(null)} />
   )
   return { onOpen: openable ? setIndex : undefined, modal }
 }
@@ -106,7 +126,8 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
 
-  const drawnGame = useDrawnGame(rounds[0], reveal.ledger)
+  const opening = useOpeningForm(seasons, rounds[0])
+  const drawnGame = useDrawnGame(rounds[0], reveal.ledger, opening.formOf)
 
   useSpaceToAdvance(advance)
   useEffect(() => onProgress?.(settled), [onProgress, settled])
@@ -151,7 +172,7 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
         <>
           {/* Stacked: the spinner gets the full width (squeezed beside the bracket, names and the
               reel were cut off), and the two-sided bracket is short enough to sit under it. */}
-          <CurrentMatchup reveal={reveal} story={story} ratings={ratings} muted={muted} />
+          <CurrentMatchup reveal={reveal} story={story} ratings={ratings} recordOf={opening.recordOf} muted={muted} />
           <DrawBracket
             rounds={rounds}
             order={order}

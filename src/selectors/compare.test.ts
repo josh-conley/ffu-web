@@ -74,6 +74,19 @@ describe('memberComparison', () => {
   })
 })
 
+describe('memberComparison · season', () => {
+  it('compares the latest season, each member in the league they played it in', () => {
+    const { season } = memberComparison(seasons, [], 'a', 'b')
+    expect(season?.year).toBe('2024')
+    expect(season?.a).toMatchObject({ tier: 'MASTERS', rank: 2 })
+    expect(season?.b).toMatchObject({ tier: 'MASTERS', rank: 1 })
+  })
+
+  it('leaves out a member who sat that season out', () => {
+    expect(memberComparison(seasons, [], 'a', 'new').season?.b).toBeUndefined()
+  })
+})
+
 describe('pointsPerGame', () => {
   it('divides points by games played, and has no value before a game', () => {
     expect(pointsPerGame(memberComparison(seasons, [], 'a', 'b').a.career)).toBeCloseTo(2700 / 28)

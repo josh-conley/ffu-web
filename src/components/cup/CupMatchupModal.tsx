@@ -1,8 +1,11 @@
+import type { FormOf } from '@/hooks/useFormGoingInto'
 import { cupGameSource, type CupGameSide } from '@/selectors'
+import { formLabel } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
 import { LineupModalFrame } from '../LineupModalFrame'
 import { LiveLineupModal } from '../LiveLineupModal'
 import { StaticBoxScoreBody } from '../StaticBoxScoreBody'
+import { teamAbbr } from '../seriesText'
 
 /** One Cup game to open: the round it belongs to and its two teams. */
 export interface CupGame {
@@ -30,20 +33,40 @@ function Title({ game, live }: { game: CupGame; live: boolean }) {
   )
 }
 
+/** Each team's record and UPR going into the game, either side of the box score's team heads. */
+function FormStrip({ game, formOf }: { game: CupGame; formOf: FormOf }) {
+  const line = (side: CupGameSide) => {
+    const form = formLabel(formOf(side.ffuId, game.week))
+    return form && `${teamAbbr(side.ffuId)} ${form}`
+  }
+  const [a, b] = [line(game.a), line(game.b)]
+  if (!a && !b) return null
+  return (
+    <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-2/40 px-2 py-1.5 font-mono text-[11px] tabular-nums text-muted sm:px-3 sm:text-xs">
+      <span className="min-w-0 truncate">{a}</span>
+      <span className="shrink-0 font-sans text-[10px] font-semibold uppercase tracking-wide">Going in</span>
+      <span className="min-w-0 truncate text-right">{b}</span>
+    </div>
+  )
+}
+
 /**
  * A Cup game's matchup modal: the same modal as a league game's (lineups, bench, the pair's series,
  * each team's profile), with each team's lineup read from its own league. Finished weeks read the
  * season's lineup files; the live season's other weeks read Sleeper, as the home page does.
+ * `formOf` adds each team's record and UPR going into the game above the box score.
  */
-export function CupMatchupModal({ game, onClose }: { game: CupGame; onClose: () => void }) {
+export function CupMatchupModal({ game, formOf, onClose }: { game: CupGame; formOf?: FormOf; onClose: () => void }) {
   const { year, week, a, b } = game
   const source = cupGameSource(year, a, b)
   const memberIds: [string, string] = [a.ffuId, b.ffuId]
+  const lead = formOf && <FormStrip game={game} formOf={formOf} />
   if (source?.kind === 'live') {
-    return <LiveLineupModal leagueIds={source.leagueIds} year={year} week={week} memberIds={memberIds} title={<Title game={game} live />} onClose={onClose} />
+    return <LiveLineupModal leagueIds={source.leagueIds} year={year} week={week} memberIds={memberIds} title={<Title game={game} live />} lead={lead} onClose={onClose} />
   }
   return (
     <LineupModalFrame title={<Title game={game} live={false} />} memberIds={memberIds} onClose={onClose}>
+      {lead}
       {source ? (
         <StaticBoxScoreBody
           year={year}

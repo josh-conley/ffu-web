@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CUP_ACCENT, CUP_FIELD_SIZE, CUP_INAUGURAL_YEAR, CUP_NAME, CUP_YEAR } from '@/config'
 import { useCup } from '@/hooks/useCup'
+import { useFormGoingInto } from '@/hooks/useFormGoingInto'
 import { useUrlState } from '@/hooks/useUrlState'
 import { Tabs, TabPanel, type TabDef } from '@/components/Tabs'
 import type { OpenMatchup } from '@/components/TournamentBracket'
@@ -22,7 +23,9 @@ const TABS: readonly TabDef[] = [
 ]
 
 export function Cup() {
-  const { tournament, outline, resolved, drawn, loading, error } = useCup(CUP_YEAR)
+  const { tournament, outline, resolved, drawn, tierSeasons, loading, error } = useCup(CUP_YEAR)
+  const roundWeeks = useMemo(() => outline.map((r) => r.week), [outline])
+  const formOf = useFormGoingInto(tierSeasons, roundWeeks)
   const [view, setView] = useUrlState('view', 'bracket')
   const [open, setOpen] = useState<OpenMatchup | null>(null)
 
@@ -31,12 +34,11 @@ export function Cup() {
   if (!tournament) return <ErrorMessage error={`No ${CUP_NAME} is scheduled for ${CUP_YEAR}.`} />
 
   const openMatchup = open ? open.round.matchups[open.matchupIndex] : undefined
-  const weeks = outline.map((r) => r.week)
   const facts = [
     { value: String(CUP_FIELD_SIZE), label: 'Teams' },
     { value: '3', label: 'Leagues' },
     { value: String(outline.length), label: 'Rounds' },
-    { value: weeks.length > 0 ? `${weeks[0]}–${weeks[weeks.length - 1]}` : '—', label: 'Weeks' },
+    { value: roundWeeks.length > 0 ? `${roundWeeks[0]}–${roundWeeks[roundWeeks.length - 1]}` : '—', label: 'Weeks' },
   ]
 
   return (
@@ -63,13 +65,14 @@ export function Cup() {
         </TabPanel>
       ) : (
         <TabPanel id="bracket">
-          <CupBracketPanel drawn={drawn} resolved={resolved} outline={outline} year={CUP_YEAR} onOpen={setOpen} />
+          <CupBracketPanel drawn={drawn} resolved={resolved} outline={outline} year={CUP_YEAR} onOpen={setOpen} formOf={formOf} />
         </TabPanel>
       )}
 
       {open && openMatchup && (
         <CupMatchupModal
           game={{ year: CUP_YEAR, week: open.round.week, label: open.round.label, a: openMatchup.a, b: openMatchup.b }}
+          formOf={formOf}
           onClose={() => setOpen(null)}
         />
       )}

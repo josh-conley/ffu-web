@@ -1,64 +1,42 @@
 import { useMemo } from 'react'
 import type { AsyncState } from './useAsyncData'
-import type { LiveLineups, NflGameClock, PlayerMap } from '@/data'
+import type { LiveLineups, PlayerMap } from '@/data'
 import { fetchLiveLineups, fetchMissingPlayers } from '@/data'
 import { startedPlayers } from '@/selectors'
 import { usePlayers } from './useLeagueData'
 import { useAsyncData } from './useAsyncData'
-import { liveScoreInterval, readFresh, readGameClocks } from './liveScoreRead'
-import { usePoll } from './usePoll'
 
 export interface LiveBoxScore {
   slots: string[]
   scoring: LiveLineups['scoring']
   players: PlayerMap
   teams: LiveLineups['teams']
-  /** When the lineups were last read (epoch ms); each poll moves it, so projections can follow. */
-  asOf: number
 }
 
 function allPlayerIds(lineups: LiveLineups): string[] {
   return lineups.teams.flatMap((t) => [...startedPlayers(t), ...t.bench, ...(t.reserve ?? [])].map((p) => p.playerId))
 }
 
-interface Read {
-  game: { leagueIds: readonly [string, string]; year: string; week: number; memberIds: [string, string] }
-  poll: boolean
-  manual: boolean
+interface LiveGame {
+  leagueIds: readonly [string, string]
+  year: string
+  week: number
+  memberIds: [string, string]
 }
 
 /**
- * One read of the lineups. Polled, it follows the home page's rule (liveScoreRead): past Sleeper's
- * CDN only while NFL games are on. A Refresh always reads past every cache, or it would get back
- * the answer already on screen.
+ * Live starters/bench + resolved player names for a live box score, read once when the modal opens.
+ * Player names resolve from the existing static players.json first (usePlayers, already cached
+ * across the app), then from the week's projections (this season's new players); Sleeper's full
+ * directory is only hit for a player neither names, which should almost never happen.
  */
-async function readLineups({ game: { leagueIds, year, week, memberIds }, poll, manual }: Read) {
-  const clocks: NflGameClock[] | undefined = poll ? await readGameClocks(year, week) : undefined
-  const fresh = poll ? readFresh(clocks, manual) : manual
-  return { ...(await fetchLiveLineups(leagueIds, week, memberIds, { fresh })), asOf: Date.now(), clocks }
-}
-
-/**
- * Live starters/bench + resolved player names for a live box score, fetched lazily (only while one
- * is open). Player names resolve from the existing static players.json first (usePlayers, already
- * cached across the app), then from the week's projections (this season's new players); Sleeper's
- * full directory is only hit for a player neither names, which should almost never happen.
- *
- * `poll` re-reads the lineups (and so every player's points) each minute while NFL games are on, hidden
- * tab or not: that's the popped-out matchup, which floats over other tabs. Without it the lineups are read once (a
- * one-shot poll, final after its first answer), which is all the modal needs.
- */
-export function useLiveBoxScore(
-  game: Read['game'],
-  { poll = false } = {},
-): AsyncState<LiveBoxScore> & { refresh: () => Promise<void> } {
+export function useLiveBoxScore(game: LiveGame): AsyncState<LiveBoxScore> {
+  const { leagueIds, week, memberIds } = game
   const players = usePlayers(true)
-  const lineups = usePoll(
-    `live-lineups:${game.leagueIds.join(',')}:${game.week}:${game.memberIds.join(',')}`,
-    ({ manual }) => readLineups({ game, poll, manual }),
+  const lineups = useAsyncData(
+    `live-lineups:${leagueIds.join(',')}:${week}:${memberIds.join(',')}`,
+    () => fetchLiveLineups(leagueIds, week, memberIds),
     true,
-    liveScoreInterval,
-    { isFinal: () => !poll, whileHidden: poll },
   )
 
   // Every id in the lineup — fetchMissingPlayers filters down to the ones the static map lacks.
@@ -71,13 +49,12 @@ export function useLiveBoxScore(
 
   const data: LiveBoxScore | undefined =
     lineups.data && players.data
-      ? { slots: lineups.data.slots, scoring: lineups.data.scoring, teams: lineups.data.teams, asOf: lineups.data.asOf, players: { ...players.data, ...(extra.data ?? {}) } }
+      ? { slots: lineups.data.slots, scoring: lineups.data.scoring, teams: lineups.data.teams, players: { ...players.data, ...(extra.data ?? {}) } }
       : undefined
 
   return {
     data,
     loading: players.loading || lineups.loading || (lineups.data !== undefined && extra.loading),
     error: players.error ?? lineups.error ?? extra.error,
-    refresh: lineups.refresh,
   }
 }

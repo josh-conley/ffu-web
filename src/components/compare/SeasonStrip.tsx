@@ -1,4 +1,4 @@
-import type { CompareSide, SeasonFinish, SeriesBreakdown } from '@/selectors'
+import type { CompareSide, SeasonFinish, SeriesBreakdown, WeeklySeries, WinLoss } from '@/selectors'
 import { HARDWARE } from '../hardware'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from '../leagues'
 import { ordinal } from '../format'
@@ -32,12 +32,25 @@ function Legend() {
           {LEAGUE_STYLES[tier].label}
         </span>
       ))}
-      <span>Number = final finish · H2H = their games that year</span>
     </div>
   )
 }
 
-export function SeasonStrip({ a, b, years, series }: { a: CompareSide; b: CompareSide; years: string[]; series: SeriesBreakdown }) {
+const wl = (r: WinLoss | undefined) => (r ? `${r.wins}–${r.losses}${r.ties > 0 ? `–${r.ties}` : ''}` : '')
+
+/** A row of one record per year, under the two teams' chips. */
+function YearRow({ label, title, years, byYear }: { label: string; title: string; years: string[]; byYear: Record<string, WinLoss> }) {
+  return (
+    <tr className="text-xs text-muted">
+      <th scope="row" title={title} className="sticky left-0 bg-surface px-3 py-1.5 text-left text-[11px] font-bold uppercase tracking-wider">{label}</th>
+      {years.map((y) => (
+        <td key={y} className="px-1 py-1.5 text-center font-mono tabular-nums">{wl(byYear[y])}</td>
+      ))}
+    </tr>
+  )
+}
+
+export function SeasonStrip({ a, b, years, series, weekly }: { a: CompareSide; b: CompareSide; years: string[]; series: SeriesBreakdown; weekly: WeeklySeries }) {
   const finishIn = (side: CompareSide, year: string) => side.career.finishes.find((f) => f.year === year)
   const CELL = 'px-1 py-1.5 text-center'
   return (
@@ -62,17 +75,8 @@ export function SeasonStrip({ a, b, years, series }: { a: CompareSide; b: Compar
                 ))}
               </tr>
             ))}
-            <tr className="text-xs text-muted">
-              <th scope="row" className="sticky left-0 bg-surface px-3 py-1.5 text-left text-[11px] font-bold uppercase tracking-wider">H2H</th>
-              {years.map((y) => {
-                const wl = series.byYear[y]
-                return (
-                  <td key={y} className={`${CELL} font-mono tabular-nums`}>
-                    {wl ? `${wl.wins}–${wl.losses}${wl.ties > 0 ? `–${wl.ties}` : ''}` : ''}
-                  </td>
-                )
-              })}
-            </tr>
+            <YearRow label="H2H" title="Their games against each other that year" years={years} byYear={series.byYear} />
+            <YearRow label="Every wk" title="Every regular-season week both played that year, as if against each other" years={years} byYear={weekly.byYear} />
           </tbody>
         </table>
       </div>

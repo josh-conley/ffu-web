@@ -1,12 +1,13 @@
-import { pointsPerGame, type CareerStats, type CompareSide } from '@/selectors'
+import { pointsPerGame, type CareerStats, type CompareSide, type MemberComparison } from '@/selectors'
 import { formatPoints, ordinal, recordLabel } from '../format'
 import { teamAbbr } from '../seriesText'
 import { TierDots } from '../Trophies'
 import { CompareTable, GroupRow, HardwareRow, StatRow } from './CompareRows'
+import { VsRows } from './VsRows'
 
 // The whole-career comparison, every league together, in the groups the Stats page uses: results,
-// trophy case, scoring, standing and money. Same figures as the Stats table's "All leagues" row for
-// each member, so the two pages can never disagree.
+// trophy case, scoring, standing and money; then the pair set against each other. Same figures as
+// the Stats table's "All leagues" row for each member, so the two pages can never disagree.
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
 const usd = (n: number) => `$${n.toLocaleString('en-US')}`
@@ -88,14 +89,15 @@ function StandingRows({ a, b }: { a: CompareSide; b: CompareSide }) {
   )
 }
 
-/** Every career figure side by side, the better one in green. */
-export function CareerCompare({ a, b }: { a: CompareSide; b: CompareSide }) {
+/** Every career figure side by side, the better one in green, then the pair against each other. */
+export function CareerCompare({ comparison: { a, b, h2h, common, weekly } }: { comparison: MemberComparison }) {
   return (
     <CompareTable aLabel={teamAbbr(a.memberId)} bLabel={teamAbbr(b.memberId)} caption="Career comparison">
       <ResultRows a={a.career} b={b.career} />
       <HardwareRows a={a.career} b={b.career} />
       <ScoringRows a={a.career} b={b.career} />
       <StandingRows a={a} b={b} />
+      <VsRows h2h={{ wins: h2h.wins, losses: h2h.losses, ties: h2h.ties }} common={common} weekly={weekly} />
     </CompareTable>
   )
 }

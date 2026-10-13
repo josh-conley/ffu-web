@@ -1,10 +1,13 @@
-import type { SeasonData, Tournament } from '@/data'
+import type { SeasonData, SeasonTeam, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
 import { careerStats, careerUpr, emptyCareer, type CareerStats } from './career'
 import { hasBeenPlayed } from './games'
 import { headToHead, lastMeeting, type H2HMeeting, type H2HRecord } from './headToHead'
 import { careerWinnings } from './prizes'
+import { commonOpponents, weeklySeries, type CommonOpponents, type WeeklySeries } from './pairRecords'
 import { meetingOrder } from './rivals'
+import { regularSeasonStandings } from './standings'
+import { seasonUpr } from './upr'
 
 // Everything the Compare view shows for a pair of members (the Members page's ?vs= and the matchup
 // modal's Compare toggle). Built on the same selectors as the rest of the site (careerStats,
@@ -47,11 +50,38 @@ export interface SeriesBreakdown {
   byYear: Record<string, WinLoss>
 }
 
+/** One member's season so far (or finished), in the league they played it in. */
+export interface SeasonSide {
+  memberId: string
+  tier: Tier
+  /** Sleeper's stored record and points for the season — as the Standings page shows them. */
+  team: SeasonTeam
+  /** Regular-season standing in their league. */
+  rank: number
+  upr: number | undefined
+}
+
+/** The most recent season, side by side: the "this season" half of the Compare view. */
+export interface SeasonCompare {
+  year: string
+  /** Undefined for a member who didn't play that season. */
+  a: SeasonSide | undefined
+  b: SeasonSide | undefined
+  common: CommonOpponents
+  weekly: WeeklySeries
+}
+
 export interface MemberComparison {
   a: CompareSide
   b: CompareSide
   h2h: H2HRecord
   series: SeriesBreakdown
+  /** Every opponent both have played, all time. */
+  common: CommonOpponents
+  /** Every regular-season week both have played, all time, as if against each other. */
+  weekly: WeeklySeries
+  /** The latest season on file; undefined only before any season has been played. */
+  season: SeasonCompare | undefined
   /** Every played season's year, oldest first: the columns of the season-by-season strip. */
   years: string[]
 }
@@ -99,6 +129,26 @@ function careersByTier(played: SeasonData[]): Record<Tier, Map<string, CareerSta
   return out
 }
 
+function seasonSide(seasons: SeasonData[], memberId: string): SeasonSide | undefined {
+  for (const season of seasons) {
+    const row = regularSeasonStandings(season).find((r) => r.team.memberId === memberId)
+    if (row) return { memberId, tier: season.tier, team: row.team, rank: row.rank, upr: seasonUpr(season).get(memberId) }
+  }
+  return undefined
+}
+
+function seasonCompare(played: SeasonData[], year: string | undefined, aId: string, bId: string): SeasonCompare | undefined {
+  if (year === undefined) return undefined
+  const ofYear = played.filter((s) => s.year === year)
+  return {
+    year,
+    a: seasonSide(ofYear, aId),
+    b: seasonSide(ofYear, bId),
+    common: commonOpponents(ofYear, aId, bId),
+    weekly: weeklySeries(ofYear, aId, bId),
+  }
+}
+
 /** Always pass the FULL season set (and every Cup): the comparison is of whole careers. */
 export function memberComparison(seasons: SeasonData[], tournaments: Tournament[], aId: string, bId: string): MemberComparison {
   const careers = careerStats(seasons)
@@ -114,8 +164,18 @@ export function memberComparison(seasons: SeasonData[], tournaments: Tournament[
     return { memberId, career: careers.get(memberId) ?? emptyCareer(memberId), byTier, upr: upr.get(memberId), winnings: winnings.get(memberId)?.total ?? 0 }
   }
   const h2h = headToHead(seasons, aId, bId)
-  const years = [...new Set(seasons.filter(hasBeenPlayed).map((s) => s.year))].sort()
-  return { a: side(aId), b: side(bId), h2h, series: seriesBreakdown(h2h), years }
+  const played = seasons.filter(hasBeenPlayed)
+  const years = [...new Set(played.map((s) => s.year))].sort()
+  return {
+    a: side(aId),
+    b: side(bId),
+    h2h,
+    series: seriesBreakdown(h2h),
+    common: commonOpponents(seasons, aId, bId),
+    weekly: weeklySeries(seasons, aId, bId),
+    season: seasonCompare(played, years.at(-1), aId, bId),
+    years,
+  }
 }
 
 /** Points per game over a career (or a league's share of one); undefined before a game is played. */

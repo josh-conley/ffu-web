@@ -1,5 +1,6 @@
 import type { SeasonData, SeasonTeam } from '@/data'
 import { regularSeasonTotals, type TeamTotals } from './games'
+import { seasonUpr } from './upr'
 
 // The union as it stood at the end of a given week — so a question like "what did week 6 change?"
 // is answered by comparing two ordinary snapshots with the ordinary selectors, rather than by a
@@ -52,4 +53,26 @@ export function seasonsThroughWeek(seasons: SeasonData[], year: string, week: nu
   return seasons
     .filter((s) => Number(s.year) <= Number(year))
     .map((s) => (s.year === year ? seasonThroughWeek(s, week) : s))
+}
+
+/** A team's season so far: its regular-season totals and its UPR (undefined until UPR is rated). */
+export interface TeamForm {
+  totals: TeamTotals
+  upr: number | undefined
+}
+
+/**
+ * Each team's record and UPR going into `week`: their league's regular-season games before it.
+ * The same numbers a live matchup card shows under each team (record + UPR through the last
+ * completed week), for a game picked out of any league — a Cup game's two teams each carry their
+ * own league's. Pass one year's seasons; a team in none of them has no entry.
+ */
+export function formGoingInto(seasons: readonly SeasonData[], week: number): Map<string, TeamForm> {
+  const out = new Map<string, TeamForm>()
+  for (const season of seasons) {
+    const before = { games: season.games.filter((g) => g.week < week) }
+    const upr = seasonUpr(before)
+    for (const [id, totals] of regularSeasonTotals(before)) out.set(id, { totals, upr: upr.get(id) })
+  }
+  return out
 }
