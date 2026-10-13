@@ -16,16 +16,19 @@ name: Refresh live season
 # Josh, who can bypass the ruleset, so THIS FILE is what holds the line: it merges only after
 # `verify` passes. It is used here only; never hand it to discord-requests.yml's agent.
 #
-# Schedule: Tuesdays 10:17 and 14:17 UTC (6am/10am ET; an hour earlier after the clocks change),
-# September–December. The second run is a safety net for Sleeper rolling its week over late, and
-# is a no-op when the first run already committed. The months stop at December because the script
+# Schedule: Tuesdays 9:05am and 1:05pm Eastern, September–December. Cron is UTC only, so the
+# months split by daylight saving: EDT (UTC-4) through October, EST (UTC-5) from November. In a
+# year whose clocks change after the first Tuesday of November (first Sunday is the 3rd or later)
+# that one Tuesday runs an hour late. The afternoon run is a safety net: GitHub's scheduled runs are
+# best-effort and have been dropped or hours late (none on 2026-10-13 by 10:40am ET), and it's a
+# no-op when the morning run already committed. The months stop at December because the script
 # defaults to the calendar year and refuses any year that isn't live — a January run would fail —
-# and the regular season (all this writes) is over by mid-December anyway. Minute 17, not :00:
-# GitHub sheds scheduled runs at the top of the hour under load, and the 10:00 run was dropped on
-# both 2026-09-22 and 2026-09-29.
+# and the regular season (all this writes) is over by mid-December anyway. Minute 5, not :00:
+# GitHub sheds scheduled runs at the top of the hour under load.
 on:
   schedule:
-    - cron: '17 10,14 * 9-12 2'
+    - cron: '5 13,17 * 9-10 2'
+    - cron: '5 14,18 * 11-12 2'
   workflow_dispatch: {}
 
 # The built-in token only reads; every write goes through DATA_REFRESH_TOKEN (see above).
