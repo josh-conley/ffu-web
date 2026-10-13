@@ -81,19 +81,26 @@ export function HardwareRow({ label, kind, a, b, better = 'high' }: { label: str
   )
 }
 
-/** The compare tables' frame, the same width for each so the stacked tables line up. */
-export const COMPARE_FRAME = 'mx-auto max-w-2xl border border-border bg-surface shadow-sm'
+/** Every compare table's card: full width, so its edges sit under the section heading's. */
+export const COMPARE_FRAME = 'border border-border bg-surface shadow-sm'
+
+/**
+ * The centre label column, 144px from `sm` up: the header's "vs" gap, so the label's edges line
+ * up with the nameplates' inner edges. The figure columns either side are fixed and centred on it,
+ * and the outermost columns take the spare width, so a wide page never drifts the figures apart.
+ */
+export const LABEL_COL = 'w-[20%] sm:w-36'
 
 /** The compare table's frame, headed by each side's short name so a long table stays readable. */
 export function CompareTable({ aLabel, bLabel, caption, children }: { aLabel: string; bLabel: string; caption: string; children: ReactNode }) {
   return (
-    <div className={COMPARE_FRAME}>
+    <div className={`${COMPARE_FRAME} overflow-x-auto`}>
       <table className="w-full table-fixed text-sm">
         <caption className="sr-only">{caption}</caption>
         <colgroup>
-          <col className="w-[42%]" />
           <col />
-          <col className="w-[42%]" />
+          <col className={LABEL_COL} />
+          <col />
         </colgroup>
         <thead>
           <tr className="text-xs font-bold uppercase tracking-wider">
