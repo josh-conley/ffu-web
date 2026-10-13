@@ -1,14 +1,13 @@
 import { Fragment, type ReactNode } from 'react'
-import { FaTrophy, FaMedal, FaAward } from 'react-icons/fa6'
-import { TbPennantFilled } from 'react-icons/tb'
 import type { CareerStats, SeasonFinish } from '@/selectors'
+import { HARDWARE } from './hardware'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 
-const HARDWARE = {
-  1: { icon: FaTrophy, ordinal: '1st', label: 'Champion' },
-  2: { icon: FaMedal, ordinal: '2nd', label: 'Runner-up' },
-  3: { icon: FaAward, ordinal: '3rd', label: 'Third place' },
-} as const
+const PLACES = [
+  { place: 1, ordinal: '1st', hardware: HARDWARE.title },
+  { place: 2, ordinal: '2nd', hardware: HARDWARE.second },
+  { place: 3, ordinal: '3rd', hardware: HARDWARE.third },
+] as const
 
 /** Tier prestige (Premier hardware leads), then newest year. */
 const byPrestige = (a: SeasonFinish, b: SeasonFinish) =>
@@ -37,31 +36,28 @@ function Tile({ icon, primary, year, tier, tooltip }: TileProps) {
 
 /** Placement (1st/2nd/3rd) tile groups, best first, then a pennant group for division winners. */
 function tileGroups(career: CareerStats): ReactNode[][] {
-  const groups = ([1, 2, 3] as const).map((place) =>
+  const groups = PLACES.map(({ place, ordinal, hardware: { icon: Icon, label, match } }) =>
     career.finishes
-      .filter((f) => f.finalPlacement === place)
+      .filter(match)
       .sort(byPrestige)
-      .map((f) => {
-        const { icon: Icon, ordinal, label } = HARDWARE[place]
-        return (
-          <Tile
-            key={`${place}-${f.tier}-${f.year}`}
-            icon={<Icon size={22} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
-            primary={ordinal}
-            year={f.year}
-            tier={f.tier}
-            tooltip={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`}
-          />
-        )
-      }),
+      .map((f) => (
+        <Tile
+          key={`${place}-${f.tier}-${f.year}`}
+          icon={<Icon size={22} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
+          primary={ordinal}
+          year={f.year}
+          tier={f.tier}
+          tooltip={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`}
+        />
+      )),
   )
   const pennants = career.finishes
-    .filter((f) => f.wonDivision)
+    .filter(HARDWARE.pennant.match)
     .sort(byPrestige)
     .map((f) => (
       <Tile
         key={`pennant-${f.tier}-${f.year}`}
-        icon={<TbPennantFilled size={24} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
+        icon={<HARDWARE.pennant.icon size={24} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
         primary="Div"
         year={f.year}
         tier={f.tier}

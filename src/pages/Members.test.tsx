@@ -98,8 +98,11 @@ it('shows a member detail with derived debut year + owner', async () => {
 
 it('shows a head-to-head comparison when ?vs is set', async () => {
   renderAt('/members?member=ffu-023&vs=ffu-009')
-  await waitFor(() => expect(screen.getByText('Head-to-Head')).toBeInTheDocument())
-  expect(screen.getByText('Championships')).toBeInTheDocument() // career compare row
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Head-to-Head' })).toBeInTheDocument())
+  for (const section of ['Trophy Case', 'Tale of the Tape', 'By League', 'Season by Season']) {
+    expect(screen.getByRole('heading', { name: section })).toBeInTheDocument()
+  }
+  expect(within(screen.getByRole('table', { name: 'Career comparison' })).getByRole('rowheader', { name: 'Titles' })).toBeInTheDocument()
 })
 
 it("lists a member's rivals with a plain Compare link and no win% column", async () => {
