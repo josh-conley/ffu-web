@@ -81,10 +81,13 @@ export function HardwareRow({ label, kind, a, b, better = 'high' }: { label: str
   )
 }
 
+/** The compare tables' frame, the same width for each so the stacked tables line up. */
+export const COMPARE_FRAME = 'mx-auto max-w-2xl border border-border bg-surface shadow-sm'
+
 /** The compare table's frame, headed by each side's short name so a long table stays readable. */
 export function CompareTable({ aLabel, bLabel, caption, children }: { aLabel: string; bLabel: string; caption: string; children: ReactNode }) {
   return (
-    <div className="border border-border bg-surface shadow-sm">
+    <div className={COMPARE_FRAME}>
       <table className="w-full table-fixed text-sm">
         <caption className="sr-only">{caption}</caption>
         <colgroup>

@@ -43,11 +43,17 @@ it('sets the season beside the career, the better of each pair in green', () => 
   expect(green(bCareer)).toBeNull()
 })
 
-it('leaves the career cells of a season-only row blank', () => {
+it('shows this season\'s league beside a dot per career season, in that season\'s league', () => {
   renderCompare()
-  const [aCareer, aSeason, , bSeason, bCareer] = cells('League')
+  const [aCareer, aSeason, , bSeason] = cells('League')
   expect(aSeason).toHaveTextContent('National')
   expect(bSeason).toHaveTextContent('National')
+  expect(within(aCareer!).getByLabelText(/Premier/)).toBeInTheDocument()
+})
+
+it('leaves the career cells of a season-only row blank', () => {
+  renderCompare()
+  const [aCareer, , , , bCareer] = cells('Standing')
   expect(aCareer).toBeEmptyDOMElement()
   expect(bCareer).toBeEmptyDOMElement()
 })

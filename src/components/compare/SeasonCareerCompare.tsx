@@ -2,6 +2,7 @@ import { winPct, type CompareSide, type MemberComparison, type SeasonCompare, ty
 import { formatPoints, ordinal, recordLabel } from '../format'
 import { LEAGUE_STYLES } from '../leagues'
 import { teamAbbr } from '../seriesText'
+import { TierDots } from '../Trophies'
 import type { Better } from './better'
 import { ScopeGroupRow, ScopeRow, ScopeTable, type ScopePair } from './ScopeRows'
 import { VsRows } from './VsRows'
@@ -83,21 +84,24 @@ function Lines({ lines, season, career }: { lines: Line[] } & Scopes) {
   ))
 }
 
-/** The rows only a season has: the league each team is in, and its place there. */
-function SeasonOnlyRows({ season: { a, b } }: { season: SeasonCompare }) {
+/** The league each team is in this season, beside every league of its career as a dot per season. */
+function LeagueRow({ season: { a, b }, careers }: { season: SeasonCompare; careers: [CompareSide, CompareSide] }) {
   const league = (s: SeasonSide | undefined) => (s ? <span className={`font-sans font-bold ${LEAGUE_STYLES[s.tier].readableText}`}>{LEAGUE_STYLES[s.tier].label}</span> : dash)
+  const dots = ({ career }: CompareSide) => <TierDots tiers={[...career.finishes].sort((x, y) => x.year.localeCompare(y.year)).map((f) => f.tier)} />
+  return <ScopeRow label="League" season={{ a: league(a), b: league(b) }} career={{ a: dots(careers[0]), b: dots(careers[1]) }} />
+}
+
+/** The row only a season has: each team's place in its own league, the career cells left blank. */
+function StandingRow({ season: { a, b } }: { season: SeasonCompare }) {
   // A standing is only comparable inside one league: 2nd in Premier isn't "behind" 1st in National.
   const sameLeague = a !== undefined && b !== undefined && a.tier === b.tier
   return (
-    <>
-      <ScopeRow label="League" season={{ a: league(a), b: league(b) }} />
-      <ScopeRow
-        label="Standing"
-        title="Regular-season place in their own league"
-        season={{ a: a ? ordinal(a.rank) : dash, b: b ? ordinal(b.rank) : dash, values: sameLeague ? [a.rank, b.rank] : undefined }}
-        better="low"
-      />
-    </>
+    <ScopeRow
+      label="Standing"
+      title="Regular-season place in their own league"
+      season={{ a: a ? ordinal(a.rank) : dash, b: b ? ordinal(b.rank) : dash, values: sameLeague ? [a.rank, b.rank] : undefined }}
+      better="low"
+    />
   )
 }
 
@@ -107,7 +111,8 @@ export function SeasonCareerCompare({ comparison, season }: { comparison: Member
   return (
     <ScopeTable aLabel={teamAbbr(a.memberId)} bLabel={teamAbbr(b.memberId)} year={season.year} caption={`${season.year} season and career comparison`}>
       <ScopeGroupRow label="Standing" />
-      <SeasonOnlyRows season={season} />
+      <LeagueRow season={season} careers={[a, b]} />
+      <StandingRow season={season} />
       <Lines lines={[UPR]} {...scopes} />
       <ScopeGroupRow label="Results" />
       <Lines lines={RESULTS} {...scopes} />

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { BETTER_TEXT, leaderOf, type Better } from './better'
-import { GroupRow } from './CompareRows'
+import { COMPARE_FRAME, GroupRow } from './CompareRows'
 
 // The season-and-career table: each member gets two columns, mirrored about the label, career on
 // the outside and the season next to it (Career · Season | label | Season · Career). A row pits
@@ -18,7 +18,7 @@ const SCOPE_COLUMNS = 5
 
 /** The career columns are tinted, so the eye keeps the two scopes apart down a long table. */
 const CAREER_TINT = 'bg-surface-2/50'
-const PAD = 'px-1.5 py-2 sm:px-3'
+const PAD = 'px-1 py-2 sm:px-3'
 
 function Cell({ pair, side, better, career }: { pair: ScopePair | undefined; side: 'a' | 'b'; better: Better; career: boolean }) {
   const lead = pair?.values ? leaderOf(pair.values, better) : undefined
@@ -55,25 +55,31 @@ export function ScopeGroupRow({ label }: { label: string }) {
   return <GroupRow label={label} span={SCOPE_COLUMNS} />
 }
 
-/** The frame: each side's short name over its two columns, then which column is which. */
+/**
+ * The frame: each side's short name over its two columns, then which column is which. Capped and
+ * centred under the nameplates: stretched across a desktop page, four figure columns drift so far
+ * apart that a row stops reading as one line.
+ */
 export function ScopeTable({ aLabel, bLabel, year, caption, children }: { aLabel: string; bLabel: string; year: string; caption: string; children: ReactNode }) {
-  const scope = 'px-1.5 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted sm:px-3'
+  const scope = 'px-1 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted sm:px-3'
   return (
-    <div className="border border-border bg-surface shadow-sm">
-      <table className="w-full table-fixed text-xs sm:text-sm">
+    // Below ~22rem (a small phone, in the modal) the table scrolls rather than let a career total
+    // like 14,088.00 spill out of its column.
+    <div className={`${COMPARE_FRAME} overflow-x-auto`}>
+      <table className="w-full min-w-[22rem] table-fixed text-[11px] sm:text-sm">
         <caption className="sr-only">{caption}</caption>
         <colgroup>
-          <col className="w-[21%]" />
-          <col className="w-[21%]" />
+          <col className="w-[20%]" />
+          <col className="w-[20%]" />
           <col />
-          <col className="w-[21%]" />
-          <col className="w-[21%]" />
+          <col className="w-[20%]" />
+          <col className="w-[20%]" />
         </colgroup>
         <thead>
           <tr className="text-xs font-bold uppercase tracking-wider">
-            <th scope="colgroup" colSpan={2} className="px-1.5 pt-2 pb-1 text-right sm:px-3">{aLabel}</th>
+            <th scope="colgroup" colSpan={2} className="px-1 pt-2 pb-1 text-right sm:px-3">{aLabel}</th>
             <td />
-            <th scope="colgroup" colSpan={2} className="px-1.5 pt-2 pb-1 text-left sm:px-3">{bLabel}</th>
+            <th scope="colgroup" colSpan={2} className="px-1 pt-2 pb-1 text-left sm:px-3">{bLabel}</th>
           </tr>
           <tr>
             <th scope="col" className={`${scope} text-right ${CAREER_TINT}`}>Career</th>
