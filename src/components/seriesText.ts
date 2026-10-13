@@ -10,6 +10,12 @@ export function seriesScore(s: SeriesStanding): string {
   return `${s.leaderWins}–${s.trailerWins}${tail}`
 }
 
+/** The series in a line, leader first: "STA leads all-time 5–4", "All-time series tied 2–2", "First meeting". */
+export function seriesHeadline(s: SeriesStanding): string {
+  if (s.meetings === 0) return 'First meeting'
+  return s.leaderId ? `${teamAbbr(s.leaderId)} leads all-time ${seriesScore(s)}` : `All-time series tied ${seriesScore(s)}`
+}
+
 function lastMetText(m: H2HMeeting): string {
   return m.isPlayoff ? `last met in the ${m.year} playoffs` : `last met ${m.year} Wk ${m.week}`
 }

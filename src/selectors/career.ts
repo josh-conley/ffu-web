@@ -67,6 +67,13 @@ export interface CareerStats {
   finishes: SeasonFinish[]
 }
 
+/**
+ * Finished last in a real league (more than three teams): the Stats page's "Last" column and the
+ * Compare view's. A three-team table is too small for last place to mean anything.
+ */
+export const isLastPlaceFinish = (f: SeasonFinish): boolean =>
+  f.finalPlacement !== null && f.finalPlacement === f.seasonSize && f.seasonSize > 3
+
 export interface TitleWin {
   year: string
   tier: Tier
@@ -99,7 +106,8 @@ function championshipBracketSeasons(seasons: SeasonData[]): Map<string, Set<stri
   return byMember
 }
 
-function emptyCareer(memberId: string): CareerStats {
+/** A career with nothing in it yet: a member with no played season on file. */
+export function emptyCareer(memberId: string): CareerStats {
   return {
     memberId,
     seasons: 0,

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { CUP_YEAR } from '@/config'
 import type { SeasonData } from '@/data'
 import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
-import { matchupStory, matchupTag, type DrawRating, type RoundOutline } from '@/selectors'
+import { cupGameSource, matchupStory, matchupTag, type DrawRating, type RoundOutline } from '@/selectors'
 import { SPIN_MS, TOTAL_MATCHUPS, useCupDrawReveal } from '@/hooks/useCupDrawReveal'
 import { useSpaceToAdvance } from '@/hooks/useSpaceToAdvance'
 import { DrawBracket, type SlotSeeds } from './DrawBracket'
@@ -13,6 +14,8 @@ import { DrawReel } from './DrawReel'
 import { DrawTopBar } from './DrawTopBar'
 import { MatchupStoryLine } from './MatchupStoryLine'
 import { downloadText } from './downloads'
+import { CupMatchupModal } from '../CupMatchupModal'
+import type { LedgerMatchup } from './DrawBracketSlots'
 
 // The stage. Built for a stream: the operator drives it with the space bar (nothing to see on
 // camera), type is large, and the seed stays on screen throughout as proof it was fixed up front.
@@ -57,6 +60,23 @@ function CurrentMatchup({ reveal, story, ratings, muted }: {
 
 const NO_RATINGS = new Map<string, DrawRating>()
 
+/**
+ * A drawn matchup opened from the bracket: its opening-round game, as a matchup modal. Open only
+ * while the season is live (before week 6 Sleeper already has both lineups for it); a draw replayed
+ * for an old season has no lineups to show, so its slots stay plain.
+ */
+function useDrawnGame(opening: RoundOutline | undefined, ledger: LedgerMatchup[]) {
+  const [index, setIndex] = useState<number | null>(null)
+  const first = ledger[0]
+  // Every opening game is the same week of the same season, so one answers for all of them.
+  const openable = opening !== undefined && first !== undefined && cupGameSource(CUP_YEAR, first.a, first.b) !== undefined
+  const open = index === null ? undefined : ledger[index]
+  const modal = open && opening && (
+    <CupMatchupModal game={{ year: CUP_YEAR, week: opening.week, label: opening.label, a: open.a, b: open.b }} onClose={() => setIndex(null)} />
+  )
+  return { onOpen: openable ? setIndex : undefined, modal }
+}
+
 export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
   /** The season's rounds, for the bracket's shape. */
@@ -85,6 +105,8 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
   const { advance, drawer, drawn, settled } = reveal
   // Sound is on by default: this is an operator view for a broadcast, not a page anyone stumbles on.
   const [muted, setMuted] = useState(false)
+
+  const drawnGame = useDrawnGame(rounds[0], reveal.ledger)
 
   useSpaceToAdvance(advance)
   useEffect(() => onProgress?.(settled), [onProgress, settled])
@@ -123,7 +145,7 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
-          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} />
+          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} onOpen={drawnGame.onOpen} />
         </DrawComplete>
       ) : (
         <>
@@ -136,10 +158,12 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
             seeds={seeds}
             matchups={reveal.ledger}
             cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
+            onOpen={drawnGame.onOpen}
           />
         </>
       )}
       <RestartButton drawnAny={settled > 0} onRestart={onRestart} />
+      {drawnGame.modal}
     </div>
   )
 }

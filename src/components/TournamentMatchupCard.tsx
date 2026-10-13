@@ -19,8 +19,8 @@ function SideRow({ side, year, isWinner, dim, linked }: { side: ResolvedSide; ye
   )
 }
 
-/** One bracket matchup: two sides with a tier-color dot, winner highlighted. Clickable (→ box score)
- *  only once both sides have a score. */
+/** One bracket matchup: two sides with a tier-color dot, winner highlighted. Clickable (→ the
+ *  matchup modal) once there is a box score to show: the week is on file, or the season is live. */
 export function TournamentMatchupCard({ matchup, year, onOpen }: { matchup: ResolvedMatchup; year: string; onOpen?: () => void }) {
   const { a, b, winner } = matchup
   const body = (

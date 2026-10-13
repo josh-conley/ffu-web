@@ -1,4 +1,5 @@
 import { nameForYear } from '@/config'
+import { cupGameSource } from '@/selectors'
 import type { ResolvedRound, ResolvedSide, ResolvedTournament } from '@/selectors/tournament'
 import { TournamentMatchupCard } from './TournamentMatchupCard'
 
@@ -28,17 +29,14 @@ function RoundColumn({ round, year, onOpen }: { round: ResolvedRound; year: stri
         {round.matchups.length === 0 ? (
           <p className="text-xs italic text-muted">Awaiting results</p>
         ) : (
-          round.matchups.map((m, i) => {
-            const hasScores = m.a.score !== undefined && m.b.score !== undefined
-            return (
-              <TournamentMatchupCard
-                key={i}
-                matchup={m}
-                year={year}
-                onOpen={hasScores ? () => onOpen({ round, matchupIndex: i }) : undefined}
-              />
-            )
-          })
+          round.matchups.map((m, i) => (
+            <TournamentMatchupCard
+              key={i}
+              matchup={m}
+              year={year}
+              onOpen={cupGameSource(year, m.a, m.b) ? () => onOpen({ round, matchupIndex: i }) : undefined}
+            />
+          ))
         )}
       </div>
     </section>

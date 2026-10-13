@@ -74,7 +74,7 @@ describe('fetchLiveSeason', () => {
 
 describe('fetchLiveLineups', () => {
   it('builds starters + bench for each named member from the matchup entry', async () => {
-    const data = await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])
+    const data = await fetchLiveLineups(['lg1', 'lg1'], 1, ['ffu-001', 'ffu-002'])
     expect(data.slots).toEqual(['QB', 'RB'])
     const [a, b] = data.teams
     expect(a).toEqual({ memberId: 'ffu-001', starters: [{ playerId: 'p1', points: 60 }, { playerId: 'p2', points: 40.5 }], bench: [{ playerId: 'p3', points: 5 }], reserve: [] })
@@ -84,7 +84,7 @@ describe('fetchLiveLineups', () => {
   it('moves a roster\'s injured-reserve players out of the bench into `reserve`', async () => {
     const withIr = ROSTERS.map((r) => (r.roster_id === 1 ? { ...r, reserve: ['p3'] } : r))
     vi.stubGlobal('fetch', vi.fn((url: string) => (url.endsWith('/rosters') ? Promise.resolve({ ok: true, status: 200, json: async () => withIr } as Response) : mapFetch(url))))
-    const [a] = (await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).teams
+    const [a] = (await fetchLiveLineups(['lg1', 'lg1'], 1, ['ffu-001', 'ffu-002'])).teams
     expect(a.bench).toEqual([])
     expect(a.reserve).toEqual([{ playerId: 'p3', points: 5 }])
   })
@@ -92,12 +92,34 @@ describe('fetchLiveLineups', () => {
   it('keeps an empty starting slot (Sleeper id "0") as null in its place', async () => {
     const withEmpty = WEEK_1_MATCHUPS.map((e) => (e.roster_id === 1 ? { ...e, starters: ['0', 'p2'], starters_points: [0, 40.5] } : e))
     vi.stubGlobal('fetch', vi.fn((url: string) => (url.endsWith('/matchups/1') ? Promise.resolve({ ok: true, status: 200, json: async () => withEmpty } as Response) : mapFetch(url))))
-    const [a] = (await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).teams
+    const [a] = (await fetchLiveLineups(['lg1', 'lg1'], 1, ['ffu-001', 'ffu-002'])).teams
     expect(a.starters).toEqual([null, { playerId: 'p2', points: 40.5 }])
   })
 
+  it('reads each team from its own league for a cross-league (Cup) game', async () => {
+    // lg2 rosters ffu-002 as roster 1, so its lineup there is roster 1's entry, not lg1's.
+    const lg2Rosters = [{ roster_id: 1, owner_id: '396808818157182976' }]
+    const lg2Matchups = [{ roster_id: 1, matchup_id: 1, starters: ['p9'], starters_points: [12], players: ['p9'], players_points: { p9: 12 } }]
+    const fetch = vi.fn((requested: string) => {
+      const url = requested.split('?')[0] ?? requested
+      const ok = (body: unknown) => Promise.resolve({ ok: true, status: 200, json: async () => body } as Response)
+      if (url.endsWith('/league/lg2')) return ok({ roster_positions: ['QB'], scoring_settings: {} })
+      if (url.endsWith('/league/lg2/rosters')) return ok(lg2Rosters)
+      if (url.endsWith('/league/lg2/matchups/1')) return ok(lg2Matchups)
+      return mapFetch(requested)
+    })
+    vi.stubGlobal('fetch', fetch)
+    const data = await fetchLiveLineups(['lg1', 'lg2'], 1, ['ffu-001', 'ffu-002'])
+    expect(data.teams.map((t) => t.starters)).toEqual([
+      [{ playerId: 'p1', points: 60 }, { playerId: 'p2', points: 40.5 }],
+      [{ playerId: 'p9', points: 12 }],
+    ])
+    // Slots and scoring are the first team's league's.
+    expect(data.slots).toEqual(['QB', 'RB'])
+  })
+
   it('carries the league\'s scoring rules for projecting', async () => {
-    expect((await fetchLiveLineups('lg1', 1, ['ffu-001', 'ffu-002'])).scoring).toEqual({ rec: 0.5 })
+    expect((await fetchLiveLineups(['lg1', 'lg1'], 1, ['ffu-001', 'ffu-002'])).scoring).toEqual({ rec: 0.5 })
   })
 })
 

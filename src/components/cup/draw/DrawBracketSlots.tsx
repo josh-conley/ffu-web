@@ -37,8 +37,11 @@ function Row({ side, seed }: { side: MatchupSide | undefined; seed: number | und
   )
 }
 
-/** An opening-round (Round of 36) slot: empty until drawn, ringed while on the clock. */
-export function OpeningSlot({ position, a, b, seeds, current, tag }: {
+/**
+ * An opening-round (Round of 36) slot: empty until drawn, ringed while on the clock. Once drawn,
+ * `onOpen` makes it a button that opens the game's matchup modal.
+ */
+export function OpeningSlot({ position, a, b, seeds, current, tag, onOpen }: {
   /** Top-to-bottom place in the bracket (0–17), for tests and screen readers. */
   position: number
   a: MatchupSide | undefined
@@ -46,19 +49,33 @@ export function OpeningSlot({ position, a, b, seeds, current, tag }: {
   seeds: SlotSeeds | undefined
   current: boolean
   tag: string | undefined
+  onOpen?: () => void
 }) {
-  return (
-    <div
-      data-slot={position}
-      aria-current={current ? 'step' : undefined}
-      className={`space-y-1 border bg-surface p-1.5 ${a ? 'border-border' : 'border-dashed border-border'}`}
-      // A ring, not a thicker border: the slot must not change size as the cursor moves.
-      style={current ? { boxShadow: `0 0 0 3px ${CUP_ACCENT}` } : undefined}
-    >
+  const props = {
+    'data-slot': position,
+    'aria-current': current ? ('step' as const) : undefined,
+    // A ring, not a thicker border: the slot must not change size as the cursor moves.
+    style: current ? { boxShadow: `0 0 0 3px ${CUP_ACCENT}` } : undefined,
+  }
+  const base = `block w-full space-y-1 border bg-surface p-1.5 text-left ${a ? 'border-border' : 'border-dashed border-border'}`
+  const body = (
+    <>
       <Row side={a} seed={seeds?.[0]} />
       <Row side={b} seed={seeds?.[1]} />
       {tag && <p className="pl-1 text-[10px] font-bold uppercase tracking-wide text-muted">{tag}</p>}
-    </div>
+    </>
+  )
+  if (!onOpen || !a || !b) return <div {...props} className={base}>{body}</div>
+  return (
+    <button
+      type="button"
+      {...props}
+      onClick={onOpen}
+      aria-label={`${a.name} v ${b.name}: open the matchup`}
+      className={`${base} cursor-pointer transition-colors hover:border-accent hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}
+    >
+      {body}
+    </button>
   )
 }
 

@@ -3,8 +3,7 @@ import { getMember } from '@/config'
 import type { Tier } from '@/config/types'
 import type { CareerEfficiency, CareerStats, SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
-import { FaTrophy, FaMedal, FaAward, FaToilet } from 'react-icons/fa6'
-import { TbPennantFilled } from 'react-icons/tb'
+import { HARDWARE } from '@/components/hardware'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLink } from '@/components/TeamLink'
 import { formatPoints } from '@/components/format'
@@ -92,8 +91,6 @@ function renderTiers(c: CareerStats): ReactNode {
   )
 }
 
-const isLast = (f: SeasonFinish) => f.finalPlacement !== null && f.finalPlacement === f.seasonSize && f.seasonSize > 3
-
 /** A finish column: one tier-colored icon per qualifying season (year on hover), or a dash. */
 function placementCol(key: string, header: string, icon: ReactNode, match: (f: SeasonFinish) => boolean, title?: string): Column<CareerStats> {
   return {
@@ -122,12 +119,13 @@ function placementCol(key: string, header: string, icon: ReactNode, match: (f: S
 const tiersSort = (c: CareerStats) => c.premierSeasons * 10_000 + c.mastersSeasons * 100 + c.nationalSeasons
 
 function finishColumns(): Column<CareerStats>[] {
+  const { title, second, third, pennant, last } = HARDWARE
   return [
-    placementCol('titles', '1st', <FaTrophy size={13} />, (f) => f.finalPlacement === 1, 'League champion'),
-    placementCol('second', '2nd', <FaMedal size={13} />, (f) => f.finalPlacement === 2),
-    placementCol('third', '3rd', <FaAward size={14} />, (f) => f.finalPlacement === 3),
-    placementCol('pennants', 'Div', <TbPennantFilled size={15} />, (f) => f.wonDivision, 'Division winner (best regular-season record in their division) — divisions exist in Sleeper seasons (2021+) only'),
-    placementCol('last', 'Last', <FaToilet size={14} />, isLast),
+    placementCol('titles', '1st', <title.icon size={13} />, title.match, 'League champion'),
+    placementCol('second', '2nd', <second.icon size={13} />, second.match),
+    placementCol('third', '3rd', <third.icon size={14} />, third.match),
+    placementCol('pennants', 'Div', <pennant.icon size={15} />, pennant.match, 'Division winner (best regular-season record in their division) — divisions exist in Sleeper seasons (2021+) only'),
+    placementCol('last', 'Last', <last.icon size={14} />, last.match),
     { key: 'tiers', header: 'Tiers', align: 'right', sortValue: tiersSort, render: renderTiers },
     numCol('avgRank', 'Avg Rank', (c) => c.averageSeasonRank ?? 99, (n) => (n < 99 ? f1(n) : dash)),
   ]

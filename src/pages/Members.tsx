@@ -5,10 +5,10 @@ import { useCareerData } from '@/hooks/useLeagueData'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { useUpdateUrlParams } from '@/hooks/useUrlState'
-import { careerWinnings, headToHead, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
+import { careerWinnings, memberComparison, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
-import { MemberCompare } from '@/components/MemberCompare'
+import { MemberCompare } from '@/components/compare/MemberCompare'
 import { MemberSelect } from '@/components/MemberSelect'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
@@ -37,6 +37,11 @@ function SelectedMember({
   // across every league — the All-Time figure; cross-tier prizes are already summed in.
   const winnings = useMemo(() => careerWinnings(seasons, tournaments), [seasons, tournaments])
   const totalFor = (id: string) => winnings.get(id)?.total ?? 0
+  const opponentId = opponent?.memberId
+  const comparison = useMemo(
+    () => (opponentId ? memberComparison(seasons, tournaments, selected.memberId, opponentId) : undefined),
+    [seasons, tournaments, selected.memberId, opponentId],
+  )
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -49,14 +54,8 @@ function SelectedMember({
         </button>
         <MemberSelect memberIds={memberIds} value={vs} excludeId={selected.memberId} placeholder="Compare with…" label="Compare with another member" onChange={onVs} />
       </div>
-      {opponent ? (
-        <MemberCompare
-          a={selected}
-          b={opponent}
-          h2h={headToHead(seasons, selected.memberId, opponent.memberId)}
-          aWinnings={totalFor(selected.memberId)}
-          bWinnings={totalFor(opponent.memberId)}
-        />
+      {comparison ? (
+        <MemberCompare comparison={comparison} />
       ) : (
         <MemberDetail
           career={selected}

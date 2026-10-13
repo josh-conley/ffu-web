@@ -7,9 +7,11 @@ import { gameNote } from './format'
 // A live game's box-score state, apart from its rendering (LiveBoxScoreBody) so the pop-out can
 // hold the state itself for its Refresh button.
 
-/** One live game: the league it's in, the week, and its two teams. */
+/** One live game: the week, its two teams, and each team's league. */
 export interface LiveGameRef {
-  leagueId: string
+  /** Each team's Sleeper league, in `memberIds` order: the same one twice for a league game, two
+   *  different ones for a Cup game, which pairs teams across the tiers. */
+  leagueIds: readonly [string, string]
   year: string
   week: number
   memberIds: [string, string]

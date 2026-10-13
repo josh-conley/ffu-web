@@ -52,7 +52,7 @@ function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | u
 const blanks = (n: number) => Array.from({ length: n }, (_, k) => <BlankSlot key={k} />)
 const range = (from: number, n: number) => Array.from({ length: n }, (_, k) => from + k)
 
-export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] }: {
+export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [], onOpen }: {
   /** The season's rounds (tournament.json): labels and weeks, opening round first. */
   rounds: RoundOutline[]
   /** Draw-order index of the matchup in each opening-round slot, top to bottom (bracketSlots). */
@@ -65,13 +65,24 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [] 
   cursor?: BracketCursor
   /** Optional one-line note per matchup, in draw order (the head-to-head tag, once complete). */
   tags?: string[]
+  /** Opens a drawn matchup (by draw-order index); without it the slots are plain. */
+  onOpen?: (index: number) => void
 }) {
   const [r36, r18, qf, sf, final] = rounds
   const opening = (position: number) => {
     const i = order[position]
     if (i === undefined) return <BlankSlot key={position} />
     return (
-      <OpeningSlot key={position} position={position} {...sidesOf(i, matchups, cursor)} seeds={seeds[i]} current={cursor?.index === i} tag={tags[i]} />
+      <OpeningSlot
+        key={position}
+        position={position}
+        {...sidesOf(i, matchups, cursor)}
+        seeds={seeds[i]}
+        current={cursor?.index === i}
+        tag={tags[i]}
+        // Only a matchup already drawn: the one on the clock may not have its opponent yet.
+        onOpen={onOpen && matchups[i] ? () => onOpen(i) : undefined}
+      />
     )
   }
   const feeder = (game: number) => {
