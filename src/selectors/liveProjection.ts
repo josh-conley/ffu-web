@@ -1,8 +1,11 @@
 import type { LineupPlayer, NflGameClock, NflGameStatus, PlayerProjection, TeamLineup } from '@/data'
 import { startedPlayers } from './lineups'
 
-/** A player's NFL game this week — or `idle` when they have none (bye, free agent, unknown team). */
-export type PlayerLiveStatus = NflGameStatus | 'idle'
+/**
+ * A player's NFL game this week — or, with none, `bye` when their team is off this week and `idle`
+ * when there's no team to go by (a free agent, or a player the projections feed doesn't know).
+ */
+export type PlayerLiveStatus = NflGameStatus | 'bye' | 'idle'
 
 /** Everything a live projection is derived from: the NFL week's games, projections, and one league's scoring. */
 export interface LiveWeekContext {
@@ -19,11 +22,13 @@ export function projectedPoints(stats: Record<string, number>, scoring: Record<s
 }
 
 // A team defense's player id IS its team abbreviation ("BUF"), so it finds its game even when
-// the projections feed has no row for it.
-const teamOf = (playerId: string, ctx: LiveWeekContext) => ctx.projections[playerId]?.team ?? playerId
+// the projections feed has no row for it. Everyone else's id is numeric.
+const DEFENSE_ID = /^[A-Z]{2,3}$/
+const teamOf = (playerId: string, ctx: LiveWeekContext) => ctx.projections[playerId]?.team ?? (DEFENSE_ID.test(playerId) ? playerId : undefined)
 
 function clockFor(playerId: string, ctx: LiveWeekContext): NflGameClock | undefined {
-  return ctx.games[teamOf(playerId, ctx)]
+  const team = teamOf(playerId, ctx)
+  return team === undefined ? undefined : ctx.games[team]
 }
 
 /** A player's NFL game this week, seen from their side: who they play, and where it stands. */
@@ -35,8 +40,8 @@ export interface PlayerGame extends Pick<NflGameClock, 'status' | 'kickoff' | 'q
 /** Undefined when the player has no game this week (bye, free agent, unknown team). */
 export function playerGame(playerId: string, ctx: LiveWeekContext): PlayerGame | undefined {
   const team = teamOf(playerId, ctx)
-  const game = ctx.games[team]
-  if (!game) return undefined
+  const game = team === undefined ? undefined : ctx.games[team]
+  if (team === undefined || !game) return undefined
   const { status, kickoff, quarter, clock, home, away } = game
   const out: PlayerGame = { status, opponent: team === home ? `vs ${away}` : `@ ${home}` }
   if (kickoff !== undefined) out.kickoff = kickoff
@@ -45,8 +50,13 @@ export function playerGame(playerId: string, ctx: LiveWeekContext): PlayerGame |
   return out
 }
 
+// Sleeper's projections carry a row (with the team) for a player whose team is on bye, so a known
+// team with no game is a bye. An empty games map is a feed with nothing in it, not a league-wide bye.
 export function playerLiveStatus(playerId: string, ctx: LiveWeekContext): PlayerLiveStatus {
-  return clockFor(playerId, ctx)?.status ?? 'idle'
+  const clock = clockFor(playerId, ctx)
+  if (clock) return clock.status
+  const onBye = teamOf(playerId, ctx) !== undefined && Object.keys(ctx.games).length > 0
+  return onBye ? 'bye' : 'idle'
 }
 
 /**

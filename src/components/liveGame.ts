@@ -1,6 +1,6 @@
 import { type LiveBoxScore, useLiveBoxScore } from '@/hooks/useLiveBoxScore'
 import { type NflWeek, useNflWeek } from '@/hooks/useNflWeek'
-import { type LiveWeekContext, playerGame, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
+import { type LiveWeekContext, playerGame, playerLiveStatus, starterPoints, teamLiveProjection, withNflTeams } from '@/selectors'
 import type { BoxScoreSide, PlayerLiveInfo } from './BoxScore'
 import { gameNote } from './format'
 
@@ -22,7 +22,9 @@ export type ScoreOf = (memberId: string) => number | undefined
 function liveOfFor(ctx: LiveWeekContext) {
   return (playerId: string): PlayerLiveInfo => {
     const game = playerGame(playerId, ctx)
-    return game ? { status: game.status, note: gameNote(game) } : { status: 'idle', note: undefined }
+    if (game) return { status: game.status, note: gameNote(game) }
+    const status = playerLiveStatus(playerId, ctx)
+    return { status, note: status === 'bye' ? 'BYE' : undefined }
   }
 }
 

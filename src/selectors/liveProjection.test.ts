@@ -44,9 +44,18 @@ describe('playerLiveStatus', () => {
     expect(playerLiveStatus('waiting', ctx)).toBe('pre')
   })
 
-  it('is idle for a bye or an unknown player', () => {
-    expect(playerLiveStatus('bye', ctx)).toBe('idle')
+  it('is a bye when the player\'s team has no game this week', () => {
+    expect(playerLiveStatus('bye', ctx)).toBe('bye')
+    expect(playerLiveStatus('SEA', ctx)).toBe('bye') // a team defense, no projection row
+  })
+
+  it('is idle for a player with no team to go by', () => {
     expect(playerLiveStatus('nobody', ctx)).toBe('idle')
+    expect(playerLiveStatus('free', { ...ctx, projections: { free: { stats: {} } } })).toBe('idle')
+  })
+
+  it('calls no one on bye when the week has no games loaded', () => {
+    expect(playerLiveStatus('bye', { ...ctx, games: {} })).toBe('idle')
   })
 
   it('finds a team defense by its id even without a projection row', () => {
