@@ -161,6 +161,12 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
       for "FFU Cup Winner"
 
+- [ ] **Cup pick'em** (built 2026-10-13, `workers/pickem/README.md`). To go live: widen the
+      Cloudflare token (Workers Scripts + D1 Edit), optionally add `PICKEM_ADMIN_TOKEN`, merge,
+      put the Worker URL from the deploy summary in `CUP_PICKEM_API`, and add `pickemLocksAt`
+      to `public/data/2026/tournament.json` once the draw is in (R36 = week 6; Thu Oct 15 TNF
+      kickoff is `2026-10-16T00:15:00Z`)
+
 ## 2026 in-season data — static drafts, and how live the rest of the site gets
 
 Both from the commissioner's list (2026-09-09). They are one question wearing two hats: how much of

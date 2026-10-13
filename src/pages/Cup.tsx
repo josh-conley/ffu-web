@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
-import { CUP_ACCENT, CUP_FIELD_SIZE, CUP_INAUGURAL_YEAR, CUP_NAME, CUP_YEAR } from '@/config'
+import { useMemo, useState, type ComponentProps } from 'react'
+import { CUP_ACCENT, CUP_FIELD_SIZE, CUP_INAUGURAL_YEAR, CUP_NAME, CUP_PICKEM_API, CUP_YEAR } from '@/config'
+import type { Tournament } from '@/data'
 import { useCup } from '@/hooks/useCup'
 import { useFormGoingInto } from '@/hooks/useFormGoingInto'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -9,6 +10,7 @@ import { CupBracketPanel } from '@/components/cup/CupBracketPanel'
 import { CupMatchupModal } from '@/components/cup/CupMatchupModal'
 import { CupFormatPanel } from '@/components/cup/CupFormatPanel'
 import { CupFacts } from '@/components/cup/parts'
+import { PickemPanel } from '@/components/cup/pickem/PickemPanel'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
@@ -21,6 +23,16 @@ const TABS: readonly TabDef[] = [
   { id: 'bracket', label: 'Bracket' },
   { id: 'format', label: 'Format & Rules' },
 ]
+// The pick'em tab exists once there is a bracket to pick and the season has a pick'em lock time
+// (tournament.json `pickemLocksAt`) — that field is the switch that exposes it.
+const TABS_WITH_PICKEM: readonly TabDef[] = [...TABS, { id: 'pickem', label: "Pick'em" }]
+
+/** The bracket or the rules — the two tabs every season has. */
+function CupInfoTab({ view, outline, ...bracket }: Omit<ComponentProps<typeof CupBracketPanel>, 'year'> & { view: string }) {
+  return view === 'format' ? <CupFormatPanel rounds={outline} year={CUP_YEAR} /> : <CupBracketPanel outline={outline} year={CUP_YEAR} {...bracket} />
+}
+
+const hasPickem = (t: Tournament, drawn: boolean) => CUP_PICKEM_API !== '' && drawn && t.pickemLocksAt !== undefined
 
 export function Cup() {
   const { tournament, outline, resolved, drawn, tierSeasons, loading, error } = useCup(CUP_YEAR)
@@ -33,6 +45,9 @@ export function Cup() {
   if (error) return <ErrorMessage error={error} />
   if (!tournament) return <ErrorMessage error={`No ${CUP_NAME} is scheduled for ${CUP_YEAR}.`} />
 
+  const tabs = hasPickem(tournament, drawn) ? TABS_WITH_PICKEM : TABS
+  // A stale link to a tab that isn't there (e.g. ?view=pickem before it opens) shows the bracket.
+  const shown = tabs.some((t) => t.id === view) ? view : 'bracket'
   const openMatchup = open ? open.round.matchups[open.matchupIndex] : undefined
   const facts = [
     { value: String(CUP_FIELD_SIZE), label: 'Teams' },
@@ -57,17 +72,15 @@ export function Cup() {
 
       <CupFacts facts={facts} />
 
-      <Tabs tabs={TABS} value={view} onChange={setView} label="Cup views" />
+      <Tabs tabs={tabs} value={shown} onChange={setView} label="Cup views" />
 
-      {view === 'format' ? (
-        <TabPanel id="format">
-          <CupFormatPanel rounds={outline} year={CUP_YEAR} />
-        </TabPanel>
-      ) : (
-        <TabPanel id="bracket">
-          <CupBracketPanel drawn={drawn} resolved={resolved} outline={outline} year={CUP_YEAR} onOpen={setOpen} formOf={formOf} />
-        </TabPanel>
-      )}
+      <TabPanel id={shown}>
+        {shown === 'pickem' ? (
+          <PickemPanel tournament={tournament} played={resolved} year={CUP_YEAR} />
+        ) : (
+          <CupInfoTab view={shown} drawn={drawn} resolved={resolved} outline={outline} onOpen={setOpen} formOf={formOf} />
+        )}
+      </TabPanel>
 
       {open && openMatchup && (
         <CupMatchupModal
