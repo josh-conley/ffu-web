@@ -17,7 +17,7 @@ export const CUP_NAME = 'FFU Cup'
 export const CUP_INAUGURAL_YEAR = '2026'
 
 /** The season the Cup page shows. One knob — bump it when the Cup moves forward a year. */
-export const CUP_YEAR = '2026'
+export const CUP_YEAR: string = '2025' // DEMO BUILD: last season's real weeks score the leaderboard
 
 /** Every team in all three tiers enters: 12 Premier + 12 Masters + 12 National. */
 export const CUP_FIELD_SIZE = 36
@@ -55,4 +55,4 @@ export const CUP_PICKEM_POINTS: Record<CupRoundKey, number> = { r36: 1, r18: 2, 
  * Where the pick'em Worker (workers/pickem) answers. Empty = no pick'em API, so the tab never
  * shows. Set once the Worker has its first deploy (its workers.dev URL is in that run's summary).
  */
-export const CUP_PICKEM_API = ''
+export const CUP_PICKEM_API: string = 'demo' // DEMO BUILD: the API is mocked in data/pickemApi.ts

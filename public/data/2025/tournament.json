@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 1,
+  "name": "FFU Cup (pick'em demo)",
+  "year": "2025",
+  "fieldSize": 36,
+  "participants": [
+    {
+      "ffuId": "ffu-044",
+      "tier": "PREMIER",
+      "seed": 1
+    },
+    {
+      "ffuId": "ffu-023",
+      "tier": "PREMIER",
+      "seed": 2
+    },
+    {
+      "ffuId": "ffu-029",
+      "tier": "PREMIER",
+      "seed": 3
+    },
+    {
+      "ffuId": "ffu-008",
+      "tier": "PREMIER",
+      "seed": 4
+    },
+    {
+      "ffuId": "ffu-001",
+      "tier": "PREMIER",
+      "seed": 5
+    },
+    {
+      "ffuId": "ffu-043",
+      "tier": "PREMIER",
+      "seed": 6
+    },
+    {
+      "ffuId": "ffu-009",
+      "tier": "PREMIER",
+      "seed": 7
+    },
+    {
+      "ffuId": "ffu-041",
+      "tier": "PREMIER",
+      "seed": 8
+    },
+    {
+      "ffuId": "ffu-030",
+      "tier": "PREMIER",
+      "seed": 9
+    },
+    {
+      "ffuId": "ffu-028",
+      "tier": "PREMIER",
+      "seed": 10
+    },
+    {
+      "ffuId": "ffu-006",
+      "tier": "PREMIER",
+      "seed": 11
+    },
+    {
+      "ffuId": "ffu-027",
+      "tier": "PREMIER",
+      "seed": 12
+    },
+    {
+      "ffuId": "ffu-020",
+      "tier": "MASTERS",
+      "seed": 13
+    },
+    {
+      "ffuId": "ffu-002",
+      "tier": "MASTERS",
+      "seed": 14
+    },
+    {
+      "ffuId": "ffu-021",
+      "tier": "MASTERS",
+      "seed": 15
+    },
+    {
+      "ffuId": "ffu-039",
+      "tier": "MASTERS",
+      "seed": 16
+    },
+    {
+      "ffuId": "ffu-040",
+      "tier": "MASTERS",
+      "seed": 17
+    },
+    {
+      "ffuId": "ffu-012",
+      "tier": "MASTERS",
+      "seed": 18
+    },
+    {
+      "ffuId": "ffu-025",
+      "tier": "NATIONAL",
+      "seed": 19
+    },
+    {
+      "ffuId": "ffu-053",
+      "tier": "NATIONAL",
+      "seed": 20
+    },
+    {
+      "ffuId": "ffu-054",
+      "tier": "NATIONAL",
+      "seed": 21
+    },
+    {
+      "ffuId": "ffu-019",
+      "tier": "NATIONAL",
+      "seed": 22
+    },
+    {
+      "ffuId": "ffu-007",
+      "tier": "NATIONAL",
+      "seed": 23
+    },
+    {
+      "ffuId": "ffu-013",
+      "tier": "NATIONAL",
+      "seed": 24
+    },
+    {
+      "ffuId": "ffu-052",
+      "tier": "NATIONAL",
+      "seed": 25
+    },
+    {
+      "ffuId": "ffu-056",
+      "tier": "NATIONAL",
+      "seed": 26
+    },
+    {
+      "ffuId": "ffu-038",
+      "tier": "MASTERS",
+      "seed": 27
+    },
+    {
+      "ffuId": "ffu-036",
+      "tier": "NATIONAL",
+      "seed": 28
+    },
+    {
+      "ffuId": "ffu-055",
+      "tier": "NATIONAL",
+      "seed": 29
+    },
+    {
+      "ffuId": "ffu-033",
+      "tier": "MASTERS",
+      "seed": 30
+    },
+    {
+      "ffuId": "ffu-026",
+      "tier": "MASTERS",
+      "seed": 31
+    },
+    {
+      "ffuId": "ffu-042",
+      "tier": "MASTERS",
+      "seed": 32
+    },
+    {
+      "ffuId": "ffu-017",
+      "tier": "NATIONAL",
+      "seed": 33
+    },
+    {
+      "ffuId": "ffu-037",
+      "tier": "MASTERS",
+      "seed": 34
+    },
+    {
+      "ffuId": "ffu-004",
+      "tier": "NATIONAL",
+      "seed": 35
+    },
+    {
+      "ffuId": "ffu-024",
+      "tier": "MASTERS",
+      "seed": 36
+    }
+  ],
+  "rounds": [
+    {
+      "key": "r36",
+      "label": "Round of 36",
+      "week": 6,
+      "matchups": [
+        {
+          "a": "ffu-044",
+          "b": "ffu-024"
+        },
+        {
+          "a": "ffu-012",
+          "b": "ffu-025"
+        },
+        {
+          "a": "ffu-041",
+          "b": "ffu-055"
+        },
+        {
+          "a": "ffu-006",
+          "b": "ffu-056"
+        },
+        {
+          "a": "ffu-008",
+          "b": "ffu-017"
+        },
+        {
+          "a": "ffu-021",
+          "b": "ffu-019"
+        },
+        {
+          "a": "ffu-001",
+          "b": "ffu-042"
+        },
+        {
+          "a": "ffu-002",
+          "b": "ffu-007"
+        },
+        {
+          "a": "ffu-023",
+          "b": "ffu-004"
+        },
+        {
+          "a": "ffu-040",
+          "b": "ffu-053"
+        },
+        {
+          "a": "ffu-009",
+          "b": "ffu-033"
+        },
+        {
+          "a": "ffu-027",
+          "b": "ffu-052"
+        },
+        {
+          "a": "ffu-029",
+          "b": "ffu-037"
+        },
+        {
+          "a": "ffu-039",
+          "b": "ffu-054"
+        },
+        {
+          "a": "ffu-043",
+          "b": "ffu-026"
+        },
+        {
+          "a": "ffu-020",
+          "b": "ffu-013"
+        },
+        {
+          "a": "ffu-030",
+          "b": "ffu-036"
+        },
+        {
+          "a": "ffu-028",
+          "b": "ffu-038"
+        }
+      ]
+    },
+    {
+      "key": "r18",
+      "label": "Round of 18",
+      "week": 7
+    },
+    {
+      "key": "r8",
+      "label": "Quarterfinals",
+      "week": 8,
+      "dropLowestWinner": true,
+      "reseed": true
+    },
+    {
+      "key": "r4",
+      "label": "Semifinals",
+      "week": 10
+    },
+    {
+      "key": "final",
+      "label": "Final",
+      "week": 12
+    }
+  ],
+  "pickemLocksAt": "2099-01-01T00:00:00Z"
+}
