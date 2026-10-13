@@ -2,7 +2,7 @@ import { getMember, ownerNames } from '@/config'
 import { currentLeague, seriesStanding, type CompareSide, type H2HRecord } from '@/selectors'
 import { LEAGUE_STYLES } from '../leagues'
 import { LeagueBadge } from '../LeagueBadge'
-import { seriesHeadline } from '../seriesText'
+import { SeriesHeadline } from '../SeriesTag'
 import { TeamLogo } from '../TeamLogo'
 
 // The top of the Compare view: each member's nameplate, striped in the league they play in now,
@@ -38,7 +38,7 @@ export function CompareHeader({ a, b, h2h }: { a: CompareSide; b: CompareSide; h
       <Plate side={a} />
       <div className="flex w-16 flex-col items-center justify-center gap-1 text-center sm:w-28">
         <span className="text-2xl font-black uppercase tracking-widest text-accent sm:text-3xl">vs</span>
-        <span className="text-[11px] font-semibold leading-tight text-muted">{seriesHeadline(seriesStanding(h2h))}</span>
+        <SeriesHeadline standing={seriesStanding(h2h)} className="text-[11px] font-semibold leading-tight text-muted" />
       </div>
       <Plate side={b} />
     </div>
