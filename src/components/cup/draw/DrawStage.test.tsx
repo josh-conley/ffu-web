@@ -323,7 +323,7 @@ it("shows each side's current and all-time UPR on the card", async () => {
   expect(seasonUpr).toEqual(['162.5', '—'])
 })
 
-it("shows each side's record on the card, and its UPR in the bracket, going into the round", async () => {
+it("shows each side's record going into the round on the card", async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   const { a, b } = expected.matchups[0]!
@@ -338,7 +338,6 @@ it("shows each side's record on the card, and its UPR in the bracket, going into
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   const records = card().getAllByText(/^Record/).map((label) => label.nextElementSibling?.textContent)
   expect(records).toEqual(['4-1', '1-4'])
-  await user.click(screen.getByRole('button', { name: /next matchup/i }))
-  const slot = document.querySelector(`[data-slot="${bracketSlots(expected).indexOf(0)}"]`)!
-  expect(slot).toHaveTextContent(/\d+\.\d\d UPR/)
+  // The bracket stays one line a team, so the whole of it fits on the stream's screen.
+  expect(screen.getByLabelText('Cup bracket')).not.toHaveTextContent(/UPR/)
 })

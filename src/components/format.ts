@@ -38,7 +38,7 @@ export function recordRatingLabel(
 /** A team's season so far as that same line, or nothing without one (see formGoingInto). */
 export const formLabel = (form: TeamForm | undefined): string | undefined => form && recordRatingLabel(form.totals, form.upr)
 
-/** Just the UPR, for a bracket's line under a team's name; nothing before the season is rated. */
+/** Just the UPR, for the Cup bracket's line under a team's name; nothing before the season is rated. */
 export const uprLabel = (form: TeamForm | undefined): string | undefined => (form?.upr === undefined ? undefined : `${form.upr.toFixed(2)} UPR`)
 
 /**

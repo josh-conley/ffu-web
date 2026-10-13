@@ -65,20 +65,19 @@ function CurrentMatchup({ reveal, story, ratings, recordOf, muted }: {
 const NO_RATINGS = new Map<string, DrawRating>()
 
 /**
- * Each team's record and UPR going into the opening round, from this season's games: its UPR under
- * its name in the bracket, its record on the card as it is drawn, both atop the matchup modal.
+ * Each team's record and UPR going into the opening round, from this season's games: its record on
+ * the card as it is drawn, both atop the matchup modal. (Not in the bracket: the whole bracket has
+ * to fit on the stream's one screen.)
  */
 function useOpeningForm(seasons: SeasonData[], opening: RoundOutline | undefined) {
   const thisSeason = useMemo(() => seasons.filter((s) => s.year === CUP_YEAR), [seasons])
   const week = opening?.week ?? 1
   const formOf = useFormGoingInto(thisSeason, [week])
-  const teamForm = (ffuId: string) => formOf(ffuId, week)
   const recordOf = (ffuId: string) => {
-    const form = teamForm(ffuId)
+    const form = formOf(ffuId, week)
     return form && recordLabel(form.totals)
   }
-  // A draw replayed for a season with no games on file has nothing to show, so its slots stay compact.
-  return { formOf, teamForm: thisSeason.length > 0 ? teamForm : undefined, recordOf }
+  return { formOf, recordOf }
 }
 
 /**
@@ -167,7 +166,7 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
       />
       {reveal.done ? (
         <DrawComplete seed={seed} checkCode={drawCheckCode(result)} onDownload={download}>
-          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} onOpen={drawnGame.onOpen} formOf={opening.teamForm} />
+          <DrawBracket rounds={rounds} order={order} seeds={seeds} matchups={reveal.ledger} tags={tags} onOpen={drawnGame.onOpen} />
         </DrawComplete>
       ) : (
         <>
@@ -181,7 +180,6 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
             matchups={reveal.ledger}
             cursor={drawer && { index: reveal.matchupNumber - 1, drawer, drawn: reveal.landing ? undefined : drawn }}
             onOpen={drawnGame.onOpen}
-            formOf={opening.teamForm}
           />
         </>
       )}

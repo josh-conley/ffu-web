@@ -11,7 +11,8 @@ import { TeamLogo } from '../../TeamLogo'
 // built to arrive at it. Swappable: it takes the eligible pool and the winner, which is all any
 // reveal treatment needs, so a different one can drop straight in.
 
-const ITEM_PX = 108
+// Small enough that the reel takes one short band of the stage: the bracket below must fit on screen.
+const ITEM_PX = 76
 /**
  * Crests scrolled past before landing. Scaled with SPIN_MS so the wheel keeps a readable pace
  * (~28 crests/sec at speed) for the whole of the fast phase instead of easing off early.
@@ -38,9 +39,9 @@ function Cell({ team, winner }: { team: BowlSlot; winner: boolean }) {
         borderWidth: winner ? 3 : 1,
       }}
     >
-      <TeamLogo ffuId={team.ffuId} size={40} clickable={false} />
-      <span className="w-full truncate px-1 text-center text-xs font-bold leading-tight">{team.name}</span>
-      <span className={`text-[10px] font-extrabold uppercase tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
+      <TeamLogo ffuId={team.ffuId} size={28} clickable={false} />
+      <span className="w-full truncate px-1 text-center text-[11px] font-bold leading-none">{team.name}</span>
+      <span className={`text-[9px] font-extrabold uppercase leading-none tracking-widest ${LEAGUE_STYLES[team.tier].text}`}>
         {LEAGUE_STYLES[team.tier].label}
       </span>
     </div>
@@ -48,7 +49,7 @@ function Cell({ team, winner }: { team: BowlSlot; winner: boolean }) {
 }
 
 /** Crests either side of the marker at rest, so the strip fills a wide screen before and after. */
-const PAD = 10
+const PAD = 14
 
 /**
  * The reel stays on screen for the whole matchup: still while a team is on the clock, spinning on
@@ -103,13 +104,13 @@ export function DrawReel({ pool, winnerId, durationMs, muted, motion, landed }: 
   const offset = -(centred * ITEM_PX + ITEM_PX / 2)
 
   return (
-    <div className="relative overflow-hidden border border-border bg-surface-2/60 py-3" style={{ height: ITEM_PX + 16 }}>
+    <div className="relative overflow-hidden border border-border bg-surface-2/60" style={{ height: ITEM_PX + 8 }}>
       {/* The marker the strip lands under. */}
       <span className="absolute inset-y-0 left-1/2 z-10 w-0.5 -translate-x-1/2" style={{ backgroundColor: CUP_ACCENT }} aria-hidden />
       <span className="absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-bg to-transparent" aria-hidden />
       <span className="absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-bg to-transparent" aria-hidden />
       <div
-        className="absolute left-1/2 top-3 flex"
+        className="absolute left-1/2 top-1 flex"
         style={{
           transform: `translateX(${offset}px)`,
           transition: motion === 'spin' && rolled ? `transform ${durationMs}ms ${REEL_EASING}` : undefined,

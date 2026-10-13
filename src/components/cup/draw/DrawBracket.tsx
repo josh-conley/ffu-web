@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { CUP_ACCENT } from '@/config'
-import type { RoundOutline, TeamForm } from '@/selectors'
+import type { RoundOutline } from '@/selectors'
 import type { MatchupSide } from './DrawMatchupCard'
 import { BlankSlot, FeederSlot, OpeningSlot, type LedgerMatchup, type SlotSeeds } from './DrawBracketSlots'
 
@@ -52,7 +52,7 @@ function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | u
 const blanks = (n: number) => Array.from({ length: n }, (_, k) => <BlankSlot key={k} />)
 const range = (from: number, n: number) => Array.from({ length: n }, (_, k) => from + k)
 
-export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [], onOpen, formOf }: {
+export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [], onOpen }: {
   /** The season's rounds (tournament.json): labels and weeks, opening round first. */
   rounds: RoundOutline[]
   /** Draw-order index of the matchup in each opening-round slot, top to bottom (bracketSlots). */
@@ -67,8 +67,6 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [],
   tags?: string[]
   /** Opens a drawn matchup (by draw-order index); without it the slots are plain. */
   onOpen?: (index: number) => void
-  /** Each team's UPR going into the opening round; without it the slots are one line a team. */
-  formOf?: (ffuId: string) => TeamForm | undefined
 }) {
   const [r36, r18, qf, sf, final] = rounds
   const opening = (position: number) => {
@@ -84,7 +82,6 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [],
         tag={tags[i]}
         // Only a matchup already drawn: the one on the clock may not have its opponent yet.
         onOpen={onOpen && matchups[i] ? () => onOpen(i) : undefined}
-        formOf={formOf}
       />
     )
   }
