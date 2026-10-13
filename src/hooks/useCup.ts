@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { Tournament } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import {
   outlineTournament,
   resolveTournament,
@@ -22,6 +22,8 @@ export interface CupView {
   /** The played bracket. Undefined until the draw has been held. */
   resolved: ResolvedTournament | undefined
   drawn: boolean
+  /** The season's tier files, once drawn: what each team's record and UPR are read from. */
+  tierSeasons: SeasonData[]
   loading: boolean
   error: Error | undefined
 }
@@ -36,6 +38,11 @@ export function useCup(year: string): CupView {
   const national = useSeason('NATIONAL', year, drawn)
 
   const outline = useMemo(() => (tournament ? outlineTournament(tournament) : []), [tournament])
+
+  const tierSeasons = useMemo(
+    () => [premier.data, masters.data, national.data].filter((s): s is SeasonData => Boolean(s)),
+    [premier.data, masters.data, national.data],
+  )
 
   const resolved = useMemo(() => {
     if (!tournament || !drawn) return undefined
@@ -52,6 +59,7 @@ export function useCup(year: string): CupView {
     outline,
     resolved,
     drawn,
+    tierSeasons,
     loading: cup.loading || tiersLoading,
     error: cup.error ?? premier.error ?? masters.error ?? national.error,
   }

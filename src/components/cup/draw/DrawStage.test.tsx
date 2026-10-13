@@ -319,5 +319,26 @@ it("shows each side's current and all-time UPR on the card", async () => {
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(card().getByText('131.0')).toBeInTheDocument()
-  expect(card().getByText('—')).toBeInTheDocument()
+  const seasonUpr = card().getAllByText(/Season UPR/).map((label) => label.nextElementSibling?.textContent)
+  expect(seasonUpr).toEqual(['162.5', '—'])
+})
+
+it("shows each side's record on the card, and its UPR in the bracket, going into the round", async () => {
+  stubReducedMotion(true)
+  const user = userEvent.setup()
+  const { a, b } = expected.matchups[0]!
+  const game = (week: number, aScore: number, bScore: number) => ({
+    week, isPlayoff: false, participants: [{ memberId: a, score: aScore }, { memberId: b, score: bScore }],
+  })
+  // Weeks 1–5 count; week 6 is the Round of 36's own week and must not.
+  const games = [game(1, 100, 90), game(2, 100, 90), game(3, 80, 90), game(4, 100, 90), game(5, 100, 90), game(6, 10, 200)]
+  const season = { schemaVersion: 1 as const, tier: 'PREMIER' as const, year: '2026', era: 'sleeper' as const, platformLeagueId: 'x', teams: [], games }
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[season]} onRestart={() => {}} />)
+
+  await user.click(screen.getByRole('button', { name: /^draw$/i }))
+  const records = card().getAllByText(/^Record/).map((label) => label.nextElementSibling?.textContent)
+  expect(records).toEqual(['4-1', '1-4'])
+  await user.click(screen.getByRole('button', { name: /next matchup/i }))
+  const slot = document.querySelector(`[data-slot="${bracketSlots(expected).indexOf(0)}"]`)!
+  expect(slot).toHaveTextContent(/\d+\.\d\d UPR/)
 })

@@ -1,5 +1,5 @@
 import type { Game, SeasonData } from '@/data'
-import { seasonsThroughWeek } from './throughWeek'
+import { formGoingInto, seasonsThroughWeek } from './throughWeek'
 
 const game = (week: number, a: [string, number], b: [string, number], isPlayoff = false): Game => ({
   week,
@@ -55,5 +55,32 @@ describe('seasonsThroughWeek', () => {
     const [rewound] = seasonsThroughWeek([played], '2025', 0)
     expect(rewound!.games).toEqual([])
     expect(rewound!.teams.every((t) => t.record.wins + t.record.losses + t.record.ties === 0)).toBe(true)
+  })
+})
+
+describe('formGoingInto', () => {
+  const g = (week: number, a: [string, number], b: [string, number], isPlayoff = false): Game => ({
+    week, isPlayoff, participants: [{ memberId: a[0], score: a[1] }, { memberId: b[0], score: b[1] }],
+  })
+  const season = (tier: SeasonData['tier'], games: Game[]): SeasonData => ({
+    schemaVersion: 1, tier, year: '2026', era: 'sleeper', platformLeagueId: 'x', teams: [], games,
+  })
+  const premier = season('PREMIER', [g(1, ['a', 100], ['b', 90]), g(2, ['a', 80], ['b', 95]), g(3, ['a', 120], ['b', 70])])
+  const national = season('NATIONAL', [g(1, ['c', 110], ['d', 100]), g(2, ['c', 105], ['d', 99])])
+
+  it('counts only the games before the week, from each team\'s own league', () => {
+    const form = formGoingInto([premier, national], 3)
+    expect(form.get('a')?.totals).toMatchObject({ wins: 1, losses: 1 })
+    expect(form.get('c')?.totals).toMatchObject({ wins: 2, losses: 0 })
+  })
+
+  it('leaves the playoffs out', () => {
+    const withPlayoff = season('PREMIER', [...premier.games, g(2, ['a', 1], ['b', 2], true)])
+    expect(formGoingInto([withPlayoff], 4).get('a')?.totals).toMatchObject({ wins: 2, losses: 1 })
+  })
+
+  it('has a UPR once the season has enough weeks to rate, and none before', () => {
+    expect(formGoingInto([premier], 2).get('a')?.upr).toBeUndefined()
+    expect(formGoingInto([premier], 4).get('a')?.upr).toBeGreaterThan(0)
   })
 })

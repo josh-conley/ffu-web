@@ -20,12 +20,15 @@ import { usePopOut } from './popOut'
 export function LiveLineupModal({
   scoreOf,
   title,
+  lead,
   onClose,
   ...game
 }: LiveGameRef & {
   scoreOf?: (memberId: string) => number | undefined
   /** The title bar's text; "Week N · Live" by default. */
   title?: ReactNode
+  /** Something to show above the box score (the Cup's record-and-UPR strip). */
+  lead?: ReactNode
   onClose: () => void
 }) {
   const popOut = usePopOut()
@@ -43,6 +46,7 @@ export function LiveLineupModal({
   )
   return (
     <LineupModalFrame title={title ?? `Week ${game.week} · Live`} memberIds={game.memberIds} action={action || undefined} onClose={onClose}>
+      {lead}
       <LiveBoxScoreBody game={game} scoreOf={scoreOf} />
     </LineupModalFrame>
   )

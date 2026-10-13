@@ -16,10 +16,14 @@ export interface MatchupSide {
 
 const uprText = (n: number | undefined) => (n === undefined ? '—' : n.toFixed(1))
 
-/** Season UPR and career average UPR — the quickest read on how the two teams match up. */
-function Ratings({ rating }: { rating: DrawRating | undefined }) {
+/** Record, season UPR and career average UPR — the quickest read on how the two teams match up. */
+function Ratings({ rating, record }: { rating: DrawRating | undefined; record: string | undefined }) {
   return (
-    <div className="flex gap-4 font-mono text-sm tabular-nums text-muted">
+    <div className="flex flex-wrap gap-x-4 font-mono text-sm tabular-nums text-muted">
+      <span>
+        <span className="font-sans text-xs font-bold uppercase tracking-widest">Record </span>
+        <span className="font-bold text-text">{record ?? '—'}</span>
+      </span>
       <span>
         <span className="font-sans text-xs font-bold uppercase tracking-widest">Season UPR </span>
         <span className="font-bold text-text">{uprText(rating?.current)}</span>
@@ -32,7 +36,7 @@ function Ratings({ rating }: { rating: DrawRating | undefined }) {
   )
 }
 
-function Side({ side, rating, muted }: { side: MatchupSide; rating: DrawRating | undefined; muted?: boolean }) {
+function Side({ side, rating, record, muted }: { side: MatchupSide; rating: DrawRating | undefined; record: string | undefined; muted?: boolean }) {
   return (
     <div className={`flex min-w-0 flex-1 items-center gap-3 ${muted ? 'opacity-60' : ''}`}>
       <TeamLogo ffuId={side.ffuId} size={52} clickable={false} />
@@ -41,7 +45,7 @@ function Side({ side, rating, muted }: { side: MatchupSide; rating: DrawRating |
         <div className={`text-sm font-bold uppercase tracking-widest ${LEAGUE_STYLES[side.tier].text}`}>
           {LEAGUE_STYLES[side.tier].label} · seed {side.seed}
         </div>
-        <Ratings rating={rating} />
+        <Ratings rating={rating} record={record} />
       </div>
     </div>
   )
@@ -57,7 +61,7 @@ function Pending() {
   )
 }
 
-export function DrawMatchupCard({ drawer, drawn, forced, ratings, footer }: {
+export function DrawMatchupCard({ drawer, drawn, forced, ratings, recordOf, footer }: {
   drawer: MatchupSide
   /** Undefined while the spinner runs. */
   drawn: MatchupSide | undefined
@@ -65,6 +69,8 @@ export function DrawMatchupCard({ drawer, drawn, forced, ratings, footer }: {
   forced: boolean
   /** Each team's current and all-time UPR, by ffuId. */
   ratings: Map<string, DrawRating>
+  /** Each team's record this season so far, by ffuId. */
+  recordOf?: (ffuId: string) => string | undefined
   /** The storyline along the bottom; its strip is always reserved, so null just leaves it empty. */
   footer: ReactNode
 }) {
@@ -81,9 +87,9 @@ export function DrawMatchupCard({ drawer, drawn, forced, ratings, footer }: {
         {label}
       </p>
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <Side side={drawer} rating={ratings.get(drawer.ffuId)} />
+        <Side side={drawer} rating={ratings.get(drawer.ffuId)} record={recordOf?.(drawer.ffuId)} />
         <span className="shrink-0 text-center text-sm font-extrabold uppercase tracking-widest text-muted">v</span>
-        {drawn ? <Side side={drawn} rating={ratings.get(drawn.ffuId)} /> : <Pending />}
+        {drawn ? <Side side={drawn} rating={ratings.get(drawn.ffuId)} record={recordOf?.(drawn.ffuId)} /> : <Pending />}
       </div>
       {/* Always there, with its height reserved, so the card doesn't grow when the storyline arrives
           or shrink when the next matchup clears it. */}

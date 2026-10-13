@@ -1,5 +1,5 @@
 // Small display formatters shared across components (Charter DRY — one home each).
-import type { PlayerGame } from '@/selectors'
+import type { PlayerGame, TeamForm } from '@/selectors'
 
 const SUFFIX = ['th', 'st', 'nd', 'rd']
 
@@ -34,6 +34,12 @@ export function recordRatingLabel(
   const rating = upr === undefined ? `${t.average.toFixed(1)} PPG` : `${upr.toFixed(2)} UPR`
   return `${recordLabel(t)} · ${rating}`
 }
+
+/** A team's season so far as that same line, or nothing without one (see formGoingInto). */
+export const formLabel = (form: TeamForm | undefined): string | undefined => form && recordRatingLabel(form.totals, form.upr)
+
+/** Just the UPR, for a bracket's line under a team's name; nothing before the season is rated. */
+export const uprLabel = (form: TeamForm | undefined): string | undefined => (form?.upr === undefined ? undefined : `${form.upr.toFixed(2)} UPR`)
 
 /**
  * A player's name with the first name reduced to an initial: "Christian McCaffrey" → "C. McCaffrey".

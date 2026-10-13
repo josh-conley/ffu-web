@@ -1,4 +1,6 @@
 import { CUP_ACCENT } from '@/config'
+import type { TeamForm } from '@/selectors'
+import { uprLabel } from '../../format'
 import { LEAGUE_STYLES } from '../../leagues'
 import { TeamLogo } from '../../TeamLogo'
 import type { MatchupSide } from './DrawMatchupCard'
@@ -14,15 +16,30 @@ export interface LedgerMatchup {
 /** The seeds in one opening-round slot, drawing team's first: e.g. [1, 36]. */
 export type SlotSeeds = [number, number]
 
-/** One nameplate. Before the team is drawn it shows the seed that slot will hold — where, not who. */
-function Row({ side, seed }: { side: MatchupSide | undefined; seed: number | undefined }) {
+/** The name, and under it (when the bracket shows ratings) the team's UPR going into the round. */
+function NameBlock({ side, formOf }: { side: MatchupSide; formOf: ((ffuId: string) => TeamForm | undefined) | undefined }) {
+  const name = <span className="min-w-0 truncate text-sm font-semibold">{side.name}</span>
+  if (!formOf) return <span className="flex min-w-0 flex-1">{name}</span>
   return (
-    <div className="flex h-5 items-center gap-1.5 pl-1">
+    <span className="flex min-w-0 flex-1 flex-col">
+      {name}
+      <span className="font-mono text-[10px] leading-tight tabular-nums text-muted">{uprLabel(formOf(side.ffuId))}</span>
+    </span>
+  )
+}
+
+/**
+ * One nameplate. Before the team is drawn it shows the seed that slot will hold — where, not who.
+ * With `formOf` every row is two lines tall, drawn or not, so the bracket keeps its shape.
+ */
+function Row({ side, seed, formOf }: { side: MatchupSide | undefined; seed: number | undefined; formOf?: (ffuId: string) => TeamForm | undefined }) {
+  return (
+    <div className={`flex items-center gap-1.5 pl-1 ${formOf ? 'h-9' : 'h-5'}`}>
       {side ? (
         <>
           <span className={`h-2 w-2 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
           <TeamLogo ffuId={side.ffuId} size={18} clickable={false} />
-          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{side.name}</span>
+          <NameBlock side={side} formOf={formOf} />
         </>
       ) : (
         <>
@@ -41,7 +58,7 @@ function Row({ side, seed }: { side: MatchupSide | undefined; seed: number | und
  * An opening-round (Round of 36) slot: empty until drawn, ringed while on the clock. Once drawn,
  * `onOpen` makes it a button that opens the game's matchup modal.
  */
-export function OpeningSlot({ position, a, b, seeds, current, tag, onOpen }: {
+export function OpeningSlot({ position, a, b, seeds, current, tag, onOpen, formOf }: {
   /** Top-to-bottom place in the bracket (0–17), for tests and screen readers. */
   position: number
   a: MatchupSide | undefined
@@ -50,6 +67,8 @@ export function OpeningSlot({ position, a, b, seeds, current, tag, onOpen }: {
   current: boolean
   tag: string | undefined
   onOpen?: () => void
+  /** Each drawn team's UPR going into the round, under its name. */
+  formOf?: (ffuId: string) => TeamForm | undefined
 }) {
   const props = {
     'data-slot': position,
@@ -60,8 +79,8 @@ export function OpeningSlot({ position, a, b, seeds, current, tag, onOpen }: {
   const base = `block w-full space-y-1 border bg-surface p-1.5 text-left ${a ? 'border-border' : 'border-dashed border-border'}`
   const body = (
     <>
-      <Row side={a} seed={seeds?.[0]} />
-      <Row side={b} seed={seeds?.[1]} />
+      <Row side={a} seed={seeds?.[0]} formOf={formOf} />
+      <Row side={b} seed={seeds?.[1]} formOf={formOf} />
       {tag && <p className="pl-1 text-[10px] font-bold uppercase tracking-wide text-muted">{tag}</p>}
     </>
   )
