@@ -32,7 +32,7 @@ export interface PickemForm {
   status: FormStatus
 }
 
-export interface Draft {
+interface Draft {
   ffuId: string
   picks: CupPicks
 }
@@ -51,8 +51,7 @@ function readDraft(t: Tournament, year: string): Draft {
   }
 }
 
-/** Replaces the remembered bracket (the preview demo uses it to set up a scenario). */
-export function writeDraft(year: string, draft: Draft): void {
+function writeDraft(year: string, draft: Draft): void {
   try {
     window.localStorage.setItem(draftKey(year), JSON.stringify(draft))
   } catch {

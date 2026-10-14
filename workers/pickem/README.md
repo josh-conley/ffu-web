@@ -29,9 +29,12 @@ The field, the bracket and the lock time are read from the live site's own
    **Account → D1 → Edit**.
 2. Optional: add a repo secret `PICKEM_ADMIN_TOKEN` (any long random string) to enable the
    commissioner reset below.
-3. Merge to `main`. `.github/workflows/deploy-pickem.yml` creates the database on its first run,
-   applies `migrations/`, deploys, and prints the Worker's `*.workers.dev` URL in the run summary.
-4. Put that URL in `CUP_PICKEM_API` (`src/config/cup.ts`) and push. Until then the tab stays hidden.
+3. Add a repo **variable** (not a secret) `PICKEM_DEPLOY` = `true`. Until it's set, the deploy
+   workflow skips itself, so merging before this setup is harmless.
+4. Run **Deploy pick'em API** from the Actions tab (or push a change under `workers/pickem`). It
+   creates the database on its first run, applies `migrations/`, deploys, and prints the Worker's
+   `*.workers.dev` URL in the run summary.
+5. Put that URL in `CUP_PICKEM_API` (`src/config/cup.ts`) and push. Until then the tab stays hidden.
 
 ## Operations
 - **Someone saved under the wrong name:** delete that entry, and its owner can enter again:

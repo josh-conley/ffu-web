@@ -1,4 +1,4 @@
-import { CUP_PICKEM_API, PICKEM_DEMO } from '@/config'
+import { CUP_PICKEM_API } from '@/config'
 import { parsePicks, type CupPicks } from '@/lib/cupPickem'
 
 // The Cup pick'em API (workers/pickem): the site's one read-WRITE data source, and a separate path
@@ -49,11 +49,7 @@ function toEntry(raw: unknown): PickemEntry {
   return { ffuId: raw.ffuId, updatedAt: raw.updatedAt, ...(picks ? { picks } : {}) }
 }
 
-// In a preview build with no API, each call goes to the in-browser demo instead (pickemDemo.ts).
-const demo = () => import('./pickemDemo')
-
 export async function fetchPickemBoard(year: string): Promise<PickemBoard> {
-  if (PICKEM_DEMO) return (await demo()).fetchDemoBoard()
   const raw = await call(`/v1/${year}`)
   if (!Array.isArray(raw.entries)) throw new PickemError(200, 'Bad pick-em board')
   return {
@@ -72,6 +68,5 @@ const jsonInit = (method: string, body: unknown): RequestInit => ({
 
 /** Creates the team's entry, or replaces the one it has. */
 export async function savePickemEntry(year: string, ffuId: string, picks: CupPicks): Promise<void> {
-  if (PICKEM_DEMO) return (await demo()).saveDemoEntry(ffuId, picks)
   await call(`/v1/${year}/entries/${encodeURIComponent(ffuId)}`, jsonInit('PUT', { picks }))
 }

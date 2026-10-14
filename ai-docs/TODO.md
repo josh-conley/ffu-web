@@ -166,8 +166,9 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       for "FFU Cup Winner"
 
 - [ ] **Cup pick'em** (built 2026-10-13, `workers/pickem/README.md`). To go live: widen the
-      Cloudflare token (Workers Scripts + D1 Edit), optionally add `PICKEM_ADMIN_TOKEN`, merge,
-      put the Worker URL from the deploy summary in `CUP_PICKEM_API`, and add `pickemLocksAt`
+      Cloudflare token (Workers Scripts + D1 Edit), optionally add `PICKEM_ADMIN_TOKEN`, set the
+      repo variable `PICKEM_DEPLOY=true` and run the deploy workflow, put the Worker URL from
+      its summary in `CUP_PICKEM_API`, and add `pickemLocksAt`
       to `public/data/2026/tournament.json` once the draw is in (R36 = week 6; Thu Oct 15 TNF
       kickoff is `2026-10-16T00:15:00Z`)
 

@@ -3,6 +3,10 @@ name: Deploy pick'em API
 # Deploys the Cup pick'em Worker (workers/pickem) to Cloudflare whenever it, or the shared bracket
 # rules it bundles from src, changes on main. Setup and operations: workers/pickem/README.md.
 #
+# OFF until the Cloudflare side is set up: the job runs only once the repo variable
+# PICKEM_DEPLOY is "true" (Settings → Secrets and variables → Actions → Variables). Until then a
+# merge shows this workflow as skipped, not as a red failure from a token without Workers rights.
+#
 # The D1 database is found by name, or created on the first run, and its id is written into
 # wrangler.toml here rather than committed — so the very first deploy needs no manual Cloudflare
 # step beyond the token's permissions.
@@ -29,6 +33,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: vars.PICKEM_DEPLOY == 'true'
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
