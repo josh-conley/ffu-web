@@ -111,15 +111,11 @@ this section is unread by me until you say so, so it's safe to leave half-formed
 Page is `/cup` (was `/tournament`, which redirects). Rules live in `src/config/cup.ts`; the season's
 weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS.md` (2026-08-20).
 
-**NEXT UP (handoff, 2026-10-14 — picked up from a cloud session that couldn't reach Sleeper):**
-1. **Write the draw. Seed is `1313`** (drawn on stream 2026-10-13). Run
-   `npm run draw-cup -- --seed 1313 --dry-run`, compare its check code with the one the stream
-   showed, then the same without `--dry-run`. It writes the 36 participants + opening ties into
-   `public/data/2026/tournament.json`; gates, commit, push to `main`. The Cup page flips to the
-   live bracket on its own. (Needs `api.sleeper.app`, which the cloud environment blocked.)
-2. **Pick'em lock time** — in the same file add `"pickemLocksAt": "2026-10-16T00:15:00Z"` (Thu
-   Oct 15, 8:15pm ET, week 6 TNF). Josh hadn't confirmed Thu vs. Sunday's first game; default Thu.
-   Harmless before step 3: the tab needs the API URL too.
+**NEXT UP (handoff, 2026-10-14; steps 1–2 done 2026-10-13 local — picked up from a cloud session that couldn't reach Sleeper):**
+1. [x] **Draw written** (2026-10-13): seed `1313`, check `85A9-BAF4` matched the stream. 36
+   participants + opening ties are in `public/data/2026/tournament.json`.
+2. [x] **Pick'em lock time** set: `"pickemLocksAt": "2026-10-16T00:15:00Z"` (Thu Oct 15, 8:15pm ET,
+   week 6 TNF; Josh confirmed Thursday).
 3. **Turn the pick'em on** (merged in PR #56, deploy gated off): Josh widens `CLOUDFLARE_API_TOKEN`
    (Workers Scripts + D1 Edit), optionally adds secret `PICKEM_ADMIN_TOKEN`, sets repo variable
    `PICKEM_DEPLOY=true`, runs **Deploy pick'em API** in Actions. Put the `*.workers.dev` URL from

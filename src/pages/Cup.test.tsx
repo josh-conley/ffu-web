@@ -1,14 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
+import type { Tournament } from '../data/types'
 import { Cup } from './Cup'
 
-// Serve public/data straight off disk, so the page reads the same 2026 Cup file the site ships.
+// Serve public/data straight off disk, so the page reads the same 2026 Cup file the site ships —
+// minus its draw. 2026 has been drawn, but the pre-draw state recurs every season, so these tests
+// keep covering it: an undrawn copy of the real file (same rounds, weeks and rules).
 const modules = import.meta.glob('../../public/data/**/*.json', { eager: true, import: 'default' })
 const FILES: Record<string, unknown> = {}
 for (const [path, mod] of Object.entries(modules)) {
   FILES[path.replace('../../public', '')] = mod
 }
+const shipped = FILES['/data/2026/tournament.json'] as Tournament
+FILES['/data/2026/tournament.json'] = {
+  ...shipped,
+  participants: [],
+  rounds: shipped.rounds.map((round) => ({ ...round, matchups: undefined })),
+} satisfies Tournament
 
 // Cumulative across the file: the provider caches one promise per path, so only the FIRST test to
 // render actually issues the fetches. Never reset — that keeps the assertions order-independent.
@@ -66,7 +75,8 @@ it('loads no tier data before the draw', async () => {
   await renderCup()
 
   expect(fetched).toContain('/data/2026/tournament.json')
-  // Gating matters: 2026 is still being played, so its per-tier files do not exist yet.
+  // Gating matters: before a draw the bracket needs no scores, so a live season's per-tier files
+  // (which may not exist yet) are never requested.
   expect(fetched.filter((u) => /2026\/(premier|masters|national)\.json/.test(u))).toHaveLength(0)
 })
 
