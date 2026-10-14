@@ -1,17 +1,18 @@
 import { useMemo, useState } from 'react'
-import type { SeasonData } from '@/data'
+import type { LiveSeasonData, SeasonData } from '@/data'
 import type { Tier } from '@/config'
-import { tiersForYear } from '@/config'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import { CUP_YEAR, tiersForYear } from '@/config'
+import { useAllSeasons, useTournament } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useLiveWeek, type LiveWeek } from '@/hooks/useLiveWeek'
 import { useDraftSchedules } from '@/hooks/useDraftSchedules'
-import { asOfWeek, finishedWeekOnShow, unionHighlight, upcomingYear } from '@/selectors'
+import { asOfWeek, finishedWeekOnShow, liveCupRounds, unionHighlight, upcomingYear } from '@/selectors'
 import { HomeUnionPanel } from '@/components/HomeUnionPanel'
 import { ChampionsByLeague } from '@/components/ChampionsByLeague'
 import { LatestChampions, type LatestChampion } from '@/components/LatestChampions'
 import type { OpenGame } from '@/components/CurrentWeekMatchups'
-import { HomeLiveSection, HomeLiveSectionPlaceholder, type WeekTabs } from '@/components/HomeLiveSection'
+import { HomeLiveSection, HomeLiveSectionPlaceholder, type LiveTier } from '@/components/HomeLiveSection'
+import { homeWeekViews, type HomeWeekView } from '@/components/homeWeekViews'
 import { LiveLineupModal } from '@/components/LiveLineupModal'
 import { CupBanner } from '@/components/CupBanner'
 import { UpcomingDrafts } from '@/components/UpcomingDrafts'
@@ -22,51 +23,55 @@ import { ErrorMessage } from '@/components/ErrorMessage'
 const championOf = (season: SeasonData) => season.teams.find((t) => t.finalPlacement === 1)?.memberId
 
 /**
- * While a week is live it leads the page: it's what people come for on a game day, and behind the
- * Cup promo and last week's Around the Union it started a screen and a half down on a phone. It
- * reads Sleeper, not the season files, so it renders as soon as its own data is in rather than
- * waiting on the history below.
+ * While a week is live it leads the page (under the one-line Cup banner): it's what people come for
+ * on a game day. It reads Sleeper, not the season files, so it renders as soon as its own data is in
+ * rather than waiting on the history below.
  *
  * Gate on the DATA (not just inScope): inScope flips true as soon as the tiny nfl-state fetch
  * resolves, but the per-tier season fetches take longer — and can fail. Until they're in, a
  * placeholder holds the section's height so nothing below jumps; a failure leaves no section at all.
  */
 function LiveBlock({ liveWeek, onOpen }: { liveWeek: LiveWeek; onOpen: (open: OpenGame) => void }) {
-  const [weekView, setWeekView] = useUrlState('week', 'final')
-  const tiers = TIER_PRESTIGE.flatMap((tier) => {
-    const data = liveWeek.byTier[tier]
-    return data ? [{ tier, data }] : []
-  })
-  if (tiers.length === 0) return liveWeek.loading ? <HomeLiveSectionPlaceholder /> : null
+  const [view, setView] = useUrlState('week', 'final')
+  const cup = useTournament(CUP_YEAR, liveWeek.inScope)
+  const tiers = useMemo(
+    () =>
+      TIER_PRESTIGE.flatMap((tier) => {
+        const data = liveWeek.byTier[tier]
+        return data ? [{ tier, data }] : []
+      }),
+    [liveWeek.byTier],
+  )
+  const seasons = useMemo(() => tiers.map((t) => t.data), [tiers])
   // Tuesday, after Sleeper's rollover, the matchups show the week that just finished, with a tab
-  // for the week now starting.
+  // for the week now starting. A Cup round played in either week gets a tab of its own.
   const finished = tiers[0] && finishedWeekOnShow(tiers[0].data)
-  const tabs = finished === undefined ? undefined : tuesdayTabs(finished, weekView, setWeekView)
-  const onFinal = tabs?.value === 'final'
-  const shown = finished !== undefined && onFinal ? tiers.map((t) => ({ ...t, data: asOfWeek(t.data, finished) })) : tiers
-  const week = shown[0]?.data.currentWeek
+  const current = tiers[0]?.data.currentWeek ?? 0
+  const views = useMemo(() => {
+    const weeks = finished === undefined ? [current] : [finished, current]
+    return homeWeekViews(current, finished, liveCupRounds(cup.data ?? undefined, seasons, weeks))
+  }, [cup.data, seasons, finished, current])
+  if (tiers.length === 0) return liveWeek.loading ? <HomeLiveSectionPlaceholder /> : null
+
+  const shown = views.find((v) => v.id === view) ?? views[0]
+  if (!shown) return null
   return (
     <HomeLiveSection
-      tiers={shown}
-      week={week}
-      final={onFinal}
+      {...viewContent(shown, tiers, seasons)}
+      week={shown.week}
+      final={shown.final}
       asOf={liveWeek.asOf}
       onOpen={onOpen}
-      weekTabs={tabs}
+      weekTabs={views.length > 1 ? { tabs: views, value: shown.id, onChange: setView } : undefined}
     />
   )
 }
 
-/** Tuesday's two weeks: the finals (default, the day's news) and the week now starting. */
-function tuesdayTabs(finished: number, view: string, onChange: (id: string) => void): WeekTabs {
-  return {
-    tabs: [
-      { id: 'final', label: `Week ${finished} · Final` },
-      { id: 'current', label: `Week ${finished + 1}` },
-    ],
-    value: view === 'current' ? 'current' : 'final',
-    onChange,
-  }
+/** What a view puts in the section: a league week (a finished one read as of that week), or a Cup
+ *  round, which reads the whole live season. */
+function viewContent(view: HomeWeekView, tiers: LiveTier[], seasons: readonly LiveSeasonData[]) {
+  if (view.kind === 'cup') return { tiers, cup: { round: view.round, seasons } }
+  return { tiers: view.final ? tiers.map((t) => ({ ...t, data: asOfWeek(t.data, view.week) })) : tiers }
 }
 
 /** Last week's Around the Union panel — needs every season file, so it has its own loading state. */
@@ -127,8 +132,8 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">Fantasy Football Union</h1>
-      <LiveBlock liveWeek={liveWeek} onOpen={setOpen} />
       <CupBanner />
+      <LiveBlock liveWeek={liveWeek} onOpen={setOpen} />
       {historyFailed ? (
         <ErrorMessage error={error ?? 'No data'} />
       ) : (
@@ -138,7 +143,7 @@ export function Overview() {
       {!historyFailed && <Champions seasons={allSeasons} loading={loading} />}
       {open && (
         <LiveLineupModal
-          leagueIds={[open.leagueId, open.leagueId]}
+          leagueIds={open.leagueIds}
           year={open.year}
           week={open.game.week}
           memberIds={open.game.participants.map((p) => p.memberId) as [string, string]}

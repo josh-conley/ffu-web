@@ -14,7 +14,7 @@ export type MatchupStatus = 'final' | 'live'
 /** Logo, name and subtitle — the left side of every row, scored or not. `linked`: the team opens
  *  its profile. Only on a plain card: inside the whole-card lineups button it would be a button in
  *  a button, which screen readers flatten, so there the logo and name are just text. */
-function TeamLabel({ memberId, year, subtitle, detail, linked }: { memberId: string; year: string; subtitle?: string; detail?: string; linked: boolean }) {
+function TeamLabel({ memberId, year, subtitle, detail, linked }: { memberId: string; year: string; subtitle?: ReactNode; detail?: string; linked: boolean }) {
   const detailLine = detail ? <span className="block truncate font-mono text-[11px] font-normal leading-tight text-muted">{detail}</span> : undefined
   return (
     <span className="flex min-w-0 items-center gap-2">
@@ -88,7 +88,7 @@ function ParticipantRow({
   tone: RowTone
   /** A live game's leader: the score alone is bold. */
   leading: boolean
-  subtitle?: string
+  subtitle?: ReactNode
   /** A second line under the name (live cards: record and UPR, or PPG before there is one). */
   detail?: string
   projected?: number
@@ -132,7 +132,8 @@ function rowTone(status: MatchupStatus, winner: string | null, memberId: string)
   return memberId === winner ? 'won' : 'lost'
 }
 
-/** `subtitle`: small tag beside each team — its running record (regular season) or seed (playoffs).
+/** `subtitle`: small tag beside each team — its running record (regular season), seed (playoffs),
+ *  or a Cup team's league dot and draw seed.
  *  `projected`: a live game's projected final score per team, shown beside the actual one. */
 export function MatchupCard({
   game,
@@ -147,7 +148,7 @@ export function MatchupCard({
   year: string
   status?: MatchupStatus
   onOpen?: () => void
-  subtitle?: (memberId: string) => string | undefined
+  subtitle?: (memberId: string) => ReactNode
   /** A line under each team's name (live home cards: record and UPR/PPG through last week). */
   detail?: (memberId: string) => string | undefined
   projected?: (memberId: string) => number | undefined

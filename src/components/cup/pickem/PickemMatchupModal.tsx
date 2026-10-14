@@ -8,6 +8,7 @@ import { LeagueBadge } from '../../LeagueBadge'
 import { TeamLogo } from '../../TeamLogo'
 import { segButton } from '../../controls'
 import { teamAbbr } from '../../seriesText'
+import { seedLabel } from '../../format'
 import { CupGameBody } from '../CupMatchupModal'
 import { PickemSeasonSnapshot } from './PickemSeasonSnapshot'
 
@@ -26,9 +27,10 @@ export interface PickemMatchup {
   pick?: string
 }
 
-function TeamHead({ ffuId, tier, year, picked, onPick }: {
+function TeamHead({ ffuId, tier, seed, year, picked, onPick }: {
   ffuId: string
   tier: Tier | undefined
+  seed: number | undefined
   year: string
   picked: boolean
   onPick?: () => void
@@ -37,7 +39,10 @@ function TeamHead({ ffuId, tier, year, picked, onPick }: {
     <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
       <TeamLogo ffuId={ffuId} size={48} clickable={false} />
       <span className="max-w-full truncate text-sm font-extrabold uppercase tracking-tight sm:text-base">{nameForYear(ffuId, year) ?? ffuId}</span>
-      {tier && <LeagueBadge tier={tier} />}
+      <span className="inline-flex items-center gap-1.5">
+        {seed !== undefined && <span className="font-mono text-xs font-semibold tabular-nums text-muted">{seedLabel(seed)}</span>}
+        {tier && <LeagueBadge tier={tier} />}
+      </span>
       {onPick ? (
         <button type="button" aria-pressed={picked} onClick={onPick} className={`${segButton(picked)} mt-1 justify-center gap-1.5`}>
           {picked && <FaCheck aria-hidden />}
@@ -50,12 +55,13 @@ function TeamHead({ ffuId, tier, year, picked, onPick }: {
   )
 }
 
-export function PickemMatchupModal({ matchup, year, seasons, tierOf, onPick, onClose }: {
+export function PickemMatchupModal({ matchup, year, seasons, tierOf, seedOf, onPick, onClose }: {
   matchup: PickemMatchup
   year: string
   /** The Cup season's league files, for the season-so-far figures. */
   seasons: SeasonData[]
   tierOf: ReadonlyMap<string, Tier>
+  seedOf: ReadonlyMap<string, number>
   /** Omit for a read-only view. Picking closes the modal. */
   onPick?: (ffuId: string) => void
   onClose: () => void
@@ -64,10 +70,10 @@ export function PickemMatchupModal({ matchup, year, seasons, tierOf, onPick, onC
   const byTier: SeasonsByTier = Object.fromEntries(seasons.map((s) => [s.tier, s]))
   const side = (id: string) => {
     const tier = tierOf.get(id) ?? 'NATIONAL'
-    return { ffuId: id, tier, score: weekScore(byTier, tier, id, week) }
+    return { ffuId: id, tier, seed: seedOf.get(id), score: weekScore(byTier, tier, id, week) }
   }
   const head = (id: string) => (
-    <TeamHead ffuId={id} tier={tierOf.get(id)} year={year} picked={pick === id} onPick={onPick && (() => onPick(id))} />
+    <TeamHead ffuId={id} tier={tierOf.get(id)} seed={seedOf.get(id)} year={year} picked={pick === id} onPick={onPick && (() => onPick(id))} />
   )
   return (
     <Dialog label={`${roundLabel}: ${teamAbbr(a)} v ${teamAbbr(b)}`} title={roundLabel} width="lg" onClose={onClose}>

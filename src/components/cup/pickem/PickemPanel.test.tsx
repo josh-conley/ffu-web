@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import type { PickemBoard } from '@/data'
-import { drawnCup } from '@/test/drawnCup'
+import { drawnCup, seedOf } from '@/test/drawnCup'
 import { EMPTY_PICKS, pickBracket, setDrop, setWinner, type CupPicks } from '@/lib/cupPickem'
 import { resolveTournament } from '@/selectors'
 import { PickemPanel } from './PickemPanel'
@@ -96,6 +96,9 @@ it('opens a matchup and picks from its modal', async () => {
   await userEvent.click(await screen.findByRole('button', { name: `${a} v ${b}` }))
   const dialog = screen.getByRole('dialog')
   expect(within(dialog).getByText('No games on file this season yet.')).toBeInTheDocument()
+  // Both teams' draw seeds, as on every Cup matchup.
+  expect(within(dialog).getByText(`#${seedOf.get(a)}`)).toBeInTheDocument()
+  expect(within(dialog).getByText(`#${seedOf.get(b)}`)).toBeInTheDocument()
   // Lineups for the round's own week, never just the latest week on file.
   expect(within(dialog).getByRole('heading', { name: `Week ${drawnCup.rounds[0]!.week} lineups` })).toBeInTheDocument()
   await userEvent.click(within(dialog).getByRole('button', { name: `Pick ${a}` }))

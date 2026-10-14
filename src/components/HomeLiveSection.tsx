@@ -3,11 +3,13 @@ import type { Tier } from '@/config'
 import type { LiveSeasonData } from '@/data'
 import { useAfterIdle } from '@/hooks/useAfterIdle'
 import { useLiveProjections } from '@/hooks/useLiveProjections'
+import type { ResolvedRound } from '@/selectors'
+import { CupWeekMatchups } from './CupWeekMatchups'
 import { CurrentWeekMatchups, type OpenGame } from './CurrentWeekMatchups'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 import { TabPanel, Tabs, type TabDef } from './Tabs'
 
-/** Tuesday's choice between the week just finished and the one now starting (see LiveBlock). */
+/** The choice between the weeks on show and the Cup round played in them (see homeWeekViews). */
 export interface WeekTabs {
   tabs: readonly TabDef[]
   value: string
@@ -51,7 +53,8 @@ function LeagueGrid({ children }: { children: ReactNode }) {
 
 /**
  * The one live block on the home page: this week's matchups, every day of the week. Tuesday adds a
- * tab for the week just finished, and opens on it (see LiveBlock). Standings used to replace the
+ * tab for the week just finished, and opens on it (see LiveBlock); a week with a Cup round adds a
+ * tab for that round (`cup`: the round, with `tiers` then the whole live season it is read from). Standings used to replace the
  * matchups on Wednesdays; Josh dropped that on 2026-10-05, since the new week's games are the news.
  *
  * Projections wait until the scores have painted (useAfterIdle): their feed is ~237KB gzipped, and
@@ -64,6 +67,7 @@ export function HomeLiveSection({
   asOf,
   onOpen,
   weekTabs,
+  cup,
 }: {
   tiers: LiveTier[]
   week: number | undefined
@@ -73,6 +77,7 @@ export function HomeLiveSection({
   asOf: number | undefined
   onOpen: (open: OpenGame) => void
   weekTabs?: WeekTabs
+  cup?: { round: ResolvedRound; seasons: readonly LiveSeasonData[] }
 }) {
   const projecting = !final
   const painted = useAfterIdle(projecting)
@@ -87,8 +92,11 @@ export function HomeLiveSection({
     <section className="space-y-3">
       <h2 className={HEADING}>{heading}</h2>
       {weekTabs && <Tabs tabs={weekTabs.tabs} value={weekTabs.value} onChange={weekTabs.onChange} label="Which week" />}
-      <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />
+      {!cup && <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />}
       <MaybeTabPanel id={weekTabs?.value}>
+        {cup ? (
+          <CupWeekMatchups round={cup.round} seasons={cup.seasons} final={final} projected={(memberId) => projections.get(memberId)} />
+        ) : (
         <LeagueGrid>
           {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}
           {tiers.map(({ tier, data }) => (
@@ -97,6 +105,7 @@ export function HomeLiveSection({
             </div>
           ))}
         </LeagueGrid>
+        )}
       </MaybeTabPanel>
     </section>
   )
