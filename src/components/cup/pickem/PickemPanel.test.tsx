@@ -75,6 +75,29 @@ it('opens a matchup and picks from its modal', async () => {
   expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Your pick' })).toHaveAttribute('aria-pressed', 'true')
 })
 
+it('brings the drop pick into focus the moment the last Round of 18 winner is picked', async () => {
+  // A remembered draft one pick short: every Round of 18 game but the last, no drop yet.
+  const full = firstListed()
+  const r18 = [...full.winners.r18!]
+  const last = r18.length - 1
+  r18[last] = null
+  const draft = { winners: { r36: full.winners.r36 }, drops: {} }
+  window.localStorage.setItem('ffu-pickem-draft-2026', JSON.stringify({ ffuId: '', picks: { ...draft, winners: { ...draft.winners, r18 } } }))
+  api.board.mockResolvedValue(board({}))
+  renderPanel()
+  await screen.findByText(/of 36 teams in/)
+  // Already owing nothing but one pick: the drop isn't asked for yet, and nothing is focused.
+  expect(screen.queryByText('Required')).not.toBeInTheDocument()
+
+  const slot = pickBracket(drawnCup, { winners: { r36: full.winners.r36!, r18 }, drops: {} }).find((r) => r.key === 'r18')!.slots[last]!
+  await userEvent.click(screen.getByRole('button', { name: `${slot.a} v ${slot.b}` }))
+  await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: `Pick ${slot.a}` }))
+
+  expect(screen.getByText('Required')).toBeInTheDocument()
+  expect(screen.getByRole('combobox', { name: /Pick the team to drop/ })).toHaveFocus()
+  expect(screen.getByText(/^Next: pick which Round of 18 winner is dropped/)).toBeInTheDocument()
+})
+
 it('shows the leaderboard with everyone\'s picks once locked', async () => {
   api.board.mockResolvedValue(board({ open: false, locked: true, entries: [{ ffuId: team, updatedAt: 'x', picks: firstListed() }] }))
   renderPanel()

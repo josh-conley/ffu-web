@@ -1,6 +1,7 @@
 import type { SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
 import { nameForYear, ownerNames } from '@/config'
+import { dropOwed } from '@/lib/cupPickem'
 import { usePickemForm, type FormStatus, type PickemForm } from '@/hooks/usePickemForm'
 import { BUTTON, SELECT } from '../../controls'
 import { PickemBracket } from './PickemBracket'
@@ -15,6 +16,15 @@ function StatusLine({ status, entered }: { status: FormStatus; entered: boolean 
   return null
 }
 
+/** What's still missing, named: the drop pick gets its own line, since it's the easy one to miss. */
+function MissingStep({ form }: { form: PickemForm }) {
+  const owed = dropOwed(form.bracket)
+  if (owed) {
+    return <span className="text-sm font-semibold text-text">Next: pick which {owed.label} winner is dropped (top of the Quarterfinals column).</span>
+  }
+  return <span className="text-sm text-muted">Pick every game, plus the {form.bracket.find((r) => r.needsDrop)?.label ?? ''} team that gets dropped, to submit.</span>
+}
+
 function FormActions({ form, canSubmit, hasEntry }: { form: PickemForm; canSubmit: boolean; hasEntry: boolean }) {
   const busy = form.status.kind === 'busy'
   return (
@@ -23,7 +33,7 @@ function FormActions({ form, canSubmit, hasEntry }: { form: PickemForm; canSubmi
         {busy ? 'Saving…' : hasEntry ? 'Save changes' : 'Submit bracket'}
       </button>
       <button type="button" className={BUTTON} disabled={busy} onClick={form.reset}>Clear picks</button>
-      {!form.complete && <span className="text-sm text-muted">Pick every game (and the dropped team) to submit.</span>}
+      {!form.complete && <MissingStep form={form} />}
     </div>
   )
 }

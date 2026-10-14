@@ -114,6 +114,11 @@ export function isComplete(bracket: PickRound[]): boolean {
   )
 }
 
+/** The round whose lowest-winner drop is owed now: all its games picked, the drop not yet made. */
+export function dropOwed(bracket: PickRound[]): PickRound | undefined {
+  return bracket.find((r) => r.needsDrop && r.drop === undefined && r.slots.length > 0 && r.slots.every((s) => s.pick !== undefined))
+}
+
 /** The champion a bracket predicts, once the final is picked. */
 export function pickedChampion(bracket: PickRound[]): string | undefined {
   return bracket[bracket.length - 1]?.slots[0]?.pick

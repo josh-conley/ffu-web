@@ -1,5 +1,5 @@
 import { drawnCup, seedOf } from '@/test/drawnCup'
-import { EMPTY_PICKS, isComplete, pickBracket, pickedChampion, setDrop, setWinner, validatePicks, type CupPicks } from './cupPickem'
+import { EMPTY_PICKS, dropOwed, isComplete, pickBracket, pickedChampion, setDrop, setWinner, validatePicks, type CupPicks } from './cupPickem'
 
 const t = drawnCup
 const better = (a: string | undefined, b: string | undefined) => (seedOf.get(a!)! < seedOf.get(b!)! ? a! : b!)
@@ -48,6 +48,9 @@ describe('pickBracket', () => {
     const b = pickBracket(t, { ...chalk, drops: {} })
     expect(b.find((r) => r.key === 'r8')!.slots.every((s) => s.a === undefined && s.pick === undefined)).toBe(true)
     expect(isComplete(b)).toBe(false)
+    expect(dropOwed(b)?.key).toBe('r18')
+    expect(dropOwed(pickBracket(t, chalk))).toBeUndefined()
+    expect(dropOwed(pickBracket(t, EMPTY_PICKS))).toBeUndefined()
   })
 })
 
