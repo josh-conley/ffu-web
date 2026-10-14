@@ -79,9 +79,16 @@ it('holds a revealed matchup on screen, then hides the next opponent again', asy
   expect(card().queryByText(nameOf(expected.matchups[1]!.b))).not.toBeInTheDocument()
 })
 
-it('reveals every matchup of the CLI draw, in the same order', async () => {
+// The slow one: it walks all 18 matchups, 36 presses re-rendering the whole stage. Its lookups skip
+// getByRole, whose accessible-name pass over this page cost about as much as the renders: by the
+// button's text, and the card by its label. With them it ran ~4.4s alone, against the 5s default,
+// and timed out whenever the full suite loaded the machine. The timeout is headroom for that load,
+// not a cover for a slow render: the test itself now takes ~2.9s alone.
+const pressMain = (label: RegExp) => fireEvent.click(screen.getByText(label, { selector: 'button' }))
+const cardByLabel = () => within(screen.getByLabelText('Current matchup'))
+
+it('reveals every matchup of the CLI draw, in the same order', { timeout: 15_000 }, async () => {
   stubReducedMotion(true)
-  const user = userEvent.setup()
   render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
@@ -89,18 +96,19 @@ it('reveals every matchup of the CLI draw, in the same order', async () => {
 
   for (let i = 0; i < 18; i++) {
     const opponent = nameOf(expected.matchups[i]!.b)
-    expect(card().getByText(nameOf(expected.matchups[i]!.a)), `matchup ${i + 1} drawer`).toBeInTheDocument()
+    const current = cardByLabel()
+    expect(current.getByText(nameOf(expected.matchups[i]!.a)), `matchup ${i + 1} drawer`).toBeInTheDocument()
     // Hidden before the draw...
-    expect(card().queryByText(opponent), `matchup ${i + 1} opponent leaked`).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /^draw$/i }))
+    expect(current.queryByText(opponent), `matchup ${i + 1} opponent leaked`).not.toBeInTheDocument()
+    pressMain(/^draw$/i)
     // ...shown after it.
-    expect(card().getByText(opponent), `matchup ${i + 1} opponent`).toBeInTheDocument()
-    if (i < 17) await user.click(screen.getByRole('button', { name: /next matchup/i }))
+    expect(cardByLabel().getByText(opponent), `matchup ${i + 1} opponent`).toBeInTheDocument()
+    if (i < 17) pressMain(/next matchup/i)
   }
 
   // The 18th gets its own moment on the card; one more press brings up the full results.
   expect(screen.queryByRole('region', { name: /draw complete/i })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: /show all matchups/i }))
+  pressMain(/show all matchups/i)
   const results = within(screen.getByRole('region', { name: /draw complete/i }))
   expect(results.getByLabelText('Cup bracket').querySelectorAll('[data-slot]')).toHaveLength(18)
   expect(results.getAllByText(drawCheckCode(expected)).length).toBeGreaterThan(0)
