@@ -174,7 +174,7 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       drop and the pick'em leaderboard all move with that run; no Cup-specific job is needed
 - [ ] **No tiebreaker for a tied Cup game.** A tie leaves the game undecided (no winner), so the
       next round can't be paired. Ask the commissioner for the rule (bench points? higher seed?)
-- [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
+- [x] Discord role name: "FFU Cup Winner" (the amendment's "FA Cup Winner" was a typo; fixed 2026-10-14)
       for "FFU Cup Winner"
 
 - [ ] **Cup pick'em** (built 2026-10-13, `workers/pickem/README.md`). To go live: widen the
@@ -360,7 +360,7 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       drop and the pick'em leaderboard all move with that run; no Cup-specific job is needed
 - [ ] **No tiebreaker for a tied Cup game.** A tie leaves the game undecided (no winner), so the
       next round can't be paired. Ask the commissioner for the rule (bench points? higher seed?)
-- [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
+- [x] Discord role name: "FFU Cup Winner" (the amendment's "FA Cup Winner" was a typo; fixed 2026-10-14)
       for "FFU Cup Winner"
 
 ## 2026 in-season data — static drafts, and how live the rest of the site gets
