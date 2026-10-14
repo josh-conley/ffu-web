@@ -98,8 +98,10 @@ it('explains the format, the draw and the prizing on the Format & Rules tab', as
   // Prizing is named by where a win gets you, and the champion's run totals 10+20+40+60+100.
   expect(screen.getByText('Win & advance to the Round of 18').parentElement).toHaveTextContent('$10')
   expect(screen.getByText('Win the Final').parentElement).toHaveTextContent('$100')
+  // The Round of 18's culled winner doesn't collect that round's $20, and its row says so.
+  expect(screen.getByText('Win & advance to the Quarterfinals')).toHaveTextContent(/not paid to the lowest-scoring winner/i)
   expect(screen.getByText(/\$230/)).toBeInTheDocument()
-  expect(screen.getByText(/FA Cup Winner/)).toBeInTheDocument()
+  expect(screen.getByText(/FFU Cup Winner/)).toBeInTheDocument()
 })
 
 it('keeps the selected tab in the URL so a view can be linked', async () => {

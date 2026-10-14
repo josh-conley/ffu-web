@@ -28,8 +28,8 @@ export const CUP_FIELD_SIZE = 36
  */
 export const CUP_ACCENT = '#2596be'
 
-/** Verbatim from the amendment — the blue Discord role the winner receives. */
-export const CUP_DISCORD_ROLE = 'FA Cup Winner'
+/** The blue Discord role the winner receives. (The amendment's text says "FA Cup Winner", a slip for the FFU Cup.) */
+export const CUP_DISCORD_ROLE = 'FFU Cup Winner'
 
 /** What it takes to survive each round, keyed by round key (amendment: "Round Descriptions"). */
 export const CUP_ROUND_RULES: Record<CupRoundKey, string> = {
