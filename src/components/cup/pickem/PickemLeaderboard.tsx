@@ -18,12 +18,13 @@ interface Scored {
 const TH = 'px-2 py-2 text-left text-[11px] font-bold uppercase tracking-widest text-muted'
 const TD = 'px-2 py-2 text-sm'
 
-export function PickemLeaderboard({ tournament, played, entries, year, tierOf, seasons }: {
+export function PickemLeaderboard({ tournament, played, entries, year, tierOf, seedOf, seasons }: {
   tournament: Tournament
   played: ResolvedTournament
   entries: PickemEntry[]
   year: string
   tierOf: ReadonlyMap<string, Tier>
+  seedOf: ReadonlyMap<string, number>
   seasons: SeasonData[]
 }) {
   const [shown, setShown] = useState<string>()
@@ -72,7 +73,7 @@ export function PickemLeaderboard({ tournament, played, entries, year, tierOf, s
       {selected && (
         <section className="space-y-3">
           <h3 className="text-sm font-bold uppercase tracking-widest">{name(selected.ffuId)}&apos;s bracket</h3>
-          <PickemBracket bracket={selected.bracket} year={year} tierOf={tierOf} seasons={seasons} outcomes={pickOutcomes(selected.bracket, played)} />
+          <PickemBracket bracket={selected.bracket} year={year} tierOf={tierOf} seedOf={seedOf} seasons={seasons} outcomes={pickOutcomes(selected.bracket, played)} />
         </section>
       )}
     </div>

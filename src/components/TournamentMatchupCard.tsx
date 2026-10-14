@@ -9,6 +9,16 @@ function OpenRow() {
   return <div className="border-l-2 border-transparent pl-1.5 text-sm italic text-muted">TBD</div>
 }
 
+/** The team's seed from the draw, before its name: fixed width, so names line up down a column. */
+function Seed({ seed }: { seed: number }) {
+  return (
+    <span className="w-4 shrink-0 text-right font-mono text-[11px] font-normal tabular-nums text-muted">
+      <span className="sr-only">Seed </span>
+      {seed}
+    </span>
+  )
+}
+
 /** `linked`: the team opens its profile — not when the whole card is a button (no button in a button).
  *  `winnerTone` replaces the winner's accent bar (the pick'em marks a pick that won or lost). */
 function SideRow({ side, year, isWinner, dim, linked, detail, winnerTone = 'border-accent' }: { side: ResolvedSide; year: string; isWinner: boolean; dim: boolean; linked: boolean; detail: string | undefined; winnerTone?: string }) {
@@ -16,6 +26,7 @@ function SideRow({ side, year, isWinner, dim, linked, detail, winnerTone = 'bord
   return (
     <div className={`flex items-center justify-between gap-2 border-l-2 pl-1.5 ${isWinner ? `${winnerTone} font-semibold` : 'border-transparent'} ${dim ? 'text-muted' : ''}`}>
       <span className="flex min-w-0 items-center gap-1.5">
+        {side.seed !== undefined && <Seed seed={side.seed} />}
         <span className={`h-2 w-2 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
         <TeamLink ffuId={side.ffuId} logoSize={20} className="gap-1.5" plain={!linked} tight detail={detailLine}>
           <span className="truncate text-sm">{nameForYear(side.ffuId, year) ?? side.ffuId}</span>

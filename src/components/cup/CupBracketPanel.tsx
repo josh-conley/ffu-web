@@ -38,7 +38,7 @@ export function CupBracketPanel({ drawn, resolved, outline, year, onOpen, formOf
     return (
       <div className="space-y-4">
         {resolved.champion && <ChampionBanner ffuId={resolved.champion} year={year} />}
-        <TournamentBracket tournament={resolved} year={year} onOpen={onOpen} formOf={formOf} />
+        <TournamentBracket tournament={resolved} year={year} onOpen={onOpen} formOf={formOf} outline={outline} />
       </div>
     )
   }

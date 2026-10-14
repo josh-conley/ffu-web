@@ -1,6 +1,6 @@
 import { pairAdjacent, pairReseeded } from '@/lib/cupPairing'
 import type { Tier } from '@/config/types'
-import type { SeasonData, Tournament, TournamentMatchup } from '@/data'
+import type { SeasonData, Tournament, TournamentMatchup, TournamentParticipant } from '@/data'
 import { scoreFor } from './games'
 
 // Resolves a cross-tier knockout tournament into a displayable bracket. Pure: the tournament file
@@ -13,6 +13,8 @@ export type SeasonsByTier = Partial<Record<Tier, SeasonData>>
 export interface ResolvedSide {
   ffuId: string
   tier: Tier
+  /** Seed from the draw (1–36); undefined before it. */
+  seed?: number
   /** Score in this team's tier game for the round week; undefined when that week has no data yet. */
   score?: number
 }
@@ -65,14 +67,18 @@ export function weekScore(seasonsByTier: SeasonsByTier, tier: Tier, ffuId: strin
   return undefined
 }
 
-function resolveSide(tierOf: Map<string, Tier>, seasons: SeasonsByTier, ffuId: string, week: number): ResolvedSide {
-  const tier = tierOf.get(ffuId) ?? 'NATIONAL'
-  return { ffuId, tier, score: weekScore(seasons, tier, ffuId, week) }
+/** The field by ffuId: each team's home tier and draw seed. */
+type Field = Map<string, TournamentParticipant>
+
+function resolveSide(field: Field, seasons: SeasonsByTier, ffuId: string, week: number): ResolvedSide {
+  const entrant = field.get(ffuId)
+  const tier = entrant?.tier ?? 'NATIONAL'
+  return { ffuId, tier, seed: entrant?.seed, score: weekScore(seasons, tier, ffuId, week) }
 }
 
-function resolveMatchup(tierOf: Map<string, Tier>, seasons: SeasonsByTier, m: TournamentMatchup, week: number): ResolvedMatchup {
-  const a = resolveSide(tierOf, seasons, m.a, week)
-  const b = resolveSide(tierOf, seasons, m.b, week)
+function resolveMatchup(field: Field, seasons: SeasonsByTier, m: TournamentMatchup, week: number): ResolvedMatchup {
+  const a = resolveSide(field, seasons, m.a, week)
+  const b = resolveSide(field, seasons, m.b, week)
   if (a.score === undefined || b.score === undefined) return { a, b, tie: false }
   if (a.score === b.score) return { a, b, tie: true }
   return { a, b, tie: false, winner: a.score > b.score ? a.ffuId : b.ffuId }
@@ -131,7 +137,7 @@ export function outlineTournament(t: Tournament): RoundOutline[] {
 }
 
 export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): ResolvedTournament {
-  const tierOf = new Map(t.participants.map((p) => [p.ffuId, p.tier]))
+  const field: Field = new Map(t.participants.map((p) => [p.ffuId, p]))
   const seedOf = new Map(t.participants.flatMap((p) => (p.seed !== undefined ? [[p.ffuId, p.seed] as const] : [])))
   const rounds: ResolvedRound[] = []
   let advancers: Advancer[] = []
@@ -145,11 +151,11 @@ export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): 
     const ids = pool.map((a) => a.ffuId)
     // Authored pairings override the computed ones.
     const pairs = round.matchups ?? (round.reseed ? pairReseeded(ids, seedOf) : pairAdjacent(ids))
-    const matchups = pairs.map((m) => resolveMatchup(tierOf, seasonsByTier, m, round.week))
+    const matchups = pairs.map((m) => resolveMatchup(field, seasonsByTier, m, round.week))
     // Attribute the culled winner to the round it actually played and won (see ResolvedRound.dropped),
     // and score it in THAT week — scoring it in this round's week would report a game it never played.
     if (droppedId !== undefined && previousRound !== undefined) {
-      previousRound.dropped = [resolveSide(tierOf, seasonsByTier, droppedId, previousRound.week)]
+      previousRound.dropped = [resolveSide(field, seasonsByTier, droppedId, previousRound.week)]
     }
     rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped: [] })
     advancers = advancersOf(matchups)

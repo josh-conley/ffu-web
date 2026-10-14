@@ -17,7 +17,7 @@ function bracket(year: string, scored: boolean): ResolvedTournament {
         label: 'Round of 36',
         week: 6,
         dropped: [],
-        matchups: [{ a: { ffuId: 'ffu-001', tier: 'PREMIER', score: score(100) }, b: { ffuId: 'ffu-002', tier: 'NATIONAL', score: score(90) }, tie: false }],
+        matchups: [{ a: { ffuId: 'ffu-001', tier: 'PREMIER', seed: 1, score: score(100) }, b: { ffuId: 'ffu-002', tier: 'NATIONAL', seed: 36, score: score(90) }, tie: false }],
       },
     ],
   }
@@ -55,4 +55,10 @@ it('shows each team\'s UPR going into the round under its name', () => {
   )
   expect(screen.getByText('112.45 UPR')).toBeInTheDocument()
   expect(formOf).toHaveBeenCalledWith('ffu-001', 6)
+})
+
+it('shows each team\'s seed from the draw beside its name', () => {
+  renderBracket(bracket('2019', true))
+  const seeds = screen.getAllByText('Seed').map((label) => label.parentElement!.textContent)
+  expect(seeds).toEqual(['Seed 1', 'Seed 36'])
 })

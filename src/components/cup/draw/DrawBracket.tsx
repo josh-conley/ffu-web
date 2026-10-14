@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { CUP_ACCENT } from '@/config'
 import type { RoundOutline } from '@/selectors'
+import { bracketWings } from '../../bracketWings'
 import type { MatchupSide } from './DrawMatchupCard'
 import { BlankSlot, FeederSlot, OpeningSlot, type LedgerMatchup, type SlotSeeds } from './DrawBracketSlots'
 
@@ -11,9 +12,9 @@ export type { LedgerMatchup, SlotSeeds } from './DrawBracketSlots'
 // the height of an 18-deep column (so it fits under the spinner on one screen) and shows at a
 // glance that seeds 1 and 2 can only meet in the final.
 //
-// Slots are in seeded bracket order (bracketSlots): positions 0–7 are the left half, 8–15 the right,
-// and 16–17 — the ninth Round-of-18 game, 9v28 against 10v27 — sit at the foot of the left half. The Round of 18 names its feeders; later rounds stay blank because the quarterfinals
-// re-seed after the lowest-winner drop.
+// Slots are in seeded bracket order (bracketSlots); which side each sits on is bracketWings, the
+// same rule as the Cup page's bracket. The Round of 18 names its feeders; later rounds stay blank
+// because the quarterfinals re-seed after the lowest-winner drop.
 
 /** Where the draw is: the matchup on the clock, and its opponent once revealed. */
 export interface BracketCursor {
@@ -22,7 +23,6 @@ export interface BracketCursor {
   drawn: MatchupSide | undefined
 }
 
-const HALF = 8
 // Columns stretch to fill the page (it is full-width on the call) but never below these, so a
 // narrow window scrolls rather than squashing names. The opening round and the final carry names.
 const WIDE = 'min-w-48 flex-[1.5]'
@@ -50,7 +50,6 @@ function sidesOf(i: number, matchups: LedgerMatchup[], cursor: BracketCursor | u
 }
 
 const blanks = (n: number) => Array.from({ length: n }, (_, k) => <BlankSlot key={k} />)
-const range = (from: number, n: number) => Array.from({ length: n }, (_, k) => from + k)
 
 export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [], onOpen }: {
   /** The season's rounds (tournament.json): labels and weeks, opening round first. */
@@ -90,14 +89,11 @@ export function DrawBracket({ rounds, order, seeds, matchups, cursor, tags = [],
     return <FeederSlot key={game} from={from} />
   }
 
-  /**
-   * One wing: its opening slots, Round-of-18 games, two quarterfinals and a semi. The left wing also
-   * carries the ninth Round-of-18 game (9v28 against 10v27) at its foot: nine games can't split
-   * evenly, and seed 9 sits in seed 1's half of a seeded bracket.
-   */
+  /** One wing: its opening slots, Round-of-18 games, two quarterfinals and a semi. */
   const wing = (side: 0 | 1) => {
-    const openings = side === 0 ? [...range(0, HALF), ...range(2 * HALF, 2)] : range(HALF, HALF)
-    const games = side === 0 ? [...range(0, 4), 8] : range(4, 4)
+    const half = side === 0 ? 'left' : 'right'
+    const openings = bracketWings(order.length)[half]
+    const games = bracketWings(Math.ceil(order.length / 2))[half]
     const columns = [
       <Column key="r36" round={r36} width={WIDE}>{openings.map(opening)}</Column>,
       <Column key="r18" round={r18} width={NARROW}>{games.map(feeder)}</Column>,
