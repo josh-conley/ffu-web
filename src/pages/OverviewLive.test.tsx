@@ -62,7 +62,7 @@ it("shows the current week's matchups on a Wednesday, not the standings", async 
   expect(screen.queryByText(/^Standings/)).not.toBeInTheDocument()
 })
 
-it('puts the live week above the Cup and Around the Union, with a jump link to each league', async () => {
+it('puts the one-line Cup banner above the live week, with a jump link to each league', async () => {
   const { container } = render(
     <MemoryRouter>
       <Overview />
@@ -71,7 +71,7 @@ it('puts the live week above the Cup and Around the Union, with a jump link to e
   const heading = await screen.findByText(/^Week 3$/)
   const cup = screen.getAllByRole('link').find((a) => a.getAttribute('href')?.startsWith('/cup'))
   expect(cup).toBeDefined()
-  expect(heading.compareDocumentPosition(cup!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(heading.compareDocumentPosition(cup!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
 
   const jumps = within(screen.getByRole('navigation', { name: 'Jump to league' })).getAllByRole('link')
   expect(jumps.map((a) => a.textContent)).toEqual(['Premier', 'Masters', 'National'])

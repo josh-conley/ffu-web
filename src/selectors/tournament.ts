@@ -8,7 +8,8 @@ import { scoreFor } from './games'
 // score, every winner, and the pairings of later rounds — is DERIVED from the three tiers' season
 // data for the round's week (Charter: "store facts, derive opinions").
 
-export type SeasonsByTier = Partial<Record<Tier, SeasonData>>
+// Only the games are read, so the live season (LiveSeasonData, read from Sleeper) resolves too.
+export type SeasonsByTier = Partial<Record<Tier, Pick<SeasonData, 'games'>>>
 
 export interface ResolvedSide {
   ffuId: string

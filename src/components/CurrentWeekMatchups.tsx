@@ -1,15 +1,18 @@
 import { useMemo } from 'react'
 import type { Tier } from '@/config'
 import type { Game, LiveSeasonData } from '@/data'
-import { currentWeekMatchups, standingsThroughPreviousWeek, uprThroughPreviousWeek } from '@/selectors'
-import { recordRatingLabel } from './format'
+import { currentWeekMatchups } from '@/selectors'
 import { LEAGUE_STYLES } from './leagues'
 import { MatchupCard } from './MatchupCard'
+import { useLiveRecordDetail } from './useLiveRecordDetail'
 
 export interface OpenGame {
-  leagueId: string
+  /** Each team's league, in the game's participant order (two different ones for a Cup game). */
+  leagueIds: readonly [string, string]
   year: string
   game: Game
+  /** The box score's title bar, when not the default "Week N · Live" (the Cup names its round). */
+  title?: string
 }
 
 /** One tier's column of this week's matchups (in progress, so styled live: no winner until the
@@ -34,12 +37,7 @@ export function CurrentWeekMatchups({
   // Record and UPR (PPG until the season has a UPR) through the last completed week, the same
   // numbers as the home standings and the Standings page. A final week is itself completed.
   const through = final ? data.currentWeek : data.currentWeek - 1
-  const totals = useMemo(() => new Map(standingsThroughPreviousWeek(data, through).map((r) => [r.totals.memberId, r.totals])), [data, through])
-  const upr = useMemo(() => uprThroughPreviousWeek(data, through), [data, through])
-  const detail = (memberId: string) => {
-    const t = totals.get(memberId)
-    return t && recordRatingLabel(t, upr.get(memberId))
-  }
+  const detail = useLiveRecordDetail(useMemo(() => [data], [data]), through)
   return (
     <section className="border border-border bg-surface shadow-sm">
       <h3 className={`px-3 py-2 text-sm font-bold uppercase tracking-wide ${style.solidHeader}`}>{style.label}</h3>
@@ -52,7 +50,7 @@ export function CurrentWeekMatchups({
             status="live"
             projected={projected}
             detail={detail}
-            onOpen={() => onOpen({ leagueId: data.leagueId, year: data.year, game })}
+            onOpen={() => onOpen({ leagueIds: [data.leagueId, data.leagueId], year: data.year, game })}
           />
         ))}
       </div>
