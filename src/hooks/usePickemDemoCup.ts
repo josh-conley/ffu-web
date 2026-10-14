@@ -13,5 +13,5 @@ export function usePickemDemoCup() {
     const byTier: SeasonsByTier = Object.fromEntries(data.seasons.map((s) => [s.tier, s]))
     return resolveTournament(data.tournament, byTier)
   }, [data])
-  return { tournament: data?.tournament, played, loading, error }
+  return { tournament: data?.tournament, seasons: data?.seasons, played, loading, error }
 }

@@ -11,12 +11,12 @@ import { segButton } from '@/components/controls'
 // over a demo Cup and an in-browser store, with a switch between "entries open" and "locked".
 
 export function CupPickemDemo() {
-  const { tournament, played, loading, error } = usePickemDemoCup()
+  const { tournament, seasons, played, loading, error } = usePickemDemoCup()
   const [params] = useSearchParams()
   const locked = params.get('demo') === 'locked'
 
   if (error) return <ErrorMessage error={error} />
-  if (loading || !tournament) return <LoadingSpinner />
+  if (loading || !tournament || !seasons) return <LoadingSpinner />
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -31,7 +31,7 @@ export function CupPickemDemo() {
         <Link to="?" className={segButton(!locked)} aria-current={!locked ? 'page' : undefined}>Entries open</Link>
         <Link to="?demo=locked" className={segButton(locked)} aria-current={locked ? 'page' : undefined}>Locked</Link>
       </nav>
-      <PickemPanel key={String(locked)} tournament={tournament} played={played} year={DEMO_YEAR} />
+      <PickemPanel key={String(locked)} tournament={tournament} played={played} seasons={seasons} year={DEMO_YEAR} />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { nameForYear } from '@/config'
 import type { Tier } from '@/config/types'
-import type { PickemEntry, Tournament } from '@/data'
+import type { PickemEntry, SeasonData, Tournament } from '@/data'
 import { pickBracket, pickedChampion, type PickRound } from '@/lib/cupPickem'
 import { pickOutcomes, rankPickem, scorePickem, type ResolvedTournament } from '@/selectors'
 import { TeamLink } from '../../TeamLink'
@@ -18,12 +18,13 @@ interface Scored {
 const TH = 'px-2 py-2 text-left text-[11px] font-bold uppercase tracking-widest text-muted'
 const TD = 'px-2 py-2 text-sm'
 
-export function PickemLeaderboard({ tournament, played, entries, year, tierOf }: {
+export function PickemLeaderboard({ tournament, played, entries, year, tierOf, seasons }: {
   tournament: Tournament
   played: ResolvedTournament
   entries: PickemEntry[]
   year: string
   tierOf: ReadonlyMap<string, Tier>
+  seasons: SeasonData[]
 }) {
   const [shown, setShown] = useState<string>()
   const ranked = useMemo(() => {
@@ -71,7 +72,7 @@ export function PickemLeaderboard({ tournament, played, entries, year, tierOf }:
       {selected && (
         <section className="space-y-3">
           <h3 className="text-sm font-bold uppercase tracking-widest">{name(selected.ffuId)}&apos;s bracket</h3>
-          <PickemBracket bracket={selected.bracket} year={year} tierOf={tierOf} outcomes={pickOutcomes(selected.bracket, played)} />
+          <PickemBracket bracket={selected.bracket} year={year} tierOf={tierOf} seasons={seasons} outcomes={pickOutcomes(selected.bracket, played)} />
         </section>
       )}
     </div>

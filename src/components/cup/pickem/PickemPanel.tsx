@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { CUP_PICKEM_POINTS, nameForYear } from '@/config'
 import { CUP_ROUND_KEYS } from '@/config/cup'
 import { EMPTY_PICKS, pickBracket } from '@/lib/cupPickem'
-import type { Tournament } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import { maxPickemPoints, type ResolvedTournament } from '@/selectors'
 import { usePickemBoard } from '@/hooks/usePickemBoard'
 import { LoadingSpinner } from '../../LoadingSpinner'
@@ -28,9 +28,11 @@ function Rules({ tournament, locksAt }: { tournament: Tournament; locksAt: strin
   )
 }
 
-export function PickemPanel({ tournament, played, year }: {
+export function PickemPanel({ tournament, played, seasons, year }: {
   tournament: Tournament
   played: ResolvedTournament | undefined
+  /** The Cup season's league files: the matchup modal's season figures. */
+  seasons: SeasonData[]
   year: string
 }) {
   const board = usePickemBoard(year, true)
@@ -44,7 +46,7 @@ export function PickemPanel({ tournament, played, year }: {
   if (locked && played) {
     return (
       <CupSection title="Pick'em leaderboard" lede={`${entries.length} brackets, scored live as the Cup is played.`}>
-        <PickemLeaderboard tournament={tournament} played={played} entries={entries} year={year} tierOf={tierOf} />
+        <PickemLeaderboard tournament={tournament} played={played} entries={entries} year={year} tierOf={tierOf} seasons={seasons} />
       </CupSection>
     )
   }
@@ -58,7 +60,7 @@ export function PickemPanel({ tournament, played, year }: {
           {entries.length > 0 && <span className="text-muted">: {entries.map((e) => nameForYear(e.ffuId, year) ?? e.ffuId).join(', ')}</span>}
         </p>
       </CupSection>
-      <PickemEntryForm tournament={tournament} year={year} tierOf={tierOf} entered={entered} onSaved={board.reload} />
+      <PickemEntryForm tournament={tournament} year={year} tierOf={tierOf} seasons={seasons} entered={entered} onSaved={board.reload} />
     </div>
   )
 }

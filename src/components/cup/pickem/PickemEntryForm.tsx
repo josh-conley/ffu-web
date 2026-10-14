@@ -1,4 +1,4 @@
-import type { Tournament } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
 import { nameForYear } from '@/config'
 import { usePickemForm, type FormStatus, type PickemForm } from '@/hooks/usePickemForm'
@@ -31,10 +31,11 @@ function FormActions({ form, canSubmit, hasEntry }: { form: PickemForm; canSubmi
   )
 }
 
-export function PickemEntryForm({ tournament, year, tierOf, entered, onSaved }: {
+export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, onSaved }: {
   tournament: Tournament
   year: string
   tierOf: ReadonlyMap<string, Tier>
+  seasons: SeasonData[]
   /** Teams that already have an entry. */
   entered: ReadonlySet<string>
   onSaved: () => void
@@ -76,7 +77,7 @@ export function PickemEntryForm({ tournament, year, tierOf, entered, onSaved }: 
         </button>
       )}
 
-      <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} onPick={form.pick} onDrop={form.drop} />
+      <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} seasons={seasons} onPick={form.pick} onDrop={form.drop} />
 
       <FormActions form={form} canSubmit={form.complete && form.ffuId !== '' && pinOk} hasEntry={hasEntry} />
       {/* Again by the button, so the result of a save is seen without scrolling back up. */}

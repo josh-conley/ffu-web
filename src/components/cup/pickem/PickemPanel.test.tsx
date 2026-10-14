@@ -32,7 +32,7 @@ const board = (over: Partial<PickemBoard>): PickemBoard => ({ locksAt: drawnCup.
 function renderPanel() {
   return render(
     <MemoryRouter>
-      <PickemPanel tournament={drawnCup} played={resolveTournament(drawnCup, {})} year="2026" />
+      <PickemPanel tournament={drawnCup} played={resolveTournament(drawnCup, {})} seasons={[]} year="2026" />
     </MemoryRouter>,
   )
 }
@@ -64,13 +64,18 @@ it('loads a saved bracket with its PIN and saves the changes', async () => {
   expect(api.board).toHaveBeenCalledTimes(2)
 })
 
-it('fills a game by tapping the winner', async () => {
+it('opens a matchup and picks from its modal', async () => {
   api.board.mockResolvedValue(board({}))
   renderPanel()
-  const first = (await screen.findAllByRole('listitem'))[0]!
-  const [a] = within(first).getAllByRole('button')
-  await userEvent.click(a!)
-  expect(a).toHaveAttribute('aria-pressed', 'true')
+  const [a, b] = [drawnCup.rounds[0]!.matchups![0]!.a, drawnCup.rounds[0]!.matchups![0]!.b]
+  await userEvent.click(await screen.findByRole('button', { name: `${a} v ${b}` }))
+  const dialog = screen.getByRole('dialog')
+  expect(within(dialog).getByText('No games on file this season yet.')).toBeInTheDocument()
+  await userEvent.click(within(dialog).getByRole('button', { name: `Pick ${a}` }))
+  // Picking closes the modal; reopening shows the pick.
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: `${a} v ${b}` }))
+  expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Your pick' })).toHaveAttribute('aria-pressed', 'true')
 })
 
 it('shows the leaderboard with everyone\'s picks once locked', async () => {
