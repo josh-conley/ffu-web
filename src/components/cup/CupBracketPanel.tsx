@@ -1,6 +1,5 @@
 import { FaTrophy } from 'react-icons/fa6'
 import { CUP_ACCENT, nameForYear } from '@/config'
-import type { FormOf } from '@/hooks/useFormGoingInto'
 import type { ResolvedTournament, RoundOutline } from '@/selectors'
 import { TournamentBracket, type OpenMatchup } from '../TournamentBracket'
 import { TeamNameButton } from '../TeamLink'
@@ -26,19 +25,18 @@ export function ChampionBanner({ ffuId, year, label = 'Champion' }: { ffuId: str
   )
 }
 
-export function CupBracketPanel({ drawn, resolved, outline, year, onOpen, formOf }: {
+export function CupBracketPanel({ drawn, resolved, outline, year, onOpen }: {
   drawn: boolean
   resolved: ResolvedTournament | undefined
   outline: RoundOutline[]
   year: string
   onOpen: (m: OpenMatchup) => void
-  formOf?: FormOf
 }) {
   if (drawn && resolved) {
     return (
       <div className="space-y-4">
         {resolved.champion && <ChampionBanner ffuId={resolved.champion} year={year} />}
-        <TournamentBracket tournament={resolved} year={year} onOpen={onOpen} formOf={formOf} />
+        <TournamentBracket tournament={resolved} year={year} onOpen={onOpen} outline={outline} />
       </div>
     )
   }

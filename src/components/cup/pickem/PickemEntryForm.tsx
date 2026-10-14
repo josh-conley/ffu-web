@@ -23,14 +23,14 @@ function StatusLine({ status, entered, chosen, dropLabel }: { status: FormStatus
 const MISSING: Record<MissingPart, (dropLabel: string) => string> = {
   who: () => 'Choose who you are first.',
   pin: () => 'Enter a PIN of 4 to 8 digits.',
-  drop: (label) => `Pick which ${label} winner is dropped first (top of the Quarterfinals column).`,
+  drop: (label) => `Pick which ${label} winner is dropped first (over the Final, in the middle of the bracket).`,
   games: () => 'Pick a winner in every game first.',
 }
 
 /** What's still missing, named: the drop pick gets its own line, since it's the easy one to miss. */
 function MissingStep({ form, dropLabel }: { form: PickemForm; dropLabel: string }) {
   if (dropOwed(form.bracket)) {
-    return <span className="text-sm font-semibold text-text">Next: pick which {dropLabel} winner is dropped (top of the Quarterfinals column).</span>
+    return <span className="text-sm font-semibold text-text">Next: pick which {dropLabel} winner is dropped (over the Final, in the middle of the bracket).</span>
   }
   if (!form.complete) return <span className="text-sm text-muted">Pick every game, plus the {dropLabel} team that gets dropped.</span>
   if (form.ffuId === '') return <span className="text-sm font-semibold text-text">Bracket done. Now choose who you are.</span>
@@ -80,10 +80,11 @@ function whoOptions(tournament: Tournament, year: string) {
     .sort((a, b) => a.label.localeCompare(b.label))
 }
 
-export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, onSaved }: {
+export function PickemEntryForm({ tournament, year, tierOf, seedOf, seasons, entered, onSaved }: {
   tournament: Tournament
   year: string
   tierOf: ReadonlyMap<string, Tier>
+  seedOf: ReadonlyMap<string, number>
   seasons: SeasonData[]
   /** Teams that already have an entry. */
   entered: ReadonlySet<string>
@@ -121,7 +122,7 @@ export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, on
       <FormActions form={form} hasEntry={hasEntry} dropLabel={dropLabel} />
       <StatusLine status={form.status} entered={hasEntry} chosen={form.ffuId !== ''} dropLabel={dropLabel} />
 
-      <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} seasons={seasons} onPick={form.pick} onDrop={form.drop} />
+      <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} seedOf={seedOf} seasons={seasons} onPick={form.pick} onDrop={form.drop} />
     </form>
   )
 }

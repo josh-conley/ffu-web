@@ -37,6 +37,7 @@ export function PickemPanel({ tournament, played, seasons, year }: {
 }) {
   const board = usePickemBoard(year, true)
   const tierOf = useMemo(() => new Map(tournament.participants.map((p) => [p.ffuId, p.tier])), [tournament])
+  const seedOf = useMemo(() => new Map(tournament.participants.flatMap((p) => (p.seed !== undefined ? [[p.ffuId, p.seed] as const] : []))), [tournament])
   const entered = useMemo(() => new Set(board.data?.entries.map((e) => e.ffuId)), [board.data])
 
   if (board.error) return <ErrorMessage error={board.error} />
@@ -46,7 +47,7 @@ export function PickemPanel({ tournament, played, seasons, year }: {
   if (locked && played) {
     return (
       <CupSection title="Pick'em leaderboard" lede={`${entries.length} brackets, scored live as the Cup is played.`}>
-        <PickemLeaderboard tournament={tournament} played={played} entries={entries} year={year} tierOf={tierOf} seasons={seasons} />
+        <PickemLeaderboard tournament={tournament} played={played} entries={entries} year={year} tierOf={tierOf} seedOf={seedOf} seasons={seasons} />
       </CupSection>
     )
   }
@@ -60,7 +61,7 @@ export function PickemPanel({ tournament, played, seasons, year }: {
           {entries.length > 0 && <span className="text-muted">: {entries.map((e) => nameForYear(e.ffuId, year) ?? e.ffuId).join(', ')}</span>}
         </p>
       </CupSection>
-      <PickemEntryForm tournament={tournament} year={year} tierOf={tierOf} seasons={seasons} entered={entered} onSaved={board.reload} />
+      <PickemEntryForm tournament={tournament} year={year} tierOf={tierOf} seedOf={seedOf} seasons={seasons} entered={entered} onSaved={board.reload} />
     </div>
   )
 }
