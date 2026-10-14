@@ -96,6 +96,8 @@ it('opens a matchup and picks from its modal', async () => {
   await userEvent.click(await screen.findByRole('button', { name: `${a} v ${b}` }))
   const dialog = screen.getByRole('dialog')
   expect(within(dialog).getByText('No games on file this season yet.')).toBeInTheDocument()
+  // Lineups for the round's own week, never just the latest week on file.
+  expect(within(dialog).getByRole('heading', { name: `Week ${drawnCup.rounds[0]!.week} lineups` })).toBeInTheDocument()
   await userEvent.click(within(dialog).getByRole('button', { name: `Pick ${a}` }))
   // Picking closes the modal; reopening shows the pick.
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

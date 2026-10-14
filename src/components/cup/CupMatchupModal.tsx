@@ -3,7 +3,7 @@ import { cupGameSource, type CupGameSide } from '@/selectors'
 import { formLabel } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
 import { LineupModalFrame } from '../LineupModalFrame'
-import { LiveLineupModal } from '../LiveLineupModal'
+import { LiveBoxScoreBody } from '../LiveBoxScoreBody'
 import { StaticBoxScoreBody } from '../StaticBoxScoreBody'
 import { teamAbbr } from '../seriesText'
 
@@ -51,34 +51,39 @@ function FormStrip({ game, formOf }: { game: CupGame; formOf: FormOf }) {
 }
 
 /**
- * A Cup game's matchup modal: the same modal as a league game's (lineups, bench, the pair's series,
- * each team's profile), with each team's lineup read from its own league. Finished weeks read the
- * season's lineup files; the live season's other weeks read Sleeper, as the home page does.
- * `formOf` adds each team's record and UPR going into the game above the box score.
+ * A Cup game's box score, for ITS week (the round's), never just the latest one on file: each team's
+ * lineup from its own league. A finished week reads the season's lineup files; the live season's
+ * other weeks read Sleeper, as the home page does. Shared by the bracket's matchup modal and the
+ * pick'em's, so both always show the round's week.
  */
-export function CupMatchupModal({ game, formOf, onClose }: { game: CupGame; formOf?: FormOf; onClose: () => void }) {
+export function CupGameBody({ game }: { game: Omit<CupGame, 'label'> }) {
   const { year, week, a, b } = game
   const source = cupGameSource(year, a, b)
-  const memberIds: [string, string] = [a.ffuId, b.ffuId]
-  const lead = formOf && <FormStrip game={game} formOf={formOf} />
-  if (source?.kind === 'live') {
-    return <LiveLineupModal leagueIds={source.leagueIds} year={year} week={week} memberIds={memberIds} title={<Title game={game} live />} lead={lead} onClose={onClose} />
-  }
+  if (source?.kind === 'live') return <LiveBoxScoreBody game={{ leagueIds: source.leagueIds, year, week, memberIds: [a.ffuId, b.ffuId] }} />
+  if (!source) return <p className="p-6 text-sm text-muted">This game hasn&apos;t been played yet.</p>
   return (
-    <LineupModalFrame title={<Title game={game} live={false} />} memberIds={memberIds} onClose={onClose}>
-      {lead}
-      {source ? (
-        <StaticBoxScoreBody
-          year={year}
-          week={week}
-          sides={[
-            { memberId: a.ffuId, tier: a.tier, score: source.scores[0] },
-            { memberId: b.ffuId, tier: b.tier, score: source.scores[1] },
-          ]}
-        />
-      ) : (
-        <p className="p-6 text-sm text-muted">This game hasn&apos;t been played yet.</p>
-      )}
+    <StaticBoxScoreBody
+      year={year}
+      week={week}
+      sides={[
+        { memberId: a.ffuId, tier: a.tier, score: source.scores[0] },
+        { memberId: b.ffuId, tier: b.tier, score: source.scores[1] },
+      ]}
+    />
+  )
+}
+
+/**
+ * A Cup game's matchup modal: the same modal as a league game's (lineups, bench, the pair's series,
+ * each team's profile), around CupGameBody. `formOf` adds each team's record and UPR going into the
+ * game above the box score.
+ */
+export function CupMatchupModal({ game, formOf, onClose }: { game: CupGame; formOf?: FormOf; onClose: () => void }) {
+  const live = cupGameSource(game.year, game.a, game.b)?.kind === 'live'
+  return (
+    <LineupModalFrame title={<Title game={game} live={live} />} memberIds={[game.a.ffuId, game.b.ffuId]} onClose={onClose}>
+      {formOf && <FormStrip game={game} formOf={formOf} />}
+      <CupGameBody game={game} />
     </LineupModalFrame>
   )
 }

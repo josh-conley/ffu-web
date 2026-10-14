@@ -97,7 +97,7 @@ export function PickemBracket({ bracket, year, tierOf, seedOf, seasons, onPick, 
       />
       {opened && round && slot?.a !== undefined && slot.b !== undefined && (
         <PickemMatchupModal
-          matchup={{ a: slot.a, b: slot.b, roundLabel: round.label, pick: slot.pick }}
+          matchup={{ a: slot.a, b: slot.b, roundLabel: round.label, week: round.week, pick: slot.pick }}
           year={year}
           seasons={seasons}
           tierOf={tierOf}

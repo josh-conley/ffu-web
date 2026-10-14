@@ -2,22 +2,26 @@ import { FaCheck } from 'react-icons/fa6'
 import { nameForYear } from '@/config'
 import type { Tier } from '@/config/types'
 import type { SeasonData } from '@/data'
+import { weekScore, type SeasonsByTier } from '@/selectors'
 import { Dialog } from '../../Dialog'
 import { LeagueBadge } from '../../LeagueBadge'
 import { TeamLogo } from '../../TeamLogo'
 import { segButton } from '../../controls'
 import { teamAbbr } from '../../seriesText'
-import { PickemRosters } from './PickemRosters'
+import { CupGameBody } from '../CupMatchupModal'
 import { PickemSeasonSnapshot } from './PickemSeasonSnapshot'
 
 // One pick'em matchup, opened from the bracket: both teams up top with a Pick button under each,
-// then this season side by side and both rosters, so a member can decide without leaving the page.
+// then this season side by side and both teams' lineups for the ROUND'S week (live from Sleeper
+// while it's being played or still to come), so a member can decide without leaving the page.
 // Read-only (no `onPick`) on the leaderboard, where it shows whose bracket picked whom.
 
 export interface PickemMatchup {
   a: string
   b: string
   roundLabel: string
+  /** The round's week: whose lineups and scores the box score shows. */
+  week: number
   /** The team picked in this matchup so far, if any. */
   pick?: string
 }
@@ -56,7 +60,12 @@ export function PickemMatchupModal({ matchup, year, seasons, tierOf, onPick, onC
   onPick?: (ffuId: string) => void
   onClose: () => void
 }) {
-  const { a, b, roundLabel, pick } = matchup
+  const { a, b, roundLabel, week, pick } = matchup
+  const byTier: SeasonsByTier = Object.fromEntries(seasons.map((s) => [s.tier, s]))
+  const side = (id: string) => {
+    const tier = tierOf.get(id) ?? 'NATIONAL'
+    return { ffuId: id, tier, score: weekScore(byTier, tier, id, week) }
+  }
   const head = (id: string) => (
     <TeamHead ffuId={id} tier={tierOf.get(id)} year={year} picked={pick === id} onPick={onPick && (() => onPick(id))} />
   )
@@ -68,7 +77,12 @@ export function PickemMatchupModal({ matchup, year, seasons, tierOf, onPick, onC
         {head(b)}
       </div>
       <PickemSeasonSnapshot seasons={seasons} a={a} b={b} />
-      <PickemRosters a={a} b={b} tierOf={tierOf} year={year} />
+      <section className="border-t border-border">
+        <h3 className="bg-surface-2/40 px-3 py-1.5 text-center text-[11px] font-bold uppercase tracking-widest text-muted">
+          Week {week} lineups
+        </h3>
+        <CupGameBody game={{ year, week, a: side(a), b: side(b) }} />
+      </section>
     </Dialog>
   )
 }
