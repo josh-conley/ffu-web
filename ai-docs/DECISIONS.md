@@ -647,10 +647,13 @@ Current state and the weekly manual step: `ai-docs/TODO.md`.
 **Decision.** Members submit FFU Cup pick'em brackets to a small Cloudflare Worker with a D1
 database (`workers/pickem`). The site stays static on GitHub Pages; only the Pick'em tab talks to
 the Worker. Josh's calls: members only (the 36 Cup teams), one entry per team, doubling points per
-round, picks hidden until the lock. A PIN on each entry was built and then dropped (2026-10-14,
-Josh): a member chooses who they are from a list, accepting that anyone could save over
-anyone's bracket. Picks stay hidden by never sending them back before the lock; the page keeps
-the member's own bracket in their browser to edit.
+round, picks hidden until the lock. A PIN on each entry was built, dropped, then brought back in a
+simpler form the same night (Josh, 2026-10-13): the first save sets a 4–8 digit PIN, which saving
+again or loading the bracket back needs. No cap on wrong guesses and no admin route; a member with
+a problem asks in Discord and Josh deletes the entry in the D1 console. So the PIN stops a member
+saving over someone else's bracket by choosing their name, not a scripted attack, and that is
+accepted. It gets a fast salted hash, not PBKDF2: on a 4-digit keyspace the slow hash buys almost
+nothing and would eat the free plan's 10ms CPU budget per request.
 
 **Why this shape.** A static site can't store a submission, so something had to run server-side.
 Cloudflare was already in use (previews), D1 is a real database, and a Worker is one small deploy. A Google Form was the zero-code alternative, but it

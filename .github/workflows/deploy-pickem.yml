@@ -82,11 +82,3 @@ jobs:
           URL="$(grep -o 'https://[a-z0-9.-]*\.workers\.dev' deploy.log | head -1)"
           echo "### Pick'em API: $URL" >> "$GITHUB_STEP_SUMMARY"
           echo "Set \`CUP_PICKEM_API\` in src/config/cup.ts to this URL if it isn't already." >> "$GITHUB_STEP_SUMMARY"
-
-      # Optional: without it the commissioner reset (DELETE) is simply off.
-      - name: Admin token
-        working-directory: workers/pickem
-        env:
-          ADMIN_TOKEN: ${{ secrets.PICKEM_ADMIN_TOKEN }}
-        run: |
-          if [ -n "$ADMIN_TOKEN" ]; then printf '%s' "$ADMIN_TOKEN" | npx wrangler@4 secret put ADMIN_TOKEN; else echo "No PICKEM_ADMIN_TOKEN secret; reset route stays off."; fi
