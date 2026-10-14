@@ -8,7 +8,7 @@ import { formatPoints } from './format'
 // going in as a small line under its name. No logo, so the full team name fits (it wraps rather
 // than truncating when a column is narrow). The record is in the matchup modal.
 
-const ROW = 'flex items-start gap-1 border-l-2 py-px pl-1 text-xs leading-tight'
+const ROW = 'flex items-center gap-1 border-l-2 py-px pl-1 text-xs leading-tight'
 
 /** A slot whose team isn't known yet (a pick'em round before the picks that feed it). */
 function OpenRow() {
@@ -27,7 +27,7 @@ function SideRow({ side, year, isWinner, dim, linked, detail, winnerTone = 'bord
           {side.seed}
         </span>
       )}
-      <span className={`mt-[0.3rem] h-1.5 w-1.5 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
       <span className="min-w-0 flex-1 break-words">
         {linked ? <TeamNameButton ffuId={side.ffuId} tight>{name}</TeamNameButton> : name}
         {detail && <span className="block font-mono text-[10px] font-normal text-muted">{detail}</span>}
