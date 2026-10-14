@@ -10,6 +10,8 @@ import type { Tier } from '@/config/types'
 export interface CupGameSide {
   ffuId: string
   tier: Tier
+  /** Draw seed (1–36), shown wherever the game is. */
+  seed?: number
   score?: number
 }
 

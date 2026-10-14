@@ -16,13 +16,15 @@ it('heads the modal with each team\'s record and UPR going into the game', () =>
   render(
     <MemoryRouter>
       <CupMatchupModal
-        game={{ year: '2019', week: 6, label: 'Round of 36', a: { ffuId: 'ffu-001', tier: 'PREMIER', score: 100 }, b: { ffuId: 'ffu-002', tier: 'NATIONAL', score: 90 } }}
+        game={{ year: '2019', week: 6, label: 'Round of 36', a: { ffuId: 'ffu-001', tier: 'PREMIER', seed: 1, score: 100 }, b: { ffuId: 'ffu-002', tier: 'NATIONAL', seed: 36, score: 90 } }}
         formOf={(ffuId) => forms[ffuId]}
         onClose={() => {}}
       />
     </MemoryRouter>,
   )
-  expect(screen.getByText(/4-1 · 120\.50 UPR$/)).toBeInTheDocument()
+  // Each team's seed leads its line.
+  expect(screen.getByText(/^#1 \S+ 4-1 · 120\.50 UPR$/)).toBeInTheDocument()
+  expect(screen.getByText(/^#36 \S+ 2-3/)).toBeInTheDocument()
   // Before a UPR is rated, points per game stands in, as on the home page.
   expect(screen.getByText(/2-3 · 101\.3 PPG$/)).toBeInTheDocument()
   expect(screen.getByText('Going in')).toBeInTheDocument()

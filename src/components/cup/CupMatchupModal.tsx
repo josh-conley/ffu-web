@@ -1,6 +1,6 @@
 import type { FormOf } from '@/hooks/useFormGoingInto'
 import { cupGameSource, type CupGameSide } from '@/selectors'
-import { formLabel } from '../format'
+import { formLabel, seedLabel } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
 import { LineupModalFrame } from '../LineupModalFrame'
 import { LiveBoxScoreBody } from '../LiveBoxScoreBody'
@@ -33,18 +33,18 @@ function Title({ game, live }: { game: CupGame; live: boolean }) {
   )
 }
 
-/** Each team's record and UPR going into the game, either side of the box score's team heads. */
-function FormStrip({ game, formOf }: { game: CupGame; formOf: FormOf }) {
-  const line = (side: CupGameSide) => {
-    const form = formLabel(formOf(side.ffuId, game.week))
-    return form && `${teamAbbr(side.ffuId)} ${form}`
-  }
-  const [a, b] = [line(game.a), line(game.b)]
-  if (!a && !b) return null
+/**
+ * Each team's seed, and its record and UPR going into the game where `form` knows them, either side
+ * of the box score's team heads. Always shown: a Cup game always shows both seeds.
+ */
+export function CupSidesStrip({ a: sideA, b: sideB, form }: { a: CupGameSide; b: CupGameSide; form?: (ffuId: string) => string | undefined }) {
+  const line = (side: CupGameSide) => [seedLabel(side.seed), teamAbbr(side.ffuId), form?.(side.ffuId)].filter(Boolean).join(' ')
+  const [a, b] = [line(sideA), line(sideB)]
+  const going = form !== undefined && (form(sideA.ffuId) !== undefined || form(sideB.ffuId) !== undefined)
   return (
     <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-2/40 px-2 py-1.5 font-mono text-[11px] tabular-nums text-muted sm:px-3 sm:text-xs">
       <span className="min-w-0 truncate">{a}</span>
-      <span className="shrink-0 font-sans text-[10px] font-semibold uppercase tracking-wide">Going in</span>
+      <span className="shrink-0 font-sans text-[10px] font-semibold uppercase tracking-wide">{going ? 'Going in' : 'vs'}</span>
       <span className="min-w-0 truncate text-right">{b}</span>
     </div>
   )
@@ -75,14 +75,14 @@ export function CupGameBody({ game }: { game: Omit<CupGame, 'label'> }) {
 
 /**
  * A Cup game's matchup modal: the same modal as a league game's (lineups, bench, the pair's series,
- * each team's profile), around CupGameBody. `formOf` adds each team's record and UPR going into the
- * game above the box score.
+ * each team's profile), around CupGameBody, under both teams' seeds. `formOf` adds each team's
+ * record and UPR going into the game beside its seed.
  */
 export function CupMatchupModal({ game, formOf, onClose }: { game: CupGame; formOf?: FormOf; onClose: () => void }) {
   const live = cupGameSource(game.year, game.a, game.b)?.kind === 'live'
   return (
     <LineupModalFrame title={<Title game={game} live={live} />} memberIds={[game.a.ffuId, game.b.ffuId]} onClose={onClose}>
-      {formOf && <FormStrip game={game} formOf={formOf} />}
+      <CupSidesStrip a={game.a} b={game.b} form={formOf && ((ffuId) => formLabel(formOf(ffuId, game.week)))} />
       <CupGameBody game={game} />
     </LineupModalFrame>
   )

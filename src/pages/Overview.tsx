@@ -145,7 +145,6 @@ export function Overview() {
         <LiveLineupModal
           leagueIds={open.leagueIds}
           year={open.year}
-          title={open.title}
           week={open.game.week}
           memberIds={open.game.participants.map((p) => p.memberId) as [string, string]}
           scoreOf={(memberId) => open.game.participants.find((p) => p.memberId === memberId)?.score}

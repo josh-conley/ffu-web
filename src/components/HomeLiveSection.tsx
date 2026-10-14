@@ -95,7 +95,7 @@ export function HomeLiveSection({
       {!cup && <LeagueJumpLinks tiers={tiers.map((t) => t.tier)} />}
       <MaybeTabPanel id={weekTabs?.value}>
         {cup ? (
-          <CupWeekMatchups round={cup.round} seasons={cup.seasons} final={final} onOpen={onOpen} projected={(memberId) => projections.get(memberId)} />
+          <CupWeekMatchups round={cup.round} seasons={cup.seasons} final={final} projected={(memberId) => projections.get(memberId)} />
         ) : (
         <LeagueGrid>
           {/* scroll-mt clears the sticky header, which would otherwise cover the league's heading. */}

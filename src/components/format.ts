@@ -38,6 +38,9 @@ export function recordRatingLabel(
 /** A team's season so far as that same line, or nothing without one (see formGoingInto). */
 export const formLabel = (form: TeamForm | undefined): string | undefined => form && recordRatingLabel(form.totals, form.upr)
 
+/** A Cup team's draw seed, as every Cup matchup shows it: "#1". Nothing before the draw. */
+export const seedLabel = (seed: number | undefined): string | undefined => (seed === undefined ? undefined : `#${seed}`)
+
 /** Just the UPR, for the Cup bracket's line under a team's name; nothing before the season is rated. */
 export const uprLabel = (form: TeamForm | undefined): string | undefined => (form?.upr === undefined ? undefined : `${form.upr.toFixed(2)} UPR`)
 

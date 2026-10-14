@@ -62,5 +62,12 @@ it("offers the Cup round's matchups beside the league week, scored live across t
   expect(first).toHaveTextContent('71.25')
   expect(first).toHaveTextContent(/Premier/)
   expect(first).toHaveTextContent(/Masters/)
+  // Every Cup matchup shows both draw seeds: Shton's Strikers are the 1 seed, ffu-038 the 36.
+  expect(first).toHaveTextContent('#1')
+  expect(first).toHaveTextContent('#36')
+  fireEvent.click(first)
+  const dialog = screen.getByRole('dialog')
+  expect(within(dialog).getByText(/^#1 /)).toBeInTheDocument()
+  expect(within(dialog).getByText(/^#36 /)).toBeInTheDocument()
   expect(screen.queryByRole('navigation', { name: 'Jump to league' })).not.toBeInTheDocument()
 })

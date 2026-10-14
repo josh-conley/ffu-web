@@ -101,6 +101,7 @@ export function PickemBracket({ bracket, year, tierOf, seedOf, seasons, onPick, 
           year={year}
           seasons={seasons}
           tierOf={tierOf}
+          seedOf={seedOf}
           onPick={onPick && ((id) => {
             onPick(opened.roundKey, opened.index, id)
             setOpened(undefined)

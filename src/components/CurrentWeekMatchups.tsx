@@ -11,8 +11,6 @@ export interface OpenGame {
   leagueIds: readonly [string, string]
   year: string
   game: Game
-  /** The box score's title bar, when not the default "Week N · Live" (the Cup names its round). */
-  title?: string
 }
 
 /** One tier's column of this week's matchups (in progress, so styled live: no winner until the
