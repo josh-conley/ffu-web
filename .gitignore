@@ -33,3 +33,6 @@ legacy-source
 *.njsproj
 *.sln
 *.sw?
+
+# wrangler dev/deploy local state (the pick-em Worker)
+.wrangler

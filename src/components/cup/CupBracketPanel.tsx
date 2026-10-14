@@ -10,13 +10,14 @@ import { CupBracketOutline } from './CupBracketOutline'
 // The Cup's default view. Before the draw it is the bracket's shape with empty slots; afterwards
 // the same frame holds the resolved bracket, so the page doesn't change character on draw day.
 
-function ChampionBanner({ ffuId, year }: { ffuId: string; year: string }) {
+/** The champion over the bracket. The pick'em reuses it for a member's picked champion (`label`). */
+export function ChampionBanner({ ffuId, year, label = 'Champion' }: { ffuId: string; year: string; label?: string }) {
   return (
     <div className="relative flex items-center gap-3 border bg-surface-2 px-4 py-3" style={{ borderColor: CUP_ACCENT }}>
       <FaTrophy size={22} aria-hidden style={{ color: CUP_ACCENT }} />
       <TeamLogo ffuId={ffuId} size={32} clickable={false} />
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">Champion</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">{label}</div>
         <div className="text-lg font-extrabold uppercase tracking-tight">
           <TeamNameButton ffuId={ffuId}>{nameForYear(ffuId, year) ?? ffuId}</TeamNameButton>
         </div>

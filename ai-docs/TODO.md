@@ -156,10 +156,21 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [x] **Quarterfinal re-seed confirmed** (2026-10-04, Josh): re-seed the eight survivors by draw
       seed (1v8, 4v5, 2v7, 3v6), semis and final fixed from there. Now in the Format & Rules copy
       (`CUP_ROUND_RULES.r8`). The re-seed-every-round alternative was not taken.
-- [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
-      decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
+- [x] **The bracket updates itself each Tuesday** (confirmed 2026-10-14): winners are never stored,
+      they're derived from the tier season files, and `refresh-season.yml` rewrites the live year's
+      files every Tuesday (completed weeks only). So each Cup round's results, the lowest-winner
+      drop and the pick'em leaderboard all move with that run; no Cup-specific job is needed
+- [ ] **No tiebreaker for a tied Cup game.** A tie leaves the game undecided (no winner), so the
+      next round can't be paired. Ask the commissioner for the rule (bench points? higher seed?)
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
       for "FFU Cup Winner"
+
+- [ ] **Cup pick'em** (built 2026-10-13, `workers/pickem/README.md`). To go live: widen the
+      Cloudflare token (Workers Scripts + D1 Edit), optionally add `PICKEM_ADMIN_TOKEN`, set the
+      repo variable `PICKEM_DEPLOY=true` and run the deploy workflow, put the Worker URL from
+      its summary in `CUP_PICKEM_API`, and add `pickemLocksAt`
+      to `public/data/2026/tournament.json` once the draw is in (R36 = week 6; Thu Oct 15 TNF
+      kickoff is `2026-10-16T00:15:00Z`)
 
 ## 2026 in-season data — static drafts, and how live the rest of the site gets
 
@@ -331,8 +342,12 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
 - [x] **Quarterfinal re-seed confirmed** (2026-10-04, Josh): re-seed the eight survivors by draw
       seed (1v8, 4v5, 2v7, 3v6), semis and final fixed from there. Now in the Format & Rules copy
       (`CUP_ROUND_RULES.r8`). The re-seed-every-round alternative was not taken.
-- [ ] The live bracket needs 2026 tier data, which only exists after the season is backfilled —
-      decide whether the Cup should read `liveSleeper` mid-season instead (same gap as Lineal, below)
+- [x] **The bracket updates itself each Tuesday** (confirmed 2026-10-14): winners are never stored,
+      they're derived from the tier season files, and `refresh-season.yml` rewrites the live year's
+      files every Tuesday (completed weeks only). So each Cup round's results, the lowest-winner
+      drop and the pick'em leaderboard all move with that run; no Cup-specific job is needed
+- [ ] **No tiebreaker for a tied Cup game.** A tie leaves the game undecided (no winner), so the
+      next round can't be paired. Ask the commissioner for the rule (bench points? higher seed?)
 - [ ] Verify the Discord role name: the amendment says "FA Cup Winner"; assumed verbatim, not a typo
       for "FFU Cup Winner"
 

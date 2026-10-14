@@ -1,0 +1,19 @@
+# The FFU Cup pick'em API — the site's only server-side piece. See README.md.
+name = "ffu-pickem"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+# Where the Worker reads the Cup (field, rounds, pickemLocksAt): the live site's own data file, so
+# the bracket and the lock time are one fact shared with the page, not a second copy here.
+DATA_ORIGIN = "https://ffunion.com"
+# Browsers on these origins may call the API (plus any *.ffu-web-preview.pages.dev branch preview).
+ALLOWED_ORIGINS = "https://ffunion.com,https://www.ffunion.com,https://preview.ffunion.com,http://localhost:5173,http://localhost:5199"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ffu-pickem"
+# Filled in by .github/workflows/deploy-pickem.yml, which creates the database on first deploy.
+database_id = "D1_DATABASE_ID"
+migrations_dir = "migrations"

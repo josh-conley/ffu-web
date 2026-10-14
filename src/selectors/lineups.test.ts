@@ -1,5 +1,5 @@
 import type { LineupPlayer, SeasonLineups, TeamLineup } from '@/data'
-import { benchByPoints, gameLineups, startedPlayers, starterPoints } from './lineups'
+import { benchByPoints, gameLineups, latestLineup, startedPlayers, starterPoints } from './lineups'
 
 const player = (playerId: string, points: number): LineupPlayer => ({ playerId, points })
 
@@ -72,5 +72,20 @@ describe('startedPlayers', () => {
     const team: TeamLineup = { memberId: 'm', starters: [null, { playerId: 'p1', points: 4 }], bench: [] }
     expect(startedPlayers(team)).toEqual([{ playerId: 'p1', points: 4 }])
     expect(starterPoints(team)).toBe(4)
+  })
+})
+
+describe('latestLineup', () => {
+  const season: SeasonLineups = {
+    ...lineups,
+    weeks: [
+      { week: 1, teams: [team('a', [player('old', 1)])] },
+      { week: 2, teams: [team('a', [player('new', 2)], [player('bn', 0)])] },
+      { week: 3, teams: [team('b', [player('x', 3)])] },
+    ],
+  }
+  it("is the team's most recent week on file", () => {
+    expect(latestLineup(season, 'a')).toEqual({ week: 2, lineup: team('a', [player('new', 2)], [player('bn', 0)]) })
+    expect(latestLineup(season, 'nobody')).toBeUndefined()
   })
 })

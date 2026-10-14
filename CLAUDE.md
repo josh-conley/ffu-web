@@ -87,7 +87,9 @@ npm run validate   # per-game migration diff harness
 Standings (per league, plus a **Union** scope — `?scope=union`, all 36 teams of a year in one
 UPR-ranked table), Matchups, Drafts, Records, **Lineal** (route `/lineal` — the boxing-style belt lineage),
 Members (directory/detail/compare), **FFU Cup** (route `/cup` — the 36-team cross-league knockout;
-tabbed Bracket / Format & Rules, the bracket being an empty outline until the season's draw is held),
+tabbed Bracket / Format & Rules, the bracket being an empty outline until the season's draw is held; plus a **Pick'em** tab once the
+season's `pickemLocksAt` is set, its brackets stored by `workers/pickem`, a Cloudflare Worker + D1 and the
+site's only back end, see its README),
 **Around the Union** (route `/around-the-union` — the FFUN newsletter's page-2 panel: last
 completed week's top 3 scorers across all leagues + the league points/PPG race, framed as one
 screenshot-ready block), and **Stats** (route `/stats`,

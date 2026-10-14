@@ -1,0 +1,86 @@
+name: Deploy pick'em API
+
+# Deploys the Cup pick'em Worker (workers/pickem) to Cloudflare whenever it, or the shared bracket
+# rules it bundles from src, changes on main. Setup and operations: workers/pickem/README.md.
+#
+# OFF until the Cloudflare side is set up: the job runs only once the repo variable
+# PICKEM_DEPLOY is "true" (Settings → Secrets and variables → Actions → Variables). Until then a
+# merge shows this workflow as skipped, not as a red failure from a token without Workers rights.
+#
+# The D1 database is found by name, or created on the first run, and its id is written into
+# wrangler.toml here rather than committed — so the very first deploy needs no manual Cloudflare
+# step beyond the token's permissions.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/pickem/**'
+      - 'src/lib/cupPickem.ts'
+      - 'src/lib/cupPairing.ts'
+      - 'src/lib/cupDraw.mjs'
+      - 'src/data/types.ts'
+      - 'src/data/validate.ts'
+      - '.github/workflows/deploy-pickem.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-pickem
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.PICKEM_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # The Worker's own gates: it never deploys on a red typecheck or a failing route test.
+      - name: Gates
+        run: |
+          npm ci
+          npm run typecheck
+          npx vitest run workers src/lib/cupPickem.test.ts
+
+      - name: Find or create the database
+        working-directory: workers/pickem
+        run: |
+          find_id() { npx wrangler@4 d1 list --json | jq -r '.[] | select(.name == "ffu-pickem") | .uuid'; }
+          ID="$(find_id)"
+          if [ -z "$ID" ]; then
+            npx wrangler@4 d1 create ffu-pickem
+            ID="$(find_id)"
+          fi
+          [ -n "$ID" ] || { echo "::error::Could not find or create the ffu-pickem D1 database"; exit 1; }
+          sed -i "s/D1_DATABASE_ID/$ID/" wrangler.toml
+
+      - name: Migrate
+        working-directory: workers/pickem
+        run: npx wrangler@4 d1 migrations apply ffu-pickem --remote
+
+      - name: Deploy
+        working-directory: workers/pickem
+        run: |
+          npx wrangler@4 deploy | tee deploy.log
+          URL="$(grep -o 'https://[a-z0-9.-]*\.workers\.dev' deploy.log | head -1)"
+          echo "### Pick'em API: $URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "Set \`CUP_PICKEM_API\` in src/config/cup.ts to this URL if it isn't already." >> "$GITHUB_STEP_SUMMARY"
+
+      # Optional: without it the commissioner reset (DELETE) is simply off.
+      - name: Admin token
+        working-directory: workers/pickem
+        env:
+          ADMIN_TOKEN: ${{ secrets.PICKEM_ADMIN_TOKEN }}
+        run: |
+          if [ -n "$ADMIN_TOKEN" ]; then printf '%s' "$ADMIN_TOKEN" | npx wrangler@4 secret put ADMIN_TOKEN; else echo "No PICKEM_ADMIN_TOKEN secret; reset route stays off."; fi

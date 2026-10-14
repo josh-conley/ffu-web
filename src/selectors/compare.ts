@@ -131,7 +131,8 @@ function careersByTier(played: SeasonData[]): Record<Tier, Map<string, CareerSta
   return out
 }
 
-function seasonSide(seasons: SeasonData[], memberId: string): SeasonSide | undefined {
+/** A member's season in whichever of `seasons` they played, or undefined if none. */
+export function seasonSide(seasons: SeasonData[], memberId: string): SeasonSide | undefined {
   for (const season of seasons) {
     const row = regularSeasonStandings(season).find((r) => r.team.memberId === memberId)
     if (!row) continue

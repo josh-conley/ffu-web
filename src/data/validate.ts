@@ -113,6 +113,7 @@ export function assertTournament(raw: unknown, ctx: string): Tournament {
   }
   check(Array.isArray(raw.rounds) && raw.rounds.length > 0, ctx, 'rounds not a non-empty array')
   for (const r of raw.rounds) assertTournamentRound(r, ctx)
+  check(raw.pickemLocksAt === undefined || (typeof raw.pickemLocksAt === 'string' && !Number.isNaN(Date.parse(raw.pickemLocksAt))), ctx, 'bad pickemLocksAt')
   return raw as unknown as Tournament
 }
 

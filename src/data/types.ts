@@ -265,6 +265,12 @@ export interface Tournament {
    */
   fieldSize: number
   rounds: TournamentRound[]
+  /**
+   * When the pick'em closes (ISO 8601 instant, normally the opening round's first kickoff). Absent
+   * = no pick'em this season: setting it is what exposes the Pick'em tab, and the Worker
+   * (workers/pickem) reads this same file to refuse entries after it. One knob, read by both.
+   */
+  pickemLocksAt?: string
 }
 
 // ── Live season: in-memory only, never persisted (src/data/liveSleeper.ts) ─────────────────────
