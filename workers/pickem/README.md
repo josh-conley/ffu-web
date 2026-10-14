@@ -8,9 +8,10 @@ The page calls this from the Cup's **Pick'em** tab (`src/components/cup/pickem/`
 - Only the Cup's 36 teams can enter, one entry per team (`year` + `ffuId` is the primary key).
 - An entry must be a complete bracket that fits the draw. `validatePicks` in
   `src/lib/cupPickem.ts` checks it, and the page uses the same function, so the two can't disagree.
-- No PIN, by Josh's call (2026-10-14): a member chooses who they are from the list, and saving
-  replaces that team's entry. The page keeps a member's bracket in their browser to edit it, so
-  the API never hands anyone's picks back before the lock.
+- A team's first save sets its **PIN** (4–8 digits, stored only as a salted hash). Saving again,
+  or loading the bracket back to edit it (say, on another device), needs that PIN.
+- By Josh's call (2026-10-13), wrong PINs are not capped and there is no admin route: a member
+  with a problem asks in Discord, and Josh deletes their entry (Operations, below).
 - Nothing is written after the lock, and nobody sees anyone's picks until then.
 
 The field, the bracket and the lock time are read from the live site's own
@@ -27,25 +28,24 @@ The field, the bracket and the lock time are read from the live site's own
 1. The existing `CLOUDFLARE_API_TOKEN` secret only has Pages rights. Edit the token in Cloudflare
    (My Profile → API Tokens) and add **Account → Workers Scripts → Edit** and
    **Account → D1 → Edit**.
-2. Optional: add a repo secret `PICKEM_ADMIN_TOKEN` (any long random string) to enable the
-   commissioner reset below.
-3. Add a repo **variable** (not a secret) `PICKEM_DEPLOY` = `true`. Until it's set, the deploy
+2. Add a repo **variable** (not a secret) `PICKEM_DEPLOY` = `true`. Until it's set, the deploy
    workflow skips itself, so merging before this setup is harmless.
-4. Run **Deploy pick'em API** from the Actions tab (or push a change under `workers/pickem`). It
+3. Run **Deploy pick'em API** from the Actions tab (or push a change under `workers/pickem`). It
    creates the database on its first run, applies `migrations/`, deploys, and prints the Worker's
    `*.workers.dev` URL in the run summary.
-5. Put that URL in `CUP_PICKEM_API` (`src/config/cup.ts`) and push. Until then the tab stays hidden.
+4. Put that URL in `CUP_PICKEM_API` (`src/config/cup.ts`) and push. Until then the tab stays hidden.
 
 ## Operations
-- **Someone saved under the wrong name:** delete that entry, and its owner can enter again:
-  `curl -X DELETE -H "Authorization: Bearer $PICKEM_ADMIN_TOKEN" <api>/v1/2026/entries/<ffuId>`
+- **Forgotten PIN, or someone saved under the wrong name:** delete that entry, and its owner
+  enters again with a new PIN. In the Cloudflare dashboard, open the `ffu-pickem` D1 database's
+  **Console** and run `DELETE FROM entries WHERE year = '2026' AND ffu_id = '<ffuId>'` (the
+  `ffuId` is in `src/config`; the Console's `SELECT ffu_id, updated_at FROM entries` lists them).
 - **Look at the data:** `npx wrangler@4 d1 execute ffu-pickem --remote --command "SELECT ffu_id, updated_at FROM entries"`
 - **Local run:** `npx wrangler@4 d1 migrations apply ffu-pickem --local`, then
   `npx wrangler@4 dev --var DATA_ORIGIN:http://localhost:5173` from this folder.
 
 ## Known limits (accepted)
-- No accounts and no PIN, so anyone can save over anyone's bracket by choosing their name. Fine
-  among league members; if it's ever abused, the fix is to bring back a PIN (git history has one:
-  hashed, with a capped number of tries) rather than to police it by hand.
-- Your bracket is remembered in the browser you made it in. On another device you start over,
-  and saving replaces what you had.
+- No accounts. Whoever saves a team first sets its PIN; a wrong claim is fixed by deleting it.
+- With no cap on wrong PINs, a script could find a 4-digit PIN in minutes. The PIN is there to
+  stop a member picking someone else's name by mistake or for a laugh, not a determined attacker.
+  If that ever happens, the earlier version in git history (before `f03c6ac`) capped wrong tries.

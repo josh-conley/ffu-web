@@ -9,8 +9,6 @@ interface Env {
   DB: D1Database
   DATA_ORIGIN: string
   ALLOWED_ORIGINS: string
-  /** Secret (wrangler secret / the deploy workflow). Unset disables the commissioner reset. */
-  ADMIN_TOKEN?: string
 }
 
 export default {
@@ -23,7 +21,6 @@ export default {
         store: d1Store(env.DB),
         loadTournament: siteTournamentLoader(env.DATA_ORIGIN),
         now: Date.now,
-        adminToken: env.ADMIN_TOKEN,
       })
     } catch (err) {
       // Details go to the Worker log, never to the caller.

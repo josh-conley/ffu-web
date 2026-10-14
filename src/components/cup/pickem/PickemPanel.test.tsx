@@ -7,11 +7,12 @@ import { EMPTY_PICKS, pickBracket, setDrop, setWinner, type CupPicks } from '@/l
 import { resolveTournament } from '@/selectors'
 import { PickemPanel } from './PickemPanel'
 
-const api = vi.hoisted(() => ({ board: vi.fn(), save: vi.fn() }))
+const api = vi.hoisted(() => ({ board: vi.fn(), save: vi.fn(), load: vi.fn() }))
 vi.mock('@/data', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/data')>()),
   fetchPickemBoard: api.board,
   savePickemEntry: api.save,
+  loadPickemEntry: api.load,
 }))
 
 /** Every game to the first-listed team; the first Round of 18 winner dropped. */
@@ -41,7 +42,7 @@ afterEach(() => {
   window.localStorage.clear()
 })
 
-it('saves a complete bracket for the member chosen, and remembers it in this browser', async () => {
+it('saves a complete bracket for the member chosen, with their PIN, and remembers it in this browser', async () => {
   const picks = firstListed()
   window.localStorage.setItem('ffu-pickem-draft-2026', JSON.stringify({ ffuId: '', picks }))
   api.board.mockResolvedValue(board({ entries: [{ ffuId: team, updatedAt: '2026-10-14T00:00:00Z' }] }))
@@ -56,13 +57,36 @@ it('saves a complete bracket for the member chosen, and remembers it in this bro
   expect(screen.getAllByText(/Choose who you are first/).length).toBeGreaterThan(0)
   expect(screen.getByLabelText('Who are you?')).toHaveFocus()
   await userEvent.selectOptions(screen.getByLabelText('Who are you?'), team)
-  expect(screen.getByText(/Saving again replaces your bracket/)).toBeInTheDocument()
+  expect(screen.getByText(/Enter your PIN to load your bracket here/)).toBeInTheDocument()
+  // Nor without a PIN.
   await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
-  expect(api.save).toHaveBeenCalledWith('2026', team, picks)
+  expect(api.save).not.toHaveBeenCalled()
+  expect(screen.getAllByText(/Enter a PIN of 4 to 8 digits/).length).toBeGreaterThan(0)
+  await userEvent.type(screen.getByLabelText(/PIN/), '48a21')
+  expect(screen.getByLabelText(/PIN/)).toHaveValue('4821')
+  await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+  expect(api.save).toHaveBeenCalledWith('2026', team, '4821', picks)
   expect(await screen.findAllByText(/^Saved\./)).not.toHaveLength(0)
   // The board is read again so the entry list is current.
   expect(api.board).toHaveBeenCalledTimes(2)
+  // The draft is remembered; the PIN never is.
   expect(JSON.parse(window.localStorage.getItem('ffu-pickem-draft-2026')!)).toEqual({ ffuId: team, picks })
+})
+
+it('loads a member\'s saved bracket with their PIN, say on another device', async () => {
+  const picks = firstListed()
+  api.board.mockResolvedValue(board({ entries: [{ ffuId: team, updatedAt: '2026-10-14T00:00:00Z' }] }))
+  api.load.mockResolvedValue(picks)
+  renderPanel()
+
+  await userEvent.selectOptions(await screen.findByLabelText('Who are you?'), team)
+  const load = screen.getByRole('button', { name: 'Load my saved bracket' })
+  expect(load).toBeDisabled()
+  await userEvent.type(screen.getByLabelText(/PIN/), '4821')
+  await userEvent.click(load)
+  expect(api.load).toHaveBeenCalledWith('2026', team, '4821')
+  expect(await screen.findByText(/Your saved bracket is loaded/)).toBeInTheDocument()
+  expect(JSON.parse(window.localStorage.getItem('ffu-pickem-draft-2026')!).picks).toEqual(picks)
 })
 
 it('opens a matchup and picks from its modal', async () => {

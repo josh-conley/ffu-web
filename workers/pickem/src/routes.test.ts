@@ -27,44 +27,62 @@ const picks = fullPicks()
 function setup(t: Tournament | null = drawnCup) {
   let clock = LOCK - 86_400_000
   const store = memoryStore()
-  const deps: Deps = { store, loadTournament: async () => t, now: () => clock, adminToken: 'sekrit' }
-  const call = async (method: string, path: string, body?: unknown, headers: Record<string, string> = {}) => {
-    const res = await route(new Request(`https://api.test${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) }), deps)
+  const deps: Deps = { store, loadTournament: async () => t, now: () => clock }
+  const call = async (method: string, path: string, body?: unknown) => {
+    const res = await route(new Request(`https://api.test${path}`, { method, body: body === undefined ? undefined : JSON.stringify(body) }), deps)
     return { status: res.status, body: (await res.json()) as Record<string, unknown> }
   }
   return { store, call, setClock: (ms: number) => (clock = ms) }
 }
 
 describe('pick-em routes', () => {
-  it('saves an entry and hides picks on the board until the lock', async () => {
-    const { call } = setup()
-    expect((await call('PUT', `/v1/2026/entries/${team}`, { picks })).status).toBe(200)
+  it('creates an entry with a PIN, and hides picks on the board until the lock', async () => {
+    const { call, store } = setup()
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })).status).toBe(201)
+    expect([...store.rows.values()][0]!.pinHash).not.toContain('4821')
     const board = await call('GET', '/v1/2026')
     expect(board.body).toMatchObject({ open: true, locked: false, entries: [{ ffuId: team }] })
     expect((board.body.entries as object[])[0]).not.toHaveProperty('picks')
   })
 
-  it('replaces a team\'s entry on a later save', async () => {
+  it('updates only with the right PIN, and loads picks back for editing', async () => {
     const { call, store } = setup()
-    await call('PUT', `/v1/2026/entries/${team}`, { picks })
-    await call('PUT', `/v1/2026/entries/${team}`, { picks })
+    await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '0000', picks })).status).toBe(401)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { picks })).status).toBe(401)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })).status).toBe(200)
     expect(store.rows.size).toBe(1)
+    const loaded = await call('POST', `/v1/2026/entries/${team}/load`, { pin: '4821' })
+    expect(loaded.body.picks).toEqual(picks)
+    expect((await call('POST', `/v1/2026/entries/${team}/load`, { pin: '1111' })).status).toBe(401)
+    expect((await call('POST', `/v1/2026/entries/${other}/load`, { pin: '4821' })).status).toBe(404)
+  })
+
+  it('lets the next save set the PIN on an entry saved before PINs existed', async () => {
+    const { call, store } = setup()
+    store.rows.set(`2026/${team}`, { ffuId: team, pinHash: '', pinSalt: '', picks: '{}', createdAt: 1, updatedAt: 1 })
+    expect((await call('POST', `/v1/2026/entries/${team}/load`, { pin: '4821' })).status).toBe(404)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })).status).toBe(201)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '7777', picks })).status).toBe(401)
+    expect(store.rows.get(`2026/${team}`)!.createdAt).toBe(1)
   })
 
   it('rejects bad input', async () => {
     const { call } = setup()
-    expect((await call('PUT', `/v1/2026/entries/${team}`, { picks: EMPTY_PICKS })).body.error).toBe('The bracket is not complete')
-    expect((await call('PUT', '/v1/2026/entries/not-a-team', { picks })).status).toBe(404)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '12', picks })).body.error).toBe('PIN must be 4 to 8 digits')
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks: EMPTY_PICKS })).body.error).toBe('The bracket is not complete')
+    expect((await call('PUT', '/v1/2026/entries/not-a-team', { pin: '4821', picks })).status).toBe(404)
     expect((await call('PUT', `/v1/2026/entries/${team}`, 'x'.repeat(20_000))).status).toBe(413)
     expect((await call('PATCH', `/v1/2026/entries/${team}`, {})).status).toBe(405)
+    expect((await call('DELETE', `/v1/2026/entries/${team}`)).status).toBe(405)
   })
 
   it('refuses entries once locked, then shows everyone their picks', async () => {
     const { call, setClock } = setup()
-    await call('PUT', `/v1/2026/entries/${team}`, { picks })
+    await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })
     setClock(LOCK)
-    expect((await call('PUT', `/v1/2026/entries/${team}`, { picks })).body.error).toBe("Pick'em is locked")
-    expect((await call('PUT', `/v1/2026/entries/${other}`, { picks })).status).toBe(403)
+    expect((await call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })).body.error).toBe("Pick'em is locked")
+    expect((await call('PUT', `/v1/2026/entries/${other}`, { pin: '4821', picks })).status).toBe(403)
     const board = await call('GET', '/v1/2026')
     expect(board.body).toMatchObject({ open: false, locked: true, entries: [{ ffuId: team, picks }] })
   })
@@ -72,16 +90,8 @@ describe('pick-em routes', () => {
   it('stays closed before the draw or without a lock time', async () => {
     expect((await setup({ ...drawnCup, participants: [] }).call('GET', '/v1/2026')).body).toMatchObject({ open: false, locked: false })
     const noLock = { ...drawnCup, pickemLocksAt: undefined }
-    expect((await setup(noLock).call('PUT', `/v1/2026/entries/${team}`, { picks })).status).toBe(403)
+    expect((await setup(noLock).call('PUT', `/v1/2026/entries/${team}`, { pin: '4821', picks })).status).toBe(403)
     expect((await setup(null).call('GET', '/v1/2026')).status).toBe(404)
-  })
-
-  it('lets only the admin token remove an entry', async () => {
-    const { call } = setup()
-    await call('PUT', `/v1/2026/entries/${team}`, { picks })
-    expect((await call('DELETE', `/v1/2026/entries/${team}`, undefined, { Authorization: 'Bearer nope' })).status).toBe(401)
-    expect((await call('DELETE', `/v1/2026/entries/${team}`, undefined, { Authorization: 'Bearer sekrit' })).status).toBe(200)
-    expect((await call('GET', '/v1/2026')).body.entries).toEqual([])
   })
 })
 

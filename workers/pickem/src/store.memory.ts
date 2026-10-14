@@ -9,12 +9,19 @@ export function memoryStore(): EntryStore & { rows: Map<string, StoredEntry> } {
     async list(year) {
       return [...rows].filter(([key]) => key.startsWith(`${year}/`)).map(([, e]) => ({ ...e }))
     },
-    async upsert(year, ffuId, picks, now) {
-      const existing = rows.get(k(year, ffuId))
-      rows.set(k(year, ffuId), { ffuId, picks, createdAt: existing?.createdAt ?? now, updatedAt: now })
+    async get(year, ffuId) {
+      const e = rows.get(k(year, ffuId))
+      return e ? { ...e } : null
     },
-    async remove(year, ffuId) {
-      return rows.delete(k(year, ffuId))
+    async create(year, entry) {
+      const existing = rows.get(k(year, entry.ffuId))
+      if (existing && existing.pinHash !== '') return false
+      rows.set(k(year, entry.ffuId), { ...entry, createdAt: existing?.createdAt ?? entry.createdAt })
+      return true
+    },
+    async savePicks(year, ffuId, picks, now) {
+      const e = rows.get(k(year, ffuId))
+      if (e) rows.set(k(year, ffuId), { ...e, picks, updatedAt: now })
     },
   }
 }
