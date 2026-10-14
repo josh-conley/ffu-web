@@ -148,6 +148,7 @@ describe('the seeded 2025 dry run resolves to a full bracket', () => {
     expect(round('r18').matchups).toHaveLength(9)
     expect(round('r18').dropped).toHaveLength(1)
     expect(round('r8').dropped).toEqual([])
+    expect(real.rounds.map((r) => r.dropsLowestWinner)).toEqual([false, true, false, false, false])
     expect(round('r8').matchups).toHaveLength(4)
     expect(round('r4').matchups).toHaveLength(2)
     expect(round('final').matchups).toHaveLength(1)

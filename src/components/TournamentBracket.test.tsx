@@ -17,6 +17,7 @@ function bracket(year: string, scored: boolean): ResolvedTournament {
         label: 'Round of 36',
         week: 6,
         dropped: [],
+        dropsLowestWinner: false,
         matchups: [{ a: { ffuId: 'ffu-001', tier: 'PREMIER', seed: 1, score: score(100) }, b: { ffuId: 'ffu-002', tier: 'NATIONAL', seed: 36, score: score(90) }, tie: false }],
       },
     ],

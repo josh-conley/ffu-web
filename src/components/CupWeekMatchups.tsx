@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CUP_ACCENT, CUP_NAME } from '@/config'
+import { CUP_ACCENT, CUP_NAME, getPrizeSchedule, isCupRoundKey } from '@/config'
 import type { LiveSeasonData } from '@/data'
 import { cupMatchupGame, type ResolvedMatchup, type ResolvedRound, type ResolvedSide } from '@/selectors'
 import { CupSidesStrip } from './cup/CupMatchupModal'
@@ -8,6 +8,17 @@ import { LEAGUE_STYLES } from './leagues'
 import { LiveLineupModal } from './LiveLineupModal'
 import { MatchupCard } from './MatchupCard'
 import { useLiveRecordDetail } from './useLiveRecordDetail'
+
+/** The round whose lowest-scoring winner is culled: say so up front, since that win doesn't pay. */
+function DropNote({ round, year }: { round: ResolvedRound; year: string }) {
+  const prize = isCupRoundKey(round.key) ? getPrizeSchedule(year)?.cup?.[round.key] : undefined
+  return (
+    <p className="border-b border-border px-3 py-2 text-xs text-muted">
+      The lowest-scoring winner this round is eliminated and does <strong className="text-text">not</strong> collect
+      {prize === undefined ? ' the round\'s prize' : ` the $${prize}`}: prizing is for winning <em>and</em> advancing.
+    </p>
+  )
+}
 
 /** A team's league as a colored dot (named for screen readers only), then its draw seed. */
 function CupSideTag({ side }: { side: ResolvedSide }) {
@@ -50,6 +61,7 @@ export function CupWeekMatchups({
       <h3 className="px-3 py-2 text-sm font-bold uppercase tracking-wide text-white" style={{ backgroundColor: CUP_ACCENT }}>
         {CUP_NAME} · {round.label}
       </h3>
+      {round.dropsLowestWinner && <DropNote round={round} year={year} />}
       <div className="grid gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
         {round.matchups.map((m) => {
           const sideOf = (ffuId: string) => (ffuId === m.a.ffuId ? m.a : m.b)

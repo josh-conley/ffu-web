@@ -40,6 +40,9 @@ export interface ResolvedRound {
    * receives the shrunken field.
    */
   dropped: ResolvedSide[]
+  /** The lowest-scoring winner of THIS round is culled (the next round carries the JSON flag).
+   *  Known from the draw, before a game is played, unlike `dropped`. */
+  dropsLowestWinner: boolean
 }
 
 export interface ResolvedTournament {
@@ -143,7 +146,7 @@ export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): 
   const rounds: ResolvedRound[] = []
   let advancers: Advancer[] = []
 
-  for (const round of t.rounds) {
+  for (const [i, round] of t.rounds.entries()) {
     // A round is only paired once the previous one is fully decided: pairing a partial field would
     // put the wrong teams together (and the drop needs every winner's score).
     const previousRound = rounds[rounds.length - 1]
@@ -158,7 +161,7 @@ export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): 
     if (droppedId !== undefined && previousRound !== undefined) {
       previousRound.dropped = [resolveSide(field, seasonsByTier, droppedId, previousRound.week)]
     }
-    rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped: [] })
+    rounds.push({ key: round.key, label: round.label, week: round.week, matchups, dropped: [], dropsLowestWinner: t.rounds[i + 1]?.dropLowestWinner === true })
     advancers = advancersOf(matchups)
   }
 

@@ -16,10 +16,13 @@ function prizeLabel(rounds: RoundOutline[], index: number): string {
   return next === undefined ? `Win the ${rounds[index]!.label}` : `Win & advance to the ${next.label}`
 }
 
-function PrizeRow({ label, amount }: { label: string; amount?: number }) {
+function PrizeRow({ label, amount, note }: { label: string; amount?: number; note?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border border-border bg-surface px-4 py-2.5">
-      <span className="text-sm">{label}</span>
+      <span className="text-sm">
+        {label}
+        {note && <span className="block text-xs text-muted">{note}</span>}
+      </span>
       <span className="font-mono text-sm font-bold tabular-nums">{amount === undefined ? 'TBA' : `$${amount}`}</span>
     </div>
   )
@@ -53,7 +56,12 @@ export function CupSpoils({ rounds, year }: { rounds: RoundOutline[]; year: stri
       <div className="space-y-2">
         <Heading icon={<FaSackDollar aria-hidden />}>Paid every round</Heading>
         {rounds.map((r, i) => (
-          <PrizeRow key={r.key} label={prizeLabel(rounds, i)} amount={isCupRoundKey(r.key) ? cupPrizes?.[r.key] : undefined} />
+          <PrizeRow
+            key={r.key}
+            label={prizeLabel(rounds, i)}
+            amount={isCupRoundKey(r.key) ? cupPrizes?.[r.key] : undefined}
+            note={r.dropped > 0 ? 'Not paid to the lowest-scoring winner, who is eliminated' : undefined}
+          />
         ))}
         {purse === undefined ? (
           <p className="text-xs text-muted">Amounts are announced with the {year} prize sheet.</p>

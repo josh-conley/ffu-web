@@ -1,7 +1,7 @@
 import type { ResolvedRound } from '@/selectors'
 import { homeWeekViews } from './homeWeekViews'
 
-const round = (key: string, label: string, week: number): ResolvedRound => ({ key, label, week, matchups: [], dropped: [] })
+const round = (key: string, label: string, week: number): ResolvedRound => ({ key, label, week, matchups: [], dropped: [], dropsLowestWinner: false })
 
 it('is the one league week on a normal day, with no Cup round that week', () => {
   expect(homeWeekViews(5, undefined, []).map((v) => [v.id, v.label])).toEqual([['current', 'Week 5']])
