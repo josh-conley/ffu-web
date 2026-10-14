@@ -1,21 +1,27 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { nameForYear } from '@/config'
 import type { Tier } from '@/config/types'
 import type { SeasonData } from '@/data'
-import { pickedChampion, type PickRound } from '@/lib/cupPickem'
+import { pickedChampion, type PickRound, type PickSlot } from '@/lib/cupPickem'
 import type { PickOutcome } from '@/selectors'
-import { ChampionColumn, ColumnHeader, DropPick, MatchupCard } from './PickemBracketParts'
+import { useFormGoingInto } from '@/hooks/useFormGoingInto'
+import { BracketFrame, RoundShell } from '../../TournamentBracket'
+import { TournamentMatchupCard, type CardSide } from '../../TournamentMatchupCard'
+import { uprLabel } from '../../format'
+import { ChampionBanner } from '../CupBracketPanel'
+import { DropPick } from './PickemBracketParts'
 import { PickemMatchupModal } from './PickemMatchupModal'
 
-// A pick'em bracket drawn as a bracket: one column per round, left to right, then the champion.
-// Tap a matchup to open it: the season so far side by side, both rosters, and (while filling one
-// in) a Pick button under each team. Read-only on the leaderboard, where each pick is marked by
-// how it turned out.
+// A pick'em bracket, drawn with the Cup bracket's own pieces (frame, round columns, matchup cards,
+// champion banner), so it reads as the same bracket: the pick shows as a game's winner does. Tap a
+// matchup to open it (the season so far, both rosters, and a Pick button under each team while
+// filling one in). Read-only on the leaderboard, where a pick that won or lost is marked so.
 
 export interface PickemBracketProps {
   bracket: PickRound[]
   year: string
   tierOf: ReadonlyMap<string, Tier>
-  /** The Cup season's league files, for the modal's season figures. */
+  /** The Cup season's league files: each team's UPR under its name, and the modal's figures. */
   seasons: SeasonData[]
   /** Omit for a read-only bracket. */
   onPick?: (roundKey: string, index: number, ffuId: string) => void
@@ -23,37 +29,57 @@ export interface PickemBracketProps {
   outcomes?: Record<string, (PickOutcome | undefined)[]>
 }
 
+const OUTCOME_TONE: Record<PickOutcome, string> = {
+  won: 'border-positive text-positive',
+  lost: 'border-negative text-negative line-through',
+  pending: 'border-accent',
+}
+
 interface Opened {
   roundKey: string
   index: number
 }
 
+const sideOf = (id: string | undefined, tierOf: ReadonlyMap<string, Tier>): CardSide =>
+  id === undefined ? undefined : { ffuId: id, tier: tierOf.get(id) ?? 'NATIONAL' }
+
+function cardLabel(slot: PickSlot, year: string): string | undefined {
+  if (slot.a === undefined || slot.b === undefined) return undefined
+  return `${nameForYear(slot.a, year) ?? slot.a} v ${nameForYear(slot.b, year) ?? slot.b}`
+}
+
 export function PickemBracket({ bracket, year, tierOf, seasons, onPick, onDrop, outcomes }: PickemBracketProps) {
   const [opened, setOpened] = useState<Opened>()
+  const weeks = useMemo(() => bracket.map((r) => r.week), [bracket])
+  const formOf = useFormGoingInto(seasons, weeks)
+  const champion = pickedChampion(bracket)
   const round = opened && bracket.find((r) => r.key === opened.roundKey)
   const slot = opened && round?.slots[opened.index]
 
   return (
-    <>
-      {/* Full-bleed and horizontally scrollable, like the Cup's own bracket (TournamentBracket). */}
-      <div className="mx-[calc(50%-50vw+1rem)]">
-        <div className="mx-auto w-fit max-w-full overflow-x-auto pb-4">
-          <div className="flex min-w-max items-stretch gap-4 px-1">
-            {bracket.map((r) => (
-              <section key={r.key} className="flex w-56 shrink-0 flex-col">
-                <ColumnHeader round={r} />
-                <div className="flex flex-1 flex-col justify-around gap-3">
-                  {r.slots.map((s, j) => (
-                    <MatchupCard key={j} slot={s} year={year} tierOf={tierOf} outcome={outcomes?.[r.key]?.[j]} onOpen={() => setOpened({ roundKey: r.key, index: j })} />
-                  ))}
-                </div>
-                {r.needsDrop && <div className="mt-3"><DropPick round={r} year={year} onDrop={onDrop} /></div>}
-              </section>
-            ))}
-            <ChampionColumn champion={pickedChampion(bracket)} year={year} />
-          </div>
-        </div>
-      </div>
+    <div className="space-y-4">
+      {champion && <ChampionBanner ffuId={champion} year={year} label={onPick ? 'Your champion' : 'Picked champion'} />}
+      <BracketFrame>
+        {bracket.map((r) => (
+          <RoundShell key={r.key} label={r.label} week={r.week} note={r.needsDrop && <DropPick round={r} year={year} onDrop={onDrop} />}>
+            {r.slots.map((s, j) => {
+              const known = s.a !== undefined && s.b !== undefined
+              const outcome = outcomes?.[r.key]?.[j]
+              return (
+                <TournamentMatchupCard
+                  key={j}
+                  matchup={{ a: sideOf(s.a, tierOf), b: sideOf(s.b, tierOf), winner: s.pick }}
+                  year={year}
+                  detail={(id) => uprLabel(formOf(id, r.week))}
+                  winnerTone={outcome && OUTCOME_TONE[outcome]}
+                  label={cardLabel(s, year)}
+                  onOpen={known ? () => setOpened({ roundKey: r.key, index: j }) : undefined}
+                />
+              )
+            })}
+          </RoundShell>
+        ))}
+      </BracketFrame>
       {opened && round && slot?.a !== undefined && slot.b !== undefined && (
         <PickemMatchupModal
           matchup={{ a: slot.a, b: slot.b, roundLabel: round.label, pick: slot.pick }}
@@ -67,6 +93,6 @@ export function PickemBracket({ bracket, year, tierOf, seasons, onPick, onDrop, 
           onClose={() => setOpened(undefined)}
         />
       )}
-    </>
+    </div>
   )
 }

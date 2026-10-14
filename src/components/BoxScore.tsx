@@ -210,25 +210,28 @@ function Projections({ a, b }: { a: BoxScoreSide; b: BoxScoreSide }) {
 
 /** Head-to-head lineups (+ bench): slot label centered + color-coded, scores flanking it, names on the
  *  outer edges. Only the losing side's team score is dimmed (ties dim neither). `liveOf` (live only)
- *  marks where each player's NFL game stands and when/who they play. */
+ *  marks where each player's NFL game stands and when/who they play. `heads={false}` leaves out the
+ *  team/score row, for lineups that aren't one game (the pick'em modal's two latest rosters). */
 export function BoxScore({
   slots,
   players,
   year,
   sides,
   liveOf,
+  heads = true,
 }: {
   slots: string[]
   players: PlayerMap
   year: string
   sides: [BoxScoreSide, BoxScoreSide]
   liveOf?: LiveOf
+  heads?: boolean
 }) {
   const [a, b] = sides
   const winner: 'a' | 'b' | null = a.score === b.score ? null : a.score > b.score ? 'a' : 'b'
   return (
     <>
-      <Heads a={a} b={b} year={year} winner={winner} />
+      {heads && <Heads a={a} b={b} year={year} winner={winner} />}
       <Projections a={a} b={b} />
       <StarterRows slots={slots} a={a.lineup} b={b.lineup} players={players} liveOf={liveOf} />
       <BenchSection a={a.lineup} b={b.lineup} players={players} liveOf={liveOf} />

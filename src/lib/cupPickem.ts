@@ -30,6 +30,8 @@ export interface PickSlot {
 export interface PickRound {
   key: string
   label: string
+  /** NFL week the round is played (shown on the bracket, and when each team's form is read). */
+  week: number
   slots: PickSlot[]
   /** True when the next round drops this round's lowest-scoring winner, so a drop pick is owed. */
   needsDrop: boolean
@@ -74,7 +76,7 @@ export function pickBracket(t: Tournament, picks: CupPicks): PickRound[] {
     const needsDrop = t.rounds[i + 1]?.dropLowestWinner === true
     const drop = picks.drops[round.key]
     const validDrop = needsDrop && drop !== undefined && winners.includes(drop) ? drop : undefined
-    rounds.push({ key: round.key, label: round.label, slots, needsDrop, drop: validDrop })
+    rounds.push({ key: round.key, label: round.label, week: round.week, slots, needsDrop, drop: validDrop })
     carried = winners
   })
   return rounds

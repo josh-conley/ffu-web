@@ -1,63 +1,42 @@
 import type { Tier } from '@/config/types'
-import type { PlayerMap, PlayerRef } from '@/data'
+import type { SeasonLineups } from '@/data'
 import { useLineups, usePlayers } from '@/hooks/useLeagueData'
-import { latestRoster, type RosterSpot } from '@/selectors'
-import { shortPlayerName } from '../../format'
-import { posClass } from '../../positions'
-import { teamAbbr } from '../../seriesText'
+import { latestLineup, starterPoints } from '@/selectors'
+import { BoxScore, type BoxScoreSide } from '../../BoxScore'
+import { LoadingSpinner } from '../../LoadingSpinner'
 
-// Both teams' rosters side by side, each from its own league's latest lineup on file (latestRoster).
-// Lineup files load only when a modal opens, and each league's is fetched once and shared.
+// Both teams' rosters, laid out exactly as the matchup modal's box score (BoxScore): starters slot
+// by slot, then the bench. Each is the team's latest lineup on file, read from its own league's
+// lineup file, so the points shown are from that week.
 
-/** Team defenses keep their full name ("New England Patriots", not "N. England Patriots"). */
-const displayName = (p: PlayerRef) => (p.position === 'DEF' ? p.name : shortPlayerName(p.name))
-
-function Spot({ spot, players, divided }: { spot: RosterSpot; players: PlayerMap | undefined; divided: boolean }) {
-  const player = players?.[spot.playerId]
-  const name = player ? displayName(player) : spot.playerId
-  const starter = spot.slot !== 'BN' && spot.slot !== 'IR'
-  // A starter shows the slot it filled; a bench or IR player, their position.
-  const badge = starter ? spot.slot : (player?.position ?? spot.slot)
-  return (
-    <li className={`flex items-center gap-1.5 py-0.5 ${starter ? '' : 'text-muted'} ${divided ? 'mt-1 border-t border-border pt-1' : ''}`}>
-      <span className={`w-11 shrink-0 px-1 text-center text-[10px] font-bold ${posClass(badge)}`}>{badge}</span>
-      <span className="min-w-0 truncate">{name}</span>
-      {player?.team && <span className="shrink-0 text-[10px] text-muted">{player.team}</span>}
-      {spot.slot === 'IR' && <span className="shrink-0 text-[10px] font-bold text-negative">IR</span>}
-    </li>
-  )
+function sideOf(lineups: SeasonLineups | null | undefined, ffuId: string): (BoxScoreSide & { week: number }) | undefined {
+  const latest = lineups ? latestLineup(lineups, ffuId) : undefined
+  return latest && { memberId: ffuId, score: starterPoints(latest.lineup), lineup: latest.lineup, week: latest.week }
 }
 
-function TeamRoster({ ffuId, tier, year, players }: { ffuId: string; tier: Tier; year: string; players: PlayerMap | undefined }) {
-  const lineups = useLineups(tier, year)
-  if (lineups.loading) return <p className="text-xs text-muted">Loading roster…</p>
-  const roster = lineups.data ? latestRoster(lineups.data, ffuId) : undefined
-  if (!roster) return <p className="text-xs text-muted">No lineup on file yet.</p>
-  const firstBench = roster.spots.findIndex((s) => s.slot === 'BN' || s.slot === 'IR')
-  return (
-    <div className="min-w-0">
-      <h4 className="mb-1 truncate text-[11px] font-bold uppercase tracking-wide">
-        {teamAbbr(ffuId)} <span className="font-normal normal-case text-muted">· week {roster.week} lineup</span>
-      </h4>
-      <ul className="text-xs">
-        {roster.spots.map((s, i) => (
-          <Spot key={`${s.playerId}-${i}`} spot={s} players={players} divided={i === firstBench} />
-        ))}
-      </ul>
-    </div>
-  )
+/** Each team's league lineup file (fetched once per league and shared), read for its latest week. */
+function useLatestSides(a: string, b: string, tierOf: ReadonlyMap<string, Tier>, year: string) {
+  const lineupsA = useLineups(tierOf.get(a) ?? 'NATIONAL', year)
+  const lineupsB = useLineups(tierOf.get(b) ?? 'NATIONAL', year)
+  return {
+    loading: lineupsA.loading || lineupsB.loading,
+    sides: [sideOf(lineupsA.data, a), sideOf(lineupsB.data, b)] as const,
+    slots: lineupsA.data?.slots ?? lineupsB.data?.slots,
+  }
 }
 
 export function PickemRosters({ a, b, tierOf, year }: { a: string; b: string; tierOf: ReadonlyMap<string, Tier>; year: string }) {
   const players = usePlayers()
+  const { loading, sides: [sideA, sideB], slots } = useLatestSides(a, b, tierOf, year)
+  if (players.loading || loading) return <div className="p-6"><LoadingSpinner /></div>
+  if (!sideA || !sideB || !slots) return <p className="border-t border-border p-4 text-sm text-muted">Rosters aren&apos;t on file yet.</p>
+  const weeks = sideA.week === sideB.week ? `week ${sideA.week}` : `weeks ${sideA.week} and ${sideB.week}`
   return (
-    <section className="border-t border-border px-2 py-3 sm:px-4">
-      <h3 className="mb-2 text-center text-[11px] font-bold uppercase tracking-widest text-muted">Rosters</h3>
-      <div className="grid grid-cols-2 gap-3 sm:gap-6">
-        {[a, b].map((id) => (
-          <TeamRoster key={id} ffuId={id} tier={tierOf.get(id) ?? 'NATIONAL'} year={year} players={players.data} />
-        ))}
-      </div>
+    <section className="border-t border-border">
+      <h3 className="bg-surface-2/40 px-3 py-1.5 text-center text-[11px] font-bold uppercase tracking-widest text-muted">
+        Rosters <span className="font-normal normal-case tracking-normal">· latest lineups ({weeks})</span>
+      </h3>
+      <BoxScore slots={slots} players={players.data ?? {}} year={year} sides={[sideA, sideB]} heads={false} />
     </section>
   )
 }

@@ -29,3 +29,16 @@ export function starterPoints(team: TeamLineup): number {
 export function benchByPoints(team: TeamLineup): LineupPlayer[] {
   return [...team.bench].sort((a, b) => b.points - a.points)
 }
+
+/**
+ * A team's latest lineup on file, and its week: the closest the season files come to "who they
+ * have now" (they hold weekly lineups, not rosters). The pick'em modal shows it as each team's roster.
+ */
+export function latestLineup(lineups: SeasonLineups, memberId: string): { week: number; lineup: TeamLineup } | undefined {
+  for (let i = lineups.weeks.length - 1; i >= 0; i--) {
+    const week = lineups.weeks[i]!
+    const lineup = week.teams.find((t) => t.memberId === memberId)
+    if (lineup) return { week: week.week, lineup }
+  }
+  return undefined
+}
