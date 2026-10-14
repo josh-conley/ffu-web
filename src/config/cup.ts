@@ -55,5 +55,5 @@ export const CUP_PICKEM_POINTS: Record<CupRoundKey, number> = { r36: 1, r18: 2, 
  * Where the pick'em Worker (workers/pickem) answers. Empty = no pick'em API, so the tab never
  * shows. Set once the Worker has its first deploy (its workers.dev URL is in that run's summary).
  */
-export const CUP_PICKEM_API: string = ''
+export const CUP_PICKEM_API: string = 'https://ffu-pickem.joshc9494.workers.dev'
 

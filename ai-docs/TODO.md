@@ -116,11 +116,10 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
    participants + opening ties are in `public/data/2026/tournament.json`.
 2. [x] **Pick'em lock time** set: `"pickemLocksAt": "2026-10-16T00:15:00Z"` (Thu Oct 15, 8:15pm ET,
    week 6 TNF; Josh confirmed Thursday).
-3. **Turn the pick'em on** (merged in PR #56, deploy gated off): Josh widens `CLOUDFLARE_API_TOKEN`
-   (Workers Scripts + D1 Edit), optionally adds secret `PICKEM_ADMIN_TOKEN`, sets repo variable
-   `PICKEM_DEPLOY=true`, runs **Deploy pick'em API** in Actions. Put the `*.workers.dev` URL from
-   its summary into `CUP_PICKEM_API` (`src/config/cup.ts`), push. Then the Pick'em tab is live.
-   First real deploy is untested against Cloudflare — read its log if it fails.
+3. [x] **Pick'em is live** (2026-10-13): Worker at `https://ffu-pickem.joshc9494.workers.dev`
+   (D1 `ffu-pickem`), set in `CUP_PICKEM_API`. Deploys on its own from now on when
+   `workers/pickem` or the shared bracket rules change. No `PICKEM_ADMIN_TOKEN` yet, so the
+   commissioner reset is off; add the secret and rerun **Deploy pick'em API** to turn it on.
 4. Housekeeping: delete branches `preview/cup-pickem` and `preview/pickem-demo` on GitHub (the
    cloud git proxy refused deletes). Ask the commissioner for a Cup tiebreaker (item below).
 
