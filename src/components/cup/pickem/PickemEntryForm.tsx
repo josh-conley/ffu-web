@@ -3,23 +3,26 @@ import type { SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
 import { nameForYear, ownerNames } from '@/config'
 import { dropOwed } from '@/lib/cupPickem'
-import { usePickemForm, type FormStatus, type MissingPart, type PickemForm } from '@/hooks/usePickemForm'
+import { PIN_PATTERN, usePickemForm, type FormStatus, type MissingPart, type PickemForm } from '@/hooks/usePickemForm'
 import { BUTTON, PRIMARY_BUTTON, SELECT } from '../../controls'
 import { PickemBracket } from './PickemBracket'
 
-// Filling in a bracket: say who you are, tap through the rounds, save. Saving again replaces your
-// entry; the bracket in progress is remembered in this browser (usePickemForm).
+// Filling in a bracket: say who you are, set (or enter) your PIN, tap through the rounds, save. A
+// member who has entered can load their saved bracket with the PIN, change it, and save again.
 
-function StatusLine({ status, entered, dropLabel }: { status: FormStatus; entered: boolean; dropLabel: string }) {
+function StatusLine({ status, entered, chosen, dropLabel }: { status: FormStatus; entered: boolean; chosen: boolean; dropLabel: string }) {
   if (status.kind === 'error') return <p role="alert" className="text-sm font-semibold text-negative">{status.message}</p>
   if (status.kind === 'missing') return <p role="alert" className="text-sm font-semibold text-negative">{MISSING[status.part](dropLabel)}</p>
-  if (status.kind === 'saved') return <p role="status" className="text-sm font-semibold text-positive">Saved. You can change it until entries lock.</p>
-  if (entered) return <p className="text-sm text-muted">You&apos;ve entered. Saving again replaces your bracket.</p>
+  if (status.kind === 'saved') return <p role="status" className="text-sm font-semibold text-positive">Saved. You can change it with your PIN until entries lock.</p>
+  if (status.kind === 'loaded') return <p role="status" className="text-sm text-muted">Your saved bracket is loaded. Make changes, then save.</p>
+  if (entered) return <p className="text-sm text-muted">You&apos;ve entered. Enter your PIN to load your bracket here, or to save changes.</p>
+  if (chosen) return <p className="text-sm text-muted">New entry: the PIN you choose now is the one you&apos;ll need to change it later.</p>
   return null
 }
 
 const MISSING: Record<MissingPart, (dropLabel: string) => string> = {
   who: () => 'Choose who you are first.',
+  pin: () => 'Enter a PIN of 4 to 8 digits.',
   drop: (label) => `Pick which ${label} winner is dropped first (over the Final, in the middle of the bracket).`,
   games: () => 'Pick a winner in every game first.',
 }
@@ -31,6 +34,7 @@ function MissingStep({ form, dropLabel }: { form: PickemForm; dropLabel: string 
   }
   if (!form.complete) return <span className="text-sm text-muted">Pick every game, plus the {dropLabel} team that gets dropped.</span>
   if (form.ffuId === '') return <span className="text-sm font-semibold text-text">Bracket done. Now choose who you are.</span>
+  if (!PIN_PATTERN.test(form.pin)) return <span className="text-sm font-semibold text-text">Bracket done. Now enter your PIN.</span>
   return null
 }
 
@@ -42,6 +46,11 @@ function FormActions({ form, hasEntry, dropLabel }: { form: PickemForm; hasEntry
       <button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
         {busy ? 'Saving…' : hasEntry ? 'Save changes' : 'Submit bracket'}
       </button>
+      {hasEntry && (
+        <button type="button" className={BUTTON} disabled={busy || !PIN_PATTERN.test(form.pin)} onClick={() => void form.load()}>
+          Load my saved bracket
+        </button>
+      )}
       <button type="button" className={BUTTON} disabled={busy} onClick={form.reset}>Clear picks</button>
       <MissingStep form={form} dropLabel={dropLabel} />
     </div>
@@ -96,15 +105,22 @@ export function PickemEntryForm({ tournament, year, tierOf, seedOf, seasons, ent
     >
       {/* Everything to act on sits above the bracket: who you are, then Save and Clear, then what
           pressing Save said, so a member never has to scroll past 34 games to find them. */}
-      <label className="block max-w-md space-y-1 text-sm">
-        <span className="font-semibold">Who are you?</span>
-        <select ref={who} className={`${SELECT} w-full`} value={form.ffuId} onChange={(e) => form.setFfuId(e.target.value)}>
-          <option value="">Choose yourself…</option>
-          {whoOptions(tournament, year).map((o) => <option key={o.ffuId} value={o.ffuId}>{o.label}{entered.has(o.ffuId) ? ' ✓' : ''}</option>)}
-        </select>
-      </label>
+      <div className="grid max-w-2xl gap-3 sm:grid-cols-[2fr_1fr]">
+        <label className="space-y-1 text-sm">
+          <span className="font-semibold">Who are you?</span>
+          <select ref={who} className={`${SELECT} w-full`} value={form.ffuId} onChange={(e) => form.setFfuId(e.target.value)}>
+            <option value="">Choose yourself…</option>
+            {whoOptions(tournament, year).map((o) => <option key={o.ffuId} value={o.ffuId}>{o.label}{entered.has(o.ffuId) ? ' ✓' : ''}</option>)}
+          </select>
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="font-semibold">PIN (4–8 digits)</span>
+          <input className={`${SELECT} w-full`} type="password" inputMode="numeric" autoComplete="off" maxLength={8}
+            value={form.pin} onChange={(e) => form.setPin(e.target.value)} />
+        </label>
+      </div>
       <FormActions form={form} hasEntry={hasEntry} dropLabel={dropLabel} />
-      <StatusLine status={form.status} entered={hasEntry} dropLabel={dropLabel} />
+      <StatusLine status={form.status} entered={hasEntry} chosen={form.ffuId !== ''} dropLabel={dropLabel} />
 
       <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} seedOf={seedOf} seasons={seasons} onPick={form.pick} onDrop={form.drop} />
     </form>

@@ -118,8 +118,8 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
    week 6 TNF; Josh confirmed Thursday).
 3. [x] **Pick'em is live** (2026-10-13): Worker at `https://ffu-pickem.joshc9494.workers.dev`
    (D1 `ffu-pickem`), set in `CUP_PICKEM_API`. Deploys on its own from now on when
-   `workers/pickem` or the shared bracket rules change. No `PICKEM_ADMIN_TOKEN` yet, so the
-   commissioner reset is off; add the secret and rerun **Deploy pick'em API** to turn it on.
+   `workers/pickem` or the shared bracket rules change. PINs added back the same night (no
+   guess cap, no admin route; resets via the D1 console, see `workers/pickem/README.md`).
 4. Housekeeping: delete branches `preview/cup-pickem` and `preview/pickem-demo` on GitHub (the
    cloud git proxy refused deletes). Ask the commissioner for a Cup tiebreaker (item below).
 
@@ -178,7 +178,7 @@ weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS
       for "FFU Cup Winner"
 
 - [ ] **Cup pick'em** (built 2026-10-13, `workers/pickem/README.md`). To go live: widen the
-      Cloudflare token (Workers Scripts + D1 Edit), optionally add `PICKEM_ADMIN_TOKEN`, set the
+      Cloudflare token (Workers Scripts + D1 Edit), set the
       repo variable `PICKEM_DEPLOY=true` and run the deploy workflow, put the Worker URL from
       its summary in `CUP_PICKEM_API`, and add `pickemLocksAt`
       to `public/data/2026/tournament.json` once the draw is in (R36 = week 6; Thu Oct 15 TNF

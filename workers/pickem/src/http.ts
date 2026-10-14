@@ -13,8 +13,8 @@ export function corsHeaders(origin: string | undefined): Record<string, string> 
   if (origin === undefined) return { Vary: 'Origin' }
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   }
@@ -43,12 +43,4 @@ export async function readBody(request: Request): Promise<Record<string, unknown
     // fall through
   }
   return fail(400, 'Body must be a JSON object')
-}
-
-/** Compares in constant time over equal-length strings (the admin token check). */
-export function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
 }
