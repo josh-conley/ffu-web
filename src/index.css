@@ -22,6 +22,11 @@
   --color-accent-hover: #a30000;
   --color-accent-fg: #ffffff; /* AA: #fff on #cc0000 ≈ 5.9:1 */
 
+  /* A pick'em pick: the whole row tinted in the Cup's blue (CUP_ACCENT in config/cup.ts), never red
+     or green, which mark whether a pick won or lost once the round is played. */
+  --color-pick: rgb(37 150 190 / 0.14);
+  --color-pick-edge: #2596be;
+
   /* Semantic surfaces — LIGHT defaults */
   --color-bg: #f9fafb;
   --color-surface: #ffffff;
@@ -64,6 +69,7 @@
 
 /* DARK overrides — warm near-black, not cool slate. */
 .dark {
+  --color-pick: rgb(37 150 190 / 0.28);
   --color-bg: #141416;
   --color-surface: #1c1c1f;
   --color-surface-2: #242428;

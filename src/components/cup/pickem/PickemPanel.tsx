@@ -21,7 +21,7 @@ function Rules({ tournament, locksAt }: { tournament: Tournament; locksAt: strin
   const max = maxPickemPoints(pickBracket(tournament, EMPTY_PICKS))
   return (
     <p className="max-w-3xl text-sm text-muted">
-      Call the whole bracket before the first game. One entry per team, protected by a PIN you choose.
+      Call the whole bracket before the first game. One entry per team: choose yourself, and saving again replaces your bracket.
       Correct picks score {perRound} points by round ({max} for a perfect bracket); nobody can
       see anyone else&apos;s picks until entries lock{locksAt ? <>, at <strong className="text-text">{LOCK_FORMAT.format(new Date(locksAt))}</strong></> : null}.
     </p>

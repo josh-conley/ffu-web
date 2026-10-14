@@ -8,9 +8,9 @@ The page calls this from the Cup's **Pick'em** tab (`src/components/cup/pickem/`
 - Only the Cup's 36 teams can enter, one entry per team (`year` + `ffuId` is the primary key).
 - An entry must be a complete bracket that fits the draw. `validatePicks` in
   `src/lib/cupPickem.ts` checks it, and the page uses the same function, so the two can't disagree.
-- The first save sets the team's **PIN** (4–8 digits, stored only as a PBKDF2 hash). Changing the
-  entry, or loading it back to edit, needs that PIN. After 5 wrong PINs, the team gets one more try an hour,
-  counted atomically in SQL so parallel guesses can't get past the cap.
+- No PIN, by Josh's call (2026-10-14): a member chooses who they are from the list, and saving
+  replaces that team's entry. The page keeps a member's bracket in their browser to edit it, so
+  the API never hands anyone's picks back before the lock.
 - Nothing is written after the lock, and nobody sees anyone's picks until then.
 
 The field, the bracket and the lock time are read from the live site's own
@@ -34,13 +34,15 @@ The field, the bracket and the lock time are read from the live site's own
 4. Put that URL in `CUP_PICKEM_API` (`src/config/cup.ts`) and push. Until then the tab stays hidden.
 
 ## Operations
-- **Forgotten PIN / someone claimed the wrong team:** delete the entry, and the member then re-enters with a new PIN:
+- **Someone saved under the wrong name:** delete that entry, and its owner can enter again:
   `curl -X DELETE -H "Authorization: Bearer $PICKEM_ADMIN_TOKEN" <api>/v1/2026/entries/<ffuId>`
 - **Look at the data:** `npx wrangler@4 d1 execute ffu-pickem --remote --command "SELECT ffu_id, updated_at FROM entries"`
 - **Local run:** `npx wrangler@4 d1 migrations apply ffu-pickem --local`, then
   `npx wrangler@4 dev --var DATA_ORIGIN:http://localhost:5173` from this folder.
 
 ## Known limits (accepted)
-- No accounts. Whoever saves a team first sets its PIN. A wrong claim is fixed by the reset above.
-- A 4-digit PIN can be guessed eventually. At under 30 tries a day, it isn't guessed within the days
-  entries are open. 6+ digits is better, and the form allows up to 8.
+- No accounts and no PIN, so anyone can save over anyone's bracket by choosing their name. Fine
+  among league members; if it's ever abused, the fix is to bring back a PIN (git history has one:
+  hashed, with a capped number of tries) rather than to police it by hand.
+- Your bracket is remembered in the browser you made it in. On another device you start over,
+  and saving replaces what you had.

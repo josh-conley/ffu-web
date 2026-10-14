@@ -24,7 +24,7 @@ export function CupPickemDemo() {
         <h1 className="text-2xl font-extrabold uppercase tracking-tight">Cup pick&apos;em</h1>
         <p className="max-w-3xl text-sm text-muted">
           A demo draw over the {DEMO_YEAR} teams. Entries are saved only in this browser, and six rival brackets
-          (PIN 0000) are filled in. &ldquo;Locked&rdquo; shows the leaderboard, scored against the real {DEMO_YEAR} weeks.
+          are filled in. &ldquo;Locked&rdquo; shows the leaderboard, scored against the real {DEMO_YEAR} weeks.
         </p>
       </header>
       <nav aria-label="Demo state" className="flex gap-2">

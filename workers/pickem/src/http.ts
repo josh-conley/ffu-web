@@ -44,3 +44,11 @@ export async function readBody(request: Request): Promise<Record<string, unknown
   }
   return fail(400, 'Body must be a JSON object')
 }
+
+/** Compares in constant time over equal-length strings (the admin token check). */
+export function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}

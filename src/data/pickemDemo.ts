@@ -9,8 +9,8 @@ import { PickemError, type PickemBoard } from './pickemApi'
 // can be clicked through before the Worker is deployed or the season's draw is held.
 //   - The Cup is a demo draw over last season's 36 teams, so the after-lock leaderboard is scored
 //     against real results (that season's weeks 6–12).
-//   - Entries live in this browser's localStorage, under the rules the Worker enforces (a PIN to
-//     change or load an entry, complete brackets only). Six rival brackets are seeded.
+//   - Entries live in this browser's localStorage, under the rules the Worker enforces (complete
+//     brackets only; saving replaces the team's entry). Six rival brackets are seeded.
 //   - `?demo=locked` shows the after-lock leaderboard.
 // Loaded with a dynamic import, so a production bundle never fetches it.
 
@@ -53,7 +53,6 @@ export function loadDemoCup(): Promise<DemoCup> {
 }
 
 interface DemoRow {
-  pin: string
   picks: CupPicks
   updatedAt: string
 }
@@ -97,7 +96,7 @@ async function rows(): Promise<Record<string, DemoRow>> {
   const { tournament } = await loadDemoCup()
   const seeded: Record<string, DemoRow> = {}
   tournament.participants.slice(-RIVALS).forEach((p, i) => {
-    seeded[p.ffuId] = { pin: '0000', picks: rivalPicks(tournament, i + 1), updatedAt: new Date().toISOString() }
+    seeded[p.ffuId] = { picks: rivalPicks(tournament, i + 1), updatedAt: new Date().toISOString() }
   })
   write(seeded)
   return seeded
@@ -116,19 +115,10 @@ export async function fetchDemoBoard(): Promise<PickemBoard> {
   }
 }
 
-export async function saveDemoEntry(ffuId: string, pin: string, picks: CupPicks): Promise<void> {
+export async function saveDemoEntry(ffuId: string, picks: CupPicks): Promise<void> {
   const all = await rows()
-  const existing = all[ffuId]
-  if (existing && existing.pin !== pin) throw new PickemError(401, 'Wrong PIN for this team')
   const checked = validatePicks((await loadDemoCup()).tournament, picks)
   if (typeof checked === 'string') throw new PickemError(400, checked)
-  all[ffuId] = { pin, picks: checked, updatedAt: new Date().toISOString() }
+  all[ffuId] = { picks: checked, updatedAt: new Date().toISOString() }
   write(all)
-}
-
-export async function loadDemoEntry(ffuId: string, pin: string): Promise<CupPicks> {
-  const existing = (await rows())[ffuId]
-  if (!existing) throw new PickemError(404, 'No entry for this team yet')
-  if (existing.pin !== pin) throw new PickemError(401, 'Wrong PIN for this team')
-  return existing.picks
 }

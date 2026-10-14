@@ -29,10 +29,12 @@ export interface PickemBracketProps {
   outcomes?: Record<string, (PickOutcome | undefined)[]>
 }
 
-const OUTCOME_TONE: Record<PickOutcome, string> = {
-  won: 'border-positive text-positive',
-  lost: 'border-negative text-negative line-through',
-  pending: 'border-accent',
+/** The picked row: tinted whole, in the Cup's blue. Once its round is played, the text says how it went. */
+const PICK_TONE = 'border-pick-edge bg-pick py-0.5 pr-1'
+const OUTCOME_TEXT: Record<PickOutcome, string> = {
+  won: 'text-positive',
+  lost: 'text-negative line-through',
+  pending: '',
 }
 
 interface Opened {
@@ -60,8 +62,9 @@ export function PickemBracket({ bracket, year, tierOf, seasons, onPick, onDrop, 
     <div className="space-y-4">
       {champion && <ChampionBanner ffuId={champion} year={year} label={onPick ? 'Your champion' : 'Picked champion'} />}
       <BracketFrame>
-        {bracket.map((r) => (
-          <RoundShell key={r.key} label={r.label} week={r.week} note={r.needsDrop && <DropPick round={r} year={year} onDrop={onDrop} />}>
+        {bracket.map((r, i) => (
+          // The drop pick heads the round it shrinks (the quarterfinals): the field it forms is there.
+          <RoundShell key={r.key} label={r.label} week={r.week} note={bracket[i - 1]?.needsDrop && <DropPick round={bracket[i - 1]!} year={year} onDrop={onDrop} />}>
             {r.slots.map((s, j) => {
               const known = s.a !== undefined && s.b !== undefined
               const outcome = outcomes?.[r.key]?.[j]
@@ -71,7 +74,7 @@ export function PickemBracket({ bracket, year, tierOf, seasons, onPick, onDrop, 
                   matchup={{ a: sideOf(s.a, tierOf), b: sideOf(s.b, tierOf), winner: s.pick }}
                   year={year}
                   detail={(id) => uprLabel(formOf(id, r.week))}
-                  winnerTone={outcome && OUTCOME_TONE[outcome]}
+                  winnerTone={`${PICK_TONE} ${outcome ? OUTCOME_TEXT[outcome] : ''}`}
                   label={cardLabel(s, year)}
                   onOpen={known ? () => setOpened({ roundKey: r.key, index: j }) : undefined}
                 />

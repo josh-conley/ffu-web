@@ -646,12 +646,14 @@ Current state and the weekly manual step: `ai-docs/TODO.md`.
 
 **Decision.** Members submit FFU Cup pick'em brackets to a small Cloudflare Worker with a D1
 database (`workers/pickem`). The site stays static on GitHub Pages; only the Pick'em tab talks to
-the Worker. Josh's calls: members only (the 36 Cup teams), one entry per team, a PIN set on the
-first save, doubling points per round, picks hidden until the lock.
+the Worker. Josh's calls: members only (the 36 Cup teams), one entry per team, doubling points per
+round, picks hidden until the lock. A PIN on each entry was built and then dropped (2026-10-14,
+Josh): a member chooses who they are from a list, accepting that anyone could save over
+anyone's bracket. Picks stay hidden by never sending them back before the lock; the page keeps
+the member's own bracket in their browser to edit.
 
 **Why this shape.** A static site can't store a submission, so something had to run server-side.
-Cloudflare was already in use (previews), D1 is a real database with atomic writes (the PIN cap
-needs that), and a Worker is one small deploy. A Google Form was the zero-code alternative, but it
+Cloudflare was already in use (previews), D1 is a real database, and a Worker is one small deploy. A Google Form was the zero-code alternative, but it
 can't hold a bracket whose later rounds depend on earlier picks, and the scores would have lived
 outside the site. The bracket rules live in ONE pure module (`src/lib/cupPickem.ts`) bundled into
 both the page and the Worker, and the lock time is a field in the Cup's own `tournament.json`
