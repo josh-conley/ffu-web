@@ -111,6 +111,23 @@ this section is unread by me until you say so, so it's safe to leave half-formed
 Page is `/cup` (was `/tournament`, which redirects). Rules live in `src/config/cup.ts`; the season's
 weeks + field live in `public/data/2026/tournament.json`. See `ai-docs/DECISIONS.md` (2026-08-20).
 
+**NEXT UP (handoff, 2026-10-14 — picked up from a cloud session that couldn't reach Sleeper):**
+1. **Write the draw. Seed is `1313`** (drawn on stream 2026-10-13). Run
+   `npm run draw-cup -- --seed 1313 --dry-run`, compare its check code with the one the stream
+   showed, then the same without `--dry-run`. It writes the 36 participants + opening ties into
+   `public/data/2026/tournament.json`; gates, commit, push to `main`. The Cup page flips to the
+   live bracket on its own. (Needs `api.sleeper.app`, which the cloud environment blocked.)
+2. **Pick'em lock time** — in the same file add `"pickemLocksAt": "2026-10-16T00:15:00Z"` (Thu
+   Oct 15, 8:15pm ET, week 6 TNF). Josh hadn't confirmed Thu vs. Sunday's first game; default Thu.
+   Harmless before step 3: the tab needs the API URL too.
+3. **Turn the pick'em on** (merged in PR #56, deploy gated off): Josh widens `CLOUDFLARE_API_TOKEN`
+   (Workers Scripts + D1 Edit), optionally adds secret `PICKEM_ADMIN_TOKEN`, sets repo variable
+   `PICKEM_DEPLOY=true`, runs **Deploy pick'em API** in Actions. Put the `*.workers.dev` URL from
+   its summary into `CUP_PICKEM_API` (`src/config/cup.ts`), push. Then the Pick'em tab is live.
+   First real deploy is untested against Cloudflare — read its log if it fails.
+4. Housekeeping: delete branches `preview/cup-pickem` and `preview/pickem-demo` on GitHub (the
+   cloud git proxy refused deletes). Ask the commissioner for a Cup tiebreaker (item below).
+
 - [x] Amendment applied: name, 5-round schedule (wks 6/7/8/10/12), round rules, draw + seeding
       procedure, winner's spoils (2026-08-20). Page opens on the Bracket tab (an outline of empty
       slots until the draw) with everything else under Format & Rules; `?view=` keeps tabs linkable
