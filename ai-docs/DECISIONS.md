@@ -667,3 +667,14 @@ either to drift.
 culled as the lowest scorer. Their quarterfinals are then re-seeded with the same `pairReseeded` the
 real bracket uses (`src/lib/cupPairing.ts`). A pick scores when that team won that round, whatever
 path the member had it on.
+
+## 2026-10-14 — the Cup bracket is two-sided, and its cards are the standard bracket line
+
+**Decision.** Every Cup bracket (live, pick'em, pre-draw outline) is drawn two-sided like the draw
+stage (`WingedBracket`; which side a game sits on is `bracketWings`, shared with the draw). A card
+is the standard bracket line: seed, tier dot, team name, score. No logo and no UPR line under the
+name (added 2026-10 in `3abb294`); the record and UPR going in stay in the matchup modal.
+
+**Why.** Josh: compact, standard, and the whole team name visible. Nine columns at laptop width
+leave ~155px each, so names wrap to a second line rather than truncate; the logo and UPR line
+were what cost the room and the height.

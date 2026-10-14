@@ -19,14 +19,18 @@ function Column({ label, week, top, wide, children }: { label: string; week: num
   return (
     // Columns share the width (the frame is full-bleed) but never go below their minimum, so a
     // narrow window scrolls sideways rather than squashing names.
-    <section className={`flex ${wide ? 'min-w-52' : 'min-w-40'} flex-1 flex-col`}>
+    <section className={`flex ${wide ? 'min-w-44' : 'min-w-36'} flex-1 flex-col`}>
       {/* Label over week, not side by side: a narrow column still fits "Quarterfinals" in full. */}
       <header className="mb-3 border-b-2 border-accent pb-1">
         <h2 className="text-xs font-bold uppercase tracking-wide text-text">{label}</h2>
         <p className="text-[10px] font-semibold uppercase text-muted">Week {week}</p>
       </header>
-      {top}
-      <div className="flex flex-1 flex-col justify-around gap-2">{children}</div>
+      {/* `top` floats over the column instead of taking space in it, so the final stays level with
+          the semifinals either side. */}
+      <div className="relative flex flex-1 flex-col justify-around gap-2">
+        {top && <div className="absolute inset-x-0 top-0">{top}</div>}
+        {children}
+      </div>
     </section>
   )
 }
@@ -34,11 +38,11 @@ function Column({ label, week, top, wide, children }: { label: string; week: num
 /** A matchup nobody is in yet: two blank nameplates. */
 export function EmptySlot() {
   return (
-    <div className="space-y-1 border border-dashed border-border bg-surface p-2" aria-hidden>
+    <div className="space-y-0.5 border border-dashed border-border bg-surface p-1" aria-hidden>
       {[0, 1].map((i) => (
-        <div key={i} className="flex items-center gap-1.5 pl-1.5">
-          <span className="h-2 w-2 shrink-0 rounded-full bg-border" />
-          <span className="h-4 flex-1 bg-surface-2" />
+        <div key={i} className="flex items-center gap-1 py-px pl-1.5">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
+          <span className="h-3.5 flex-1 bg-surface-2" />
         </div>
       ))}
     </div>

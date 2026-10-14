@@ -1,10 +1,8 @@
 import { nameForYear } from '@/config'
-import type { FormOf } from '@/hooks/useFormGoingInto'
 import { cupGameSource, type RoundOutline } from '@/selectors'
 import type { ResolvedRound, ResolvedTournament } from '@/selectors/tournament'
 import { TournamentMatchupCard } from './TournamentMatchupCard'
 import { EmptySlot, WingedBracket } from './WingedBracket'
-import { uprLabel } from './format'
 
 export interface OpenMatchup {
   round: ResolvedRound
@@ -23,18 +21,15 @@ function DroppedNote({ round, year }: { round: ResolvedRound; year: string }) {
 
 /** The played bracket, two-sided (WingedBracket). A round not paired yet shows the outline's empty
  *  slots, so the bracket keeps its full shape from the draw to the final. */
-export function TournamentBracket({ tournament, year, onOpen, formOf, outline }: {
+export function TournamentBracket({ tournament, year, onOpen, outline }: {
   tournament: ResolvedTournament
   year: string
   onOpen: (m: OpenMatchup) => void
-  /** Each team's UPR going into a round, shown under its name. */
-  formOf?: FormOf
   /** The bracket's shape, for the empty slots of rounds not paired yet. */
   outline?: RoundOutline[]
 }) {
   const drops = tournament.rounds.filter((r) => r.dropped.length > 0)
   const rounds = tournament.rounds.map((round, r) => {
-    const detail = formOf && ((ffuId: string) => uprLabel(formOf(ffuId, round.week)))
     const slots =
       round.matchups.length === 0
         ? Array.from({ length: outline?.[r]?.matchups ?? 1 }, (_, i) => <EmptySlot key={i} />)
@@ -44,7 +39,6 @@ export function TournamentBracket({ tournament, year, onOpen, formOf, outline }:
               matchup={m}
               year={year}
               onOpen={cupGameSource(year, m.a, m.b) ? () => onOpen({ round, matchupIndex: i }) : undefined}
-              detail={detail}
             />
           ))
     return { key: round.key, label: round.label, week: round.week, slots }
