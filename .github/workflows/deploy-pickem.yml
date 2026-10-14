@@ -35,6 +35,12 @@ jobs:
   deploy:
     if: vars.PICKEM_DEPLOY == 'true'
     runs-on: ubuntu-latest
+    # An explicit `bash` runs every step with pipefail. The default shell doesn't, so a failed
+    # `wrangler d1 list | jq` read as "no database yet" (and went on to create one), and a failed
+    # `wrangler deploy | tee` showed green.
+    defaults:
+      run:
+        shell: bash
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
