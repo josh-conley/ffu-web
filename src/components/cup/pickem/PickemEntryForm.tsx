@@ -4,7 +4,7 @@ import type { Tier } from '@/config/types'
 import { nameForYear, ownerNames } from '@/config'
 import { dropOwed } from '@/lib/cupPickem'
 import { usePickemForm, type FormStatus, type MissingPart, type PickemForm } from '@/hooks/usePickemForm'
-import { BUTTON, SELECT } from '../../controls'
+import { BUTTON, PRIMARY_BUTTON, SELECT } from '../../controls'
 import { PickemBracket } from './PickemBracket'
 
 // Filling in a bracket: say who you are, tap through the rounds, save. Saving again replaces your
@@ -19,7 +19,7 @@ function StatusLine({ status, entered, dropLabel }: { status: FormStatus; entere
 }
 
 const MISSING: Record<MissingPart, (dropLabel: string) => string> = {
-  who: () => 'Choose who you are first (“Who are you?”, at the top).',
+  who: () => 'Choose who you are first.',
   drop: (label) => `Pick which ${label} winner is dropped first (top of the Quarterfinals column).`,
   games: () => 'Pick a winner in every game first.',
 }
@@ -30,7 +30,7 @@ function MissingStep({ form, dropLabel }: { form: PickemForm; dropLabel: string 
     return <span className="text-sm font-semibold text-text">Next: pick which {dropLabel} winner is dropped (top of the Quarterfinals column).</span>
   }
   if (!form.complete) return <span className="text-sm text-muted">Pick every game, plus the {dropLabel} team that gets dropped.</span>
-  if (form.ffuId === '') return <span className="text-sm font-semibold text-text">Bracket done. Now choose who you are at the top.</span>
+  if (form.ffuId === '') return <span className="text-sm font-semibold text-text">Bracket done. Now choose who you are.</span>
   return null
 }
 
@@ -38,8 +38,8 @@ function FormActions({ form, hasEntry, dropLabel }: { form: PickemForm; hasEntry
   // Disabled only mid-save: otherwise Submit says what's missing instead of sitting there dead.
   const busy = form.status.kind === 'busy'
   return (
-    <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
-      <button type="submit" className={`${BUTTON} border-accent bg-accent text-accent-fg hover:bg-accent-hover`} disabled={busy}>
+    <div className="flex flex-wrap items-center gap-3">
+      <button type="submit" className={PRIMARY_BUTTON} disabled={busy}>
         {busy ? 'Saving…' : hasEntry ? 'Save changes' : 'Submit bracket'}
       </button>
       <button type="button" className={BUTTON} disabled={busy} onClick={form.reset}>Clear picks</button>
@@ -84,7 +84,6 @@ export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, on
   const hasEntry = entered.has(form.ffuId)
   const who = useFocusWho(form.status)
   const dropLabel = form.bracket.find((r) => r.needsDrop)?.label ?? ''
-  const shown = form.status
 
   return (
     <form
@@ -94,6 +93,8 @@ export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, on
         void form.save()
       }}
     >
+      {/* Everything to act on sits above the bracket: who you are, then Save and Clear, then what
+          pressing Save said, so a member never has to scroll past 34 games to find them. */}
       <label className="block max-w-md space-y-1 text-sm">
         <span className="font-semibold">Who are you?</span>
         <select ref={who} className={`${SELECT} w-full`} value={form.ffuId} onChange={(e) => form.setFfuId(e.target.value)}>
@@ -101,17 +102,10 @@ export function PickemEntryForm({ tournament, year, tierOf, seasons, entered, on
           {whoOptions(tournament, year).map((o) => <option key={o.ffuId} value={o.ffuId}>{o.label}{entered.has(o.ffuId) ? ' ✓' : ''}</option>)}
         </select>
       </label>
-      {shown.kind === 'missing' && shown.part === 'who' ? (
-        <StatusLine status={shown} entered={false} dropLabel={dropLabel} />
-      ) : (
-        form.ffuId && <StatusLine status={{ kind: 'idle' }} entered={hasEntry} dropLabel={dropLabel} />
-      )}
+      <FormActions form={form} hasEntry={hasEntry} dropLabel={dropLabel} />
+      <StatusLine status={form.status} entered={hasEntry} dropLabel={dropLabel} />
 
       <PickemBracket bracket={form.bracket} year={year} tierOf={tierOf} seasons={seasons} onPick={form.pick} onDrop={form.drop} />
-
-      <FormActions form={form} hasEntry={hasEntry} dropLabel={dropLabel} />
-      {/* By the button, so the result of pressing it is seen without scrolling back up. */}
-      {(shown.kind === 'saved' || shown.kind === 'error' || shown.kind === 'missing') && <StatusLine status={shown} entered={hasEntry} dropLabel={dropLabel} />}
     </form>
   )
 }

@@ -23,3 +23,11 @@ export function segButton(active: boolean): string {
  */
 export const BUTTON =
   'inline-flex min-h-11 items-center gap-2 border border-border bg-surface px-3 py-1.5 text-sm font-bold uppercase tracking-wide text-text shadow-sm transition-colors hover:bg-surface-2 disabled:cursor-progress disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:min-h-0'
+
+/**
+ * The one main action of a form (e.g. the pick'em's Submit): filled FFU red, the same box as
+ * BUTTON. Written out rather than layered on BUTTON, since two background utilities on one
+ * element resolve by stylesheet order, not by which class comes last.
+ */
+export const PRIMARY_BUTTON =
+  'inline-flex min-h-11 items-center gap-2 border border-accent bg-accent px-3 py-1.5 text-sm font-bold uppercase tracking-wide text-accent-fg shadow-sm transition-colors hover:bg-accent-hover disabled:cursor-progress disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 md:min-h-0'
