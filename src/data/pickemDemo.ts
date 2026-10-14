@@ -90,6 +90,17 @@ export function rivalPicks(t: Tournament, n: number): CupPicks {
   return picks
 }
 
+/**
+ * A bracket one pick short of the drop pick: every Round of 36 game and all but the last Round of 18
+ * game picked, nothing later. The demo starts here so the drop prompt can be tried in one tap.
+ */
+export function onePickFromDrop(t: Tournament): CupPicks {
+  const full = rivalPicks(t, 99)
+  const r18 = [...(full.winners.r18 ?? [])]
+  r18[r18.length - 1] = null
+  return { winners: { r36: full.winners.r36 ?? [], r18 }, drops: {} }
+}
+
 async function rows(): Promise<Record<string, DemoRow>> {
   const stored = read()
   if (Object.keys(stored).length > 0) return stored
