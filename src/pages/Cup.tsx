@@ -78,7 +78,7 @@ export function Cup() {
         {shown === 'pickem' ? (
           <PickemPanel tournament={tournament} played={resolved} seasons={tierSeasons} year={CUP_YEAR} />
         ) : (
-          <CupInfoTab view={shown} drawn={drawn} resolved={resolved} outline={outline} onOpen={setOpen} />
+          <CupInfoTab view={shown} drawn={drawn} resolved={resolved} outline={outline} onOpen={setOpen} formOf={formOf} />
         )}
       </TabPanel>
 

@@ -672,9 +672,10 @@ path the member had it on.
 
 **Decision.** Every Cup bracket (live, pick'em, pre-draw outline) is drawn two-sided like the draw
 stage (`WingedBracket`; which side a game sits on is `bracketWings`, shared with the draw). A card
-is the standard bracket line: seed, tier dot, team name, score. No logo and no UPR line under the
-name (added 2026-10 in `3abb294`); the record and UPR going in stay in the matchup modal.
+is the standard bracket line: seed, tier dot, team name, score, with the UPR going in as a small
+line under the name (dropped for a few minutes, back at Josh's ask). No logo; the record is in the
+matchup modal.
 
 **Why.** Josh: compact, standard, and the whole team name visible. Nine columns at laptop width
-leave ~155px each, so names wrap to a second line rather than truncate; the logo and UPR line
-were what cost the room and the height.
+leave ~155px each, so names wrap to a second line rather than truncate; dropping the logo is
+what made the room.

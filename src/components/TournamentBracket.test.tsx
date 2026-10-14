@@ -45,6 +45,18 @@ it('has nothing to open for an unplayed game of a past season', () => {
   expect(screen.queryByRole('button')).not.toBeInTheDocument()
 })
 
+it('shows each team\'s UPR going into the round under its name', () => {
+  const form = { totals: { memberId: 'ffu-001', wins: 3, losses: 2, ties: 0, pointsFor: 0, pointsAgainst: 0, scores: [], high: 0, low: 0, average: 110, winPct: 0.6 }, upr: 112.454 }
+  const formOf = vi.fn((ffuId: string) => (ffuId === 'ffu-001' ? form : undefined))
+  render(
+    <MemoryRouter>
+      <TournamentBracket tournament={bracket('2019', true)} year="2019" onOpen={() => {}} formOf={formOf} />
+    </MemoryRouter>,
+  )
+  expect(screen.getByText('112.45 UPR')).toBeInTheDocument()
+  expect(formOf).toHaveBeenCalledWith('ffu-001', 6)
+})
+
 it('shows each team\'s seed from the draw beside its name', () => {
   renderBracket(bracket('2019', true))
   const seeds = screen.getAllByText('Seed').map((label) => label.parentElement!.textContent)
