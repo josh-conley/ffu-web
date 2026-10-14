@@ -12,6 +12,7 @@ import { Milestones } from '@/pages/Milestones'
 import { AroundTheUnion } from '@/pages/AroundTheUnion'
 import { Cup } from '@/pages/Cup'
 import { NotFound } from '@/components/NotFound'
+import { PICKEM_DEMO } from '@/config'
 
 /**
  * The heavier, less-visited pages are split into their own chunks so the home page doesn't download
@@ -25,6 +26,7 @@ const RosterBuildStats = lazy(() =>
 )
 const DraftMarket = lazy(() => import('@/pages/DraftMarket').then((m) => ({ default: m.DraftMarket })))
 const Players = lazy(() => import('@/pages/Players').then((m) => ({ default: m.Players })))
+const CupPickemDemo = lazy(() => import('@/pages/CupPickemDemo').then((m) => ({ default: m.CupPickemDemo })))
 const CupDraw = lazy(() => import('@/pages/CupDraw').then((m) => ({ default: m.CupDraw })))
 
 /** A lazy page's element, showing the same spinner the pages use while their data loads. */
@@ -60,6 +62,8 @@ export default function App() {
           {/* Earlier path for this page; redirect stale bookmarks to the current /builds. */}
           <Route path="draft-analysis" element={<Navigate to="/builds" replace />} />
           <Route path="cup" element={<Cup />} />
+          {/* Preview builds only: the pick'em with no server (data/pickemDemo.ts). */}
+          {PICKEM_DEMO && <Route path="cup/pickem-demo" element={page(CupPickemDemo)} />}
           {/* Earlier path for this page; redirect stale bookmarks to the current /cup. */}
           <Route path="tournament" element={<Navigate to="/cup" replace />} />
           <Route path="*" element={<NotFound />} />

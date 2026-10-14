@@ -1,4 +1,4 @@
-import { CUP_PICKEM_API } from '@/config'
+import { CUP_PICKEM_API, PICKEM_DEMO } from '@/config'
 import { parsePicks, type CupPicks } from '@/lib/cupPickem'
 
 // The Cup pick'em API (workers/pickem): the site's one read-WRITE data source, and a separate path
@@ -49,7 +49,11 @@ function toEntry(raw: unknown): PickemEntry {
   return { ffuId: raw.ffuId, updatedAt: raw.updatedAt, ...(picks ? { picks } : {}) }
 }
 
+// In a preview build with no API, each call goes to the in-browser demo instead (pickemDemo.ts).
+const demo = () => import('./pickemDemo')
+
 export async function fetchPickemBoard(year: string): Promise<PickemBoard> {
+  if (PICKEM_DEMO) return (await demo()).fetchDemoBoard()
   const raw = await call(`/v1/${year}`)
   if (!Array.isArray(raw.entries)) throw new PickemError(200, 'Bad pick-em board')
   return {
@@ -68,11 +72,13 @@ const jsonInit = (method: string, body: unknown): RequestInit => ({
 
 /** Creates the team's entry (setting its PIN) or, with the right PIN, replaces its picks. */
 export async function savePickemEntry(year: string, ffuId: string, pin: string, picks: CupPicks): Promise<void> {
+  if (PICKEM_DEMO) return (await demo()).saveDemoEntry(ffuId, pin, picks)
   await call(`/v1/${year}/entries/${encodeURIComponent(ffuId)}`, jsonInit('PUT', { pin, picks }))
 }
 
 /** A team's saved picks, for editing; needs its PIN. */
 export async function loadPickemEntry(year: string, ffuId: string, pin: string): Promise<CupPicks> {
+  if (PICKEM_DEMO) return (await demo()).loadDemoEntry(ffuId, pin)
   const raw = await call(`/v1/${year}/entries/${encodeURIComponent(ffuId)}/load`, jsonInit('POST', { pin }))
   const picks = parsePicks(raw.picks)
   if (!picks) throw new PickemError(200, 'Bad saved picks')

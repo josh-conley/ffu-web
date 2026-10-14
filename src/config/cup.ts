@@ -1,3 +1,5 @@
+import { PREVIEW_BUILD } from './preview'
+
 // The FFU Cup — the RULES of the competition, as adopted by the commissioner's amendment.
 //
 // What lives here vs. in data: this file holds what is true of the Cup in every season (its name,
@@ -55,4 +57,11 @@ export const CUP_PICKEM_POINTS: Record<CupRoundKey, number> = { r36: 1, r18: 2, 
  * Where the pick'em Worker (workers/pickem) answers. Empty = no pick'em API, so the tab never
  * shows. Set once the Worker has its first deploy (its workers.dev URL is in that run's summary).
  */
-export const CUP_PICKEM_API = ''
+export const CUP_PICKEM_API: string = ''
+
+/**
+ * Preview builds with no API set run the pick'em as a self-contained demo (data/pickemDemo.ts) at
+ * the unlisted /cup/pickem-demo, so it can be tried before the Worker or the draw exist. Never on
+ * in production: PREVIEW_BUILD is only set by preview-deploy.yml.
+ */
+export const PICKEM_DEMO = PREVIEW_BUILD !== undefined && CUP_PICKEM_API === ''
