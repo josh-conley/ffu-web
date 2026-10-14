@@ -49,8 +49,12 @@ it('saves a complete bracket for the member chosen, and remembers it in this bro
   renderPanel()
 
   expect(await screen.findByText(/of 36 teams in/)).toBeInTheDocument()
-  // The draft came back complete, but nobody is chosen yet.
-  expect(screen.getByRole('button', { name: /Submit bracket/ })).toBeDisabled()
+  // The draft came back complete, but nobody is chosen yet: Submit says so and moves there.
+  expect(screen.getByText(/Bracket done\. Now choose who you are/)).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: /Submit bracket/ }))
+  expect(api.save).not.toHaveBeenCalled()
+  expect(screen.getAllByText(/Choose who you are first/).length).toBeGreaterThan(0)
+  expect(screen.getByLabelText('Who are you?')).toHaveFocus()
   await userEvent.selectOptions(screen.getByLabelText('Who are you?'), team)
   expect(screen.getByText(/Saving again replaces your bracket/)).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))

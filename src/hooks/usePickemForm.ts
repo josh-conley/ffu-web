@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Tournament } from '@/data'
 import { savePickemEntry } from '@/data'
-import { EMPTY_PICKS, isComplete, parsePicks, pickBracket, picksOf, setDrop, setWinner, type CupPicks, type PickRound } from '@/lib/cupPickem'
+import { EMPTY_PICKS, dropOwed, isComplete, parsePicks, pickBracket, picksOf, setDrop, setWinner, type CupPicks, type PickRound } from '@/lib/cupPickem'
 
 // State and actions behind the pick'em entry form, kept out of the component: who the member is,
 // the bracket being filled in, and saving it. The bracket rules themselves are lib/cupPickem.
@@ -11,7 +11,14 @@ import { EMPTY_PICKS, isComplete, parsePicks, pickBracket, picksOf, setDrop, set
 // picks are visible till then), so this browser copy is the only way back in to one; on another
 // device a member starts over, and saving replaces their entry.
 
-export type FormStatus = { kind: 'idle' } | { kind: 'busy' } | { kind: 'saved' } | { kind: 'error'; message: string }
+/** `missing`: Submit was pressed before the entry could be saved: who's entering, or which picks. */
+export type MissingPart = 'who' | 'drop' | 'games'
+export type FormStatus =
+  | { kind: 'idle' }
+  | { kind: 'busy' }
+  | { kind: 'saved' }
+  | { kind: 'missing'; part: MissingPart }
+  | { kind: 'error'; message: string }
 
 export interface PickemForm {
   ffuId: string
@@ -80,6 +87,9 @@ export function usePickemForm(t: Tournament, year: string, onSaved: () => void):
     drop: (roundKey, id) => edit((p) => setDrop(t, p, roundKey, id)),
     reset: () => edit(() => EMPTY_PICKS),
     save: async () => {
+      // Checked here rather than by disabling Submit: a dead button doesn't say what it's waiting for.
+      const missing: MissingPart | undefined = ffuId === '' ? 'who' : isComplete(bracket) ? undefined : dropOwed(bracket) ? 'drop' : 'games'
+      if (missing) return setStatus({ kind: 'missing', part: missing })
       setStatus({ kind: 'busy' })
       try {
         await savePickemEntry(year, ffuId, picks)
