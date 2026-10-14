@@ -60,8 +60,9 @@ it("offers the Cup round's matchups beside the league week, scored live across t
   const first = within(panel).getAllByRole('button', { name: /lineups/i })[0]!
   expect(first).toHaveTextContent('88.50')
   expect(first).toHaveTextContent('71.25')
-  expect(first).toHaveTextContent(/Premier/)
-  expect(first).toHaveTextContent(/Masters/)
+  // Each team's league is a colored dot, its name only for screen readers.
+  expect(within(first).getByText(/Premier, seed/)).toHaveClass('sr-only')
+  expect(within(first).getByText(/Masters, seed/)).toHaveClass('sr-only')
   // Every Cup matchup shows both draw seeds: Shton's Strikers are the 1 seed, ffu-038 the 36.
   expect(first).toHaveTextContent('#1')
   expect(first).toHaveTextContent('#36')

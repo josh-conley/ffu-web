@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { LiveSeasonData } from '@/data'
-import { cupMatchupGame, type ResolvedMatchup, type ResolvedRound } from '@/selectors'
+import { cupMatchupGame, type ResolvedMatchup, type ResolvedRound, type ResolvedSide } from '@/selectors'
 import { CupSidesStrip } from './cup/CupMatchupModal'
 import { seedLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
@@ -9,11 +9,22 @@ import { LiveLineupModal } from './LiveLineupModal'
 import { MatchupCard } from './MatchupCard'
 import { useLiveRecordDetail } from './useLiveRecordDetail'
 
+/** A team's league as a colored dot (named for screen readers only), then its draw seed. */
+function CupSideTag({ side }: { side: ResolvedSide }) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className={`size-2 shrink-0 rounded-full ${LEAGUE_STYLES[side.tier].dot}`} aria-hidden />
+      <span className="sr-only">{LEAGUE_STYLES[side.tier].label}, seed </span>
+      {seedLabel(side.seed)}
+    </span>
+  )
+}
+
 /**
  * A Cup round on the home page's matchups: the same live cards as the league columns, in one block
  * under the Cup's own accent, since a Cup game pairs teams across the leagues. Each team shows its
- * draw seed beside its name, and its league ahead of its record and UPR (from its own league, as
- * the league columns read). A card opens the box score, read live from Sleeper like the league
+ * league's colored dot and its draw seed beside its name (the dot, not the league's name, as on the
+ * bracket), and its record and UPR under it (from its own league, as the league columns read). A card opens the box score, read live from Sleeper like the league
  * games' (the season files only gain the week at Tuesday's refresh), each team's lineup from its
  * own league, under both seeds.
  */
@@ -42,16 +53,15 @@ export function CupWeekMatchups({
       <div className="grid gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
         {round.matchups.map((m) => {
           const sideOf = (ffuId: string) => (ffuId === m.a.ffuId ? m.a : m.b)
-          const detail = (ffuId: string) => [LEAGUE_STYLES[sideOf(ffuId).tier].label, record(ffuId)].filter(Boolean).join(' · ')
           return (
             <MatchupCard
               key={`${m.a.ffuId}-${m.b.ffuId}`}
               game={cupMatchupGame(m, round.week)}
               year={year}
               status={final ? 'final' : 'live'}
-              subtitle={(ffuId) => seedLabel(sideOf(ffuId).seed)}
+              subtitle={(ffuId) => <CupSideTag side={sideOf(ffuId)} />}
               projected={final ? undefined : projected}
-              detail={detail}
+              detail={record}
               onOpen={() => setOpen(m)}
             />
           )
