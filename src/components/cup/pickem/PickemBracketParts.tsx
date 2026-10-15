@@ -5,7 +5,7 @@ import { SELECT } from '../../controls'
 
 // The pick'em bracket's one piece the Cup's bracket doesn't have: the Round of 18's extra pick,
 // which of the member's nine winners is culled as the lowest scorer. Styled as the real bracket's
-// "Dropped" note, which sits in the same place.
+// "Dropped" note, which sits in the same place (over the left quarterfinals).
 
 /**
  * Brings the drop pick to the member the moment it's owed (their last Round of 18 winner just
@@ -61,7 +61,8 @@ function DropSelect({ round, winners, name, onDrop }: {
       </span>
       {owed && <span className="block">Which of your {round.slots.length} {round.label} winners scores lowest? They&apos;re knocked out before the quarterfinals.</span>}
       <select ref={select} className={`${SELECT} w-full text-xs`} value={round.drop ?? ''} disabled={!ready} onChange={(e) => onDrop(round.key, e.target.value)}>
-        <option value="">{ready ? 'Pick one of your winners…' : `Pick all ${round.slots.length} ${round.label} winners first`}</option>
+        {/* Short: the select sits in a narrow quarterfinal column, and the text above explains it. */}
+        <option value="">{ready ? 'Choose one…' : 'Not yet'}</option>
         {winners.map((id) => <option key={id} value={id}>{name(id)}</option>)}
       </select>
     </label>

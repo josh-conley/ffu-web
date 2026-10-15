@@ -25,8 +25,8 @@ function Column({ label, week, top, wide, children }: { label: string; week: num
         <h2 className="text-xs font-bold uppercase tracking-wide text-text">{label}</h2>
         <p className="text-[10px] font-semibold uppercase text-muted">Week {week}</p>
       </header>
-      {/* `top` floats over the column instead of taking space in it, so the final stays level with
-          the semifinals either side. */}
+      {/* `top` floats over the column instead of taking space in it, so the column stays level with
+          its mirror on the other wing. */}
       <div className="relative flex flex-1 flex-col justify-around gap-2">
         {top && <div className="absolute inset-x-0 top-0">{top}</div>}
         {children}
@@ -49,18 +49,29 @@ export function EmptySlot() {
   )
 }
 
-export function WingedBracket({ rounds, center, label }: {
+/** A note on what happens between two rounds (the lowest-winner drop), keyed by the round it follows. */
+export interface BetweenRounds {
+  after: string
+  content: ReactNode
+}
+
+export function WingedBracket({ rounds, between = [], label }: {
   /** Every round, opening round first; the last is the final, drawn in the middle. */
   rounds: BracketColumn[]
-  /** Notes for the whole bracket, over the final: the lowest-winner drop, which no one side owns. */
-  center?: ReactNode
+  /** Drawn over the LEFT wing's next round, where it reads first: e.g. the Round of 18's drop sits
+   *  over the quarterfinals it shapes. Not over the final, where it read as part of the final. */
+  between?: BetweenRounds[]
   /** Accessible name for the bracket. */
   label?: string
 }) {
   const final = rounds[rounds.length - 1]
+  const noteOver = (r: number) => {
+    const notes = between.filter((b) => b.after === rounds[r - 1]?.key)
+    return notes.length > 0 ? notes.map((b) => <Fragment key={b.after}>{b.content}</Fragment>) : undefined
+  }
   const wing = (side: 'left' | 'right') =>
-    rounds.slice(0, -1).map((r) => (
-      <Column key={`${side}-${r.key}`} label={r.label} week={r.week}>
+    rounds.slice(0, -1).map((r, ri) => (
+      <Column key={`${side}-${r.key}`} label={r.label} week={r.week} top={side === 'left' ? noteOver(ri) : undefined}>
         {bracketWings(r.slots.length)[side].map((i) => <Fragment key={i}>{r.slots[i]}</Fragment>)}
       </Column>
     ))
@@ -71,7 +82,7 @@ export function WingedBracket({ rounds, center, label }: {
       <div className="flex w-full items-stretch gap-2" aria-label={label}>
         {wing('left')}
         {final && (
-          <Column label={final.label} week={final.week} top={center} wide>
+          <Column label={final.label} week={final.week} wide>
             {final.slots.map((slot, i) => <Fragment key={i}>{slot}</Fragment>)}
           </Column>
         )}

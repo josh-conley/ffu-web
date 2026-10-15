@@ -13,12 +13,15 @@ export function CupBracketOutline({ rounds }: { rounds: RoundOutline[] }) {
     <WingedBracket
       label="Bracket outline — the draw has not been held"
       rounds={rounds.map((r) => ({ key: r.key, label: r.label, week: r.week, slots: Array.from({ length: r.matchups }, (_, i) => <EmptySlot key={i} />) }))}
-      center={
-        drop && (
-          <p className="mb-2 border-l-2 border-national pl-2 text-[11px] leading-tight text-muted">
-            The lowest-scoring {drop.label} winner is eliminated.
-          </p>
-        )
+      between={
+        drop && [{
+          after: drop.key,
+          content: (
+            <p className="mb-2 border-l-2 border-national pl-2 text-[11px] leading-tight text-muted">
+              The lowest-scoring {drop.label} winner is eliminated.
+            </p>
+          ),
+        }]
       }
     />
   )

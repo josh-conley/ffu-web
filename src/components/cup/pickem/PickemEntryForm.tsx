@@ -23,14 +23,14 @@ function StatusLine({ status, entered, chosen, dropLabel }: { status: FormStatus
 const MISSING: Record<MissingPart, (dropLabel: string) => string> = {
   who: () => 'Choose who you are first.',
   pin: () => 'Enter a PIN of 4 to 8 digits.',
-  drop: (label) => `Pick which ${label} winner is dropped first (over the Final, in the middle of the bracket).`,
+  drop: (label) => `Pick which ${label} winner is dropped first (over the quarterfinals, on the left).`,
   games: () => 'Pick a winner in every game first.',
 }
 
 /** What's still missing, named: the drop pick gets its own line, since it's the easy one to miss. */
 function MissingStep({ form, dropLabel }: { form: PickemForm; dropLabel: string }) {
   if (dropOwed(form.bracket)) {
-    return <span className="text-sm font-semibold text-text">Next: pick which {dropLabel} winner is dropped (over the Final, in the middle of the bracket).</span>
+    return <span className="text-sm font-semibold text-text">Next: pick which {dropLabel} winner is dropped (over the quarterfinals, on the left).</span>
   }
   if (!form.complete) return <span className="text-sm text-muted">Pick every game, plus the {dropLabel} team that gets dropped.</span>
   if (form.ffuId === '') return <span className="text-sm font-semibold text-text">Bracket done. Now choose who you are.</span>

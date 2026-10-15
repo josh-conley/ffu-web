@@ -91,8 +91,7 @@ export function PickemBracket({ bracket, year, tierOf, seedOf, seasons, onPick, 
       {champion && <ChampionBanner ffuId={champion} year={year} label={onPick ? 'Your champion' : 'Picked champion'} />}
       <WingedBracket
         label="Pick'em bracket"
-        // The drop pick shapes the quarterfinals across both sides, so it sits over the final.
-        center={bracket.filter((r) => r.needsDrop).map((r) => <DropPick key={r.key} round={r} year={year} onDrop={onDrop} />)}
+        between={bracket.filter((r) => r.needsDrop).map((r) => ({ after: r.key, content: <DropPick round={r} year={year} onDrop={onDrop} /> }))}
         rounds={bracket.map((r) => ({ key: r.key, label: r.label, week: r.week, slots: r.slots.map((s, j) => card(r, s, j)) }))}
       />
       {opened && round && slot?.a !== undefined && slot.b !== undefined && (

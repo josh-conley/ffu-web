@@ -11,7 +11,7 @@ export interface OpenMatchup {
   matchupIndex: number
 }
 
-/** The lowest-winner drop, over the final: it culls one team from the whole round, not one side. */
+/** The lowest-winner drop: it culls one team from the whole round, so it sits over the quarterfinals. */
 function DroppedNote({ round, year }: { round: ResolvedRound; year: string }) {
   return (
     <p className="mb-2 border-l-2 border-national pl-2 text-[11px] leading-tight text-muted">
@@ -53,7 +53,7 @@ export function TournamentBracket({ tournament, year, onOpen, formOf, outline }:
     <WingedBracket
       rounds={rounds}
       label={`${tournament.name} bracket`}
-      center={drops.length > 0 && drops.map((round) => <DroppedNote key={round.key} round={round} year={year} />)}
+      between={drops.map((round) => ({ after: round.key, content: <DroppedNote round={round} year={year} /> }))}
     />
   )
 }
