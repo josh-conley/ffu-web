@@ -8,6 +8,7 @@ import {
   topScoresForWeek,
   unionHighlight,
 } from './aroundTheUnion'
+import { seasonsThroughWeek } from './throughWeek'
 import premier2026 from '../../public/data/2026/premier.json'
 import masters2026 from '../../public/data/2026/masters.json'
 import national2026 from '../../public/data/2026/national.json'
@@ -172,6 +173,15 @@ describe('leaguePointsRace', () => {
       season('MASTERS', [game(1, ['c', 100], ['d', 90])], [team('c', 1, 0, 500)]),
     ])
     expect(rows.map((r) => r.rank)).toEqual([1, 1])
+  })
+
+  it('reports the race as it stood after an earlier week once the seasons are rewound to it', () => {
+    const seasons = [
+      season('PREMIER', [game(1, ['a', 100], ['b', 90]), game(2, ['a', 150], ['b', 60])], [team('a', 2, 0, 250), team('b', 0, 2, 150)]),
+    ]
+    const [row] = leaguePointsRace(seasonsThroughWeek(seasons, '2026', 1))
+    expect(row?.totalPoints).toBe(190)
+    expect(row?.averageGame).toBe(95) // 190 over 2 team-games
   })
 })
 

@@ -88,7 +88,11 @@ function WeekBlocks({
   const scores = useMemo(() => (week === undefined ? [] : topScoresForWeek(yearSeasons, week)), [yearSeasons, week])
   const lows = useMemo(() => (week === undefined ? [] : bottomScoresForWeek(yearSeasons, week)), [yearSeasons, week])
   const notes = useMemo(() => weekNotes(yearSeasons, week ?? 0), [yearSeasons, week])
-  const race = useMemo(() => leaguePointsRace(yearSeasons), [yearSeasons])
+  // As of the week on show, like every other block: browsing back to week 5 shows the race after week 5.
+  const race = useMemo(
+    () => leaguePointsRace(week === undefined ? yearSeasons : seasonsThroughWeek(yearSeasons, year, week)),
+    [yearSeasons, year, week],
+  )
   const upr = useMemo(() => (week === undefined ? [] : uprTable(yearSeasons, year, week)), [yearSeasons, year, week])
   const streaks = useMemo(() => activeStreaks(yearSeasons, week ?? 0), [yearSeasons, week])
   const movers = useMemo(() => weekMovers(yearSeasons, week ?? 0), [yearSeasons, week])
