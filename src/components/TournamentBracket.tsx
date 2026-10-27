@@ -43,11 +43,11 @@ export function TournamentBracket({ tournament, year, onOpen, formOf, outline }:
               key={i}
               matchup={m}
               year={year}
-              onOpen={cupGameSource(year, m.a, m.b) ? () => onOpen({ round, matchupIndex: i }) : undefined}
+              onOpen={cupGameSource(year, m.a, m.b, round.live) ? () => onOpen({ round, matchupIndex: i }) : undefined}
               detail={detail}
             />
           ))
-    return { key: round.key, label: round.label, week: round.week, slots }
+    return { key: round.key, label: round.label, week: round.week, live: round.inProgress, slots }
   })
   return (
     <WingedBracket

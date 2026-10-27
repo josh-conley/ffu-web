@@ -43,6 +43,10 @@ export interface ResolvedRound {
   /** The lowest-scoring winner of THIS round is culled (the next round carries the JSON flag).
    *  Known from the draw, before a game is played, unlike `dropped`. */
   dropsLowestWinner: boolean
+  /** Read from Sleeper, not the season files (see liveBracket): its box scores are read live too. */
+  live?: boolean
+  /** Its week is being played: the scores are live and nobody has won yet. */
+  inProgress?: boolean
 }
 
 export interface ResolvedTournament {
