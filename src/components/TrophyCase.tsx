@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react'
+import { CUP_ACCENT, CUP_NAME } from '@/config'
 import type { CareerStats, SeasonFinish } from '@/selectors'
-import { HARDWARE } from './hardware'
+import { CUP_HARDWARE, HARDWARE } from './hardware'
 import { LEAGUE_STYLES, TIER_PRESTIGE } from './leagues'
 
 const PLACES = [
@@ -18,24 +19,41 @@ interface TileProps {
   /** Bold inline lead-in on the year line ("1st", "Div"). */
   primary: string
   year: string
-  tier: SeasonFinish['tier']
+  /** The small line under the year: the league, or the Cup. */
+  sub: string
   tooltip: string
 }
 
-function Tile({ icon, primary, year, tier, tooltip }: TileProps) {
+function Tile({ icon, primary, year, sub, tooltip }: TileProps) {
   return (
     <span title={tooltip} className="flex aspect-square w-16 flex-col items-center justify-center gap-1 bg-surface-2 ring-1 ring-border">
       {icon}
       <span className="text-xs font-bold leading-none">
         {primary} <span className="tabular-nums">{year}</span>
       </span>
-      <span className="text-[10px] leading-none text-muted">{LEAGUE_STYLES[tier].label}</span>
+      <span className="text-[10px] leading-none text-muted">{sub}</span>
     </span>
   )
 }
 
-/** Placement (1st/2nd/3rd) tile groups, best first, then a pennant group for division winners. */
-function tileGroups(career: CareerStats): ReactNode[][] {
+/** One diamond per FFU Cup won, newest first. */
+function cupTiles(years: readonly string[]): ReactNode[] {
+  const Icon = CUP_HARDWARE.icon
+  return [...years].reverse().map((year) => (
+    <Tile
+      key={`cup-${year}`}
+      icon={<Icon size={22} style={{ color: CUP_ACCENT }} aria-hidden />}
+      primary="Cup"
+      year={year}
+      sub={CUP_NAME}
+      tooltip={`${CUP_HARDWARE.label} · ${year}`}
+    />
+  ))
+}
+
+/** Placement (1st/2nd/3rd) tile groups, best first, then a pennant group for division winners.
+ *  Cup diamonds sit right after league titles: both are a competition won outright. */
+function tileGroups(career: CareerStats, cupTitles: readonly string[]): ReactNode[][] {
   const groups = PLACES.map(({ place, ordinal, hardware: { icon: Icon, label, match } }) =>
     career.finishes
       .filter(match)
@@ -46,7 +64,7 @@ function tileGroups(career: CareerStats): ReactNode[][] {
           icon={<Icon size={22} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
           primary={ordinal}
           year={f.year}
-          tier={f.tier}
+          sub={LEAGUE_STYLES[f.tier].label}
           tooltip={`${LEAGUE_STYLES[f.tier].label} ${label} · ${f.year}`}
         />
       )),
@@ -60,18 +78,19 @@ function tileGroups(career: CareerStats): ReactNode[][] {
         icon={<HARDWARE.pennant.icon size={24} className={LEAGUE_STYLES[f.tier].text} aria-hidden />}
         primary="Div"
         year={f.year}
-        tier={f.tier}
+        sub={LEAGUE_STYLES[f.tier].label}
         tooltip={`${LEAGUE_STYLES[f.tier].label} Division Winner · ${f.year}`}
       />
     ))
-  return [...groups, pennants].filter((g) => g.length > 0)
+  const [titles, ...rest] = groups
+  return [titles ?? [], cupTiles(cupTitles), ...rest, pennants].filter((g) => g.length > 0)
 }
 
-/** Career hardware as tier-colored square tiles: champion → runner-up → third → pennants
+/** Career hardware as tier-colored square tiles: champion → Cup → runner-up → third → pennants
  *  (division winners), each group separated by a subtle vertical rule. Shared by the
  *  team-profile modal and the Members detail page. */
-export function TrophyCase({ career }: { career: CareerStats }) {
-  const groups = tileGroups(career)
+export function TrophyCase({ career, cupTitles }: { career: CareerStats; cupTitles: readonly string[] }) {
+  const groups = tileGroups(career, cupTitles)
   if (groups.length === 0) return <p className="text-xs text-muted">None</p>
   return (
     <div className="flex flex-wrap items-stretch gap-2">

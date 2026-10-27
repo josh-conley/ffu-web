@@ -49,7 +49,7 @@ function SeasonHistory({ rows }: { rows: MemberSeason[] }) {
 }
 
 /** Career: the headline numbers, the trophy case, and every season on file. */
-export function CareerSection({ career, history, winnings }: { career: CareerStats; history: MemberSeason[]; winnings: number }) {
+export function CareerSection({ career, history, winnings, cupTitles }: { career: CareerStats; history: MemberSeason[]; winnings: number; cupTitles: string[] }) {
   return (
     <MemberSection title="Career">
       <div className="space-y-4">
@@ -65,7 +65,7 @@ export function CareerSection({ career, history, winnings }: { career: CareerSta
           <Stat label="Points For" value={formatPoints(career.pointsFor)} />
           <Stat label="Points Against" value={formatPoints(career.pointsAgainst)} />
         </dl>
-        <TrophyCase career={career} />
+        <TrophyCase career={career} cupTitles={cupTitles} />
         <SeasonHistory rows={history} />
       </div>
     </MemberSection>

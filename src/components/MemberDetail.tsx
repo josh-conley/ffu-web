@@ -48,6 +48,8 @@ interface MemberDetailProps {
   career: CareerStats
   history: MemberSeason[]
   winnings: number
+  /** Years they won the FFU Cup. */
+  cupTitles: string[]
   seasons: SeasonData[]
   tournaments: Tournament[]
 }
@@ -56,7 +58,7 @@ interface MemberDetailProps {
  * One member's page, in a fixed order: Career, Rivals, Franchise players, Promotion & relegation history,
  * Milestones. Franchise players loads every lineup file, so it waits until it is scrolled near.
  */
-export function MemberDetail({ career, history, winnings, seasons, tournaments }: MemberDetailProps) {
+export function MemberDetail({ career, history, winnings, cupTitles, seasons, tournaments }: MemberDetailProps) {
   const member = getMember(career.memberId)
   const owners = ownerNames(career.memberId)
   if (career.seasons === 0) return <FirstSeasonDetail memberId={career.memberId} />
@@ -78,7 +80,7 @@ export function MemberDetail({ career, history, winnings, seasons, tournaments }
           <FormerNames memberId={career.memberId} />
         </div>
       </header>
-      <CareerSection career={career} history={history} winnings={winnings} />
+      <CareerSection career={career} history={history} winnings={winnings} cupTitles={cupTitles} />
       <RivalsTable memberId={career.memberId} seasons={seasons} tournaments={tournaments} />
       <FranchisePlayers memberId={career.memberId} />
       <TierMovesSection history={history} />
