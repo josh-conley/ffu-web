@@ -1,4 +1,4 @@
-import type { SeasonData } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config'
 import { headToHead } from './headToHead'
 
@@ -29,8 +29,8 @@ export interface MatchupStory {
  * Everything worth saying about `a` v `b` on the night. Teams that have never met come back with
  * `meetings: 0`, which is its own headline — across the whole field that is roughly six matchups in ten.
  */
-export function matchupStory(seasons: SeasonData[], a: string, b: string): MatchupStory {
-  const h2h = headToHead(seasons, a, b)
+export function matchupStory(seasons: SeasonData[], tournaments: readonly Tournament[], a: string, b: string): MatchupStory {
+  const h2h = headToHead(seasons, tournaments, a, b)
   const last = h2h.meetings.at(-1)
   return {
     meetings: h2h.wins + h2h.losses + h2h.ties,

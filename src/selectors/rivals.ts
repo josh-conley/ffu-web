@@ -1,5 +1,6 @@
-import type { SeasonData } from '@/data'
-import { headToHead, lastMeeting, type H2HMeeting, type H2HRecord } from './headToHead'
+import type { SeasonData, Tournament } from '@/data'
+import { cupGames } from './cupHistory'
+import { lastMeeting, pairRecord, type H2HMeeting, type H2HRecord } from './headToHead'
 
 // A member's record against every opponent they have ever met (Members page, "Rivals"). Built on
 // `headToHead` so the pair's numbers here can never disagree with the Compare view's.
@@ -10,23 +11,23 @@ import { headToHead, lastMeeting, type H2HMeeting, type H2HRecord } from './head
 export interface Rival {
   opponentId: string
   record: H2HRecord
-  /** Meetings of every kind, regular season and playoff. */
+  /** Meetings of every kind: regular season, playoff and Cup. */
   games: number
   lastMet: H2HMeeting
 }
 
 /** Everyone `memberId` has played, most meetings first (then most recent meeting). */
-export function rivals(seasons: SeasonData[], memberId: string): Rival[] {
+export function rivals(seasons: SeasonData[], tournaments: readonly Tournament[], memberId: string): Rival[] {
+  const cups = cupGames(seasons, tournaments)
   const opponents = new Set<string>()
-  for (const season of seasons) {
-    for (const game of season.games) {
-      if (!game.participants.some((p) => p.memberId === memberId)) continue
-      for (const p of game.participants) if (p.memberId !== memberId) opponents.add(p.memberId)
-    }
+  const pairings = [...seasons.flatMap((s) => s.games.map((g) => g.participants.map((p) => p.memberId))), ...cups.map((g) => [g.a.ffuId, g.b.ffuId])]
+  for (const ids of pairings) {
+    if (!ids.includes(memberId)) continue
+    for (const id of ids) if (id !== memberId) opponents.add(id)
   }
   const out: Rival[] = []
   for (const opponentId of opponents) {
-    const record = headToHead(seasons, memberId, opponentId)
+    const record = pairRecord(seasons, cups, memberId, opponentId)
     const lastMet = lastMeeting(record)
     if (lastMet) out.push({ opponentId, record, games: record.meetings.length, lastMet })
   }

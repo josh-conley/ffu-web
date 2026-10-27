@@ -79,7 +79,7 @@ export function MemberDetail({ career, history, winnings, seasons, tournaments }
         </div>
       </header>
       <CareerSection career={career} history={history} winnings={winnings} />
-      <RivalsTable memberId={career.memberId} seasons={seasons} />
+      <RivalsTable memberId={career.memberId} seasons={seasons} tournaments={tournaments} />
       <FranchisePlayers memberId={career.memberId} />
       <TierMovesSection history={history} />
       <MemberMilestones memberId={career.memberId} seasons={seasons} tournaments={tournaments} />

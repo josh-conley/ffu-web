@@ -54,7 +54,7 @@ const card = () => within(screen.getByRole('group', { name: /current matchup/i }
 it('does not show the opponent until the matchup is actually drawn', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
 
   const firstOpponent = nameOf(expected.matchups[0]!.b)
   expect(card().getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
@@ -68,7 +68,7 @@ it('does not show the opponent until the matchup is actually drawn', async () =>
 it('holds a revealed matchup on screen, then hides the next opponent again', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   // The result stays up for the operator to talk over, rather than vanishing into the ledger.
@@ -89,7 +89,7 @@ const cardByLabel = () => within(screen.getByLabelText('Current matchup'))
 
 it('reveals every matchup of the CLI draw, in the same order', { timeout: 15_000 }, async () => {
   stubReducedMotion(true)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
 
   expect(screen.getByText(SEED)).toBeInTheDocument()
   expect(screen.getAllByText(/matchup 1 of 18/i).length).toBeGreaterThan(0)
@@ -123,7 +123,7 @@ const slotAt = (position: number) => screen.getByLabelText('Cup bracket').queryS
 it('fills the bracket\'s opening round as matchups are drawn, never ahead of the reveal', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
   /** The bracket slot matchup `i` (draw order) lands in. */
   const slotOf = (i: number) => slotAt(bracketSlots(expected).indexOf(i))
 
@@ -151,7 +151,7 @@ it('fills the bracket\'s opening round as matchups are drawn, never ahead of the
 // heads the other side of the two-sided bracket.
 it('places matchups in seeded bracket order, so 1v36 sits beside 18v19', () => {
   stubReducedMotion(true)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={18} />)
   expect(within(slotAt(0)).getByText(nameOf(expected.matchups[0]!.a))).toBeInTheDocument()
   expect(within(slotAt(1)).getByText(nameOf(expected.matchups[17]!.a))).toBeInTheDocument()
   // …and seed 2's path heads the other half of the bracket from seed 1.
@@ -165,7 +165,7 @@ it('runs a suspense spin, and a second press cuts it short', () => {
   stubReducedMotion(false)
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
 
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(screen.getByText(/drawing…/i)).toBeInTheDocument()
@@ -198,7 +198,7 @@ it('downloads a sheet identical to the CLI output', async () => {
     revokeObjectURL: () => {},
   })
   const user = userEvent.setup()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={18} />)
 
   await user.click(screen.getByRole('button', { name: /download sheet/i }))
   expect(captured).toBeDefined()
@@ -229,7 +229,7 @@ it('tells the story of a matchup once it is revealed', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   const seasons = [seasonWith('2024', [{ week: 3, a: 120, b: 100 }, { week: 15, a: 90, b: 130, isPlayoff: true }])]
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} tournaments={[]} onRestart={() => {}} />)
 
   // Nothing before the draw — the story belongs to the reveal.
   expect(screen.queryByText(/met 2 times/i)).not.toBeInTheDocument()
@@ -245,7 +245,7 @@ it('says so when two teams have never met', async () => {
   const user = userEvent.setup()
   // Seasons that contain neither of matchup 1's teams.
   const seasons = [{ ...seasonWith('2024', []), games: [] }]
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={seasons} tournaments={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(screen.getByText(/first ever meeting/i)).toBeInTheDocument()
@@ -278,7 +278,7 @@ it('ticks the wheel while it spins, and stops ticking if the spin is cut short',
   })
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
 
     // A tick per crest of the run-up, not a fixed count.
@@ -303,7 +303,7 @@ it('schedules no ticks when muted', () => {
   })
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /mute the wheel/i }))
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
     expect(contextsCreated).toBe(0)
@@ -321,7 +321,7 @@ it("shows each side's current and all-time UPR on the card", async () => {
     [a, { current: 162.48, allTime: 148.31 }],
     [b, { current: undefined, allTime: 131.04 }],
   ])
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} ratings={ratings} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} ratings={ratings} onRestart={() => {}} />)
   expect(card().getByText('162.5')).toBeInTheDocument()
   expect(card().getByText('148.3')).toBeInTheDocument()
 
@@ -341,7 +341,7 @@ it("shows each side's record going into the round on the card", async () => {
   // Weeks 1–5 count; week 6 is the Round of 36's own week and must not.
   const games = [game(1, 100, 90), game(2, 100, 90), game(3, 80, 90), game(4, 100, 90), game(5, 100, 90), game(6, 10, 200)]
   const season = { schemaVersion: 1 as const, tier: 'PREMIER' as const, year: '2026', era: 'sleeper' as const, platformLeagueId: 'x', teams: [], games }
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[season]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[season]} tournaments={[]} onRestart={() => {}} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   const records = card().getAllByText(/^Record/).map((label) => label.nextElementSibling?.textContent)
