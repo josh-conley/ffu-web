@@ -15,6 +15,8 @@ export interface CupGame {
   label: string
   a: CupGameSide
   b: CupGameSide
+  /** The week isn't on file yet: the box score is read from Sleeper even once it's scored. */
+  live?: boolean
 }
 
 /** "Round of 36 · Week 6", then each team's league, since a Cup game can cross them. */
@@ -58,7 +60,7 @@ export function CupSidesStrip({ a: sideA, b: sideB, form }: { a: CupGameSide; b:
  */
 export function CupGameBody({ game }: { game: Omit<CupGame, 'label'> }) {
   const { year, week, a, b } = game
-  const source = cupGameSource(year, a, b)
+  const source = cupGameSource(year, a, b, game.live)
   if (source?.kind === 'live') return <LiveBoxScoreBody game={{ leagueIds: source.leagueIds, year, week, memberIds: [a.ffuId, b.ffuId] }} />
   if (!source) return <p className="p-6 text-sm text-muted">This game hasn&apos;t been played yet.</p>
   return (
@@ -79,7 +81,7 @@ export function CupGameBody({ game }: { game: Omit<CupGame, 'label'> }) {
  * record and UPR going into the game beside its seed.
  */
 export function CupMatchupModal({ game, formOf, onClose }: { game: CupGame; formOf?: FormOf; onClose: () => void }) {
-  const live = cupGameSource(game.year, game.a, game.b)?.kind === 'live'
+  const live = cupGameSource(game.year, game.a, game.b, game.live)?.kind === 'live'
   return (
     <LineupModalFrame title={<Title game={game} live={live} />} memberIds={[game.a.ffuId, game.b.ffuId]} onClose={onClose}>
       <CupSidesStrip a={game.a} b={game.b} form={formOf && ((ffuId) => formLabel(formOf(ffuId, game.week)))} />

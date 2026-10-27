@@ -3,6 +3,7 @@ import { CUP_ACCENT, CUP_FIELD_SIZE, CUP_INAUGURAL_YEAR, CUP_NAME, CUP_PICKEM_AP
 import type { Tournament } from '@/data'
 import { useCup } from '@/hooks/useCup'
 import { useFormGoingInto } from '@/hooks/useFormGoingInto'
+import { useLiveCupBracket } from '@/hooks/useLiveCupBracket'
 import { useUrlState } from '@/hooks/useUrlState'
 import { Tabs, TabPanel, type TabDef } from '@/components/Tabs'
 import type { OpenMatchup } from '@/components/TournamentBracket'
@@ -36,6 +37,8 @@ const hasPickem = (t: Tournament, drawn: boolean) => CUP_PICKEM_API !== '' && dr
 
 export function Cup() {
   const { tournament, outline, resolved, drawn, tierSeasons, loading, error } = useCup(CUP_YEAR)
+  // The round being played shows its live scores; the pick'em still scores from the season files.
+  const bracket = useLiveCupBracket(tournament, resolved, tierSeasons)
   const roundWeeks = useMemo(() => outline.map((r) => r.week), [outline])
   const formOf = useFormGoingInto(tierSeasons, roundWeeks)
   const [view, setView] = useUrlState('view', 'bracket')
@@ -78,13 +81,13 @@ export function Cup() {
         {shown === 'pickem' ? (
           <PickemPanel tournament={tournament} played={resolved} seasons={tierSeasons} year={CUP_YEAR} />
         ) : (
-          <CupInfoTab view={shown} drawn={drawn} resolved={resolved} outline={outline} onOpen={setOpen} formOf={formOf} />
+          <CupInfoTab view={shown} drawn={drawn} resolved={bracket} outline={outline} onOpen={setOpen} formOf={formOf} />
         )}
       </TabPanel>
 
       {open && openMatchup && (
         <CupMatchupModal
-          game={{ year: CUP_YEAR, week: open.round.week, label: open.round.label, a: openMatchup.a, b: openMatchup.b }}
+          game={{ year: CUP_YEAR, week: open.round.week, label: open.round.label, a: openMatchup.a, b: openMatchup.b, live: open.round.live }}
           formOf={formOf}
           onClose={() => setOpen(null)}
         />

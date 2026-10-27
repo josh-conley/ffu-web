@@ -19,8 +19,9 @@ export type CupGameSource =
   | { kind: 'final'; scores: [number, number] }
   | { kind: 'live'; leagueIds: [string, string] }
 
-export function cupGameSource(year: string, a: CupGameSide, b: CupGameSide): CupGameSource | undefined {
-  if (a.score !== undefined && b.score !== undefined) return { kind: 'final', scores: [a.score, b.score] }
+/** `readLive`: the game's week isn't on file yet (see liveBracket), so even a scored game is read from Sleeper. */
+export function cupGameSource(year: string, a: CupGameSide, b: CupGameSide, readLive = false): CupGameSource | undefined {
+  if (!readLive && a.score !== undefined && b.score !== undefined) return { kind: 'final', scores: [a.score, b.score] }
   const live = LIVE_LEAGUE_IDS[year]
   if (live) return { kind: 'live', leagueIds: [live[a.tier], live[b.tier]] }
   return undefined

@@ -11,11 +11,13 @@ export interface BracketColumn {
   key: string
   label: string
   week: number
+  /** Its week is being played: the header says so. */
+  live?: boolean
   /** The round's matchups, in bracket order, already drawn. */
   slots: ReactNode[]
 }
 
-function Column({ label, week, top, wide, children }: { label: string; week: number; top?: ReactNode; wide?: boolean; children: ReactNode }) {
+function Column({ label, week, live, top, wide, children }: { label: string; week: number; live?: boolean; top?: ReactNode; wide?: boolean; children: ReactNode }) {
   return (
     // Columns share the width (the frame is full-bleed) but never go below their minimum, so a
     // narrow window scrolls sideways rather than squashing names.
@@ -23,7 +25,15 @@ function Column({ label, week, top, wide, children }: { label: string; week: num
       {/* Label over week, not side by side: a narrow column still fits "Quarterfinals" in full. */}
       <header className="mb-3 border-b-2 border-accent pb-1">
         <h2 className="text-xs font-bold uppercase tracking-wide text-text">{label}</h2>
-        <p className="text-[10px] font-semibold uppercase text-muted">Week {week}</p>
+        <p className="flex items-center gap-1 text-[10px] font-semibold uppercase text-muted">
+          Week {week}
+          {live && (
+            <>
+              <span aria-hidden className="ml-0.5 size-1.5 rounded-full bg-positive motion-safe:animate-pulse" />
+              <span className="text-positive">Live</span>
+            </>
+          )}
+        </p>
       </header>
       {/* `top` floats over the column instead of taking space in it, so the column stays level with
           its mirror on the other wing. */}
@@ -71,7 +81,7 @@ export function WingedBracket({ rounds, between = [], label }: {
   }
   const wing = (side: 'left' | 'right') =>
     rounds.slice(0, -1).map((r, ri) => (
-      <Column key={`${side}-${r.key}`} label={r.label} week={r.week} top={side === 'left' ? noteOver(ri) : undefined}>
+      <Column key={`${side}-${r.key}`} label={r.label} week={r.week} live={r.live} top={side === 'left' ? noteOver(ri) : undefined}>
         {bracketWings(r.slots.length)[side].map((i) => <Fragment key={i}>{r.slots[i]}</Fragment>)}
       </Column>
     ))
@@ -82,7 +92,7 @@ export function WingedBracket({ rounds, between = [], label }: {
       <div className="flex w-full items-stretch gap-2" aria-label={label}>
         {wing('left')}
         {final && (
-          <Column label={final.label} week={final.week} wide>
+          <Column label={final.label} week={final.week} live={final.live} wide>
             {final.slots.map((slot, i) => <Fragment key={i}>{slot}</Fragment>)}
           </Column>
         )}

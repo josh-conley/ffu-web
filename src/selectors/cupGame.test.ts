@@ -20,6 +20,11 @@ describe('cupGameSource', () => {
     expect(source?.kind).toBe('final')
   })
 
+  it('reads a scored game from Sleeper when its week is not on file yet', () => {
+    const source = cupGameSource(liveYear, { ffuId: 'a', tier: 'MASTERS', score: 80 }, { ffuId: 'b', tier: 'PREMIER', score: 40 }, true)
+    expect(source).toEqual({ kind: 'live', leagueIds: [live?.MASTERS, live?.PREMIER] })
+  })
+
   it('has nothing to show for an unplayed game outside the live season', () => {
     expect(cupGameSource('2019', { ffuId: 'a', tier: 'PREMIER' }, { ffuId: 'b', tier: 'MASTERS', score: 70 })).toBeUndefined()
   })

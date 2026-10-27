@@ -1,6 +1,6 @@
 import type { Game, LiveSeasonData, Tournament } from '@/data'
 import type { Tier } from '@/config/types'
-import { cupMatchupGame, liveCupRounds } from './liveCup'
+import { cupMatchupGame, liveBracket, liveCupRounds } from './liveCup'
 
 // Each team's live score per week, paired with a throwaway opponent (only the team's own score counts).
 function live(tier: Tier, scores: Record<string, Record<number, number>>, currentWeek = 7): LiveSeasonData {
@@ -60,4 +60,37 @@ it("is empty with no Cup round those weeks, before the draw, or for another seas
   expect(liveCupRounds({ ...cup, participants: [] }, seasons, [6])).toEqual([])
   expect(liveCupRounds({ ...cup, year: '2025' }, seasons, [6])).toEqual([])
   expect(liveCupRounds(undefined, seasons, [6])).toEqual([])
+})
+
+describe('liveBracket', () => {
+  // Week 7 (the final) is being played: a has 40 so far, d hasn't started.
+  it('decides the finished weeks and scores the round being played with no winner yet', () => {
+    const bracket = liveBracket(cup, seasons, 5)!
+    const [semis, final] = bracket.rounds
+    expect(semis?.matchups.map((m) => m.winner)).toEqual(['a', 'd'])
+    expect(semis).toMatchObject({ live: true })
+    expect(semis?.inProgress).toBeUndefined()
+    expect(final).toMatchObject({ live: true, inProgress: true })
+    expect(final?.matchups[0]).toMatchObject({ a: { ffuId: 'a', score: 40 }, b: { ffuId: 'd', score: undefined }, tie: false })
+    expect(final?.matchups[0]?.winner).toBeUndefined()
+    expect(bracket.champion).toBeUndefined()
+  })
+
+  it('leaves the rounds already on file as they are', () => {
+    const [semis] = liveBracket(cup, seasons, 6)!.rounds
+    expect(semis?.live).toBeUndefined()
+  })
+
+  it('shows no live scores before anyone has scored in the week', () => {
+    const notStarted = [live('PREMIER', { a: { 6: 100, 7: 0 }, c: { 6: 80 } }), seasons[1]!, seasons[2]!]
+    const final = liveBracket(cup, notStarted, 6)!.rounds[1]
+    expect(final?.inProgress).toBeUndefined()
+    expect(final?.matchups[0]?.a.score).toBeUndefined()
+  })
+
+  it('stands aside for another season, an undrawn Cup, or a league missing from the live data', () => {
+    expect(liveBracket({ ...cup, year: '2027' }, seasons, 0)).toBeUndefined()
+    expect(liveBracket({ ...cup, participants: [] }, seasons, 0)).toBeUndefined()
+    expect(liveBracket(cup, seasons.slice(0, 2), 0)).toBeUndefined()
+  })
 })
