@@ -1,21 +1,21 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember } from '@/config'
-import type { SeasonData } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import { meetingOrder, rivals, type H2HMeeting, type Rival } from '@/selectors'
 import { DataTable, type Column } from '../DataTable'
 import { TeamLink } from '../TeamLink'
 import { formatPoints, recordLabel } from '../format'
+import { meetingWhen } from '../seriesText'
 import { EmptyNote, MemberSection } from './MemberSection'
 
 const teamName = (ffuId: string) => getMember(ffuId)?.name ?? ffuId
 
-/** "2025 Wk 7 · L 88.00–99.00", naming the round for a playoff game. */
+/** "2025 Wk 7 · L 88.00–99.00", naming the round for a playoff or Cup game. */
 function MeetingCell({ m }: { m: H2HMeeting }) {
-  const when = m.isPlayoff ? `${m.year} ${m.round ?? 'Playoffs'}` : `${m.year} Wk ${m.week}`
   return (
     <span className="whitespace-nowrap">
-      {when}
+      {meetingWhen(m)}
       <span className="text-muted"> · {m.result} {formatPoints(m.score)}–{formatPoints(m.opponentScore)}</span>
     </span>
   )
@@ -35,7 +35,7 @@ function columnsFor(memberId: string): Column<Rival>[] {
         </TeamLink>
       ),
     },
-    { key: 'games', header: 'GP', title: 'Games played (regular season + playoffs)', align: 'right', sortValue: (r) => r.games, render: (r) => r.games },
+    { key: 'games', header: 'GP', title: 'Games played (regular season + playoffs + FFU Cup)', align: 'right', sortValue: (r) => r.games, render: (r) => r.games },
     { key: 'record', header: 'W-L', align: 'right', sortValue: (r) => r.record.wins - r.record.losses, render: (r) => recordLabel(r.record) },
     { key: 'pf', header: 'PF', title: 'Points For', align: 'right', sortValue: (r) => r.record.pointsFor, render: (r) => formatPoints(r.record.pointsFor) },
     { key: 'pa', header: 'PA', title: 'Points Against', align: 'right', sortValue: (r) => r.record.pointsAgainst, render: (r) => formatPoints(r.record.pointsAgainst) },
@@ -57,11 +57,11 @@ function columnsFor(memberId: string): Column<Rival>[] {
 }
 
 /** Rivals: this member's record against everyone they have played, most-played first. */
-export function RivalsTable({ memberId, seasons }: { memberId: string; seasons: SeasonData[] }) {
-  const rows = useMemo(() => rivals(seasons, memberId), [seasons, memberId])
+export function RivalsTable({ memberId, seasons, tournaments }: { memberId: string; seasons: SeasonData[]; tournaments: Tournament[] }) {
+  const rows = useMemo(() => rivals(seasons, tournaments, memberId), [seasons, tournaments, memberId])
   const columns = useMemo(() => columnsFor(memberId), [memberId])
   return (
-    <MemberSection title="Rivals" note="Every opponent on file, regular season and playoffs.">
+    <MemberSection title="Rivals" note="Every opponent on file: regular season, playoffs and the FFU Cup.">
       {rows.length > 0 ? (
         <DataTable columns={columns} rows={rows} getRowKey={(r) => r.opponentId} initialSort={{ key: 'games', dir: 'desc' }} stickyFirstColumn />
       ) : (

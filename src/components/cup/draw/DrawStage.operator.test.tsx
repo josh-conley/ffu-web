@@ -42,7 +42,7 @@ afterEach(() => vi.unstubAllGlobals())
 it('resumes part-way through a draw, and reports its progress', () => {
   stubReducedMotion(true)
   const progress = vi.fn()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={5} onProgress={progress} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={5} onProgress={progress} />)
 
   expect(screen.getByText(/matchup 6 of 18/i)).toBeInTheDocument()
   expect(card().getByText(nameOf(expected.matchups[5]!.a))).toBeInTheDocument()
@@ -55,14 +55,14 @@ it('resumes part-way through a draw, and reports its progress', () => {
 
 it('offers the downloads only once the draw is complete', () => {
   stubReducedMotion(true)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
   expect(screen.queryByRole('button', { name: /download sheet/i })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /csv/i })).not.toBeInTheDocument()
 })
 
 it('ignores a held space bar, so it cannot race through the reveal', () => {
   stubReducedMotion(true)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
 
   fireEvent.keyDown(window, { code: 'Space' })
   expect(card().getByText(nameOf(expected.matchups[0]!.b))).toBeInTheDocument()
@@ -74,7 +74,7 @@ it('ignores a held space bar, so it cannot race through the reveal', () => {
 
 it('advances the draw on space even when a button has focus', () => {
   stubReducedMotion(true)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
   const mute = screen.getByRole('button', { name: /mute the wheel/i })
   mute.focus()
 
@@ -88,7 +88,7 @@ it('asks before throwing a started draw away', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
   const restart = vi.fn()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={restart} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={restart} />)
 
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
   await user.click(screen.getByRole('button', { name: /start over/i }))
@@ -103,7 +103,7 @@ it('asks before throwing a started draw away', async () => {
 it('shows the seed exactly as typed, and quotes it in the command', () => {
   stubReducedMotion(true)
   const seed = 'week4 SNF 51'
-  render(<DrawStage field={field} rounds={ROUNDS} seed={seed} seasons={[]} onRestart={() => {}} resumeAt={18} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={seed} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={18} />)
   expect(screen.getAllByText(seed).length).toBeGreaterThan(0)
   expect(screen.getByText(`npm run draw-cup -- --seed "${seed}"`)).toBeInTheDocument()
 })
@@ -113,7 +113,7 @@ it('rests the reel on the winner before filling the card', () => {
   vi.stubGlobal('AudioContext', undefined)
   vi.useFakeTimers()
   try {
-    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+    render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
 
     act(() => void vi.advanceTimersByTime(SPIN_MS))
@@ -130,7 +130,7 @@ it('rests the reel on the winner before filling the card', () => {
 
 it('does not fake a spin when only one team is left in the bowl', () => {
   stubReducedMotion(false)
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={17} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={17} />)
   fireEvent.click(screen.getByRole('button', { name: /^draw$/i }))
   expect(screen.queryByText(/drawing…/i)).not.toBeInTheDocument()
   expect(card().getByText(nameOf(expected.matchups[17]!.b))).toBeInTheDocument()
@@ -140,7 +140,7 @@ it('does not fake a spin when only one team is left in the bowl', () => {
 it('keeps the storyline\'s space on the card whether or not there is a story yet', async () => {
   stubReducedMotion(true)
   const user = userEvent.setup()
-  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} />)
+  render(<DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} />)
   const strip = () => screen.getByRole('group', { name: /current matchup/i }).querySelector('[data-story-strip]')
   expect(strip()).not.toBeNull()
   await user.click(screen.getByRole('button', { name: /^draw$/i }))
@@ -157,7 +157,7 @@ it('opens a drawn matchup from the bracket, and leaves the draw alone while it i
   const user = userEvent.setup()
   render(
     <MemoryRouter>
-      <DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} onRestart={() => {}} resumeAt={2} onProgress={progress} />
+      <DrawStage field={field} rounds={ROUNDS} seed={SEED} seasons={[]} tournaments={[]} onRestart={() => {}} resumeAt={2} onProgress={progress} />
     </MemoryRouter>,
   )
 

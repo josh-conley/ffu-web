@@ -39,6 +39,8 @@ export interface WinLoss {
 export interface SeriesBreakdown {
   regular: WinLoss
   playoffs: WinLoss
+  /** FFU Cup games, including any that were also a league game between them that week. */
+  cup: WinLoss
   /** Average score per meeting: a's, then b's. Undefined if they have never met. */
   averages: [number, number] | undefined
   /** Each side's widest win over the other (a's meeting, b's meeting), if they have one. */
@@ -114,8 +116,11 @@ export function seriesBreakdown(record: H2HRecord): SeriesBreakdown {
   const { meetings } = record
   const n = meetings.length
   return {
-    regular: tally(meetings.filter((m) => !m.isPlayoff)),
+    // League regular season only: a Cup game between teams that didn't also meet in their league
+    // that week is in the all-time series and the Cup tally, not here.
+    regular: tally(meetings.filter((m) => !m.isPlayoff && (m.cup === undefined || m.cup.leagueGame))),
     playoffs: tally(meetings.filter((m) => m.isPlayoff)),
+    cup: tally(meetings.filter((m) => m.cup !== undefined)),
     averages: n === 0 ? undefined : [record.pointsFor / n, record.pointsAgainst / n],
     biggestWins: [widest(meetings, 'W'), widest(meetings, 'L')],
     streak: streakOf(record),
@@ -167,7 +172,7 @@ export function memberComparison(seasons: SeasonData[], tournaments: Tournament[
     }
     return { memberId, career: careers.get(memberId) ?? emptyCareer(memberId), byTier, upr: upr.get(memberId), winnings: winnings.get(memberId)?.total ?? 0 }
   }
-  const h2h = headToHead(seasons, aId, bId)
+  const h2h = headToHead(seasons, tournaments, aId, bId)
   const played = seasons.filter(hasBeenPlayed)
   const years = [...new Set(played.map((s) => s.year))].sort()
   return {

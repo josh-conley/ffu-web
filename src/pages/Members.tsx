@@ -5,7 +5,7 @@ import { useCareerData } from '@/hooks/useLeagueData'
 import { useLeagueRosters } from '@/hooks/useLeagueRosters'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { useUpdateUrlParams } from '@/hooks/useUrlState'
-import { careerWinnings, memberComparison, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
+import { careerWinnings, cupTitles, memberComparison, membersByLeague, membersById, memberSeasons, upcomingRosters, upcomingYear, type CareerStats } from '@/selectors'
 import { MembersDirectory } from '@/components/MembersDirectory'
 import { MemberDetail } from '@/components/MemberDetail'
 import { MemberCompare } from '@/components/compare/MemberCompare'
@@ -61,6 +61,7 @@ function SelectedMember({
           career={selected}
           history={memberSeasons(seasons, selected.memberId)}
           winnings={totalFor(selected.memberId)}
+          cupTitles={cupTitles(seasons, tournaments, selected.memberId)}
           seasons={seasons}
           tournaments={tournaments}
         />

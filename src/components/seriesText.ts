@@ -16,7 +16,17 @@ export function seriesHeadline(s: SeriesStanding): string {
   return s.leaderId ? `${teamAbbr(s.leaderId)} leads all-time ${seriesScore(s)}` : `All-time series tied ${seriesScore(s)}`
 }
 
+/**
+ * When a meeting was, naming the round for a Cup or playoff game: "2025 Wk 7", "2024 Championship",
+ * "2026 Cup Round of 18". `weekSep` sits between year and week ("2025 · Wk 7" in the Compare table).
+ */
+export function meetingWhen(m: H2HMeeting, weekSep = ' '): string {
+  if (m.cup) return `${m.year} Cup ${m.cup.round}`
+  return m.isPlayoff ? `${m.year} ${m.round ?? 'Playoffs'}` : `${m.year}${weekSep}Wk ${m.week}`
+}
+
 function lastMetText(m: H2HMeeting): string {
+  if (m.cup) return `last met in the ${m.year} Cup`
   return m.isPlayoff ? `last met in the ${m.year} playoffs` : `last met ${m.year} Wk ${m.week}`
 }
 

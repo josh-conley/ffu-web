@@ -5,6 +5,23 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-10-26 — Cup games are part of the head-to-head series; Cup stats never touch league totals
+
+**Decision.** (Josh) An FFU Cup game counts as a meeting in the one all-time H2H series (Compare,
+Rivals, matchup-card series lines, the draw's storyline), labeled with its round, not kept as a
+separate series. Everything Cup-specific is derived in `selectors/cupHistory.ts` from the same
+resolved bracket the Cup page and the prize money read.
+
+**Why / details.**
+- A Cup score is the team's league score that week, so the Cup adds meetings, hardware (a diamond
+  in the trophy case, per the amendment) and runs, never league W-L, points, UPR or milestones.
+- Two teams from one league can be paired in the Cup in a week they also play each other in their
+  league. That is one game with one result, so it is ONE meeting, tagged as a Cup game too.
+- The Round of 18's dropped lowest-scoring winner won its game: a W in the series and Cup record,
+  with a best finish of "Round of 18".
+- On the Stats page, Cup runs follow the year range, and a league scope credits each run to the
+  league the team was in that season (the bracket itself is resolved across all three).
+
 ## 2026-10-05 — Wednesday shows the current week's matchups; the home standings are gone
 
 **Decision (Josh).** Supersedes the Wednesday half of the 2026-09-29 entry below. Wednesday now

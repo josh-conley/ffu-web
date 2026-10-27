@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { headToHead, seriesPreview, type SeriesPreview } from '@/selectors'
-import { useAllSeasons } from './useLeagueData'
+import { useCareerData } from './useLeagueData'
 
 /**
  * The all-time series line for a game that hasn't finished (see `seriesPreview`): null for a first
@@ -10,6 +10,6 @@ import { useAllSeasons } from './useLeagueData'
 export function useSeriesPreview(memberIds: readonly string[]): SeriesPreview | null | undefined {
   const [a, b] = memberIds
   const pair = memberIds.length === 2 && a !== undefined && b !== undefined
-  const { data: seasons } = useAllSeasons()
-  return useMemo(() => (seasons && pair ? seriesPreview(headToHead(seasons, a, b)) : undefined), [seasons, pair, a, b])
+  const { seasons, tournaments } = useCareerData()
+  return useMemo(() => (seasons && pair ? seriesPreview(headToHead(seasons, tournaments, a, b)) : undefined), [seasons, tournaments, pair, a, b])
 }

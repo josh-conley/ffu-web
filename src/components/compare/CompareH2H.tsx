@@ -1,8 +1,8 @@
-import { getMember } from '@/config'
+import { CUP_ACCENT, getMember } from '@/config'
 import { meetingOrder, type H2HMeeting, type H2HRecord, type SeriesBreakdown, type WinLoss } from '@/selectors'
 import { formatPoints } from '../format'
 import { LeagueBadge } from '../LeagueBadge'
-import { teamAbbr } from '../seriesText'
+import { meetingWhen, teamAbbr } from '../seriesText'
 import { BETTER_TEXT } from './better'
 
 // The pair's own games: the series broken down as tiles, then every meeting, newest first. All
@@ -10,7 +10,7 @@ import { BETTER_TEXT } from './better'
 
 const name = (ffuId: string) => getMember(ffuId)?.name ?? ffuId
 const wl = ({ wins, losses, ties }: WinLoss) => `${wins}–${losses}${ties > 0 ? `–${ties}` : ''}`
-const when = (m: H2HMeeting) => (m.isPlayoff ? `${m.year} ${m.round ?? 'Playoffs'}` : `${m.year} · Wk ${m.week}`)
+const when = (m: H2HMeeting) => meetingWhen(m, ' · ')
 
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
@@ -37,7 +37,7 @@ function SeriesTiles({ h2h, series }: { h2h: H2HRecord; series: SeriesBreakdown 
   const lastResult = last && (last.result === 'T' ? 'Tied' : `${last.result === 'W' ? aAbbr : bAbbr} won`)
   return (
     <dl className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4">
-      <Tile label="All-time" value={wl(h2h)} note={pair} />
+      <Tile label="All-time" value={wl(h2h)} note={played(series.cup) ? `${pair} · incl. Cup ${wl(series.cup)}` : pair} />
       <Tile label="Regular season" value={played(series.regular) ? wl(series.regular) : '—'} note={pair} />
       <Tile label="Playoffs" value={played(series.playoffs) ? wl(series.playoffs) : '—'} note={pair} />
       <Tile label="Avg score" value={averages ? `${averages[0].toFixed(1)}–${averages[1].toFixed(1)}` : '—'} note={pair} />
@@ -75,7 +75,14 @@ function Meetings({ h2h }: { h2h: H2HRecord }) {
                 {when(m)}
                 {m.isPlayoff && <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-notable">Playoff</span>}
               </td>
-              <td className="px-3 py-2"><LeagueBadge tier={m.tier} /></td>
+              <td className="px-3 py-2">
+                {/* A Cup game between teams that didn't also meet in their league has no one league. */}
+                {m.cup && !m.cup.leagueGame ? (
+                  <span className="text-xs font-bold uppercase tracking-wide" style={{ color: CUP_ACCENT }}>FFU Cup</span>
+                ) : (
+                  <LeagueBadge tier={m.tier} />
+                )}
+              </td>
               <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'W' ? BETTER_TEXT : ''}`}>{formatPoints(m.score)}</td>
               <td className={`px-3 py-2 text-right tabular-nums ${m.result === 'L' ? BETTER_TEXT : ''}`}>{formatPoints(m.opponentScore)}</td>
               <td className="px-3 py-2 text-right tabular-nums text-muted">{formatPoints(Math.abs(m.score - m.opponentScore))}</td>

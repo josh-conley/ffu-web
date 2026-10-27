@@ -20,7 +20,7 @@ const seasons = [
 ]
 
 describe('seriesBreakdown', () => {
-  const s = seriesBreakdown(headToHead(seasons, 'a', 'b'))
+  const s = seriesBreakdown(headToHead(seasons, [], 'a', 'b'))
 
   it('splits the series into regular season and playoffs', () => {
     expect(s.regular).toEqual({ wins: 1, losses: 3, ties: 0 })
@@ -46,7 +46,7 @@ describe('seriesBreakdown', () => {
   })
 
   it('has no streak or averages for a pair that has never met', () => {
-    const none = seriesBreakdown(headToHead(seasons, 'a', 'z'))
+    const none = seriesBreakdown(headToHead(seasons, [], 'a', 'z'))
     expect(none.streak).toBeUndefined()
     expect(none.averages).toBeUndefined()
     expect(none.biggestWins).toEqual([undefined, undefined])

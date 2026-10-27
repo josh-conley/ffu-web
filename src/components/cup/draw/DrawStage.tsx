@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CUP_YEAR } from '@/config'
-import type { SeasonData } from '@/data'
+import type { SeasonData, Tournament } from '@/data'
 import { bracketSlots, drawCheckCode, drawCup, type CupField } from '@/lib/cupDraw.mjs'
 import { formatDrawCsv, formatDrawSheet } from '@/lib/drawSheet.mjs'
 import { cupGameSource, matchupStory, matchupTag, type DrawRating, type RoundOutline } from '@/selectors'
@@ -97,13 +97,15 @@ function useDrawnGame(opening: RoundOutline | undefined, ledger: LedgerMatchup[]
   return { onOpen: openable ? setIndex : undefined, modal }
 }
 
-export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, onRestart, resumeAt = 0, onProgress }: {
+export function DrawStage({ field, rounds, seed, seasons, tournaments, ratings = NO_RATINGS, onRestart, resumeAt = 0, onProgress }: {
   field: CupField
   /** The season's rounds, for the bracket's shape. */
   rounds: RoundOutline[]
   seed: string
   /** Completed seasons, for each matchup's head-to-head story. Empty just hides the storyline. */
   seasons: SeasonData[]
+  /** Earlier Cups, whose games count in the head-to-head story too. */
+  tournaments: Tournament[]
   /** Each team's current and all-time UPR. Empty shows dashes. */
   ratings?: Map<string, DrawRating>
   onRestart: () => void
@@ -133,17 +135,17 @@ export function DrawStage({ field, rounds, seed, seasons, ratings = NO_RATINGS, 
   useEffect(() => onProgress?.(settled), [onProgress, settled])
 
   const story = useMemo(
-    () => (drawer && drawn && seasons.length > 0 ? matchupStory(seasons, drawer.ffuId, drawn.ffuId) : undefined),
-    [seasons, drawer, drawn],
+    () => (drawer && drawn && seasons.length > 0 ? matchupStory(seasons, tournaments, drawer.ffuId, drawn.ffuId) : undefined),
+    [seasons, tournaments, drawer, drawn],
   )
 
   // Head-to-head tags for the finished bracket (the FFUN screenshot); not needed until the end.
   const tags = useMemo(
     () =>
       reveal.done && seasons.length > 0
-        ? reveal.ledger.map((m) => matchupTag(matchupStory(seasons, m.a.ffuId, m.b.ffuId)))
+        ? reveal.ledger.map((m) => matchupTag(matchupStory(seasons, tournaments, m.a.ffuId, m.b.ffuId)))
         : [],
-    [reveal.done, reveal.ledger, seasons],
+    [reveal.done, reveal.ledger, seasons, tournaments],
   )
 
   const lastShown = reveal.phase === 'shown' && reveal.matchupNumber === TOTAL_MATCHUPS

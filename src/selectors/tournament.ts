@@ -169,3 +169,11 @@ export function resolveTournament(t: Tournament, seasonsByTier: SeasonsByTier): 
   const champion = final?.matchups.length === 1 ? final.matchups[0]?.winner : undefined
   return { name: t.name, year: t.year, rounds, champion }
 }
+
+/** A Cup resolved against its own year's seasons, picked out of any set of seasons (other years
+ *  are ignored). A year with none of its seasons in the set resolves to an undecided bracket. */
+export function resolveCupFrom(t: Tournament, seasons: readonly SeasonData[]): ResolvedTournament {
+  const seasonsByTier: SeasonsByTier = {}
+  for (const s of seasons) if (s.year === t.year) seasonsByTier[s.tier] = s
+  return resolveTournament(t, seasonsByTier)
+}

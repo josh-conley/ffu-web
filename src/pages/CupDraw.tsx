@@ -4,7 +4,7 @@ import { CUP_YEAR } from '@/config'
 import { SEED_PATTERN } from '@/lib/drawSheet.mjs'
 import { useCup } from '@/hooks/useCup'
 import { useCupField } from '@/hooks/useCupField'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import { useCareerData } from '@/hooks/useLeagueData'
 import { drawRatings } from '@/selectors'
 import { DrawSetup } from '@/components/cup/draw/DrawSetup'
 import { DrawStage } from '@/components/cup/draw/DrawStage'
@@ -45,7 +45,7 @@ export function CupDraw() {
   const { field, loading, problem } = useCupField(CUP_YEAR)
   // Every completed season, for each matchup's head-to-head story. Not fatal if it fails: the draw runs
   // regardless and simply loses the storyline.
-  const { data: seasons } = useAllSeasons()
+  const { seasons, tournaments } = useCareerData()
   // Every season loaded, so the all-time UPR matches the Stats page's.
   const ratings = useMemo(() => drawRatings(seasons ?? [], CUP_YEAR), [seasons])
   const { seed, at, start, restart, progress } = useDrawParams()
@@ -64,6 +64,7 @@ export function CupDraw() {
       rounds={cup.outline}
       seed={seed}
       seasons={seasons ?? []}
+      tournaments={tournaments}
       ratings={ratings}
       resumeAt={at}
       onProgress={progress}

@@ -1,5 +1,5 @@
 import type { IconType } from 'react-icons'
-import { FaAward, FaMedal, FaToilet, FaTrophy } from 'react-icons/fa6'
+import { FaAward, FaGem, FaMedal, FaToilet, FaTrophy } from 'react-icons/fa6'
 import { TbPennantFilled } from 'react-icons/tb'
 import { isLastPlaceFinish, type SeasonFinish } from '@/selectors'
 
@@ -24,3 +24,9 @@ export const HARDWARE: Record<HardwareKind, Hardware> = {
   pennant: { icon: TbPennantFilled, label: 'Division winner', match: (f) => f.wonDivision },
   last: { icon: FaToilet, label: 'Last place', match: isLastPlaceFinish },
 }
+
+/**
+ * The FFU Cup's hardware: the amendment's "diamond in the trophy case". Separate from HARDWARE
+ * because a Cup win is not a league finish; drawn in the Cup's own color (CUP_ACCENT), not a tier's.
+ */
+export const CUP_HARDWARE = { icon: FaGem, label: 'FFU Cup champion' } as const

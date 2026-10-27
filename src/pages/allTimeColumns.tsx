@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
-import { getMember } from '@/config'
+import { CUP_ACCENT, getMember } from '@/config'
 import type { Tier } from '@/config/types'
-import type { CareerEfficiency, CareerStats, SeasonFinish } from '@/selectors'
+import { cupFinish, cupRunRank, type CareerEfficiency, type CareerStats, type CupCareer, type SeasonFinish } from '@/selectors'
 import type { Column } from '@/components/DataTable'
-import { HARDWARE } from '@/components/hardware'
+import { CUP_HARDWARE, HARDWARE } from '@/components/hardware'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { TeamLink } from '@/components/TeamLink'
-import { formatPoints } from '@/components/format'
+import { formatPoints, recordLabel } from '@/components/format'
 
 // Column definitions for the All-Time Stats page, mirroring the old site's Career Statistics
 // table. Split into small group builders to stay within the file/function line caps; the page
@@ -161,15 +161,72 @@ function efficiencyColumn(eff: Map<string, CareerEfficiency>): Column<CareerStat
   }
 }
 
+/** "Best Cup" text: how far their best run went, with the Cup record on hover; "(alive)" while it's still going. */
+function cupBestCell(c: CupCareer | undefined): ReactNode {
+  if (!c) return dash
+  const { best } = c
+  const alive = !best.out && !best.champion
+  return (
+    <span className="whitespace-nowrap" title={`${best.year} · Cup record ${recordLabel(c)}`}>
+      {cupFinish(best)}
+      {alive && <span className="text-muted"> (alive)</span>}
+    </span>
+  )
+}
+
+/** FFU Cup titles (one diamond per title, year on hover) and the furthest run. */
+function cupColumns(cup: Map<string, CupCareer>): Column<CareerStats>[] {
+  const Icon = CUP_HARDWARE.icon
+  return [
+    {
+      key: 'cupTitles',
+      header: 'Cup',
+      title: CUP_HARDWARE.label,
+      align: 'center',
+      sortValue: (c) => cup.get(c.memberId)?.titles.length ?? 0,
+      render: (c) => {
+        const titles = cup.get(c.memberId)?.titles ?? []
+        if (titles.length === 0) return dash
+        return (
+          <span className="inline-flex flex-wrap items-center justify-center gap-0.5">
+            {titles.map((year) => (
+              <span key={year} title={`FFU Cup ${year}`} style={{ color: CUP_ACCENT }}>
+                <Icon size={13} />
+              </span>
+            ))}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'cupBest',
+      header: 'Best Cup',
+      title: 'Furthest run in the FFU Cup (hover for the year and Cup record)',
+      sortValue: (c) => {
+        const best = cup.get(c.memberId)?.best
+        return best ? cupRunRank(best) : -1
+      },
+      render: (c) => cupBestCell(cup.get(c.memberId)),
+    },
+  ]
+}
+
 // Default left-to-right order (Team is pinned first); users can drag to a custom order on top of it.
 const DEFAULT_ORDER = [
   'team', 'seasons', 'tiers', 'upr', 'avgRank', 'winpct', 'record', 'playoffRec',
   'pf', 'pa', 'diff', 'ppg', 'high', 'low', 'eff', 'winnings', 'titles', 'second', 'third', 'pennants', 'last',
+  'cupTitles', 'cupBest',
 ]
 
-export function buildColumns(upr: Map<string, number>, eff: Map<string, CareerEfficiency>, winnings: Map<string, number>): Column<CareerStats>[] {
+export function buildColumns(
+  upr: Map<string, number>,
+  eff: Map<string, CareerEfficiency>,
+  winnings: Map<string, number>,
+  cup: Map<string, CupCareer>,
+): Column<CareerStats>[] {
   const all = [
     ...identityColumns(),
+    ...cupColumns(cup),
     ...scoringColumns(),
     ...finishColumns(),
     efficiencyColumn(eff),

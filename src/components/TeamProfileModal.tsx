@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { getMember, ownerNames } from '@/config'
-import { careerFor, currentLeague, type CareerStats } from '@/selectors'
-import { useAllSeasons } from '@/hooks/useLeagueData'
+import { careerFor, cupTitles, currentLeague, type CareerStats } from '@/selectors'
+import { useCareerData } from '@/hooks/useLeagueData'
 import { Dialog } from './Dialog'
 import { memberProfileHref } from './teamProfile'
 import { TeamLogo } from './TeamLogo'
@@ -34,7 +34,7 @@ function ownerLine(ffuId: string, career: CareerStats | undefined): string {
   return parts.join(' · ')
 }
 
-function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undefined }) {
+function Profile({ ffuId, career, cups }: { ffuId: string; career: CareerStats | undefined; cups: string[] }) {
   const member = getMember(ffuId)
   const league = career ? currentLeague(career) : undefined
   return (
@@ -57,7 +57,7 @@ function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undef
           </div>
           <div>
             <SectionLabel>Trophy Case</SectionLabel>
-            <TrophyCase career={career} />
+            <TrophyCase career={career} cupTitles={cups} />
           </div>
           <div>
             <SectionLabel>League Progression</SectionLabel>
@@ -73,15 +73,16 @@ function Profile({ ffuId, career }: { ffuId: string; career: CareerStats | undef
 
 /** Global quick-profile popup, opened by clicking any TeamLogo (via TeamProfileProvider). */
 export function TeamProfileModal({ ffuId, onClose }: { ffuId: string; onClose: () => void }) {
-  const { data: seasons, loading } = useAllSeasons()
+  const { seasons, tournaments, loading } = useCareerData()
   const career = useMemo(() => (seasons ? careerFor(seasons, ffuId) : undefined), [seasons, ffuId])
+  const cups = useMemo(() => (seasons ? cupTitles(seasons, tournaments, ffuId) : []), [seasons, tournaments, ffuId])
 
   return (
     <Dialog label="Team profile" title="Team Profile" onClose={onClose}>
       {loading ? (
         <div className="p-10"><LoadingSpinner /></div>
       ) : (
-        <Profile ffuId={ffuId} career={career} />
+        <Profile ffuId={ffuId} career={career} cups={cups} />
       )}
       <footer className="border-t border-border px-4 py-3 text-sm">
         <Link to={memberProfileHref(ffuId)} onClick={onClose} className="font-medium text-accent hover:underline">

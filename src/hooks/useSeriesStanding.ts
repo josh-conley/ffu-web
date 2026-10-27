@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { headToHead, seriesStanding, type SeriesStanding } from '@/selectors'
-import { useAllSeasons } from './useLeagueData'
+import { useCareerData } from './useLeagueData'
 
 /**
  * The all-time series between two teams, across every tier and season on file (the same record the
@@ -11,6 +11,6 @@ import { useAllSeasons } from './useLeagueData'
 export function useSeriesStanding(memberIds: readonly string[]): SeriesStanding | undefined {
   const [a, b] = memberIds
   const pair = memberIds.length === 2 && a !== undefined && b !== undefined
-  const { data: seasons } = useAllSeasons()
-  return useMemo(() => (seasons && pair ? seriesStanding(headToHead(seasons, a, b)) : undefined), [seasons, pair, a, b])
+  const { seasons, tournaments } = useCareerData()
+  return useMemo(() => (seasons && pair ? seriesStanding(headToHead(seasons, tournaments, a, b)) : undefined), [seasons, tournaments, pair, a, b])
 }

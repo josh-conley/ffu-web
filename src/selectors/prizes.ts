@@ -3,7 +3,7 @@ import { getPrizeSchedule, isCupRoundKey, type CrossLeagueSchedule, type CrossUn
 import type { SeasonData, Tournament } from '@/data'
 import { regularSeasonComplete, regularSeasonTotals, winnerOf, type TeamTotals } from './games'
 import { divisionWinnerIds } from './standings'
-import { resolveTournament, type ResolvedRound, type SeasonsByTier } from './tournament'
+import { resolveCupFrom, type ResolvedRound } from './tournament'
 
 // Career prize winnings — DERIVED, never stored. The published payout amounts live in config
 // (config/prizes.ts); here we work out WHO won each category from the season's results and multiply
@@ -222,9 +222,7 @@ function applyCrossLeague(result: Map<string, Winnings>, metrics: TierMetrics[],
 function applyCup(result: Map<string, Winnings>, tournament: Tournament, seasons: SeasonData[]): void {
   const amounts = getPrizeSchedule(tournament.year)?.cup
   if (!amounts) return
-  const seasonsByTier: SeasonsByTier = {}
-  for (const s of seasons) if (s.year === tournament.year) seasonsByTier[s.tier] = s
-  for (const round of resolveTournament(tournament, seasonsByTier).rounds) {
+  for (const round of resolveCupFrom(tournament, seasons).rounds) {
     const amount = isCupRoundKey(round.key) ? amounts[round.key] : undefined
     if (amount) for (const side of advancedOutOf(round)) add(result, side.memberId, side.tier, amount)
   }
