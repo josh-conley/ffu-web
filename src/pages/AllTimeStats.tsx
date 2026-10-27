@@ -54,8 +54,8 @@ function scopeLabel(league: string, range: { fromYear: string; toYear: string; i
 export function AllTimeStats() {
   // League scopes the underlying seasons (see useAllTimeStats). 'ALL' = full career across tiers.
   const [league, setLeague] = useUrlState('league', 'ALL')
-  const { loaded, years, range, careers, active, upr, eff, winnings, loading, error } = useAllTimeStats(league)
-  const columns = useMemo(() => buildColumns(upr, eff, winnings), [upr, eff, winnings])
+  const { loaded, years, range, careers, active, upr, eff, winnings, cup, loading, error } = useAllTimeStats(league)
+  const columns = useMemo(() => buildColumns(upr, eff, winnings, cup), [upr, eff, winnings, cup])
   // Team stays pinned first; every other column is drag-reorderable + show/hide-able (both persisted).
   const { visible: visibleColumns, options: columnOptions, hidden, toggle, resetVisibility, hideAll, onReorder, resetOrder, orderCustomized } = useManagedColumns(columns, 'team', 'stats-columns')
 
@@ -126,7 +126,8 @@ export function AllTimeStats() {
         member's per-season UPRs (each over its own regular-season games). Title trophies and tier counts are
         colored by league:{' '}
         <span className="font-semibold text-premier">Premier</span>, <span className="font-semibold text-masters">Masters</span>,{' '}
-        <span className="font-semibold text-national">National</span>.
+        <span className="font-semibold text-national">National</span>. Cup and Best Cup cover the FFU Cup (from 2026); on a
+        single league, they count the Cup runs a team made while in that league.
       </p>
     </div>
   )

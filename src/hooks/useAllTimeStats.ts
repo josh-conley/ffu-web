@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { Tier } from '@/config'
-import { activeMemberIds, careerEfficiency, careerStats, careerUpr, careerWinnings, hasBeenPlayed, type CareerEfficiency, type CareerStats } from '@/selectors'
+import { activeMemberIds, careerEfficiency, careerStats, careerUpr, careerWinnings, cupCareers, cupRuns, hasBeenPlayed, type CareerEfficiency, type CareerStats } from '@/selectors'
 import { useAllLineups, useCareerData, usePlayers } from './useLeagueData'
 import { useYearRange } from './useYearRange'
 
@@ -13,7 +13,9 @@ import { useYearRange } from './useYearRange'
  * league: `active` (a current member of the union is current whatever the filter) and the winnings
  * calculation itself (cross-union and cross-league prizes compare every league in a year), which is
  * then cut down to the scoped league's share. Winnings DO follow the years — whole years, which is
- * safe for the same reason: no prize compares across years.
+ * safe for the same reason: no prize compares across years. The Cup is the same story: it is
+ * resolved across every league (a Cup game is usually between two), then each run is credited to
+ * the league its team was in that season.
  */
 export function useAllTimeStats(league: string) {
   const { seasons, tournaments, loading, error } = useCareerData()
@@ -53,6 +55,9 @@ export function useAllTimeStats(league: string) {
     return out
   }, [allWinnings, league])
 
+  const runs = useMemo(() => cupRuns(inYears ?? [], tournaments), [inYears, tournaments])
+  const cup = useMemo(() => cupCareers(league === 'ALL' ? runs : runs.filter((r) => r.tier === league)), [runs, league])
+
   return {
     loaded: seasons !== undefined,
     years,
@@ -62,6 +67,7 @@ export function useAllTimeStats(league: string) {
     upr,
     eff,
     winnings,
+    cup,
     // Lineups/players gate the spinner (no dash→value flash) but not errors: if they fail, the
     // efficiency column degrades to dashes and the core career table still renders.
     loading: loading || lineups.loading || players.loading,
