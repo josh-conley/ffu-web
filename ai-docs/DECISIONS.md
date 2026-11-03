@@ -696,3 +696,18 @@ matchup modal.
 **Why.** Josh: compact, standard, and the whole team name visible. Nine columns at laptop width
 leave ~155px each, so names wrap to a second line rather than truncate; dropping the logo is
 what made the room.
+
+## 2026-11-03 — the weekly refresh accepts stat corrections to the newest committed week
+
+`check-season-refresh.mjs` used to fail on any change to an already-written score, on the theory
+that only completed weeks are written, so they're final. They aren't quite: the NFL corrects stats
+for days after a game and Sleeper rescores the week, while the refresh writes a week the Tuesday it
+ends. The first one hit on 2026-11-03: week 7 (written 10/27) came back with two Premier scores down
+0.1 and 0.5, and the week 8 refresh was refused. Sleeper's score is the fact we store, so the
+corrected one is right.
+
+Now a change to the **newest week already committed** is a correction: committed, shown as a
+warning in the job summary, and listed in the commit message (marked "result changed" if the
+winner flips). A change to any older week, or a game that disappears, still fails: by then the
+week has had a full extra week to settle, so that means something is wrong. No winner-flip block:
+if Sleeper's corrected score flips a result, Sleeper's standings flip too, and we store theirs.

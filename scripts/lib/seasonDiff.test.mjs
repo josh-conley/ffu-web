@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { diffSeason, lastWeekOf } from './seasonDiff.mjs'
+import { diffSeason, lastWeekOf, resultFlipped, splitCorrections } from './seasonDiff.mjs'
 
 const game = (week, a, aScore, b, bScore) => ({
   week,
@@ -52,4 +52,28 @@ describe('lastWeekOf', () => {
     expect(lastWeekOf(season([game(1, 'x', 1, 'y', 2), game(3, 'x', 1, 'z', 2)]))).toBe(3)
     expect(lastWeekOf(season([]))).toBe(0)
   })
+})
+
+describe('splitCorrections', () => {
+  const change = (week, bScoreBefore, bScoreAfter) => ({
+    before: game(week, 'x', 100, 'y', bScoreBefore),
+    after: game(week, 'x', 100, 'y', bScoreAfter),
+  })
+  const before = season([game(1, 'x', 100, 'y', 90), game(2, 'x', 100, 'y', 90)])
+
+  it('accepts a change to the newest committed week as a stat correction', () => {
+    expect(splitCorrections(before, [change(2, 90, 89.5)])).toEqual({ corrections: [change(2, 90, 89.5)], unexpected: [] })
+  })
+
+  it('refuses a change to any older week', () => {
+    expect(splitCorrections(before, [change(1, 90, 89.5)])).toEqual({ corrections: [], unexpected: [change(1, 90, 89.5)] })
+  })
+})
+
+describe('resultFlipped', () => {
+  const change = (bScoreAfter) => ({ before: game(1, 'x', 100, 'y', 90), after: game(1, 'x', 100, 'y', bScoreAfter) })
+
+  it('is false when the same team still wins', () => expect(resultFlipped(change(95))).toBe(false))
+  it('is true when the other team now wins', () => expect(resultFlipped(change(101))).toBe(true))
+  it('is true when the game is now a tie', () => expect(resultFlipped(change(100))).toBe(true))
 })

@@ -5,10 +5,14 @@
 // It FAILS (exit 1, nothing gets committed) when:
 //   - a file outside public/data/<live year>/, public/data/seasons.json or public/data/players.json
 //     changed, or
-//   - a game that was already written changed its score or disappeared. Only completed weeks are
-//     ever written, so a moved score means something upstream is wrong — a human should look.
-// It WARNS (job summary, still commits) when the schedule changed: the commissioner may have
-// edited it, which is legitimate but worth knowing.
+//   - a game that was already written disappeared, or changed its score in any week but the newest
+//     one committed. Only completed weeks are ever written, so that means something upstream is
+//     wrong — a human should look.
+// It WARNS (job summary, still commits) when:
+//   - the newest committed week's scores moved: a stat correction (see splitCorrections). They're
+//     listed in the commit message too, so the history says why a final score changed.
+//   - the schedule changed: the commissioner may have edited it, which is legitimate but worth
+//     knowing.
 //
 // Outputs for the workflow (via $GITHUB_OUTPUT when set): `changed`, `year`, `week`, `message`.
 //
@@ -18,7 +22,7 @@ import { appendFileSync, existsSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { ROOT, TIERS, isLiveYear, readJson } from './lib/ffuConfig.mjs'
-import { diffSeason, lastWeekOf } from './lib/seasonDiff.mjs'
+import { diffSeason, lastWeekOf, resultFlipped, splitCorrections } from './lib/seasonDiff.mjs'
 
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' })
 
@@ -53,28 +57,34 @@ function fail(message) {
 }
 
 const describeGame = (g) => `week ${g.week}: ${g.participants.map((p) => `${p.memberId} ${p.score}`).join(' v ')}`
+const describeChange = (c) =>
+  `${describeGame(c.before)} → ${describeGame(c.after)}${resultFlipped(c) ? ' (result changed)' : ''}`
 
 /** Diff each tier's file against HEAD; fail on anything a refresh must never do. */
 function checkTiers(year) {
   const rows = []
   const warnings = []
+  const corrections = []
   for (const tier of TIERS) {
     const path = `public/data/${year}/${tier.toLowerCase()}.json`
     if (!existsSync(join(ROOT, path))) fail(`\`${path}\` is missing after the refresh.`)
     const after = readJson(join(ROOT, path))
     const before = committed(path) ?? { games: [], schedule: [] }
     const { added, changed, removed, scheduleChanged } = diffSeason(before, after)
-    if (changed.length > 0 || removed.length > 0) {
+    const split = splitCorrections(before, changed)
+    if (split.unexpected.length > 0 || removed.length > 0) {
       const lines = [
-        ...changed.map((c) => `- changed — ${describeGame(c.before)} → ${describeGame(c.after)}`),
+        ...split.unexpected.map((c) => `- changed — ${describeChange(c)}`),
         ...removed.map((g) => `- removed — ${describeGame(g)}`),
       ]
-      fail(`${tier}: completed games changed. Completed scores are final, so this needs a human.\n\n${lines.join('\n')}`)
+      fail(`${tier}: completed games changed. Only the newest committed week takes stat corrections, so this needs a human.\n\n${lines.join('\n')}`)
     }
+    corrections.push(...split.corrections.map((c) => `${tier} ${describeChange(c)}`))
     if (scheduleChanged) warnings.push(`⚠️ ${tier}: the schedule changed — the commissioner may have edited it.`)
     rows.push({ tier, games: after.games.length, added: added.length, week: lastWeekOf(after) })
   }
-  return { rows, warnings }
+  if (corrections.length > 0) warnings.push(`⚠️ Stat corrections:\n\n${corrections.map((c) => `- ${c}`).join('\n')}`)
+  return { rows, warnings, corrections }
 }
 
 function main() {
@@ -93,10 +103,11 @@ function main() {
   const stray = paths.filter((p) => !allowed(p))
   if (stray.length > 0) fail(`Files outside \`public/data/${year}/\` changed:\n\n${stray.map((p) => `- \`${p}\``).join('\n')}`)
 
-  const { rows, warnings } = checkTiers(year)
+  const { rows, warnings, corrections } = checkTiers(year)
   const week = Math.max(0, ...rows.map((r) => r.week))
   const subject = week === 0 ? `chore(data): refresh ${year} league metadata` : `chore(data): refresh ${year} through week ${week}`
-  const body = `${rows.map((r) => `${r.tier} ${r.games}`).join(', ')} games. Written by the weekly refresh workflow.`
+  const correctionNote = corrections.length > 0 ? `\n\nStat corrections:\n${corrections.map((c) => `- ${c}`).join('\n')}` : ''
+  const body = `${rows.map((r) => `${r.tier} ${r.games}`).join(', ')} games. Written by the weekly refresh workflow.${correctionNote}`
 
   summary(
     [

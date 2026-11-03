@@ -236,8 +236,10 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
       Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
       → `scripts/check-season-refresh.mjs` (the judgment the
-      routine's prompt used to carry, now code: fails on a changed/removed completed score or any
-      file outside `public/data/<year>/`, warns in the job summary if the schedule changed; pure
+      routine's prompt used to carry, now code: fails on a removed game, a changed score in any week
+      but the newest committed (that one takes stat corrections, listed as warnings — see
+      DECISIONS 2026-11-03), or any file outside `public/data/<year>/`, warns in the job summary
+      if the schedule changed; pure
       diff in `scripts/lib/seasonDiff.mjs`, unit-tested) → typecheck/lint/test → commit as
       github-actions[bot] + push → `gh workflow run deploy.yml`. That last step is required: a push
       made with `GITHUB_TOKEN` does not trigger other workflows, so `deploy.yml`'s `on: push` never
@@ -415,8 +417,10 @@ Both from the commissioner's list (2026-09-09). They are one question wearing tw
       refuses a non-live one. Also runnable by hand from the Actions tab ("Run workflow").
       Flow: refresh-season → backfill-drafts → backfill-lineups (the live year only — see below)
       → `scripts/check-season-refresh.mjs` (the judgment the
-      routine's prompt used to carry, now code: fails on a changed/removed completed score or any
-      file outside `public/data/<year>/`, warns in the job summary if the schedule changed; pure
+      routine's prompt used to carry, now code: fails on a removed game, a changed score in any week
+      but the newest committed (that one takes stat corrections, listed as warnings — see
+      DECISIONS 2026-11-03), or any file outside `public/data/<year>/`, warns in the job summary
+      if the schedule changed; pure
       diff in `scripts/lib/seasonDiff.mjs`, unit-tested) → typecheck/lint/test → commit as
       github-actions[bot] + push → `gh workflow run deploy.yml`. That last step is required: a push
       made with `GITHUB_TOKEN` does not trigger other workflows, so `deploy.yml`'s `on: push` never
