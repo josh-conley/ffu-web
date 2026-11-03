@@ -25,6 +25,7 @@ const RosterBuildStats = lazy(() =>
 )
 const DraftMarket = lazy(() => import('@/pages/DraftMarket').then((m) => ({ default: m.DraftMarket })))
 const Players = lazy(() => import('@/pages/Players').then((m) => ({ default: m.Players })))
+const UprExplorer = lazy(() => import('@/pages/UprExplorer').then((m) => ({ default: m.UprExplorer })))
 const CupDraw = lazy(() => import('@/pages/CupDraw').then((m) => ({ default: m.CupDraw })))
 
 /** A lazy page's element, showing the same spinner the pages use while their data loads. */
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="all-time" element={<Navigate to="/stats" replace />} />
           <Route path="drafts" element={page(Drafts)} />
           <Route path="builds" element={page(RosterBuildStats)} />
+          <Route path="upr-explorer" element={page(UprExplorer)} />
           <Route path="milestones" element={<Milestones />} />
           <Route path="adp-comparison" element={page(DraftMarket)} />
           <Route path="around-the-union" element={<AroundTheUnion />} />

@@ -94,7 +94,9 @@ site's only back end, see its README),
 completed week's top 3 scorers across all leagues + the league points/PPG race, framed as one
 screenshot-ready block), and **Stats** (route `/stats`,
 formerly "Leaderboard" — the big career-stats table: league scope + filters, column show/hide + drag
-reorder, full-bleed/sticky Team column, FA icons). Also in the Stats & More menu: **Builds**
+reorder, full-bleed/sticky Team column, FA icons). Also in the Stats & More menu: **UPR Explorer**
+(`/upr-explorer`, every team-season's UPR through a chosen week, with the live season ranked
+against history), **Builds**
 (`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), and **ADP
 Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP).
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
