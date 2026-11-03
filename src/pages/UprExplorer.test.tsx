@@ -73,9 +73,9 @@ const inProgress = !latest.games.some((g) => g.isPlayoff) && Math.max(0, ...late
 
 it.runIf(inProgress)('offers to rank the season in progress only while the chosen week leaves it out', async () => {
   renderAt('/upr-explorer')
-  const button = await screen.findByRole('button', { name: new RegExp(`^Rank ${latestYear} through week \\d+$`) })
+  const button = await screen.findByRole('button', { name: new RegExp(`^Show ${latestYear} \\(through week \\d+\\)$`) })
   fireEvent.click(button)
   await waitFor(() => expect(screen.getAllByText('Live').length).toBeGreaterThan(0))
   // Once the table includes it, there's nothing left to offer.
-  expect(screen.queryByRole('button', { name: /^Rank / })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Show / })).not.toBeInTheDocument()
 })

@@ -56,7 +56,7 @@ export function UprExplorer() {
     <div className="space-y-6">
       <Intro />
       <UprExplorerControls state={state} years={years} maxWeek={maxWeek} memberIds={memberIds} />
-      {catchUp && <UprLiveCallout catchUp={catchUp} week={week} onWeek={state.setWeek} />}
+      {catchUp && <UprLiveCallout catchUp={catchUp} onWeek={state.setWeek} />}
       {rows.length === 0 ? (
         <p className="text-muted">{member ? 'That member has no rated team-season in this range.' : 'No team-seasons are rated in this range.'}</p>
       ) : (
