@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useAllSeasons } from '@/hooks/useLeagueData'
-import { liveUprStatus, longestRegularSeason, rankUprRows, uprThroughWeekRows } from '@/selectors'
+import { liveCatchUp, longestRegularSeason, rankUprRows, uprThroughWeekRows } from '@/selectors'
 import { DataTable } from '@/components/DataTable'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -22,6 +22,15 @@ function Intro() {
   )
 }
 
+/** How many team-seasons the table holds; with a member filter, out of how many they're ranked among. */
+function TableCount({ shown, ranked }: { shown: number; ranked: number }) {
+  return (
+    <p className="text-sm text-muted">
+      <strong className="tabular-nums text-text">{shown === ranked ? ranked : `${shown} of ${ranked}`}</strong> team-seasons
+    </p>
+  )
+}
+
 export function UprExplorer() {
   const { data: seasons, loading, error } = useAllSeasons()
   const all = useMemo(() => seasons ?? [], [seasons])
@@ -38,7 +47,7 @@ export function UprExplorer() {
   )
   const ranked = useMemo(() => rankUprRows(uprThroughWeekRows(scoped, week), order === 'low'), [scoped, week, order])
   const rows = useMemo(() => (member ? ranked.filter((r) => r.memberId === member) : ranked), [ranked, member])
-  const live = useMemo(() => liveUprStatus(scoped, ranked, week), [scoped, ranked, week])
+  const catchUp = useMemo(() => liveCatchUp(scoped, week), [scoped, week])
 
   if (loading) return <LoadingSpinner />
   if (error || !seasons) return <ErrorMessage error={error ?? 'No data'} />
@@ -47,19 +56,22 @@ export function UprExplorer() {
     <div className="space-y-6">
       <Intro />
       <UprExplorerControls state={state} years={years} maxWeek={maxWeek} memberIds={memberIds} />
-      {live && <UprLiveCallout status={live} order={order} week={week} onWeek={state.setWeek} />}
+      {catchUp && <UprLiveCallout catchUp={catchUp} onWeek={state.setWeek} />}
       {rows.length === 0 ? (
         <p className="text-muted">{member ? 'That member has no rated team-season in this range.' : 'No team-seasons are rated in this range.'}</p>
       ) : (
-        <DataTable
-          key={`${week}-${league}-${member}-${order}-${yearRange.fromYear}-${yearRange.toYear}`}
-          columns={UPR_EXPLORER_COLUMNS}
-          rows={rows}
-          getRowKey={(r) => r.key}
-          initialSort={{ key: 'team', dir: 'asc' }}
-          pageSize={50}
-          stickyFirstColumn
-        />
+        <div className="space-y-2">
+          <TableCount shown={rows.length} ranked={ranked.length} />
+          <DataTable
+            key={`${week}-${league}-${member}-${order}-${yearRange.fromYear}-${yearRange.toYear}`}
+            columns={UPR_EXPLORER_COLUMNS}
+            rows={rows}
+            getRowKey={(r) => r.key}
+            initialSort={{ key: 'team', dir: 'asc' }}
+            pageSize={50}
+            stickyFirstColumn
+          />
+        </div>
       )}
     </div>
   )

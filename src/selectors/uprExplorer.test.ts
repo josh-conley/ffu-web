@@ -1,6 +1,6 @@
 import type { Game, SeasonData } from '@/data'
 import { calculateUpr } from './upr'
-import { liveUprStatus, longestRegularSeason, rankUprRows, uprThroughWeekRows, type UprWeekRow } from './uprExplorer'
+import { liveCatchUp, longestRegularSeason, rankUprRows, uprThroughWeekRows, type UprWeekRow } from './uprExplorer'
 
 const game = (week: number, a: number, b: number, isPlayoff = false): Game =>
   ({ week, isPlayoff, participants: [{ memberId: 'a', score: a }, { memberId: 'b', score: b }] }) as Game
@@ -59,25 +59,20 @@ describe('rankUprRows', () => {
   })
 })
 
-describe('liveUprStatus', () => {
+describe('liveCatchUp', () => {
   const seasons = [season('2025', 14), season('2026', 8)]
-  const statusAt = (s: SeasonData[], week: number) => liveUprStatus(s, rankUprRows(uprThroughWeekRows(s, week)), week)
 
-  it('is undefined with no season in progress', () => {
-    expect(statusAt([season('2025', 14)], 8)).toBeUndefined()
+  it('offers the live season through its latest week when the chosen week is past it', () => {
+    expect(liveCatchUp(seasons, 14)).toEqual({ year: '2026', weeksPlayed: 8 })
   })
 
-  it("places the live season's first team in the ranked sample", () => {
-    // The two seasons are identical through week 8, so 2026's `a` ties 2025's for first.
-    expect(statusAt(seasons, 8)).toMatchObject({ kind: 'ranked', year: '2026', weeksPlayed: 8, outOf: 4, top: { memberId: 'a', rank: 1 } })
+  it('offers nothing when the chosen week already includes the live season', () => {
+    expect(liveCatchUp(seasons, 8)).toBeUndefined()
   })
 
-  it('reports the live season as behind when the week is past the weeks it has played', () => {
-    expect(statusAt(seasons, 14)).toEqual({ kind: 'behind', year: '2026', weeksPlayed: 8, canRank: true })
-  })
-
-  it('cannot rank a live season that has fewer weeks than a UPR needs', () => {
-    expect(statusAt([season('2026', 2)], 14)).toMatchObject({ kind: 'behind', canRank: false })
+  it('offers nothing with no season in progress, or one too young for a UPR', () => {
+    expect(liveCatchUp([season('2025', 14)], 14)).toBeUndefined()
+    expect(liveCatchUp([season('2026', 2)], 14)).toBeUndefined()
   })
 })
 

@@ -75,24 +75,21 @@ export function rankUprRows(rows: readonly UprWeekRow[], lowestFirst = false): R
   return ranked
 }
 
-/** Where the season in progress stands against the ranked sample, for the page's callout. */
-export type LiveUprStatus =
-  /** Its teams are in the sample; `top` is the first of them in the ranked order. */
-  | { kind: 'ranked'; year: string; weeksPlayed: number; top: RankedUprRow; outOf: number }
-  /** The chosen week is past the weeks it has played, so it was left out (see `reached`).
-   *  `canRank` says whether it has played enough for a UPR yet (UPR_MIN_WEEKS). */
-  | { kind: 'behind'; year: string; weeksPlayed: number; canRank: boolean }
+/** The season in progress, when the chosen week has left it out of the table but it could be
+ *  ranked through the weeks it HAS played: what the page offers to switch to. */
+export interface LiveCatchUp {
+  year: string
+  weeksPlayed: number
+}
 
 /**
- * The season in progress against `ranked` (a ranking of uprThroughWeekRows through `week`), or
- * undefined when no season is in progress or nothing is rated.
+ * The live season's catch-up (see LiveCatchUp), or undefined when there's nothing to offer: no
+ * season in progress, the chosen week already includes it, or it has too few weeks for a UPR.
  */
-export function liveUprStatus(seasons: readonly SeasonData[], ranked: readonly RankedUprRow[], week: number): LiveUprStatus | undefined {
+export function liveCatchUp(seasons: readonly SeasonData[], week: number): LiveCatchUp | undefined {
   const live = seasons.filter(inProgress)
   const year = live[0]?.year
   if (year === undefined) return undefined
   const weeksPlayed = Math.max(...live.map(lastRegularWeek))
-  if (week > weeksPlayed) return { kind: 'behind', year, weeksPlayed, canRank: weeksPlayed >= UPR_MIN_WEEKS }
-  const top = ranked.find((r) => r.live)
-  return top === undefined ? undefined : { kind: 'ranked', year, weeksPlayed, top, outOf: ranked.length }
+  return week > weeksPlayed && weeksPlayed >= UPR_MIN_WEEKS ? { year, weeksPlayed } : undefined
 }
