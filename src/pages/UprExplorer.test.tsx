@@ -54,9 +54,11 @@ it('a member filter keeps only their seasons, at their place in the full ranking
   expect(rows.some((r, i) => !within(r).getAllByRole('cell')[0]!.textContent?.startsWith(String(i + 1)))).toBe(true)
 })
 
-it('explains an empty table when the weeks are too few for a UPR', async () => {
-  renderAt('/upr-explorer?weeks=1-2')
-  await waitFor(() => expect(screen.getByText(/UPR needs at least 3/)).toBeInTheDocument())
+it('never rates a week before UPR exists: a URL asking for one is held at week 3', async () => {
+  renderAt('/upr-explorer?to=2025&week=1')
+  await waitFor(() => expect(screen.getByRole('slider', { name: 'Through week' })).toHaveValue('3'))
+  expect(screen.getByRole('slider', { name: 'Through week' })).toHaveAttribute('min', '3')
+  expect(bodyRows().length).toBeGreaterThan(1)
 })
 
 // The newest season on file, and whether its regular season is still being played (the callout
@@ -65,10 +67,10 @@ const latestYear = Object.keys(FILES).map((p) => /^\/data\/(\d{4})\/premier\.jso
 const latest = FILES[`/data/${latestYear}/premier.json`] as { games: { week: number; isPlayoff: boolean }[] }
 const inProgress = !latest.games.some((g) => g.isPlayoff) && Math.max(0, ...latest.games.map((g) => g.week)) < 14
 
-it.runIf(inProgress)('offers to rank the season in progress when the weeks run past it', async () => {
+it.runIf(inProgress)('offers to rank the season in progress when the week is past what it has played', async () => {
   renderAt('/upr-explorer')
   const button = await screen.findByRole('button', { name: new RegExp(`^Rank ${latestYear} through week \\d+$`) })
   fireEvent.click(button)
-  await waitFor(() => expect(screen.getByText(/team-seasons over these weeks/)).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByText(/team-seasons through week \d+/)).toBeInTheDocument())
   expect(screen.getAllByText('Live').length).toBeGreaterThan(0)
 })

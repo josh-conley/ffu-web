@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 import { SELECT, segButton } from '@/components/controls'
-import { DualRangeSlider } from '@/components/DualRangeSlider'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { MemberSelect } from '@/components/MemberSelect'
+import { RangeSlider } from '@/components/RangeSlider'
 import { YearRange } from '@/components/YearRange'
+import { UPR_MIN_WEEKS } from '@/selectors'
 import type { UprExplorerState, UprOrder } from './uprExplorerState'
 
 // The UPR Explorer's controls. Row 1 = the sample (which team-seasons are ranked), row 2 = the
-// question asked of it (over which weeks, best or worst first). The member filter only picks rows
+// question asked of it (through which week, best or worst first). The member filter only picks rows
 // out of the ranking, so its rows keep their place among everyone.
 
 const LEAGUE_OPTIONS = [
@@ -45,7 +46,7 @@ function OrderToggle({ order, onOrder }: { order: UprOrder; onOrder: (o: UprOrde
 }
 
 export function UprExplorerControls({ state, years, maxWeek, memberIds }: { state: UprExplorerState; years: string[]; maxWeek: number; memberIds: string[] }) {
-  const { weeks, setWeeks, league, setLeague, member, setMember, order, setOrder, yearRange, reset } = state
+  const { week, setWeek, league, setLeague, member, setMember, order, setOrder, yearRange, reset } = state
   const row = 'flex flex-wrap items-end gap-x-4 gap-y-3'
   return (
     <div className="space-y-3 border border-border bg-surface p-3">
@@ -62,16 +63,8 @@ export function UprExplorerControls({ state, years, maxWeek, memberIds }: { stat
         <button type="button" onClick={reset} className={`${segButton(false)} ml-auto self-end`}>Reset</button>
       </div>
       <div className={`${row} border-t border-border pt-3`}>
-        <DualRangeSlider
-          label="Weeks"
-          min={1}
-          max={maxWeek}
-          from={weeks.from}
-          to={weeks.to}
-          onFrom={(n) => setWeeks(n, weeks.to)}
-          onTo={(n) => setWeeks(weeks.from, n)}
-          format={(n) => `Wk ${n}`}
-        />
+        {/* Starts at UPR_MIN_WEEKS: no earlier week has a UPR anywhere on the site. */}
+        <RangeSlider label="Through week" value={week} min={UPR_MIN_WEEKS} max={maxWeek} valueLabel={`Wk ${week}`} onChange={(v) => setWeek(Number(v))} />
         <OrderToggle order={order} onOrder={setOrder} />
       </div>
     </div>

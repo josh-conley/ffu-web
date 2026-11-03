@@ -3,6 +3,7 @@ import { FILTER_POSITIONS } from '@/selectors'
 import { SELECT, segButton } from '@/components/controls'
 import { LEAGUE_STYLES } from '@/components/leagues'
 import { posClass } from '@/components/positions'
+import { RangeSlider } from '@/components/RangeSlider'
 import { YearRange } from '@/components/YearRange'
 
 // All of the Roster Build Stats control UI, split out of the page to keep it under the file/complexity
@@ -20,19 +21,6 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <span className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</span>
       {children}
     </label>
-  )
-}
-
-/** Labeled range slider (sharp accent thumb) — shares the control aesthetic with the selects. */
-function RangeSlider({ label, value, min, max, valueLabel, onChange }: { label: string; value: number; min: number; max: number; valueLabel: string; onChange: (v: string) => void }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</span>
-      <div className="flex h-11 items-center gap-3 md:h-auto">
-        <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} className="w-32 accent-accent sm:w-40" />
-        <span className="w-14 shrink-0 text-sm font-bold tabular-nums">{valueLabel}</span>
-      </div>
-    </div>
   )
 }
 
