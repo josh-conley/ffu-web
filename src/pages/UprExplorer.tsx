@@ -9,18 +9,6 @@ import { UprLiveCallout } from './UprLiveCallout'
 import { UPR_EXPLORER_COLUMNS } from './uprExplorerColumns'
 import { useUprExplorerState } from './uprExplorerState'
 
-function Intro() {
-  return (
-    <div>
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight">UPR Explorer</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
-        Every team-season's <strong className="text-text">UPR as it stood after the week you choose</strong>, ranked
-        against every other at the same point: the best team through week 8, the worst start, the best ever. Each
-        rating counts the regular-season games from week 1 through that week.
-      </p>
-    </div>
-  )
-}
 
 /** How many team-seasons the table holds; with a member filter, out of how many they're ranked among. */
 function TableCount({ shown, ranked }: { shown: number; ranked: number }) {
@@ -54,7 +42,7 @@ export function UprExplorer() {
 
   return (
     <div className="space-y-6">
-      <Intro />
+      <h1 className="text-2xl font-extrabold uppercase tracking-tight">UPR Explorer</h1>
       <UprExplorerControls state={state} years={years} maxWeek={maxWeek} memberIds={memberIds} />
       {catchUp && <UprLiveCallout catchUp={catchUp} onWeek={state.setWeek} />}
       {rows.length === 0 ? (
