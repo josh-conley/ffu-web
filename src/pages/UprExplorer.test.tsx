@@ -75,7 +75,7 @@ it.runIf(inProgress)('offers to rank the season in progress only while the chose
   renderAt('/upr-explorer')
   const button = await screen.findByRole('button', { name: new RegExp(`^Show ${latestYear} \\(through week \\d+\\)$`) })
   fireEvent.click(button)
-  await waitFor(() => expect(screen.getAllByText('Live').length).toBeGreaterThan(0))
+  await waitFor(() => expect(screen.getAllByRole('img', { name: 'Season in progress' }).length).toBeGreaterThan(0))
   // Once the table includes it, there's nothing left to offer.
   expect(screen.queryByRole('button', { name: /^Show / })).not.toBeInTheDocument()
 })

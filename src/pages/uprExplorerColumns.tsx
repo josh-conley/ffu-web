@@ -26,7 +26,7 @@ const teamColumn: Column<RankedUprRow> = {
   ),
 }
 
-/** The year, tagged while that season is still being played. */
+/** The year, with a small green (the site's "active") dot while that season is still being played. */
 const yearColumn: Column<RankedUprRow> = {
   key: 'year',
   header: 'Year',
@@ -34,7 +34,7 @@ const yearColumn: Column<RankedUprRow> = {
   render: (r) => (
     <span className="flex items-center gap-1.5 whitespace-nowrap tabular-nums">
       {r.year}
-      {r.live && <span className="border border-accent px-1 text-[10px] font-bold uppercase tracking-wide text-accent">Live</span>}
+      {r.live && <span role="img" aria-label="Season in progress" title="Season in progress" className="inline-block size-1.5 rounded-full bg-positive" />}
     </span>
   ),
 }
