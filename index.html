@@ -19,13 +19,16 @@
     <meta name="twitter:title" content="Fantasy Football Union" />
     <meta name="twitter:description" content="8+ seasons of league history — standings, drafts, records, all-time stats, and roster-build analysis." />
     <meta name="twitter:image" content="https://ffunion.com/ffu-logo.png" />
-    <!-- Apply the saved theme before first paint to avoid a flash. -->
+    <!-- Apply the saved theme before first paint to avoid a flash. Themes are defined in
+         src/themes/registry.ts; DARK must list every dark one (themes.test.ts checks it). A skin
+         (anything but light/dark) also gets data-theme, which its stylesheet is scoped to. -->
     <script>
       try {
+        const DARK = ['dark', 'cyberpunk']
         const t = localStorage.getItem('theme')
-        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        }
+        const root = document.documentElement
+        if (t ? DARK.includes(t) : matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark')
+        if (t && t !== 'light' && t !== 'dark') root.dataset.theme = t
       } catch (e) { /* ignore */ }
     </script>
     <!-- SPA redirect decoder: restores the real path after public/404.html bounces

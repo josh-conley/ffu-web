@@ -1,0 +1,198 @@
+/* Windows XP skin: an early-2000s desktop. A rolling-hills wallpaper, the page as a window with a
+   blue title bar, the site header as the taskbar (the logo is its Start button), raised "Luna"
+   buttons, list-view table headers and chunky scrollbars. All drawn in CSS: no original artwork.
+
+   Unlayered on purpose: Tailwind's utilities live in cascade layers, so every rule here wins over
+   them without needing !important. Selectors lean on element types and on the few utility classes
+   that mark a role site-wide (`bg-accent` = selected / table head, `bg-surface` + `border` = a
+   control), never on a component's markup. Sizes and layout are left alone. */
+
+[data-theme='xp'] {
+  --font-sans: Tahoma, 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+
+  --color-accent: #316ac5; /* Luna selection blue; #fff on it ≈ 5.3:1 */
+  --color-accent-hover: #1f4f9e;
+  --color-accent-fg: #ffffff;
+  --color-header: #245edb;
+
+  /* `bg` is the window face (everything sits inside the window), not the wallpaper. */
+  --color-bg: #ece9d8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1efe2;
+  --color-border: #aca899;
+  --color-text: #000000;
+  --color-muted: #55534a;
+  --color-dim: #3d3b34;
+
+  --xp-title: linear-gradient(180deg, #0997ff 0%, #0053ee 9%, #0050ee 40%, #0066ff 88%, #005bff 94%, #003dd7 100%);
+  --xp-face: linear-gradient(180deg, #ffffff 0%, #ecebe5 86%, #d8d0c4 100%);
+}
+
+/* Wallpaper: sky, two clouds, two hills. A fixed layer behind the page (not background-attachment,
+   which phones handle badly); the app shell goes transparent to show it. */
+[data-theme='xp'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 95% 55% at 22% 122%, #4f9a2a 0 59.6%, transparent 60%),
+    radial-gradient(ellipse 110% 60% at 82% 124%, #79bd3c 0 59.6%, transparent 60%),
+    radial-gradient(ellipse 26% 7% at 72% 20%, rgb(255 255 255 / 0.85), transparent 72%),
+    radial-gradient(ellipse 20% 6% at 18% 32%, rgb(255 255 255 / 0.7), transparent 72%),
+    linear-gradient(180deg, #2a6fd8 0%, #5b9ef1 48%, #b4d6fb 80%);
+}
+[data-theme='xp'] #root > div:has(> main) {
+  background: transparent;
+}
+
+/* The page as a window. */
+[data-theme='xp'] main {
+  position: relative;
+  margin-block: 1rem 2rem;
+  padding-top: calc(30px + 1.25rem);
+  background: var(--color-bg);
+  border: 3px solid #0831d9;
+  border-top: 0;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 3px 3px 14px rgb(0 0 0 / 0.45);
+}
+[data-theme='xp'] main::before {
+  content: 'Fantasy Football Union';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 30px;
+  padding-left: 10px;
+  overflow: hidden;
+  border-radius: 5px 5px 0 0;
+  background: var(--xp-title);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 30px;
+  white-space: nowrap;
+  text-shadow: 1px 1px #0f1089;
+}
+/* Minimise / maximise / close, as one drawn strip. Decorative: it is not a control. */
+[data-theme='xp'] main::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 70px;
+  height: 22px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='22'%3E%3Cg stroke='%23fff' fill='%232f6fe8'%3E%3Crect x='.5' y='.5' width='21' height='21' rx='3'/%3E%3Crect x='24.5' y='.5' width='21' height='21' rx='3'/%3E%3Crect x='48.5' y='.5' width='21' height='21' rx='3' fill='%23d8432a'/%3E%3C/g%3E%3Cg stroke='%23fff' stroke-width='2' fill='none'%3E%3Cpath d='M6 15h8'/%3E%3Crect x='30' y='6' width='10' height='9'/%3E%3Cpath d='M54.5 6.5l9 9m0-9l-9 9'/%3E%3C/g%3E%3C/svg%3E")
+    no-repeat;
+}
+
+/* Pages with a full-bleed block (the Stats table, the draft board, the Cup bracket) break out of
+   the centered column with a `50% - 50vw` margin, which would spill out of the window frame. There
+   the window is "maximized" instead: it takes the full width and the block sits inside it. */
+[data-theme='xp'] main:has([class*='50%-50vw']) {
+  max-width: none;
+  margin-inline: 0.5rem;
+}
+[data-theme='xp'] main [class*='50%-50vw'] {
+  margin-inline: 0;
+}
+
+/* Taskbar. `:not(dialog *)` keeps this to the site header, not a dialog's title bar. */
+[data-theme='xp'] header:not(dialog *) {
+  background: linear-gradient(180deg, #3168d5 0%, #4993e6 4%, #2157d7 10%, #2663e0 55%, #1941a5 100%);
+  border-bottom-color: #0c2f9c;
+}
+/* Start button: the brand link. */
+[data-theme='xp'] header:not(dialog *) > div > a:first-child {
+  padding: 3px 18px 3px 8px;
+  border-radius: 4px 16px 16px 4px;
+  background: linear-gradient(180deg, #6cc15c 0%, #3c9a30 18%, #2f8226 78%, #1f6418 100%);
+  box-shadow:
+    inset 0 2px 2px rgb(255 255 255 / 0.4),
+    inset 0 -2px 3px rgb(0 0 0 / 0.25),
+    2px 0 5px rgb(0 0 0 / 0.4);
+  text-shadow: 1px 1px 1px rgb(0 0 0 / 0.5);
+}
+/* Taskbar buttons; the current page is the pressed one. */
+[data-theme='xp'] header:not(dialog *) nav > :is(a, div > button) {
+  border-radius: 3px;
+}
+[data-theme='xp'] header:not(dialog *) nav > :is(a, div > button)[class~='bg-accent'] {
+  background: #1b4bb0;
+  box-shadow: inset 1px 1px 3px rgb(0 0 0 / 0.55);
+}
+
+/* Luna controls: any bordered control on a surface, and its selected (accent) state. */
+[data-theme='xp'] :is(main, dialog) :is(button, select, a)[class~='border']:is([class~='bg-surface'], [class~='bg-accent']) {
+  border-color: #003c74;
+  border-radius: 3px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+[data-theme='xp'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface'] {
+  background: var(--xp-face);
+  color: #000;
+}
+[data-theme='xp'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  box-shadow: inset 0 0 0 2px #f8b636;
+}
+[data-theme='xp'] :is(main, dialog) :is(button, a)[class~='border'][class~='bg-accent'] {
+  background: linear-gradient(180deg, #6b9cf0 0%, #316ac5 60%, #2a5cb0 100%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35);
+}
+
+/* List-view column headers, wherever a table head is the accent bar. */
+[data-theme='xp'] thead[class~='bg-accent'] th {
+  background: linear-gradient(180deg, #ffffff 0%, #ebeadb 82%, #cbc7b8 100%);
+  color: #000;
+  box-shadow: inset -1px 0 #d6d2c2;
+  letter-spacing: 0;
+  text-transform: none;
+}
+[data-theme='xp'] thead[class~='bg-accent'] th:hover {
+  box-shadow:
+    inset -1px 0 #d6d2c2,
+    inset 0 -3px #f8a900;
+}
+
+/* Dialogs are windows too. */
+[data-theme='xp'] dialog {
+  border: 3px solid #0831d9;
+  border-radius: 8px 8px 0 0;
+}
+[data-theme='xp'] dialog > div > header {
+  background: var(--xp-title);
+  text-shadow: 1px 1px #0f1089;
+}
+
+[data-theme='xp'] ::selection {
+  background: #316ac5;
+  color: #fff;
+}
+
+/* Classic scrollbars, for a mouse only: on a touch screen custom scrollbars turn the slim overlay
+   bars into permanent gutters. */
+@media (hover: hover) and (pointer: fine) {
+  [data-theme='xp'] ::-webkit-scrollbar {
+    width: 17px;
+    height: 17px;
+  }
+  [data-theme='xp'] ::-webkit-scrollbar-track {
+    background: #f3f1ec;
+    box-shadow: inset 0 0 0 1px #e4e1d6;
+  }
+  [data-theme='xp'] ::-webkit-scrollbar-thumb {
+    background: #c1d2fb;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px #98b1e4;
+  }
+  [data-theme='xp'] ::-webkit-scrollbar-thumb:hover {
+    background: #d6e2ff;
+  }
+}
+
+@media (max-width: 639px) {
+  [data-theme='xp'] main {
+    margin-block: 0.5rem 1rem;
+  }
+}

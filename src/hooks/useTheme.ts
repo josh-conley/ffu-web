@@ -1,21 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
+import { getThemeState, setTheme, setThemeSound, subscribeTheme } from '@/themes/themeStore'
+import type { ThemeId } from '@/themes/registry'
 
-export type Theme = 'light' | 'dark'
-
-// The initial `.dark` class is set by an inline script in index.html (pre-paint, no flash);
-// this hook reads that state and keeps it in sync with toggles + localStorage.
-function currentTheme(): Theme {
-  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-}
-
-export function useTheme(): { theme: Theme; toggle: () => void } {
-  const [theme, setTheme] = useState<Theme>(currentTheme)
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    localStorage.setItem('theme', theme)
-  }, [theme])
-
-  const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), [])
-  return { theme, toggle }
+/** The document's theme and sound preference (see themes/themeStore), shared by every caller. */
+export function useTheme(): {
+  theme: ThemeId
+  sound: boolean
+  setTheme: (id: ThemeId) => void
+  setSound: (on: boolean) => void
+} {
+  const { theme, sound } = useSyncExternalStore(subscribeTheme, getThemeState)
+  return { theme, sound, setTheme: (id) => void setTheme(id), setSound: setThemeSound }
 }

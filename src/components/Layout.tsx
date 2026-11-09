@@ -6,6 +6,7 @@ import { useRouteFocus } from '@/hooks/useRouteFocus'
 import { Header } from './Header'
 import { PreviewBanner } from './PreviewBanner'
 import { TeamProfileProvider } from './TeamProfileProvider'
+import { ThemeEffects } from './ThemeEffects'
 
 /** App shell: skip link + persistent header wrapping routed pages. Owns the tab title and the
  *  focus move on navigation, so no page has to remember either.
@@ -44,6 +45,7 @@ export function Layout({ stage = false }: { stage?: boolean }) {
         >
           <Outlet />
         </main>
+        <ThemeEffects />
       </div>
     </TeamProfileProvider>
   )

@@ -1,18 +1,19 @@
 import { Fragment } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useNavHref } from '@/hooks/useNavHref'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemePicker } from './ThemePicker'
 import { MobileNav } from './MobileNav'
 import { NavMenu } from './NavMenu'
 import { NAV, isGroup } from './nav'
 
-// The header is intentionally ALWAYS dark (independent of the light/dark theme), so its colors are
-// fixed near-black + white rather than theme tokens. The FFU red identity stays in the bottom rule
-// and the active nav tab.
+// The header is intentionally ALWAYS dark (independent of the light/dark mode), so its text is fixed
+// white rather than a surface token, on its own `header` background token (near-black; a skin may
+// recolor it but must keep it dark enough for white text). The FFU red identity stays in the bottom
+// rule and the active nav tab.
 export function Header() {
   const hrefFor = useNavHref()
   return (
-    <header className="sticky top-0 z-20 border-b-2 border-accent bg-[#0a0a0b]">
+    <header className="sticky top-0 z-20 border-b-2 border-accent bg-header">
       {/* Full-width (no max-w cap): the brand subtext + 7-item nav need the whole width on desktop.
           Between md and xl there still isn't room for both, so the subtext steps aside (the logo
           and "FFU" stay) and the nav labels never wrap onto two lines. Below lg the labels drop a size so all seven
@@ -55,11 +56,11 @@ export function Header() {
               </NavLink>
             ),
           )}
-          <ThemeToggle />
+          <ThemePicker />
         </nav>
-        {/* Mobile controls (<md): theme toggle + hamburger. */}
+        {/* Mobile controls (<md): theme picker + hamburger. */}
         <div className="flex items-center gap-1 md:hidden">
-          <ThemeToggle />
+          <ThemePicker />
           <MobileNav entries={NAV} />
         </div>
       </div>

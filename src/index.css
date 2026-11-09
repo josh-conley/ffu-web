@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* Class-based dark mode (toggled via `.dark` on <html>), not OS-only — a theme
-   toggle is part of the planned shell. https://tailwindcss.com/docs/dark-mode */
+/* Class-based dark mode (toggled via `.dark` on <html>), not OS-only: the header's theme picker
+   sets it. Skins (src/themes) add `data-theme` on top and override these tokens from their own
+   stylesheets. https://tailwindcss.com/docs/dark-mode */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Type: Inter for everything, IBM Plex Mono for stats, self-hosted via @fontsource (imported in
@@ -21,6 +22,9 @@
   --color-accent: #cc0000;
   --color-accent-hover: #a30000;
   --color-accent-fg: #ffffff; /* AA: #fff on #cc0000 ≈ 5.9:1 */
+
+  /* The site header bar: always dark, in light mode too (see Header.tsx). */
+  --color-header: #0a0a0b;
 
   /* A pick'em pick: the whole row tinted in the Cup's blue (CUP_ACCENT in config/cup.ts), never red
      or green, which mark whether a pick won or lost once the round is played. */
@@ -144,4 +148,15 @@ body {
    page. They aren't controls, so no focus ring: the move is for assistive tech, not a visual cue. */
 main h1[tabindex='-1']:focus {
   outline: none;
+}
+
+/* Full-window overlay a skin can paint effects on (scanlines, snow, ...). Inert and invisible in
+   the standard look; never takes pointer events, so it can sit above the page. Skins that want a
+   backdrop BEHIND the page use `body::before` instead (see src/themes). */
+.theme-fx {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
 }

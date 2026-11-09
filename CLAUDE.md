@@ -60,7 +60,8 @@ Rules: **one identity — `ffuId`** (platform ids only in config + migration); *
 stored**; **era is data, not branching** (each season file carries its own metadata); **the provider owns
 100% of source→type mapping** so swapping static→API later is a one-file change.
 
-Folder layout: `src/{config,data,selectors,hooks,components,pages}`.
+Folder layout: `src/{config,data,selectors,hooks,components,pages}`, plus `src/themes` (skins) and
+`src/lib` (framework-free helpers).
 
 ## Tech stack
 React 19 + TypeScript (strict) + Vite. Router: react-router-dom (BrowserRouter; custom domain at root, so
@@ -100,6 +101,11 @@ against history), **Builds**
 (`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), and **ADP
 Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP).
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
+
+**Themes:** the header's palette button picks Light, Dark or a novelty **skin** (Windows XP,
+Cyberpunk). A skin is one stylesheet in `src/themes/`, scoped under `html[data-theme]` and loaded
+on demand; components never branch on the theme. Adding one is a registry entry plus a CSS file
+(see `src/themes/registry.ts` and the 2026-11-09 entry in `ai-docs/DECISIONS.md`).
 
 **Live season (active for 2026):** the home page has a "This Week" section (matchups + standings +
 box scores, fetched client-side from Sleeper via `src/data/liveSleeper.ts` — deliberately a separate
