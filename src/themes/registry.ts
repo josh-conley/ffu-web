@@ -10,7 +10,7 @@
 // themeSound.ts. If it is dark, add its id to the pre-paint script in index.html too (a test checks
 // the two lists agree). No component should need to change.
 
-export type ThemeId = 'light' | 'dark' | 'xp' | 'cyberpunk'
+export type ThemeId = 'light' | 'dark' | 'xp' | 'retro' | 'cyberpunk' | 'thanksgiving' | 'christmas'
 
 export interface ThemeDef {
   id: ThemeId
@@ -25,12 +25,15 @@ export const THEMES: readonly ThemeDef[] = [
   { id: 'light', label: 'Light', dark: false },
   { id: 'dark', label: 'Dark', dark: true },
   { id: 'xp', label: 'Windows XP', dark: false, load: () => import('./xp.css') },
+  { id: 'retro', label: '90s Web', dark: false, load: () => import('./retro.css') },
   {
     id: 'cyberpunk',
     label: 'Cyberpunk',
     dark: true,
     load: () => Promise.all([import('@fontsource/orbitron/latin-700.css'), import('./cyberpunk.css')]),
   },
+  { id: 'thanksgiving', label: 'Thanksgiving', dark: false, load: () => import('./thanksgiving.css') },
+  { id: 'christmas', label: 'Christmas', dark: true, load: () => import('./christmas.css') },
 ]
 
 export const isThemeId = (value: unknown): value is ThemeId => THEMES.some((t) => t.id === value)

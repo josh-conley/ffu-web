@@ -150,6 +150,12 @@ main h1[tabindex='-1']:focus {
   outline: none;
 }
 
+/* Every skin paints its own backdrop behind the page (`body::before`), so under a skin the app
+   shell stops covering it. */
+[data-theme] #root > div:has(> main) {
+  background: transparent;
+}
+
 /* Full-window overlay a skin can paint effects on (scanlines, snow, ...). Inert and invisible in
    the standard look; never takes pointer events, so it can sit above the page. Skins that want a
    backdrop BEHIND the page use `body::before` instead (see src/themes). */

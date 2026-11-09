@@ -33,6 +33,16 @@ const VOICES: Partial<Record<ThemeId, Voice>> = {
     ],
     click: [{ type: 'sine', hz: 900, toHz: 500, at: 0, dur: 0.05, gain: 0.12 }],
   },
+  // A cheap sound card playing a fanfare: bare square waves, no decay to speak of.
+  retro: {
+    chime: [
+      { type: 'square', hz: 392, at: 0, dur: 0.11, gain: 0.05 },
+      { type: 'square', hz: 523.25, at: 0.12, dur: 0.11, gain: 0.05 },
+      { type: 'square', hz: 659.25, at: 0.24, dur: 0.11, gain: 0.05 },
+      { type: 'square', hz: 783.99, at: 0.36, dur: 0.3, gain: 0.05 },
+    ],
+    click: [{ type: 'square', hz: 440, at: 0, dur: 0.03, gain: 0.04 }],
+  },
   // Harsh and synthetic: a rising saw sweep with a detuned shadow, and a terminal blip.
   cyberpunk: {
     chime: [
@@ -42,6 +52,27 @@ const VOICES: Partial<Record<ThemeId, Voice>> = {
       { type: 'square', hz: 1320, at: 0.46, dur: 0.16, gain: 0.05 },
     ],
     click: [{ type: 'square', hz: 1400, toHz: 2100, at: 0, dur: 0.035, gain: 0.04 }],
+  },
+  // Warm and woody: a low, unhurried three-note figure.
+  thanksgiving: {
+    chime: [
+      { type: 'triangle', hz: 293.66, at: 0, dur: 0.5, gain: 0.16 },
+      { type: 'triangle', hz: 369.99, at: 0.18, dur: 0.5, gain: 0.15 },
+      { type: 'triangle', hz: 440, at: 0.36, dur: 0.8, gain: 0.15 },
+    ],
+    click: [{ type: 'triangle', hz: 320, toHz: 180, at: 0, dur: 0.06, gain: 0.14 }],
+  },
+  // Sleigh bells: high sines with a bright overtone and a long ring.
+  christmas: {
+    chime: [
+      { type: 'sine', hz: 1318.5, at: 0, dur: 0.7, gain: 0.12 },
+      { type: 'sine', hz: 2637, at: 0, dur: 0.3, gain: 0.04 },
+      { type: 'sine', hz: 1568, at: 0.16, dur: 0.7, gain: 0.12 },
+      { type: 'sine', hz: 3136, at: 0.16, dur: 0.3, gain: 0.04 },
+      { type: 'sine', hz: 2093, at: 0.32, dur: 1.2, gain: 0.12 },
+      { type: 'sine', hz: 4186, at: 0.32, dur: 0.4, gain: 0.04 },
+    ],
+    click: [{ type: 'sine', hz: 2637, at: 0, dur: 0.12, gain: 0.06 }],
   },
 }
 

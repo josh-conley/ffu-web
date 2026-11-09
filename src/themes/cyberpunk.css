@@ -29,8 +29,8 @@
   --cp-display: 'Orbitron', var(--font-sans);
 }
 
-/* Backdrop: a grid fading into the dark, under a magenta haze from the top. Behind the page; the
-   app shell goes transparent to show it. */
+/* Backdrop: a grid fading into the dark, under a magenta haze from the top. Behind the page; index.css
+   clears the app shell so it shows. */
 [data-theme='cyberpunk'] body::before {
   content: '';
   position: fixed;
@@ -42,9 +42,6 @@
     repeating-linear-gradient(90deg, rgb(var(--cp-cyan) / 0.08) 0 1px, transparent 1px 48px),
     repeating-linear-gradient(0deg, rgb(var(--cp-magenta) / 0.07) 0 1px, transparent 1px 48px),
     #07060f;
-}
-[data-theme='cyberpunk'] #root > div:has(> main) {
-  background: transparent;
 }
 
 /* Overlay: scanlines and a vignette, with a soft beam sweeping down the screen. */
@@ -73,11 +70,11 @@
 }
 
 /* Header: a magenta neon rule, and the brand in the display face. */
-[data-theme='cyberpunk'] header:not(dialog *) {
+[data-theme='cyberpunk'] #root > div > header {
   border-bottom-color: rgb(var(--cp-magenta));
   box-shadow: 0 0 22px rgb(var(--cp-magenta) / 0.55);
 }
-[data-theme='cyberpunk'] header:not(dialog *) > div > a:first-child > span > span:first-child {
+[data-theme='cyberpunk'] #root > div > header > div > a:first-child > span > span:first-child {
   font-family: var(--cp-display);
   font-style: normal;
   letter-spacing: 0.06em;
@@ -85,7 +82,7 @@
     0 0 10px rgb(var(--cp-cyan) / 0.9),
     2px 0 rgb(var(--cp-magenta) / 0.8);
 }
-[data-theme='cyberpunk'] header:not(dialog *) > div > a:first-child > img {
+[data-theme='cyberpunk'] #root > div > header > div > a:first-child > img {
   filter: drop-shadow(0 0 6px rgb(var(--cp-cyan) / 0.8));
 }
 

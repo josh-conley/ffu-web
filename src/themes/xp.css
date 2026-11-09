@@ -29,7 +29,7 @@
 }
 
 /* Wallpaper: sky, two clouds, two hills. A fixed layer behind the page (not background-attachment,
-   which phones handle badly); the app shell goes transparent to show it. */
+   which phones handle badly) (index.css clears the app shell). */
 [data-theme='xp'] body::before {
   content: '';
   position: fixed;
@@ -41,9 +41,6 @@
     radial-gradient(ellipse 26% 7% at 72% 20%, rgb(255 255 255 / 0.85), transparent 72%),
     radial-gradient(ellipse 20% 6% at 18% 32%, rgb(255 255 255 / 0.7), transparent 72%),
     linear-gradient(180deg, #2a6fd8 0%, #5b9ef1 48%, #b4d6fb 80%);
-}
-[data-theme='xp'] #root > div:has(> main) {
-  background: transparent;
 }
 
 /* The page as a window. */
@@ -96,13 +93,13 @@
   margin-inline: 0;
 }
 
-/* Taskbar. `:not(dialog *)` keeps this to the site header, not a dialog's title bar. */
-[data-theme='xp'] header:not(dialog *) {
+/* Taskbar. `#root > div > header` is the site header only: cards and dialogs have headers too. */
+[data-theme='xp'] #root > div > header {
   background: linear-gradient(180deg, #3168d5 0%, #4993e6 4%, #2157d7 10%, #2663e0 55%, #1941a5 100%);
   border-bottom-color: #0c2f9c;
 }
 /* Start button: the brand link. */
-[data-theme='xp'] header:not(dialog *) > div > a:first-child {
+[data-theme='xp'] #root > div > header > div > a:first-child {
   padding: 3px 18px 3px 8px;
   border-radius: 4px 16px 16px 4px;
   background: linear-gradient(180deg, #6cc15c 0%, #3c9a30 18%, #2f8226 78%, #1f6418 100%);
@@ -113,10 +110,10 @@
   text-shadow: 1px 1px 1px rgb(0 0 0 / 0.5);
 }
 /* Taskbar buttons; the current page is the pressed one. */
-[data-theme='xp'] header:not(dialog *) nav > :is(a, div > button) {
+[data-theme='xp'] #root > div > header nav > :is(a, div > button) {
   border-radius: 3px;
 }
-[data-theme='xp'] header:not(dialog *) nav > :is(a, div > button)[class~='bg-accent'] {
+[data-theme='xp'] #root > div > header nav > :is(a, div > button)[class~='bg-accent'] {
   background: #1b4bb0;
   box-shadow: inset 1px 1px 3px rgb(0 0 0 / 0.55);
 }
