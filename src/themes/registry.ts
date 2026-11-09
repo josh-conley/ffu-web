@@ -25,7 +25,7 @@ export const THEMES: readonly ThemeDef[] = [
   { id: 'light', label: 'Light', dark: false },
   { id: 'dark', label: 'Dark', dark: true },
   { id: 'xp', label: 'Windows XP', dark: false, load: () => import('./xp.css') },
-  { id: 'retro', label: '90s Web', dark: false, load: () => import('./retro.css') },
+  { id: 'retro', label: '90s', dark: false, load: () => import('./retro.css') },
   {
     id: 'cyberpunk',
     label: 'Cyberpunk',

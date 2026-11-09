@@ -33,7 +33,7 @@ const VOICES: Partial<Record<ThemeId, Voice>> = {
     ],
     click: [{ type: 'sine', hz: 900, toHz: 500, at: 0, dur: 0.05, gain: 0.12 }],
   },
-  // A cheap sound card playing a fanfare: bare square waves, no decay to speak of.
+  // A toy keyboard's fanfare: bare square waves, no decay to speak of.
   retro: {
     chime: [
       { type: 'square', hz: 392, at: 0, dur: 0.11, gain: 0.05 },
