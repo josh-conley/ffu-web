@@ -1,3 +1,4 @@
+import { audioContext } from '@/lib/audioContext'
 import { isThemeId, themeDef, type ThemeId } from './registry'
 
 // One theme for the whole document, so it lives in a module-level store rather than component
@@ -65,6 +66,7 @@ function applyToDocument(id: ThemeId) {
  * half-state of new attribute, old styles. If the fetch fails (offline), the current theme stays.
  */
 export async function setTheme(id: ThemeId): Promise<void> {
+  if (state.sound) unlockAudio()
   try {
     await themeDef(id).load?.()
   } catch {
@@ -76,7 +78,18 @@ export async function setTheme(id: ThemeId): Promise<void> {
   if (state.sound) void import('./themeSound').then((m) => m.playChime(id))
 }
 
+/**
+ * Phones (iOS above all) only let audio start from INSIDE a tap's own event handler. The sounds
+ * themselves play a moment later, after a stylesheet or the sound module has loaded, which is too
+ * late to count. So every tap that will lead to a sound wakes the audio context synchronously
+ * first; once it is running, the later play goes through.
+ */
+function unlockAudio() {
+  audioContext()
+}
+
 export function setThemeSound(on: boolean) {
+  if (on) unlockAudio()
   persist(SOUND_KEY, on ? '1' : '0')
   update({ sound: on })
   // The toggle itself is the audible confirmation that sound is on.
