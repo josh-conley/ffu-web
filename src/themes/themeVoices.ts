@@ -59,21 +59,35 @@ const xp: Voice = {
   ],
 }
 
-// A 90s TV sting: two orchestra hits (stacked saws) with a snare on the second, then a slap-bass
-// lick. The click is a bubble pop.
-const ORCH = [130.81, 261.63, 392, 523.25, 783.99]
+// The sound of getting online in the 90s: a dial-up modem. Dial tone, four touch-tone digits (each
+// a real DTMF pair), the far end's answer tone, the two modems warbling at each other, a pair of
+// crossing screeches, then the hiss of the connection. The click is a virtual pet's two-note bip.
+const DTMF: [number, number][] = [
+  [697, 1209],
+  [770, 1336],
+  [852, 1477],
+  [941, 1336],
+]
+const WARBLE = [980, 1180, 980, 1180, 1650, 1850, 1650, 1850]
 const retro: Voice = {
   chime: [
-    ...ORCH.map((hz): Note => ({ type: 'sawtooth', hz, at: 0, dur: 0.28, gain: 0.05 })),
-    ...ORCH.map((hz): Note => ({ type: 'sawtooth', hz, at: 0.32, dur: 0.13, gain: 0.05 })),
-    { type: 'noise', hz: 1800, q: 0.8, at: 0.32, dur: 0.12, gain: 0.2 },
-    { type: 'square', hz: 98, at: 0.5, dur: 0.12, gain: 0.09 },
-    { type: 'square', hz: 130.81, at: 0.66, dur: 0.12, gain: 0.09 },
-    { type: 'square', hz: 146.83, at: 0.82, dur: 0.1, gain: 0.09 },
-    { type: 'square', hz: 130.81, at: 0.98, dur: 0.3, gain: 0.09 },
-    { type: 'noise', hz: 1800, q: 0.8, at: 0.98, dur: 0.12, gain: 0.2 },
+    { type: 'sine', hz: 350, at: 0, dur: 0.25, gain: 0.06 },
+    { type: 'sine', hz: 440, at: 0, dur: 0.25, gain: 0.06 },
+    ...DTMF.flatMap(([low, high], i): Note[] => [
+      { type: 'sine', hz: low, at: 0.3 + i * 0.1, dur: 0.07, gain: 0.07 },
+      { type: 'sine', hz: high, at: 0.3 + i * 0.1, dur: 0.07, gain: 0.07 },
+    ]),
+    { type: 'sine', hz: 2100, at: 0.75, dur: 0.3, gain: 0.07 },
+    ...WARBLE.map((hz, i): Note => ({ type: 'square', hz, at: 1.05 + i * 0.05, dur: 0.05, gain: 0.03 })),
+    { type: 'sawtooth', hz: 2400, toHz: 600, at: 1.45, dur: 0.25, gain: 0.04 },
+    { type: 'sine', hz: 600, toHz: 3000, at: 1.55, dur: 0.3, gain: 0.05 },
+    { type: 'noise', hz: 1800, q: 0.5, at: 1.75, dur: 0.7, gain: 0.12 },
+    { type: 'noise', hz: 3200, q: 2, at: 1.75, dur: 0.7, gain: 0.08 },
   ],
-  click: [{ type: 'sine', hz: 300, toHz: 900, at: 0, dur: 0.06, gain: 0.15 }],
+  click: [
+    { type: 'square', hz: 1568, at: 0, dur: 0.04, gain: 0.04 },
+    { type: 'square', hz: 2093, at: 0.045, dur: 0.05, gain: 0.04 },
+  ],
 }
 
 // A cabinet taking a coin: the two-note coin blip, then a rising square-wave power-up run that
