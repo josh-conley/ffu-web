@@ -1,0 +1,182 @@
+/* 80s skin: neon on near-black, the arcade-and-synthesizer end of the decade. Cyan accent with a
+   magenta counterpoint, a faint grid behind the page, CRT scanlines and a slow scan beam over it, glowing panels and controls, and a display
+   face (Orbitron, loaded with this skin) on the page title, which glitches now and then.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Tier, win/loss
+   and position colors are left alone, and so are sizes and layout: body text stays Inter so no
+   table gets wider. Motion stops under prefers-reduced-motion. */
+
+[data-theme='eighties'] {
+  --color-accent: #00e5ff;
+  --color-accent-hover: #6ff2ff;
+  --color-accent-fg: #00131a; /* ≈ 12:1 on the cyan */
+  --color-header: #05040b;
+
+  --color-bg: #07060f;
+  --color-surface: #0e0c1d;
+  --color-surface-2: #17142f;
+  --color-border: #2c2960;
+  --color-text: #e8f6ff;
+  --color-muted: #9299cf; /* ≈ 6.8:1 on surface */
+  --color-dim: #9299cf;
+
+  --color-positive: #3dff9a;
+  --color-negative: #ff5c7a;
+  --color-notable: #ffe14d;
+
+  --e80-cyan: 0 229 255;
+  --e80-magenta: 255 43 214;
+  --e80-display: 'Orbitron', var(--font-sans);
+}
+
+/* Backdrop: a grid fading into the dark, under a magenta haze from the top. Behind the page; index.css
+   clears the app shell so it shows. */
+[data-theme='eighties'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, transparent 0%, #07060f 88%),
+    radial-gradient(ellipse 80% 45% at 50% -8%, rgb(var(--e80-magenta) / 0.2), transparent 70%),
+    repeating-linear-gradient(90deg, rgb(var(--e80-cyan) / 0.08) 0 1px, transparent 1px 48px),
+    repeating-linear-gradient(0deg, rgb(var(--e80-magenta) / 0.07) 0 1px, transparent 1px 48px),
+    #07060f;
+}
+
+/* Overlay: scanlines and a vignette, with a soft beam sweeping down the screen. */
+[data-theme='eighties'] .theme-fx {
+  display: block;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.45) 100%),
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
+}
+[data-theme='eighties'] .theme-fx::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 22vh;
+  background: linear-gradient(180deg, transparent, rgb(var(--e80-cyan) / 0.03) 60%, rgb(var(--e80-cyan) / 0.07));
+  animation: e80-scan 9s linear infinite;
+}
+@keyframes e80-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+/* Header: a magenta neon rule, and the brand in the display face. */
+[data-theme='eighties'] #root > div > header {
+  border-bottom-color: rgb(var(--e80-magenta));
+  box-shadow: 0 0 22px rgb(var(--e80-magenta) / 0.55);
+}
+[data-theme='eighties'] #root > div > header > div > a:first-child > span > span:first-child {
+  font-family: var(--e80-display);
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 10px rgb(var(--e80-cyan) / 0.9),
+    2px 0 rgb(var(--e80-magenta) / 0.8);
+}
+[data-theme='eighties'] #root > div > header > div > a:first-child > img {
+  filter: drop-shadow(0 0 6px rgb(var(--e80-cyan) / 0.8));
+}
+
+/* Anything in the accent (selected control, active tab) glows. */
+[data-theme='eighties'] :is(a, button)[class~='bg-accent'] {
+  box-shadow: 0 0 14px rgb(var(--e80-cyan) / 0.65);
+}
+
+/* Page title: display face with a chromatic split, and a brief glitch every few seconds. */
+[data-theme='eighties'] main h1 {
+  font-family: var(--e80-display);
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 12px rgb(var(--e80-cyan) / 0.55),
+    2px 0 rgb(var(--e80-magenta) / 0.7),
+    -2px 0 rgb(var(--e80-cyan) / 0.7);
+  animation: e80-glitch 7s steps(1) infinite;
+}
+[data-theme='eighties'] main h2 {
+  text-shadow: 0 0 10px rgb(var(--e80-cyan) / 0.45);
+}
+@keyframes e80-glitch {
+  0%,
+  100% {
+    transform: none;
+    clip-path: none;
+  }
+  92% {
+    transform: translateX(-3px) skewX(-8deg);
+    clip-path: inset(0 0 45% 0);
+  }
+  94% {
+    transform: translateX(3px) skewX(6deg);
+    clip-path: inset(40% 0 0 0);
+  }
+  96% {
+    transform: none;
+    clip-path: none;
+  }
+}
+
+/* Panels: a neon edge and a soft outer glow on every bordered surface. */
+[data-theme='eighties'] :is(main, dialog) [class~='border'][class~='border-border'][class~='bg-surface'] {
+  border-color: rgb(var(--e80-cyan) / 0.3);
+  box-shadow:
+    0 0 20px -8px rgb(var(--e80-cyan) / 0.6),
+    inset 0 0 26px -18px rgb(var(--e80-magenta) / 0.9);
+}
+[data-theme='eighties'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  border-color: rgb(var(--e80-cyan));
+  color: rgb(var(--e80-cyan));
+  box-shadow: 0 0 14px rgb(var(--e80-cyan) / 0.6);
+}
+
+/* Table heads: the solid accent bar becomes a dark strip with lit lettering and a neon underline. */
+[data-theme='eighties'] thead[class~='bg-accent'] th {
+  background: #0a0918;
+  color: rgb(var(--e80-cyan));
+  box-shadow: inset 0 -1px rgb(var(--e80-cyan) / 0.9);
+  text-shadow: 0 0 8px rgb(var(--e80-cyan) / 0.6);
+}
+[data-theme='eighties'] tbody tr:hover > td:not([class*='bg-']) {
+  background: rgb(var(--e80-cyan) / 0.06);
+}
+
+[data-theme='eighties'] dialog {
+  border-color: rgb(var(--e80-cyan) / 0.6);
+  box-shadow: 0 0 40px rgb(var(--e80-cyan) / 0.35);
+}
+
+[data-theme='eighties'] ::selection {
+  background: rgb(var(--e80-magenta));
+  color: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-theme='eighties'] ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  [data-theme='eighties'] ::-webkit-scrollbar-track {
+    background: #07060f;
+  }
+  [data-theme='eighties'] ::-webkit-scrollbar-thumb {
+    background: rgb(var(--e80-cyan) / 0.5);
+    box-shadow: 0 0 8px rgb(var(--e80-cyan) / 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='eighties'] .theme-fx::after {
+    display: none;
+  }
+  [data-theme='eighties'] main h1 {
+    animation: none;
+  }
+}

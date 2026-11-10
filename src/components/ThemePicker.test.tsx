@@ -12,7 +12,7 @@ describe('ThemePicker', () => {
   it('lists the themes behind one button and marks the current one', async () => {
     const user = userEvent.setup()
     render(<ThemePicker />)
-    expect(screen.queryByRole('button', { name: 'Cyberpunk' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '80s' })).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Theme' }))
     expect(screen.getByRole('button', { name: 'Light' })).toHaveAttribute('aria-pressed', 'true')
@@ -23,10 +23,10 @@ describe('ThemePicker', () => {
     const user = userEvent.setup()
     render(<ThemePicker />)
     await user.click(screen.getByRole('button', { name: 'Theme' }))
-    await user.click(screen.getByRole('button', { name: 'Cyberpunk' }))
+    await user.click(screen.getByRole('button', { name: '80s' }))
 
-    expect(await screen.findByRole('button', { name: 'Cyberpunk', pressed: true })).toBeInTheDocument()
-    expect(document.documentElement.dataset.theme).toBe('cyberpunk')
+    expect(await screen.findByRole('button', { name: '80s', pressed: true })).toBeInTheDocument()
+    expect(document.documentElement.dataset.theme).toBe('eighties')
   })
 
   it('keeps two mounted pickers (desktop and mobile bars) in agreement', async () => {

@@ -6,6 +6,7 @@
 // or unavailable callers get null and simply stay silent.
 
 let ctx: AudioContext | null = null
+let noise: AudioBuffer | null = null
 
 export function audioContext(): AudioContext | null {
   if (!ctx) {
@@ -19,4 +20,15 @@ export function audioContext(): AudioContext | null {
   }
   if (ctx.state === 'suspended') void ctx.resume()
   return ctx
+}
+
+/** ~80ms of white noise, made once and shared: the raw material for clicks, snares and shakers. */
+export function noiseBuffer(audio: AudioContext): AudioBuffer {
+  if (noise) return noise
+  const frames = Math.floor(audio.sampleRate * 0.08)
+  const buffer = audio.createBuffer(1, frames, audio.sampleRate)
+  const channel = buffer.getChannelData(0)
+  for (let i = 0; i < frames; i++) channel[i] = Math.random() * 2 - 1
+  noise = buffer
+  return buffer
 }
