@@ -1,0 +1,144 @@
+/* Newspaper skin: the morning edition. The page as a sheet of newsprint on a desk, a black
+   masthead, a dateline between rules, heavy serif headlines (Playfair Display, loaded with this
+   skin), ink-black table heads, hairline rules for borders, and photographs printed in black and
+   white until you point at them. A coffee ring on the desk.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone, and body text stays in the site's face so no table gets wider; tier, win/loss
+   and position colors stay too, as the page's spot color. */
+
+[data-theme='newspaper'] {
+  --color-accent: #1a1a1a; /* ink */
+  --color-accent-hover: #3a3a3a;
+  --color-accent-fg: #f7f3e8;
+  --color-header: #111111;
+
+  /* `bg` is the sheet (everything is printed on it), not the desk. */
+  --color-bg: #f4efe3;
+  --color-surface: #faf6ec;
+  --color-surface-2: #e9e2d0;
+  --color-border: #8c8577;
+  --color-text: #1a1a1a;
+  --color-muted: #57524a;
+  --color-dim: #3f3b35;
+
+  --news-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+/* Backdrop: the desk, with a coffee ring (index.css clears the app shell so it shows). */
+[data-theme='newspaper'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 93% 84%, transparent 56px, rgb(110 66 18 / 0.2) 58px 64px, transparent 67px),
+    radial-gradient(circle at 93% 84%, rgb(110 66 18 / 0.05) 0 56px, transparent 57px),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.025) 0 2px, transparent 2px 7px),
+    #b9ad97;
+}
+
+/* The page as a sheet of newsprint, with a dateline across the top. */
+[data-theme='newspaper'] main {
+  position: relative;
+  margin-block: 1.25rem 2.5rem;
+  padding-top: calc(34px + 1.5rem);
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.018) 0 1px, transparent 1px 3px),
+    var(--color-bg);
+  box-shadow:
+    0 1px 0 #d9d1bd,
+    0 6px 18px rgb(0 0 0 / 0.35);
+}
+[data-theme='newspaper'] main::before {
+  content: 'Fantasy Football Union  \2022  Est. 2018  \2022  Late Edition';
+  position: absolute;
+  inset: 12px 16px auto;
+  height: 22px;
+  overflow: hidden;
+  border-block: 3px double #1a1a1a;
+  font: 600 10px/16px var(--font-sans);
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: pre;
+}
+/* A full-bleed block would spill off the sheet; widen the sheet instead (as in xp.css). */
+[data-theme='newspaper'] main:has([class*='50%-50vw']) {
+  max-width: none;
+  margin-inline: 0.75rem;
+}
+[data-theme='newspaper'] main [class*='50%-50vw'] {
+  margin-inline: 0;
+}
+
+/* Masthead. */
+[data-theme='newspaper'] #root > div > header {
+  border-bottom: 4px double #f7f3e8;
+}
+[data-theme='newspaper'] #root > div > header > div > a:first-child > span > span:first-child {
+  font-family: var(--news-serif);
+  letter-spacing: 0.02em;
+}
+[data-theme='newspaper'] #root > div > header nav > :is(a, div > button)[class~='bg-accent'] {
+  background: #f7f3e8;
+  color: #111;
+}
+
+/* Headlines. */
+[data-theme='newspaper'] main :is(h1, h2) {
+  font-family: var(--news-serif);
+  font-weight: 900;
+}
+[data-theme='newspaper'] main h1 {
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 0 -4px #1a1a1a;
+}
+[data-theme='newspaper'] main a[class~='text-accent'] {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Photographs run in black and white; pointing at one shows the original. */
+[data-theme='newspaper'] main img {
+  filter: grayscale(1) contrast(1.15);
+  transition: filter 0.2s;
+}
+[data-theme='newspaper'] main img:hover {
+  filter: none;
+}
+
+/* Print has no shadows: panels and controls are flat, ruled in ink. */
+[data-theme='newspaper'] :is(main, dialog) [class~='border'][class~='border-border'] {
+  box-shadow: none;
+}
+[data-theme='newspaper'] :is(main, dialog) :is(button, select, a)[class~='border']:is([class~='bg-surface'], [class~='bg-accent']) {
+  border-color: #1a1a1a;
+  box-shadow: none;
+}
+[data-theme='newspaper'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  background: #1a1a1a;
+  color: #f7f3e8;
+}
+[data-theme='newspaper'] tbody tr:hover > td:not([class*='bg-']) {
+  background: var(--color-surface-2);
+}
+
+[data-theme='newspaper'] dialog {
+  border: 1px solid #1a1a1a;
+}
+
+[data-theme='newspaper'] ::selection {
+  background: #1a1a1a;
+  color: #f7f3e8;
+}
+
+@media (max-width: 639px) {
+  [data-theme='newspaper'] main {
+    margin: 0.75rem 0.5rem 1.5rem;
+  }
+  /* The full dateline does not fit a phone; keep the name. */
+  [data-theme='newspaper'] main::before {
+    content: 'Fantasy Football Union';
+  }
+}

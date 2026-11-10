@@ -736,3 +736,9 @@ colors, on the condition that it be universal without a refactor.
   from the product a skin nods to.
 - **Images that leave the site** (the Around the Union "copy image") render in the standard look,
   not the skin: they go in the newsletter.
+- **Holiday skins are the default for their week** (added 2026-11-10): Thanksgiving and Christmas
+  come on by themselves for the league week holding the holiday, Wednesday through the Tuesday
+  after the games (`src/themes/seasonal.ts`, visitor's local date). It is a default, not a lock:
+  picking any theme during the week sticks for the rest of it, and the visitor's saved choice is
+  never overwritten, so it returns on the Wednesday. Almost everyone has a saved light/dark choice
+  (the old toggle stored one on every visit), which is why the default has to outrank it.

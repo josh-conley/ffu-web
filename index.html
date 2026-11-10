@@ -21,11 +21,13 @@
     <meta name="twitter:image" content="https://ffunion.com/ffu-logo.png" />
     <!-- Apply the saved theme before first paint to avoid a flash. Themes are defined in
          src/themes/registry.ts; DARK must list every dark one (themes.test.ts checks it). A skin
-         (anything but light/dark) also gets data-theme, which its stylesheet is scoped to. -->
+         (anything but light/dark) also gets data-theme, which its stylesheet is scoped to.
+         'theme-holiday' is the holiday skin the site last showed by default (themeStore.ts works
+         out when one applies and corrects this guess if the week has started or ended). -->
     <script>
       try {
         const DARK = ['dark', 'arcade', 'matrix', 'halloween', 'christmas']
-        const t = localStorage.getItem('theme')
+        const t = localStorage.getItem('theme-holiday') || localStorage.getItem('theme')
         const root = document.documentElement
         if (t ? DARK.includes(t) : matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark')
         if (t && t !== 'light' && t !== 'dark') root.dataset.theme = t

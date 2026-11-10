@@ -1,13 +1,21 @@
 import { audioContext } from '@/lib/audioContext'
 import { isThemeId, themeDef, type ThemeId } from './registry'
+import { holidayWeek } from './seasonal'
 
 // One theme for the whole document, so it lives in a module-level store rather than component
 // state: the picker is mounted twice (desktop bar + mobile bar) and both must agree.
 //
-// The DOM is the source of truth. The inline script in index.html sets `.dark` / `data-theme` before
-// first paint from the same localStorage key; this store reads that back and keeps it in sync.
+// What shows is, in order: this week's holiday skin (see seasonal.ts) unless the visitor has picked
+// something else during that week; else the visitor's saved choice; else the OS light/dark setting.
+// A holiday default never overwrites the saved choice, so the visitor gets their own theme back
+// when the week ends.
 
+/** The visitor's own pick. */
 const THEME_KEY = 'theme'
+/** The holiday skin currently shown by default. A hint for index.html's pre-paint script only. */
+const HOLIDAY_KEY = 'theme-holiday'
+/** The holiday week (seasonal.ts `key`) in which the visitor picked a theme themselves. */
+const DECLINED_KEY = 'theme-holiday-declined'
 const SOUND_KEY = 'theme-sound'
 
 interface ThemeState {
@@ -16,30 +24,34 @@ interface ThemeState {
   sound: boolean
 }
 
-function readTheme(): ThemeId {
-  const root = document.documentElement
-  const skin = root.dataset.theme
-  if (isThemeId(skin)) return skin
-  return root.classList.contains('dark') ? 'dark' : 'light'
-}
-
-function readSound(): boolean {
+function read(key: string): string | null {
   try {
-    return localStorage.getItem(SOUND_KEY) === '1'
+    return localStorage.getItem(key)
   } catch {
-    return false
+    return null
   }
 }
 
-function persist(key: string, value: string) {
+function startingTheme(): { theme: ThemeId; holiday: boolean } {
+  const week = holidayWeek(new Date())
+  if (week && read(DECLINED_KEY) !== week.key) return { theme: week.id, holiday: true }
+  const saved = read(THEME_KEY)
+  if (isThemeId(saved)) return { theme: saved, holiday: false }
+  const osDark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+  return { theme: osDark ? 'dark' : 'light', holiday: false }
+}
+
+function persist(key: string, value: string | null) {
   try {
-    localStorage.setItem(key, value)
+    if (value === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, value)
   } catch {
     // Storage blocked (private mode): the choice still holds for this page view.
   }
 }
 
-let state: ThemeState = { theme: readTheme(), sound: readSound() }
+const starting = startingTheme()
+let state: ThemeState = { theme: starting.theme, sound: read(SOUND_KEY) === '1' }
 const listeners = new Set<() => void>()
 
 function update(next: Partial<ThemeState>) {
@@ -61,8 +73,14 @@ function applyToDocument(id: ThemeId) {
   else root.dataset.theme = id
 }
 
+// The pre-paint script only knows the last theme it was told about. Bring the document in line
+// with what this visit actually resolves to (a holiday week starting or ending changes it), and
+// leave the script its hint for next time.
+applyToDocument(starting.theme)
+persist(HOLIDAY_KEY, starting.holiday ? starting.theme : null)
+
 /**
- * Switch theme. A skin's stylesheet is fetched BEFORE the switch so the page never shows the
+ * The visitor picks a theme. A skin's stylesheet is fetched BEFORE the switch so the page never shows the
  * half-state of new attribute, old styles. If the fetch fails (offline), the current theme stays.
  */
 export async function setTheme(id: ThemeId): Promise<void> {
@@ -74,6 +92,10 @@ export async function setTheme(id: ThemeId): Promise<void> {
   }
   applyToDocument(id)
   persist(THEME_KEY, id)
+  // Their own pick now stands for the rest of any holiday week in progress.
+  persist(HOLIDAY_KEY, null)
+  const week = holidayWeek(new Date())
+  if (week) persist(DECLINED_KEY, week.key)
   update({ theme: id })
   if (state.sound) void import('./themeSound').then((m) => m.playChime(id))
 }

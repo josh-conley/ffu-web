@@ -103,9 +103,11 @@ Comparison** (`/adp-comparison`, the live season's picks vs the other leagues an
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
 
 **Themes:** the header's palette button picks Light, Dark or a novelty **skin** (Windows XP,
-Nintendo DS, Arcade, Matrix, Comic Book, Halloween, Thanksgiving, Christmas). A skin is one stylesheet in `src/themes/`, scoped under `html[data-theme]` and loaded
+Arcade, Matrix, Comic Book, Newspaper, Halloween, Thanksgiving, Christmas). A skin is one stylesheet in `src/themes/`, scoped under `html[data-theme]` and loaded
 on demand; components never branch on the theme. Adding one is a registry entry plus a CSS file
-(see `src/themes/registry.ts` and the 2026-11-09 entry in `ai-docs/DECISIONS.md`).
+(see `src/themes/registry.ts` and the 2026-11-09 entry in `ai-docs/DECISIONS.md`). Thanksgiving and
+Christmas are the default for their week of games, Wednesday through the following Tuesday
+(`src/themes/seasonal.ts`), unless the visitor picks something else that week.
 
 **Live season (active for 2026):** the home page has a "This Week" section (matchups + standings +
 box scores, fetched client-side from Sleeper via `src/data/liveSleeper.ts` — deliberately a separate

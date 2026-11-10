@@ -115,20 +115,21 @@ const matrix: Voice = {
   ],
 }
 
-// A handheld waking up: four soft bell notes climbing over a warm pad, the last one left to ring.
-// The click is the menu's gentle two-step blip.
-const ds: Voice = {
+// A newsroom typewriter: a run of keys at an uneven clip, the margin bell, and the carriage
+// thrown back. The click is one key.
+const KEY: Note[] = [
+  { type: 'noise', hz: 2200, q: 1.2, at: 0, dur: 0.03, gain: 0.28 },
+  { type: 'sine', hz: 160, toHz: 90, at: 0, dur: 0.04, gain: 0.14 },
+]
+const TYPED = [0, 0.09, 0.17, 0.3, 0.38, 0.47, 0.6, 0.68]
+const newspaper: Voice = {
   chime: [
-    { type: 'triangle', hz: 261.63, at: 0, dur: 1.6, gain: 0.08, attack: 0.2 },
-    ...bell(783.99, 0, 0.5, 0.1),
-    ...bell(1046.5, 0.13, 0.5, 0.1),
-    ...bell(1318.5, 0.26, 0.5, 0.1),
-    ...bell(1568, 0.52, 1.2, 0.1),
+    ...TYPED.flatMap((at) => KEY.map((n): Note => ({ ...n, at }))),
+    ...bell(2093, 0.82, 0.9, 0.1),
+    { type: 'noise', hz: 1400, q: 0.7, at: 1.05, dur: 0.3, gain: 0.14, attack: 0.05 },
+    { type: 'sine', hz: 140, toHz: 70, at: 1.34, dur: 0.07, gain: 0.25 },
   ],
-  click: [
-    { type: 'sine', hz: 1568, at: 0, dur: 0.05, gain: 0.1 },
-    { type: 'sine', hz: 2093, at: 0.035, dur: 0.07, gain: 0.1 },
-  ],
+  click: KEY,
 }
 
 // A punch landing, then a brass ta-da: a thud and a crack, and a rising major stab. The click is a
@@ -159,4 +160,4 @@ const halloween: Voice = {
   ],
 }
 
-export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, ds, arcade, matrix, comic, halloween, thanksgiving, christmas }
+export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, arcade, matrix, comic, newspaper, halloween, thanksgiving, christmas }

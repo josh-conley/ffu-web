@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { setTheme, setThemeSound } from '@/themes/themeStore'
 import { ThemePicker } from './ThemePicker'
 
+// Start from a known theme: during a holiday week the store would otherwise open on that skin.
+beforeEach(() => setTheme('light'))
 afterEach(async () => {
   await setTheme('light')
   setThemeSound(false)

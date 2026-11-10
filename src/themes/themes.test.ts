@@ -20,6 +20,8 @@ describe('theme registry', () => {
 })
 
 describe('theme store', () => {
+  // Start from a known theme: during a holiday week the store would otherwise open on that skin.
+  beforeEach(() => setTheme('light'))
   afterEach(async () => {
     await setTheme('light')
     setThemeSound(false)
@@ -53,6 +55,12 @@ describe('theme store', () => {
     expect(seen).toEqual(['xp'])
   })
 
+  it('remembers the pick under its own key', async () => {
+    await setTheme('xp')
+    expect(localStorage.getItem('theme')).toBe('xp')
+    expect(localStorage.getItem('theme-holiday')).toBeNull()
+  })
+
   it('keeps sound off until asked', () => {
     expect(getThemeState().sound).toBe(false)
     setThemeSound(true)
@@ -73,5 +81,62 @@ describe('theme store', () => {
     await setTheme('xp')
     await expect(withStandardLook(() => Promise.reject(new Error('boom')))).rejects.toThrow('boom')
     expect(root.dataset.theme).toBe('xp')
+  })
+})
+
+describe('holiday default', () => {
+  const load = () => import('./themeStore')
+
+  beforeEach(() => {
+    vi.resetModules()
+    localStorage.clear()
+    vi.useFakeTimers({ toFake: ['Date'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    localStorage.clear()
+    root.classList.remove('dark')
+    delete root.dataset.theme
+  })
+
+  it('wears the holiday skin for its week without touching the saved choice', async () => {
+    vi.setSystemTime(new Date(2026, 10, 26, 12))
+    localStorage.setItem('theme', 'dark')
+    const store = await load()
+    expect(store.getThemeState().theme).toBe('thanksgiving')
+    expect(root.dataset.theme).toBe('thanksgiving')
+    expect(root).not.toHaveClass('dark')
+    expect(localStorage.getItem('theme')).toBe('dark')
+    // The hint the pre-paint script reads on the next load.
+    expect(localStorage.getItem('theme-holiday')).toBe('thanksgiving')
+  })
+
+  it('goes back to the saved choice once the week is over', async () => {
+    vi.setSystemTime(new Date(2026, 11, 2, 9))
+    localStorage.setItem('theme', 'dark')
+    localStorage.setItem('theme-holiday', 'thanksgiving')
+    const store = await load()
+    expect(store.getThemeState().theme).toBe('dark')
+    expect(root.dataset.theme).toBeUndefined()
+    expect(localStorage.getItem('theme-holiday')).toBeNull()
+  })
+
+  it('lets a pick made during the week stand for the rest of it', async () => {
+    vi.setSystemTime(new Date(2026, 11, 24, 12))
+    const first = await load()
+    expect(first.getThemeState().theme).toBe('christmas')
+    await first.setTheme('light')
+
+    vi.resetModules()
+    const second = await load()
+    expect(second.getThemeState().theme).toBe('light')
+  })
+
+  it('offers the skin again the next year', async () => {
+    localStorage.setItem('theme', 'light')
+    localStorage.setItem('theme-holiday-declined', 'christmas-2026')
+    vi.setSystemTime(new Date(2027, 11, 25, 12))
+    const store = await load()
+    expect(store.getThemeState().theme).toBe('christmas')
   })
 })
