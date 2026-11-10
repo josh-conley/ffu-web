@@ -26,10 +26,10 @@ describe('theme store', () => {
   })
 
   it('applies a skin as data-theme on top of its mode, and remembers it', async () => {
-    await setTheme('eighties')
-    expect(root.dataset.theme).toBe('eighties')
+    await setTheme('arcade')
+    expect(root.dataset.theme).toBe('arcade')
     expect(root).toHaveClass('dark')
-    expect(localStorage.getItem('theme')).toBe('eighties')
+    expect(localStorage.getItem('theme')).toBe('arcade')
 
     await setTheme('xp')
     expect(root.dataset.theme).toBe('xp')
@@ -61,10 +61,10 @@ describe('theme store', () => {
   })
 
   it('drops the skin for the length of a capture, then puts it back', async () => {
-    await setTheme('eighties')
+    await setTheme('arcade')
     const during = await withStandardLook(() => Promise.resolve(root.dataset.theme))
     expect(during).toBeUndefined()
-    expect(root.dataset.theme).toBe('eighties')
+    expect(root.dataset.theme).toBe('arcade')
     // The mode is untouched: a dark skin captures as standard dark.
     expect(root).toHaveClass('dark')
   })

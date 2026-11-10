@@ -103,7 +103,7 @@ Comparison** (`/adp-comparison`, the live season's picks vs the other leagues an
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
 
 **Themes:** the header's palette button picks Light, Dark or a novelty **skin** (Windows XP,
-90s, 80s, Thanksgiving, Christmas). A skin is one stylesheet in `src/themes/`, scoped under `html[data-theme]` and loaded
+90s, Arcade, Thanksgiving, Christmas). A skin is one stylesheet in `src/themes/`, scoped under `html[data-theme]` and loaded
 on demand; components never branch on the theme. Adding one is a registry entry plus a CSS file
 (see `src/themes/registry.ts` and the 2026-11-09 entry in `ai-docs/DECISIONS.md`).
 

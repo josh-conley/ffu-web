@@ -714,7 +714,7 @@ if Sleeper's corrected score flips a result, Sleeper's standings flip too, and w
 
 ## 2026-11-09: Themes are skins scoped under `data-theme`, on top of light/dark
 
-Josh asked for site-wide novelty themes (retro, XP, eighties, holidays) with effects, not just
+Josh asked for site-wide novelty themes (retro, XP, arcade, holidays) with effects, not just
 colors, on the condition that it be universal without a refactor.
 
 - **A skin is CSS only.** `src/themes/<id>.css`, every rule scoped under `html[data-theme='<id>']`:

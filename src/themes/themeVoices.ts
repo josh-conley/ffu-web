@@ -76,18 +76,17 @@ const retro: Voice = {
   click: [{ type: 'sine', hz: 300, toHz: 900, at: 0, dur: 0.06, gain: 0.15 }],
 }
 
-// Synthwave: a minor arpeggio in sixteenths over a detuned saw drone, kick and gated snare, landing
-// on a chord. The click is an arcade laser.
-const ARP = [220, 261.63, 329.63, 440, 329.63, 261.63, 220, 440]
-const eighties: Voice = {
+// A cabinet taking a coin: the two-note coin blip, then a rising square-wave power-up run that
+// lands on a held note. Bare square waves throughout, like the sound chips of the day. The click
+// is a laser.
+const POWER_UP = [261.63, 329.63, 392, 523.25, 659.25, 783.99, 1046.5]
+const arcade: Voice = {
   chime: [
-    ...ARP.map((hz, i): Note => ({ type: 'sawtooth', hz, at: i * 0.09, dur: 0.1, gain: 0.05 })),
-    { type: 'sawtooth', hz: 110, at: 0, dur: 1.5, gain: 0.04, attack: 0.05 },
-    { type: 'sawtooth', hz: 110.7, at: 0, dur: 1.5, gain: 0.04, attack: 0.05 },
-    { type: 'sine', hz: 150, toHz: 45, at: 0, dur: 0.14, gain: 0.3 },
-    { type: 'noise', hz: 1500, q: 0.7, at: 0.36, dur: 0.18, gain: 0.18 },
-    { type: 'sine', hz: 150, toHz: 45, at: 0.72, dur: 0.14, gain: 0.3 },
-    ...[220, 329.63, 440].map((hz): Note => ({ type: 'sawtooth', hz, at: 0.72, dur: 0.9, gain: 0.04 })),
+    { type: 'square', hz: 987.77, at: 0, dur: 0.08, gain: 0.05 },
+    { type: 'square', hz: 1318.5, at: 0.08, dur: 0.35, gain: 0.05 },
+    ...POWER_UP.map((hz, i): Note => ({ type: 'square', hz, at: 0.5 + i * 0.07, dur: 0.08, gain: 0.05 })),
+    { type: 'square', hz: 1046.5, at: 0.99, dur: 0.5, gain: 0.05 },
+    { type: 'triangle', hz: 130.81, at: 0.5, dur: 0.95, gain: 0.12 },
   ],
   click: [{ type: 'sawtooth', hz: 1800, toHz: 180, at: 0, dur: 0.09, gain: 0.05 }],
 }
@@ -118,4 +117,4 @@ const christmas: Voice = {
   click: jingle(0, 0.12),
 }
 
-export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, retro, eighties, thanksgiving, christmas }
+export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, retro, arcade, thanksgiving, christmas }
