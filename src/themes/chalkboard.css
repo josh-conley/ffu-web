@@ -1,0 +1,83 @@
+/* Chalkboard skin: the coach's board. Slate green with chalk dust, X's and O's and routes drawn
+   faintly behind the page, a wood rail for a header, hand-lettered titles (Schoolbell, loaded with
+   this skin) with a chalk underline, and yellow chalk for anything selected.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone; tier, win/loss and position colors too. Motion stops under
+   prefers-reduced-motion. */
+
+[data-theme='chalkboard'] {
+  --color-accent: #f6e27a; /* yellow chalk */
+  --color-accent-hover: #fff0a0;
+  --color-accent-fg: #1f3327;
+  --color-header: #3a2616;
+
+  --color-bg: #24402f;
+  --color-surface: #2b4a38;
+  --color-surface-2: #345744;
+  --color-border: #86a392;
+  --color-text: #f4f4ec;
+  --color-muted: #c6d5ca;
+  --color-dim: #c6d5ca;
+
+  --chalk-hand: 'Schoolbell', 'Comic Sans MS', cursive;
+}
+
+/* Backdrop: slate with wiped-chalk smudges and a faint play diagram (index.css clears the shell). */
+[data-theme='chalkboard'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='380' height='380' fill='none' stroke='%23fff' stroke-opacity='.14' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M30 40l22 22m0 -22l-22 22'/%3E%3Ccircle cx='120' cy='52' r='12'/%3E%3Cpath d='M190 40l22 22m0 -22l-22 22'/%3E%3Ccircle cx='280' cy='52' r='12'/%3E%3Cpath d='M120 70q10 60 80 70l-12 -10m12 10l-14 6'/%3E%3Cpath d='M280 70q-6 80 -70 120' stroke-dasharray='8 8'/%3E%3Ccircle cx='60' cy='230' r='12'/%3E%3Cpath d='M130 218l22 22m0 -22l-22 22'/%3E%3Ccircle cx='230' cy='230' r='12'/%3E%3Cpath d='M310 218l22 22m0 -22l-22 22'/%3E%3Cpath d='M60 250v70l-8 -12m8 12l8 -12'/%3E%3Cpath d='M230 250q20 50 90 60l-13 -9m13 9l-13 8'/%3E%3C/svg%3E") 0 0 / 380px 380px,
+    radial-gradient(ellipse 50% 30% at 25% 20%, rgb(255 255 255 / 0.07), transparent 70%),
+    radial-gradient(ellipse 45% 35% at 80% 70%, rgb(255 255 255 / 0.06), transparent 70%),
+    #24402f;
+}
+
+/* Header: a wood rail. */
+[data-theme='chalkboard'] #root > div > header {
+  background: linear-gradient(180deg, #5a3d24, #3a2616 60%, #2c1c10);
+  border-bottom-color: #1e130a;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
+}
+[data-theme='chalkboard'] #root > div > header nav > :is(a, div > button)[class~='bg-accent'] {
+  font-family: var(--chalk-hand);
+}
+
+/* Titles in chalk hand, the page title underlined with a wobbly stroke. */
+[data-theme='chalkboard'] main :is(h1, h2) {
+  font-family: var(--chalk-hand);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px rgb(255 255 255 / 0.35);
+}
+[data-theme='chalkboard'] main h1 {
+  padding-bottom: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='8' fill='none'%3E%3Cpath d='M0 4q15 -3 30 0t30 0t30 -1t30 1' stroke='%23f4f4ec' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x left bottom / 120px 8px;
+}
+
+/* Everything outlined is drawn on the board: dashed chalk lines. */
+[data-theme='chalkboard'] :is(main, dialog) [class~='border'][class~='border-border'] {
+  border-style: dashed;
+}
+[data-theme='chalkboard'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  border-style: solid;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Table heads: written on the board in yellow, ruled underneath, not a filled bar. */
+[data-theme='chalkboard'] thead[class~='bg-accent'] th {
+  background: #2b4a38;
+  color: #f6e27a;
+  box-shadow: inset 0 -2px rgb(244 244 236 / 0.6);
+}
+[data-theme='chalkboard'] tbody tr:hover > td:not([class*='bg-']) {
+  background: rgb(255 255 255 / 0.06);
+}
+
+[data-theme='chalkboard'] ::selection {
+  background: #f6e27a;
+  color: #1f3327;
+}

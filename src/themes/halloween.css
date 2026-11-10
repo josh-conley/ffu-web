@@ -1,0 +1,150 @@
+/* Halloween skin: a night out trick-or-treating. Purple-black sky with a low moon, pumpkin orange
+   accent, bats crossing the screen, ground fog drifting along the bottom, a cobweb in the corner,
+   and dripping-letter titles (Creepster, loaded with this skin) that flicker like a candle.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone; tier, win/loss and position colors too. Motion stops under
+   prefers-reduced-motion. */
+
+[data-theme='halloween'] {
+  --color-accent: #ff7a18; /* pumpkin; the dark text on it ≈ 8:1 */
+  --color-accent-hover: #ff9a4d;
+  --color-accent-fg: #1a0b00;
+  --color-header: #07040b;
+
+  --color-bg: #0d0714;
+  --color-surface: #171021;
+  --color-surface-2: #22172f;
+  --color-border: #3f2b55;
+  --color-text: #f3e9ff;
+  --color-muted: #ab9ac4;
+  --color-dim: #ab9ac4;
+
+  --halloween-display: 'Creepster', 'Chiller', fantasy;
+}
+
+/* Backdrop: a moon with a halo, low in a purple night (index.css clears the app shell). */
+[data-theme='halloween'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 84% 22%, #fff3c4 0 46px, rgb(255 243 196 / 0.28) 48px, transparent 150px),
+    radial-gradient(ellipse 100% 55% at 50% 110%, rgb(255 122 24 / 0.16), transparent 70%),
+    linear-gradient(180deg, #170b26 0%, #0d0714 60%);
+}
+
+/* Overlay: bats gliding across (the tile moves one whole width per loop and bobs as it goes),
+   fog along the bottom, a cobweb in the bottom-left corner. */
+[data-theme='halloween'] .theme-fx {
+  display: block;
+  overflow: hidden;
+}
+[data-theme='halloween'] .theme-fx::before {
+  content: '';
+  position: absolute;
+  inset: -30px 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='520' fill='%237a56a3'%3E%3Cpath transform='translate%28120 90%29' d='M0 0C6 -9 15 -9 19 -2C21 -7 25 -7 27 -2C31 -9 40 -9 46 0C40 -3 35 -1 33 4C29 0 25 2 23 7C21 2 17 0 13 4C11 -1 6 -3 0 0Z'/%3E%3Cpath transform='translate%28560 300%29 scale%28.7%29' d='M0 0C6 -9 15 -9 19 -2C21 -7 25 -7 27 -2C31 -9 40 -9 46 0C40 -3 35 -1 33 4C29 0 25 2 23 7C21 2 17 0 13 4C11 -1 6 -3 0 0Z'/%3E%3Cpath transform='translate%28760 140%29 scale%281.3%29 rotate%28-8%29' d='M0 0C6 -9 15 -9 19 -2C21 -7 25 -7 27 -2C31 -9 40 -9 46 0C40 -3 35 -1 33 4C29 0 25 2 23 7C21 2 17 0 13 4C11 -1 6 -3 0 0Z'/%3E%3C/svg%3E") 0 0 / 900px 520px;
+  opacity: 0.7;
+  animation:
+    halloween-bats 34s linear infinite,
+    halloween-bob 3.2s ease-in-out infinite alternate;
+}
+[data-theme='halloween'] .theme-fx::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 30vh;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23cbbbe0' stroke-width='1.3'%3E%3Cpath d='M0 200L200 200M0 200L185 123M0 200L141 59M0 200L77 15M0 200L0 0'/%3E%3Cpath d='M50 200Q46 190 46 181Q40 172 35 165Q27 159 19 154Q9 151 0 150'/%3E%3Cpath d='M100 200Q92 180 92 162Q80 144 71 129Q54 117 38 108Q18 102 0 100'/%3E%3Cpath d='M150 200Q138 170 139 142Q120 116 106 94Q81 76 57 61Q28 52 0 50'/%3E%3C/svg%3E") left bottom / 170px 170px no-repeat,
+    radial-gradient(ellipse 30% 60% at 20% 100%, rgb(220 210 240 / 0.3), transparent 70%) 0 0 / 700px 100%,
+    radial-gradient(ellipse 35% 50% at 70% 100%, rgb(220 210 240 / 0.24), transparent 70%) 0 0 / 700px 100%;
+  animation: halloween-fog 40s linear infinite;
+}
+@keyframes halloween-bats {
+  to {
+    background-position: 900px 0;
+  }
+}
+@keyframes halloween-bob {
+  from {
+    transform: translateY(-14px);
+  }
+  to {
+    transform: translateY(14px);
+  }
+}
+/* Only the two fog layers move; the web stays in its corner. */
+@keyframes halloween-fog {
+  to {
+    background-position:
+      left bottom,
+      700px 0,
+      -700px 0;
+  }
+}
+
+[data-theme='halloween'] #root > div > header {
+  border-bottom-color: #ff7a18;
+  box-shadow: 0 0 20px rgb(255 122 24 / 0.5);
+}
+[data-theme='halloween'] #root > div > header > div > a:first-child > span > span:first-child::after {
+  content: ' \1F383';
+  font-style: normal;
+}
+
+[data-theme='halloween'] main :is(h1, h2) {
+  font-family: var(--halloween-display);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+[data-theme='halloween'] main h1 {
+  color: #ff7a18;
+  text-shadow: 0 0 14px rgb(255 122 24 / 0.7);
+  animation: halloween-flicker 4s linear infinite;
+}
+@keyframes halloween-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  41% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0.6;
+  }
+  44% {
+    opacity: 1;
+  }
+  77% {
+    opacity: 0.8;
+  }
+  79% {
+    opacity: 1;
+  }
+}
+
+[data-theme='halloween'] :is(main, dialog) [class~='border'][class~='border-border'][class~='bg-surface'] {
+  box-shadow: 0 0 18px -8px rgb(160 90 255 / 0.9);
+}
+[data-theme='halloween'] :is(a, button)[class~='bg-accent'] {
+  box-shadow: 0 0 14px rgb(255 122 24 / 0.55);
+}
+[data-theme='halloween'] tbody tr:hover > td:not([class*='bg-']) {
+  background: rgb(160 90 255 / 0.1);
+}
+
+[data-theme='halloween'] ::selection {
+  background: #ff7a18;
+  color: #1a0b00;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='halloween'] .theme-fx::before,
+  [data-theme='halloween'] .theme-fx::after,
+  [data-theme='halloween'] main h1 {
+    animation: none;
+  }
+}
