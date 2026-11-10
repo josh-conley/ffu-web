@@ -14,6 +14,7 @@ import '@fontsource/ibm-plex-mono/latin-600.css'
 import '@fontsource/ibm-plex-mono/latin-700.css'
 import './index.css'
 import App from './App.tsx'
+import { themeReady } from './themes/themeStore'
 
 // Some pages load as separate chunks. A deploy replaces every hashed chunk, so a tab opened before it
 // can ask for a chunk that no longer exists; reload once to pick up the new build instead of
@@ -30,8 +31,12 @@ window.addEventListener('vite:preloadError', (event) => {
   window.location.reload()
 })
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// A visitor on a skin waits for its stylesheet (one small request) so the first render is already
+// themed. The standard light/dark look has nothing to load and renders immediately.
+void themeReady().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  )
+})

@@ -1,0 +1,161 @@
+/* Comic Book skin: a printed page. Halftone dots on newsprint, the page as an inked panel with a
+   hard black shadow, a display face (Bangers, loaded with this skin) on titles in yellow with a
+   black outline, dot-screened table heads, and a POW! burst in the corner.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone; tier, win/loss and position colors too. Motion stops under
+   prefers-reduced-motion. */
+
+[data-theme='comic'] {
+  --color-accent: #e3242b; /* comic red; #fff on it ≈ 4.6:1 */
+  --color-accent-hover: #b81a20;
+  --color-accent-fg: #ffffff;
+  --color-header: #1f3fbf;
+
+  /* `bg` is the panel face (everything sits in the panel), not the dotted backdrop. */
+  --color-bg: #fffdf4;
+  --color-surface: #ffffff;
+  --color-surface-2: #fff3bf;
+  --color-border: #111111;
+  --color-text: #111111;
+  --color-muted: #444444;
+  --color-dim: #333333;
+
+  --comic-display: 'Bangers', Impact, 'Arial Black', sans-serif;
+}
+
+/* Backdrop: two offset dot screens (cyan and red) on yellowed paper (index.css clears the shell). */
+[data-theme='comic'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle, rgb(0 160 220 / 0.35) 2.2px, transparent 2.8px) 0 0 / 14px 14px,
+    radial-gradient(circle, rgb(227 36 43 / 0.22) 2.2px, transparent 2.8px) 7px 7px / 14px 14px,
+    #ffe98a;
+}
+
+/* The page as an inked panel. */
+[data-theme='comic'] main {
+  margin-block: 1.25rem 2.5rem;
+  background: var(--color-bg);
+  border: 4px solid #111;
+  box-shadow: 9px 9px 0 #111;
+}
+/* A full-bleed block would spill out of the framed page; widen the frame instead (as in xp.css). */
+[data-theme='comic'] main:has([class*='50%-50vw']) {
+  max-width: none;
+  margin-inline: 0.75rem;
+}
+[data-theme='comic'] main [class*='50%-50vw'] {
+  margin-inline: 0;
+}
+
+[data-theme='comic'] #root > div > header {
+  border-bottom: 5px solid #111;
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 0.18) 1.5px, transparent 2px) 0 0 / 9px 9px,
+    #1f3fbf;
+}
+[data-theme='comic'] #root > div > header > div > a:first-child > span > span:first-child {
+  font-family: var(--comic-display);
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: #ffd60a;
+  text-shadow: 2px 2px 0 #111;
+}
+[data-theme='comic'] #root > div > header nav > :is(a, div > button)[class~='bg-accent'] {
+  background: #ffd60a;
+  color: #111;
+  box-shadow: 3px 3px 0 #111;
+}
+
+/* Titles: yellow lettering, inked outline, red drop. `paint-order` keeps the outline behind the
+   fill so the letters don't thin out. */
+[data-theme='comic'] main h1 {
+  font-family: var(--comic-display);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: #ffd60a;
+  -webkit-text-stroke: 4px #111;
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 #e3242b;
+}
+[data-theme='comic'] main h2 {
+  font-family: var(--comic-display);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+/* Panels and controls: inked, with a hard shadow. */
+[data-theme='comic'] :is(main, dialog) [class~='border'][class~='border-border'][class~='bg-surface'] {
+  box-shadow: 4px 4px 0 #111;
+}
+[data-theme='comic'] :is(main, dialog) :is(button, a)[class~='border'][class~='bg-accent'] {
+  border-color: #111;
+  box-shadow: 4px 4px 0 #111;
+}
+[data-theme='comic'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  background: #ffd60a;
+  color: #111;
+}
+/* Table heads keep the red and gain a dot screen. */
+[data-theme='comic'] thead[class~='bg-accent'] th {
+  background-image: radial-gradient(circle, rgb(0 0 0 / 0.22) 1.2px, transparent 1.7px);
+  background-size: 6px 6px;
+}
+[data-theme='comic'] tbody tr:hover > td:not([class*='bg-']) {
+  background: #fff3bf;
+}
+
+[data-theme='comic'] dialog {
+  border: 4px solid #111;
+  box-shadow: 9px 9px 0 #111;
+}
+
+/* Overlay: a POW! burst in the bottom corner, giving a little thump now and then. Desktop only;
+   on a phone it would sit on the content. */
+@media (min-width: 1024px) {
+  [data-theme='comic'] .theme-fx {
+    display: block;
+  }
+  [data-theme='comic'] .theme-fx::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 150px;
+    height: 150px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'%3E%3Cpolygon points='210%2C110 176%2C128 197%2C160 158%2C158 160%2C197 128%2C176 110%2C210 92%2C176 60%2C197 62%2C158 23%2C160 44%2C128 10%2C110 44%2C92 23%2C60 62%2C62 60%2C23 92%2C44 110%2C10 128%2C44 160%2C23 158%2C62 197%2C60 176%2C92' fill='%23ffd60a' stroke='%23111' stroke-width='5' stroke-linejoin='round'/%3E%3Ctext x='110' y='128' text-anchor='middle' font-family='Impact%2C Haettenschweiler%2C Arial Black%2C sans-serif' font-size='52' fill='%23e3242b' stroke='%23111' stroke-width='2.5' transform='rotate%28-10 110 110%29'%3EPOW%21%3C/text%3E%3C/svg%3E") center / contain no-repeat;
+    animation: comic-pow 5s ease-in-out infinite;
+  }
+}
+@keyframes comic-pow {
+  0%,
+  88%,
+  100% {
+    transform: rotate(8deg) scale(1);
+  }
+  93% {
+    transform: rotate(4deg) scale(1.18);
+  }
+}
+
+[data-theme='comic'] ::selection {
+  background: #ffd60a;
+  color: #111;
+}
+
+@media (max-width: 639px) {
+  [data-theme='comic'] main {
+    margin: 0.75rem 0.5rem 1.5rem;
+    box-shadow: 5px 5px 0 #111;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='comic'] .theme-fx::after {
+    animation: none;
+  }
+}

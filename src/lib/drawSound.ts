@@ -11,31 +11,7 @@
 // follows a click or key press, so that is satisfied), and if audio is blocked or unavailable the
 // draw simply runs silent rather than throwing mid-broadcast.
 
-let ctx: AudioContext | null = null
-let noise: AudioBuffer | null = null
-
-function context(): AudioContext | null {
-  if (ctx) return ctx
-  const Ctor = window.AudioContext ?? (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-  if (!Ctor) return null
-  try {
-    ctx = new Ctor()
-  } catch {
-    return null
-  }
-  return ctx
-}
-
-/** ~80ms of white noise, made once and reused for every tick. */
-function noiseBuffer(audio: AudioContext): AudioBuffer {
-  if (noise) return noise
-  const frames = Math.floor(audio.sampleRate * 0.08)
-  const buffer = audio.createBuffer(1, frames, audio.sampleRate)
-  const channel = buffer.getChannelData(0)
-  for (let i = 0; i < frames; i++) channel[i] = Math.random() * 2 - 1
-  noise = buffer
-  return buffer
-}
+import { audioContext, noiseBuffer } from './audioContext'
 
 const TICK = { hz: 2200, gain: 0.22, decay: 0.03 }
 const CLUNK = { hz: 900, gain: 0.45, decay: 0.07 }
@@ -45,9 +21,8 @@ const CLUNK = { hz: 900, gain: 0.45, decay: 0.07 }
  * the operator cuts a spin short — otherwise the wheel would keep ticking after it had stopped.
  */
 export function scheduleTicks(offsetsMs: number[]): () => void {
-  const audio = context()
+  const audio = audioContext()
   if (!audio) return () => {}
-  if (audio.state === 'suspended') void audio.resume()
 
   const buffer = noiseBuffer(audio)
   const now = audio.currentTime

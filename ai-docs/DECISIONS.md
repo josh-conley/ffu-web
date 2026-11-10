@@ -711,3 +711,34 @@ warning in the job summary, and listed in the commit message (marked "result cha
 winner flips). A change to any older week, or a game that disappears, still fails: by then the
 week has had a full extra week to settle, so that means something is wrong. No winner-flip block:
 if Sleeper's corrected score flips a result, Sleeper's standings flip too, and we store theirs.
+
+## 2026-11-09: Themes are skins scoped under `data-theme`, on top of light/dark
+
+Josh asked for site-wide novelty themes (retro, XP, arcade, holidays) with effects, not just
+colors, on the condition that it be universal without a refactor.
+
+- **A skin is CSS only.** `src/themes/<id>.css`, every rule scoped under `html[data-theme='<id>']`:
+  it overrides the design tokens and restyles by element type and by the few utility classes that
+  mark a role site-wide (`bg-accent` = selected / table head; `border` + `bg-surface` = a control).
+  No component knows skins exist. The stylesheets are **unlayered**, so they beat Tailwind's
+  layered utilities without `!important`.
+- **Each skin sits on a mode.** `.dark` is still set for a dark skin, because the position badges
+  use `dark:` variants. The picker lists Light, Dark and the skins as one flat choice, stored in
+  the same `theme` localStorage key as before.
+- **Lazy.** A skin's stylesheet (and font) is a separate chunk fetched when chosen; `main.tsx`
+  waits for the saved skin's chunk before the first render, so there is no flash and the standard
+  look pays nothing.
+- **Two effect surfaces**: `body::before` for a backdrop behind the page, and the inert
+  `.theme-fx` element (in `Layout`) for an overlay above it.
+- **Skins don't change sizes or layout**, so the wide tables keep working. Tier, win/loss and
+  position colors are never reassigned.
+- **Sound is opt-in** (off by default, a switch in the picker), synthesised, never an asset lifted
+  from the product a skin nods to.
+- **Images that leave the site** (the Around the Union "copy image") render in the standard look,
+  not the skin: they go in the newsletter.
+- **Holiday skins are the default for their week** (added 2026-11-10): Thanksgiving and Christmas
+  come on by themselves for the league week holding the holiday, Wednesday through the Tuesday
+  after the games (`src/themes/seasonal.ts`, visitor's local date). It is a default, not a lock:
+  picking any theme during the week sticks for the rest of it, and the visitor's saved choice is
+  never overwritten, so it returns on the Wednesday. Almost everyone has a saved light/dark choice
+  (the old toggle stored one on every visit), which is why the default has to outrank it.

@@ -1,3 +1,4 @@
+import { withStandardLook } from '@/themes/themeStore'
 import { downloadBlob } from './download'
 
 /**
@@ -6,7 +7,9 @@ import { downloadBlob } from './download'
  * hand every week, which is the chore this page set out to remove.
  *
  * Rendering is DOM → canvas via html-to-image, so what lands on the clipboard is exactly what is on
- * screen, the viewer's light/dark theme included.
+ * screen, the viewer's light/dark mode included. The exception is a novelty skin (src/themes): the
+ * image is headed for the newsletter, so it is rendered in the standard look, which shows on the
+ * page for the moment the capture takes.
  */
 
 /** Rendered at 2x so the PNG stays sharp when the newsletter scales or prints it. */
@@ -19,18 +22,20 @@ async function renderPng(el: HTMLElement): Promise<Blob> {
   // needs it, so it stays out of the main bundle and off every other page's load.
   const { toBlob } = await import('html-to-image')
   const box = el.getBoundingClientRect()
-  const blob = await toBlob(el, {
-    pixelRatio: PIXEL_RATIO,
-    // Sized from the REAL box, rounded up. Left alone, html-to-image measures with clientWidth /
-    // clientHeight, which round a fractional layout box DOWN — on a panel sized to its own content
-    // (the FFUN layout) that shaves the last pixel column off the capture.
-    width: Math.ceil(box.width),
-    height: Math.ceil(box.height),
-    // The panel's own background is semi-transparent over the page's. Paint the page background
-    // behind it so the PNG is opaque — a transparent one pasted into a light document would show
-    // white through a dark panel.
-    backgroundColor: getComputedStyle(document.body).backgroundColor,
-  })
+  const capture = () =>
+    toBlob(el, {
+      pixelRatio: PIXEL_RATIO,
+      // Sized from the REAL box, rounded up. Left alone, html-to-image measures with clientWidth /
+      // clientHeight, which round a fractional layout box DOWN — on a panel sized to its own content
+      // (the FFUN layout) that shaves the last pixel column off the capture.
+      width: Math.ceil(box.width),
+      height: Math.ceil(box.height),
+      // The panel's own background is semi-transparent over the page's. Paint the page background
+      // behind it so the PNG is opaque — a transparent one pasted into a light document would show
+      // white through a dark panel.
+      backgroundColor: getComputedStyle(document.body).backgroundColor,
+    })
+  const blob = await withStandardLook(capture)
   if (blob === null) throw new Error('The panel could not be rendered to an image')
   return blob
 }

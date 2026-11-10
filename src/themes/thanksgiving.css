@@ -1,0 +1,121 @@
+/* Thanksgiving skin: a harvest table. Cream and burnt orange on a soft plaid, a dark-wood header
+   with a harvest-stripe rule, serif titles, and autumn leaves drifting down the screen.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone; tier, win/loss and position colors too. Motion stops under
+   prefers-reduced-motion. */
+
+[data-theme='thanksgiving'] {
+  --color-accent: #b4470f; /* burnt orange; #fff on it ≈ 5.8:1 */
+  --color-accent-hover: #8f370b;
+  --color-accent-fg: #ffffff;
+  --color-header: #3b1f10;
+
+  --color-bg: #fbf3e4;
+  --color-surface: #fffaf0;
+  --color-surface-2: #f3e3c8;
+  --color-border: #dcc39a;
+  --color-text: #3b2314;
+  --color-muted: #7a5a3c; /* ≈ 5.6:1 on bg */
+  --color-dim: #5e4128;
+
+  --tg-serif: Georgia, 'Times New Roman', serif;
+}
+
+/* Backdrop: cream under a faint plaid (index.css clears the app shell so it shows). */
+[data-theme='thanksgiving'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(90deg, rgb(180 71 15 / 0.06) 0 28px, transparent 28px 84px),
+    repeating-linear-gradient(0deg, rgb(122 62 20 / 0.06) 0 28px, transparent 28px 84px),
+    radial-gradient(ellipse 90% 60% at 50% 0%, #fff6e0, #f6e7cb);
+}
+
+/* Overlay: two layers of leaves falling at different speeds, each swaying a little. The layers
+   overhang the window so the sway never shows an edge. Sparse on purpose: this sits over tables. */
+[data-theme='thanksgiving'] .theme-fx {
+  display: block;
+  overflow: hidden;
+  opacity: 0.55;
+}
+[data-theme='thanksgiving'] .theme-fx::before,
+[data-theme='thanksgiving'] .theme-fx::after {
+  content: '';
+  position: absolute;
+  inset: 0 -40px;
+}
+[data-theme='thanksgiving'] .theme-fx::before {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='760' height='760'%3E%3Cpath transform='translate%2890 110%29 rotate%2825%29 scale%281.3%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23d2691e'/%3E%3Cpath transform='translate%28520 400%29 rotate%28-40%29 scale%281.6%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23b3261e'/%3E%3Cpath transform='translate%28280 650%29 rotate%2870%29 scale%281.1%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23e0a526'/%3E%3C/svg%3E");
+  animation:
+    tg-fall-a 44s linear infinite,
+    tg-sway 7s ease-in-out infinite alternate;
+}
+[data-theme='thanksgiving'] .theme-fx::after {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='940' height='940'%3E%3Cpath transform='translate%28700 200%29 rotate%28-15%29 scale%280.9%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23c8551b'/%3E%3Cpath transform='translate%28330 80%29 rotate%28140%29 scale%281.0%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23e6b422'/%3E%3Cpath transform='translate%28160 560%29 rotate%28-80%29 scale%280.8%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%238f3b1b'/%3E%3Cpath transform='translate%28620 800%29 rotate%2850%29 scale%281.2%29' d='M0 -13C7 -9 10 0 3 9L1 9L1 15L-1 15L-1 9L-3 9C-10 0 -7 -9 0 -13Z' fill='%23d2691e'/%3E%3C/svg%3E");
+  animation:
+    tg-fall-b 70s linear infinite,
+    tg-sway 9s ease-in-out infinite alternate-reverse;
+}
+/* One whole tile per loop, so the loop is seamless. */
+@keyframes tg-fall-a {
+  to {
+    background-position: -760px 1520px;
+  }
+}
+@keyframes tg-fall-b {
+  to {
+    background-position: 940px 1880px;
+  }
+}
+@keyframes tg-sway {
+  from {
+    transform: translateX(-28px);
+  }
+  to {
+    transform: translateX(28px);
+  }
+}
+
+/* Header: dark wood over a harvest stripe, with a turkey by the name. */
+[data-theme='thanksgiving'] #root > div > header {
+  background: linear-gradient(180deg, #4a2814, #33190c);
+  border-bottom: 5px solid;
+  border-image: repeating-linear-gradient(90deg, #b4470f 0 24px, #e0a526 24px 48px, #8f2d1b 48px 72px, #6b4423 72px 96px) 5;
+}
+[data-theme='thanksgiving'] #root > div > header > div > a:first-child > span > span:first-child::after {
+  content: ' \1F983';
+  font-style: normal;
+}
+
+[data-theme='thanksgiving'] main :is(h1, h2) {
+  font-family: var(--tg-serif);
+}
+[data-theme='thanksgiving'] main h1 {
+  color: #8f370b;
+}
+[data-theme='thanksgiving'] main h1::after {
+  content: ' \1F342';
+}
+
+/* Panels sit like place cards: a soft warm shadow. */
+[data-theme='thanksgiving'] :is(main, dialog) [class~='border'][class~='border-border'][class~='bg-surface'] {
+  box-shadow: 0 2px 0 rgb(122 62 20 / 0.12);
+}
+[data-theme='thanksgiving'] tbody tr:hover > td:not([class*='bg-']) {
+  background: rgb(224 165 38 / 0.12);
+}
+
+[data-theme='thanksgiving'] ::selection {
+  background: #e0a526;
+  color: #3b2314;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='thanksgiving'] .theme-fx::before,
+  [data-theme='thanksgiving'] .theme-fx::after {
+    animation: none;
+  }
+}

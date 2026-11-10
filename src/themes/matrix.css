@@ -1,0 +1,116 @@
+/* Matrix skin: green code on black. Two depths of falling glyphs behind the page, phosphor-green
+   text, glowing outlines, monospace titles with a blinking cursor. The rain is an inline SVG of
+   characters in the system monospace face: nothing is taken from the film.
+
+   Unlayered on purpose (see xp.css): rules here beat Tailwind's layered utilities. Sizes and layout
+   are left alone; tier, win/loss and position colors too. Motion stops under
+   prefers-reduced-motion. */
+
+[data-theme='matrix'] {
+  --color-accent: #00ff66;
+  --color-accent-hover: #7dffae;
+  --color-accent-fg: #001a08;
+  --color-header: #000000;
+
+  --color-bg: #000a03;
+  --color-surface: #021207;
+  --color-surface-2: #052010;
+  --color-border: #0c5a25;
+  --color-text: #b6ffcb;
+  --color-muted: #55c279;
+  --color-dim: #55c279;
+
+  --color-positive: #7dff9e;
+  --color-negative: #ff5c5c;
+  --color-notable: #ffe14d;
+}
+
+/* Backdrop: the rain. Each layer falls by whole tiles per loop, so the loop is seamless; the far
+   layer is smaller, dimmer and slower (index.css clears the app shell so it shows). */
+[data-theme='matrix'] body::before,
+[data-theme='matrix'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+[data-theme='matrix'] body::before {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='520' font-family='monospace' font-size='15' fill='%2300ff66' text-anchor='middle'%3E%3Ctext x='10' y='154' opacity='0.12'%3E0%3C/text%3E%3Ctext x='10' y='172' opacity='0.14'%3E%EF%BD%B4%3C/text%3E%3Ctext x='10' y='190' opacity='0.19'%3E%EF%BD%B5%3C/text%3E%3Ctext x='10' y='208' opacity='0.28'%3E9%3C/text%3E%3Ctext x='10' y='226' opacity='0.41'%3E%EF%BD%B7%3C/text%3E%3Ctext x='10' y='244' opacity='0.57'%3E%EF%BE%88%3C/text%3E%3Ctext x='10' y='262' opacity='0.77'%3E=%3C/text%3E%3Ctext x='10' y='280' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%B4%3C/text%3E%3Ctext x='30' y='219' opacity='0.12'%3E%EF%BD%B3%3C/text%3E%3Ctext x='30' y='237' opacity='0.13'%3E%EF%BD%B6%3C/text%3E%3Ctext x='30' y='255' opacity='0.16'%3E2%3C/text%3E%3Ctext x='30' y='273' opacity='0.22'%3E1%3C/text%3E%3Ctext x='30' y='291' opacity='0.29'%3E%EF%BD%B5%3C/text%3E%3Ctext x='30' y='309' opacity='0.39'%3E%EF%BE%80%3C/text%3E%3Ctext x='30' y='327' opacity='0.51'%3E%EF%BD%B6%3C/text%3E%3Ctext x='30' y='345' opacity='0.65'%3EZ%3C/text%3E%3Ctext x='30' y='363' opacity='0.82'%3E2%3C/text%3E%3Ctext x='30' y='381' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%B4%3C/text%3E%3Ctext x='50' y='126' opacity='0.12'%3E%EF%BD%BF%3C/text%3E%3Ctext x='50' y='144' opacity='0.13'%3E=%3C/text%3E%3Ctext x='50' y='162' opacity='0.15'%3E%EF%BD%B4%3C/text%3E%3Ctext x='50' y='180' opacity='0.19'%3E:%3C/text%3E%3Ctext x='50' y='198' opacity='0.24'%3E=%3C/text%3E%3Ctext x='50' y='216' opacity='0.3'%3E0%3C/text%3E%3Ctext x='50' y='234' opacity='0.38'%3E%EF%BD%B4%3C/text%3E%3Ctext x='50' y='252' opacity='0.48'%3E%EF%BD%BF%3C/text%3E%3Ctext x='50' y='270' opacity='0.59'%3E%EF%BD%B3%3C/text%3E%3Ctext x='50' y='288' opacity='0.71'%3EZ%3C/text%3E%3Ctext x='50' y='306' opacity='0.85'%3E%EF%BD%B9%3C/text%3E%3Ctext x='50' y='324' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%83%3C/text%3E%3Ctext x='70' y='147' opacity='0.12'%3E9%3C/text%3E%3Ctext x='70' y='165' opacity='0.13'%3E%EF%BD%B8%3C/text%3E%3Ctext x='70' y='183' opacity='0.17'%3E:%3C/text%3E%3Ctext x='70' y='201' opacity='0.24'%3E%EF%BE%84%3C/text%3E%3Ctext x='70' y='219' opacity='0.34'%3EZ%3C/text%3E%3Ctext x='70' y='237' opacity='0.46'%3E%EF%BD%BC%3C/text%3E%3Ctext x='70' y='255' opacity='0.61'%3E%EF%BD%B7%3C/text%3E%3Ctext x='70' y='273' opacity='0.79'%3E=%3C/text%3E%3Ctext x='70' y='291' opacity='1.0' fill='%23d9ffe6'%3E:%3C/text%3E%3Ctext x='90' y='192' opacity='0.12'%3E%EF%BE%88%3C/text%3E%3Ctext x='90' y='210' opacity='0.13'%3E%EF%BD%B7%3C/text%3E%3Ctext x='90' y='228' opacity='0.16'%3EZ%3C/text%3E%3Ctext x='90' y='246' opacity='0.2'%3E%EF%BD%B5%3C/text%3E%3Ctext x='90' y='264' opacity='0.26'%3E:%3C/text%3E%3Ctext x='90' y='282' opacity='0.34'%3E%EF%BD%B4%3C/text%3E%3Ctext x='90' y='300' opacity='0.44'%3E%2B%3C/text%3E%3Ctext x='90' y='318' opacity='0.55'%3E%EF%BD%BE%3C/text%3E%3Ctext x='90' y='336' opacity='0.68'%3E6%3C/text%3E%3Ctext x='90' y='354' opacity='0.83'%3E9%3C/text%3E%3Ctext x='90' y='372' opacity='1.0' fill='%23d9ffe6'%3E2%3C/text%3E%3Ctext x='110' y='321' opacity='0.12'%3E4%3C/text%3E%3Ctext x='110' y='339' opacity='0.13'%3E=%3C/text%3E%3Ctext x='110' y='357' opacity='0.15'%3E4%3C/text%3E%3Ctext x='110' y='375' opacity='0.19'%3E%EF%BE%88%3C/text%3E%3Ctext x='110' y='393' opacity='0.24'%3E%EF%BE%84%3C/text%3E%3Ctext x='110' y='411' opacity='0.3'%3E%EF%BE%80%3C/text%3E%3Ctext x='110' y='429' opacity='0.38'%3E%EF%BD%BC%3C/text%3E%3Ctext x='110' y='447' opacity='0.48'%3E%EF%BE%80%3C/text%3E%3Ctext x='110' y='465' opacity='0.59'%3E%EF%BD%B6%3C/text%3E%3Ctext x='110' y='483' opacity='0.71'%3E:%3C/text%3E%3Ctext x='110' y='501' opacity='0.85'%3E%EF%BE%84%3C/text%3E%3Ctext x='110' y='519' opacity='1.0' fill='%23d9ffe6'%3E8%3C/text%3E%3Ctext x='130' y='351' opacity='0.12'%3E3%3C/text%3E%3Ctext x='130' y='369' opacity='0.13'%3E%EF%BE%83%3C/text%3E%3Ctext x='130' y='387' opacity='0.17'%3E%2A%3C/text%3E%3Ctext x='130' y='405' opacity='0.24'%3E%EF%BD%B5%3C/text%3E%3Ctext x='130' y='423' opacity='0.34'%3E%EF%BD%B8%3C/text%3E%3Ctext x='130' y='441' opacity='0.46'%3E7%3C/text%3E%3Ctext x='130' y='459' opacity='0.61'%3E1%3C/text%3E%3Ctext x='130' y='477' opacity='0.79'%3E%EF%BD%BB%3C/text%3E%3Ctext x='130' y='495' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%86%3C/text%3E%3Ctext x='150' y='500' opacity='0.12'%3E1%3C/text%3E%3Ctext x='150' y='518' opacity='0.14'%3E%EF%BD%B3%3C/text%3E%3Ctext x='150' y='16' opacity='0.22'%3E%EF%BD%B5%3C/text%3E%3Ctext x='150' y='34' opacity='0.34'%3EZ%3C/text%3E%3Ctext x='150' y='52' opacity='0.51'%3E:%3C/text%3E%3Ctext x='150' y='70' opacity='0.73'%3E%EF%BE%85%3C/text%3E%3Ctext x='150' y='88' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%86%3C/text%3E%3Ctext x='170' y='358' opacity='0.12'%3E%2A%3C/text%3E%3Ctext x='170' y='376' opacity='0.13'%3E6%3C/text%3E%3Ctext x='170' y='394' opacity='0.16'%3E=%3C/text%3E%3Ctext x='170' y='412' opacity='0.2'%3E4%3C/text%3E%3Ctext x='170' y='430' opacity='0.26'%3E%EF%BD%B5%3C/text%3E%3Ctext x='170' y='448' opacity='0.34'%3E%EF%BD%B6%3C/text%3E%3Ctext x='170' y='466' opacity='0.44'%3E%EF%BE%82%3C/text%3E%3Ctext x='170' y='484' opacity='0.55'%3E5%3C/text%3E%3Ctext x='170' y='502' opacity='0.68'%3E%EF%BD%B5%3C/text%3E%3Ctext x='170' y='0' opacity='0.83'%3E%EF%BD%B4%3C/text%3E%3Ctext x='170' y='18' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%84%3C/text%3E%3Ctext x='190' y='456' opacity='0.12'%3E%EF%BE%83%3C/text%3E%3Ctext x='190' y='474' opacity='0.13'%3E%EF%BE%89%3C/text%3E%3Ctext x='190' y='492' opacity='0.16'%3E%EF%BE%87%3C/text%3E%3Ctext x='190' y='510' opacity='0.2'%3E%EF%BD%B2%3C/text%3E%3Ctext x='190' y='8' opacity='0.26'%3E4%3C/text%3E%3Ctext x='190' y='26' opacity='0.34'%3E%EF%BE%87%3C/text%3E%3Ctext x='190' y='44' opacity='0.44'%3E%EF%BD%BB%3C/text%3E%3Ctext x='190' y='62' opacity='0.55'%3E%2B%3C/text%3E%3Ctext x='190' y='80' opacity='0.68'%3E%EF%BD%B8%3C/text%3E%3Ctext x='190' y='98' opacity='0.83'%3E6%3C/text%3E%3Ctext x='190' y='116' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%B4%3C/text%3E%3Ctext x='210' y='294' opacity='0.12'%3E%EF%BD%B9%3C/text%3E%3Ctext x='210' y='312' opacity='0.14'%3E%EF%BE%80%3C/text%3E%3Ctext x='210' y='330' opacity='0.22'%3E0%3C/text%3E%3Ctext x='210' y='348' opacity='0.34'%3E0%3C/text%3E%3Ctext x='210' y='366' opacity='0.51'%3E6%3C/text%3E%3Ctext x='210' y='384' opacity='0.73'%3E%EF%BD%B6%3C/text%3E%3Ctext x='210' y='402' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%BB%3C/text%3E%3Ctext x='230' y='411' opacity='0.12'%3EZ%3C/text%3E%3Ctext x='230' y='429' opacity='0.13'%3E%EF%BE%82%3C/text%3E%3Ctext x='230' y='447' opacity='0.17'%3E%EF%BD%B9%3C/text%3E%3Ctext x='230' y='465' opacity='0.24'%3E2%3C/text%3E%3Ctext x='230' y='483' opacity='0.34'%3EZ%3C/text%3E%3Ctext x='230' y='501' opacity='0.46'%3E%EF%BE%82%3C/text%3E%3Ctext x='230' y='519' opacity='0.61'%3E1%3C/text%3E%3Ctext x='230' y='17' opacity='0.79'%3E%EF%BE%87%3C/text%3E%3Ctext x='230' y='35' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%89%3C/text%3E%3Ctext x='250' y='154' opacity='0.12'%3E%EF%BD%B6%3C/text%3E%3Ctext x='250' y='172' opacity='0.14'%3E%EF%BD%BC%3C/text%3E%3Ctext x='250' y='190' opacity='0.22'%3E%EF%BD%BA%3C/text%3E%3Ctext x='250' y='208' opacity='0.34'%3E%EF%BD%BF%3C/text%3E%3Ctext x='250' y='226' opacity='0.51'%3E%EF%BD%BF%3C/text%3E%3Ctext x='250' y='244' opacity='0.73'%3E%EF%BD%B1%3C/text%3E%3Ctext x='250' y='262' opacity='1.0' fill='%23d9ffe6'%3E6%3C/text%3E%3C/svg%3E") 0 0 / 260px 520px, #000a03;
+  opacity: 0.45;
+  animation: matrix-rain-far 14s linear infinite;
+}
+[data-theme='matrix'] body::after {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='680' font-family='monospace' font-size='20' fill='%2300ff66' text-anchor='middle'%3E%3Ctext x='17' y='603' opacity='0.12'%3E%EF%BD%BC%3C/text%3E%3Ctext x='17' y='626' opacity='0.13'%3E%EF%BE%81%3C/text%3E%3Ctext x='17' y='649' opacity='0.15'%3E%EF%BE%83%3C/text%3E%3Ctext x='17' y='672' opacity='0.19'%3E%EF%BD%B1%3C/text%3E%3Ctext x='17' y='15' opacity='0.24'%3E%EF%BD%BA%3C/text%3E%3Ctext x='17' y='38' opacity='0.3'%3E1%3C/text%3E%3Ctext x='17' y='61' opacity='0.38'%3E9%3C/text%3E%3Ctext x='17' y='84' opacity='0.48'%3E%EF%BE%88%3C/text%3E%3Ctext x='17' y='107' opacity='0.59'%3E%2B%3C/text%3E%3Ctext x='17' y='130' opacity='0.71'%3E:%3C/text%3E%3Ctext x='17' y='153' opacity='0.85'%3E%EF%BE%85%3C/text%3E%3Ctext x='17' y='176' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%B9%3C/text%3E%3Ctext x='51' y='527' opacity='0.12'%3E%2B%3C/text%3E%3Ctext x='51' y='550' opacity='0.13'%3E%EF%BD%B4%3C/text%3E%3Ctext x='51' y='573' opacity='0.16'%3E4%3C/text%3E%3Ctext x='51' y='596' opacity='0.2'%3EZ%3C/text%3E%3Ctext x='51' y='619' opacity='0.26'%3E0%3C/text%3E%3Ctext x='51' y='642' opacity='0.34'%3E0%3C/text%3E%3Ctext x='51' y='665' opacity='0.44'%3E0%3C/text%3E%3Ctext x='51' y='8' opacity='0.55'%3E0%3C/text%3E%3Ctext x='51' y='31' opacity='0.68'%3E%EF%BD%B7%3C/text%3E%3Ctext x='51' y='54' opacity='0.83'%3E5%3C/text%3E%3Ctext x='51' y='77' opacity='1.0' fill='%23d9ffe6'%3E0%3C/text%3E%3Ctext x='85' y='195' opacity='0.12'%3E%EF%BD%B5%3C/text%3E%3Ctext x='85' y='218' opacity='0.16'%3E%EF%BD%BE%3C/text%3E%3Ctext x='85' y='241' opacity='0.26'%3E3%3C/text%3E%3Ctext x='85' y='264' opacity='0.44'%3E%EF%BD%BB%3C/text%3E%3Ctext x='85' y='287' opacity='0.68'%3E%EF%BD%B8%3C/text%3E%3Ctext x='85' y='310' opacity='1.0' fill='%23d9ffe6'%3E%EF%BE%86%3C/text%3E%3Ctext x='119' y='53' opacity='0.12'%3E%EF%BD%B7%3C/text%3E%3Ctext x='119' y='76' opacity='0.13'%3E%EF%BD%B1%3C/text%3E%3Ctext x='119' y='99' opacity='0.16'%3E:%3C/text%3E%3Ctext x='119' y='122' opacity='0.22'%3E%EF%BD%BA%3C/text%3E%3Ctext x='119' y='145' opacity='0.29'%3E9%3C/text%3E%3Ctext x='119' y='168' opacity='0.39'%3E%EF%BD%B7%3C/text%3E%3Ctext x='119' y='191' opacity='0.51'%3E%EF%BE%88%3C/text%3E%3Ctext x='119' y='214' opacity='0.65'%3E%2B%3C/text%3E%3Ctext x='119' y='237' opacity='0.82'%3E%EF%BD%B2%3C/text%3E%3Ctext x='119' y='260' opacity='1.0' fill='%23d9ffe6'%3E%EF%BD%B5%3C/text%3E%3Ctext x='153' y='212' opacity='0.12'%3E%2B%3C/text%3E%3Ctext x='153' y='235' opacity='0.13'%3E%EF%BE%89%3C/text%3E%3Ctext x='153' y='258' opacity='0.15'%3E%EF%BD%BA%3C/text%3E%3Ctext x='153' y='281' opacity='0.19'%3E%EF%BE%81%3C/text%3E%3Ctext x='153' y='304' opacity='0.24'%3E%EF%BE%87%3C/text%3E%3Ctext x='153' y='327' opacity='0.3'%3E%2A%3C/text%3E%3Ctext x='153' y='350' opacity='0.38'%3E%EF%BE%88%3C/text%3E%3Ctext x='153' y='373' opacity='0.48'%3E5%3C/text%3E%3Ctext x='153' y='396' opacity='0.59'%3E%EF%BD%B8%3C/text%3E%3Ctext x='153' y='419' opacity='0.71'%3E%EF%BD%B8%3C/text%3E%3Ctext x='153' y='442' opacity='0.85'%3E6%3C/text%3E%3Ctext x='153' y='465' opacity='1.0' fill='%23d9ffe6'%3E4%3C/text%3E%3Ctext x='187' y='495' opacity='0.12'%3E%EF%BE%84%3C/text%3E%3Ctext x='187' y='518' opacity='0.13'%3E%EF%BD%B6%3C/text%3E%3Ctext x='187' y='541' opacity='0.17'%3E%EF%BD%BA%3C/text%3E%3Ctext x='187' y='564' opacity='0.24'%3E%EF%BD%B7%3C/text%3E%3Ctext x='187' y='587' opacity='0.34'%3E%EF%BE%86%3C/text%3E%3Ctext x='187' y='610' opacity='0.46'%3E%EF%BE%81%3C/text%3E%3Ctext x='187' y='633' opacity='0.61'%3E5%3C/text%3E%3Ctext x='187' y='656' opacity='0.79'%3E%EF%BD%BB%3C/text%3E%3Ctext x='187' y='679' opacity='1.0' fill='%23d9ffe6'%3E8%3C/text%3E%3Ctext x='221' y='210' opacity='0.12'%3E8%3C/text%3E%3Ctext x='221' y='233' opacity='0.16'%3E%EF%BE%88%3C/text%3E%3Ctext x='221' y='256' opacity='0.26'%3E%EF%BD%BA%3C/text%3E%3Ctext x='221' y='279' opacity='0.44'%3E9%3C/text%3E%3Ctext x='221' y='302' opacity='0.68'%3E%EF%BD%B2%3C/text%3E%3Ctext x='221' y='325' opacity='1.0' fill='%23d9ffe6'%3E8%3C/text%3E%3Ctext x='255' y='658' opacity='0.12'%3E%EF%BD%B6%3C/text%3E%3Ctext x='255' y='1' opacity='0.14'%3E%EF%BE%81%3C/text%3E%3Ctext x='255' y='24' opacity='0.19'%3E8%3C/text%3E%3Ctext x='255' y='47' opacity='0.28'%3E%EF%BE%88%3C/text%3E%3Ctext x='255' y='70' opacity='0.41'%3E%EF%BD%BB%3C/text%3E%3Ctext x='255' y='93' opacity='0.57'%3E%EF%BE%87%3C/text%3E%3Ctext x='255' y='116' opacity='0.77'%3E%EF%BD%BF%3C/text%3E%3Ctext x='255' y='139' opacity='1.0' fill='%23d9ffe6'%3E9%3C/text%3E%3Ctext x='289' y='514' opacity='0.12'%3E%EF%BE%86%3C/text%3E%3Ctext x='289' y='537' opacity='0.13'%3E%EF%BD%BF%3C/text%3E%3Ctext x='289' y='560' opacity='0.16'%3E%2B%3C/text%3E%3Ctext x='289' y='583' opacity='0.22'%3E%EF%BD%BD%3C/text%3E%3Ctext x='289' y='606' opacity='0.29'%3E%EF%BE%80%3C/text%3E%3Ctext x='289' y='629' opacity='0.39'%3E0%3C/text%3E%3Ctext x='289' y='652' opacity='0.51'%3E%EF%BD%BF%3C/text%3E%3Ctext x='289' y='675' opacity='0.65'%3E%EF%BD%BD%3C/text%3E%3Ctext x='289' y='18' opacity='0.82'%3E8%3C/text%3E%3Ctext x='289' y='41' opacity='1.0' fill='%23d9ffe6'%3E6%3C/text%3E%3Ctext x='323' y='29' opacity='0.12'%3E%EF%BD%B2%3C/text%3E%3Ctext x='323' y='52' opacity='0.14'%3E%EF%BE%82%3C/text%3E%3Ctext x='323' y='75' opacity='0.19'%3E5%3C/text%3E%3Ctext x='323' y='98' opacity='0.28'%3E%EF%BE%81%3C/text%3E%3Ctext x='323' y='121' opacity='0.41'%3E%EF%BD%BD%3C/text%3E%3Ctext x='323' y='144' opacity='0.57'%3E%2A%3C/text%3E%3Ctext x='323' y='167' opacity='0.77'%3E%EF%BE%87%3C/text%3E%3Ctext x='323' y='190' opacity='1.0' fill='%23d9ffe6'%3E3%3C/text%3E%3C/svg%3E") 0 0 / 340px 680px;
+  opacity: 0.6;
+  animation: matrix-rain-near 9s linear infinite;
+}
+@keyframes matrix-rain-far {
+  to {
+    background-position: 0 520px;
+  }
+}
+@keyframes matrix-rain-near {
+  to {
+    background-position: 0 680px;
+  }
+}
+
+/* The page gets a dark backing so text set straight on the background stays readable over the
+   rain, which still shows in the margins and faintly through. */
+[data-theme='matrix'] main {
+  background: rgb(0 10 3 / 0.86);
+  box-shadow: 0 0 40px 20px rgb(0 10 3 / 0.86);
+}
+
+[data-theme='matrix'] #root > div > header {
+  border-bottom-color: #00ff66;
+  box-shadow: 0 0 18px rgb(0 255 102 / 0.5);
+}
+/* Not a heading inside a card's filled header bar, which is already dark on the green. */
+[data-theme='matrix'] #root > div > header > div > a:first-child > span > span:first-child,
+[data-theme='matrix'] main :is(h1, h2):not(header *) {
+  font-family: var(--font-mono);
+  font-style: normal;
+  color: #00ff66;
+  text-shadow: 0 0 8px rgb(0 255 102 / 0.7);
+}
+/* A terminal cursor after the page title. */
+[data-theme='matrix'] main h1::after {
+  content: '_';
+  animation: matrix-blink 1s steps(1) infinite;
+}
+@keyframes matrix-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+[data-theme='matrix'] :is(main, dialog) [class~='border'][class~='border-border'][class~='bg-surface'] {
+  box-shadow: 0 0 14px -6px rgb(0 255 102 / 0.7);
+}
+[data-theme='matrix'] :is(a, button)[class~='bg-accent'],
+[data-theme='matrix'] :is(main, dialog) :is(button, select, a)[class~='border'][class~='bg-surface']:hover {
+  box-shadow: 0 0 12px rgb(0 255 102 / 0.6);
+}
+[data-theme='matrix'] thead[class~='bg-accent'] th {
+  background: #000a03;
+  color: #00ff66;
+  box-shadow: inset 0 -1px #00ff66;
+  text-shadow: 0 0 6px rgb(0 255 102 / 0.6);
+}
+[data-theme='matrix'] tbody tr:hover > td:not([class*='bg-']) {
+  background: rgb(0 255 102 / 0.07);
+}
+
+[data-theme='matrix'] ::selection {
+  background: #00ff66;
+  color: #001a08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='matrix'] body::before,
+  [data-theme='matrix'] body::after,
+  [data-theme='matrix'] main h1::after {
+    animation: none;
+  }
+}

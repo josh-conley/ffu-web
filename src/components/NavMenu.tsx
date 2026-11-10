@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useCallback, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { useDisclosureDismiss } from '@/hooks/useDisclosureDismiss'
 import { useNavHref } from '@/hooks/useNavHref'
 import type { NavGroup } from './nav'
 
@@ -82,23 +83,8 @@ export function NavMenu({ group }: { group: NavGroup }) {
   // while its links are tucked away.
   const groupActive = group.items.some((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      setOpen(false)
-      triggerRef.current?.focus()
-    }
-    const onPointerDown = (e: PointerEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.removeEventListener('pointerdown', onPointerDown)
-    }
-  }, [open])
+  const close = useCallback(() => setOpen(false), [])
+  useDisclosureDismiss(open, wrapRef, triggerRef, close)
 
   // pointerenter/leave account for the DOM subtree, so moving down into the panel doesn't close it
   // — as long as no visual gap separates them (the panel supplies its own offset via padding).
@@ -140,7 +126,7 @@ export function NavMenu({ group }: { group: NavGroup }) {
         <Chevron open={open} />
       </button>
 
-      {open && <MenuPanel group={group} panelId={panelId} onNavigate={() => setOpen(false)} />}
+      {open && <MenuPanel group={group} panelId={panelId} onNavigate={close} />}
     </div>
   )
 }
