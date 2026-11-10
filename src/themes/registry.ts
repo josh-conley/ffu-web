@@ -14,9 +14,9 @@ export type ThemeId =
   | 'light'
   | 'dark'
   | 'xp'
+  | 'ds'
   | 'arcade'
   | 'matrix'
-  | 'chalkboard'
   | 'comic'
   | 'halloween'
   | 'thanksgiving'
@@ -38,6 +38,7 @@ export const THEMES: readonly ThemeDef[] = [
   { id: 'light', label: 'Light', dark: false },
   { id: 'dark', label: 'Dark', dark: true },
   { id: 'xp', label: 'Windows XP', dark: false, load: () => import('./xp.css') },
+  { id: 'ds', label: 'Nintendo DS', dark: false, load: () => withFont(import('@fontsource/pixelify-sans/latin-700.css'), import('./ds.css')) },
   {
     id: 'arcade',
     label: 'Arcade',
@@ -45,7 +46,6 @@ export const THEMES: readonly ThemeDef[] = [
     load: () => withFont(import('@fontsource/orbitron/latin-700.css'), import('./arcade.css')),
   },
   { id: 'matrix', label: 'Matrix', dark: true, load: () => import('./matrix.css') },
-  { id: 'chalkboard', label: 'Chalkboard', dark: true, load: () => withFont(import('@fontsource/schoolbell/latin-400.css'), import('./chalkboard.css')) },
   { id: 'comic', label: 'Comic Book', dark: false, load: () => withFont(import('@fontsource/bangers/latin-400.css'), import('./comic.css')) },
   { id: 'halloween', label: 'Halloween', dark: true, load: () => withFont(import('@fontsource/creepster/latin-400.css'), import('./halloween.css')) },
   { id: 'thanksgiving', label: 'Thanksgiving', dark: false, load: () => import('./thanksgiving.css') },

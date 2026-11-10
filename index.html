@@ -24,7 +24,7 @@
          (anything but light/dark) also gets data-theme, which its stylesheet is scoped to. -->
     <script>
       try {
-        const DARK = ['dark', 'arcade', 'matrix', 'chalkboard', 'halloween', 'christmas']
+        const DARK = ['dark', 'arcade', 'matrix', 'halloween', 'christmas']
         const t = localStorage.getItem('theme')
         const root = document.documentElement
         if (t ? DARK.includes(t) : matchMedia('(prefers-color-scheme: dark)').matches) root.classList.add('dark')

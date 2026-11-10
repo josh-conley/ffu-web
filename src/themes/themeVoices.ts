@@ -115,20 +115,20 @@ const matrix: Voice = {
   ],
 }
 
-// Chalk on slate: five scratchy strokes of uneven length, then the stick tapped down twice. The
-// click is one tap.
-const TAP: Note[] = [
-  { type: 'noise', hz: 2500, q: 2, at: 0, dur: 0.02, gain: 0.25 },
-  { type: 'sine', hz: 420, toHz: 260, at: 0, dur: 0.03, gain: 0.1 },
-]
-const STROKES = [0.12, 0.07, 0.16, 0.06, 0.2]
-const chalkboard: Voice = {
+// A handheld waking up: four soft bell notes climbing over a warm pad, the last one left to ring.
+// The click is the menu's gentle two-step blip.
+const ds: Voice = {
   chime: [
-    ...STROKES.map((dur, i): Note => ({ type: 'noise', hz: 3600 + i * 350, q: 1.6, at: i * 0.2, dur, gain: 0.16, attack: 0.02 })),
-    ...TAP.map((n): Note => ({ ...n, at: 1.1 })),
-    ...TAP.map((n): Note => ({ ...n, at: 1.22 })),
+    { type: 'triangle', hz: 261.63, at: 0, dur: 1.6, gain: 0.08, attack: 0.2 },
+    ...bell(783.99, 0, 0.5, 0.1),
+    ...bell(1046.5, 0.13, 0.5, 0.1),
+    ...bell(1318.5, 0.26, 0.5, 0.1),
+    ...bell(1568, 0.52, 1.2, 0.1),
   ],
-  click: TAP,
+  click: [
+    { type: 'sine', hz: 1568, at: 0, dur: 0.05, gain: 0.1 },
+    { type: 'sine', hz: 2093, at: 0.035, dur: 0.07, gain: 0.1 },
+  ],
 }
 
 // A punch landing, then a brass ta-da: a thud and a crack, and a rising major stab. The click is a
@@ -159,4 +159,4 @@ const halloween: Voice = {
   ],
 }
 
-export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, arcade, matrix, chalkboard, comic, halloween, thanksgiving, christmas }
+export const VOICES: Partial<Record<ThemeId, Voice>> = { xp, ds, arcade, matrix, comic, halloween, thanksgiving, christmas }
