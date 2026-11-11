@@ -12,9 +12,10 @@ export const halloween: Voice = {
     { type: 'sine', hz: 698.46, toHz: 554.37, at: 0.8, dur: 0.5, gain: 0.08, attack: 0.05, vibrato: { hz: 6, depth: 12 } },
     { type: 'sine', hz: 554.37, toHz: 440, at: 1.3, dur: 0.7, gain: 0.08, attack: 0.05, vibrato: { hz: 6, depth: 12 } },
   ],
-  nav: clip('halloween/nav'),
+  nav: clip('halloween/howl'),
   click: [
     clip('halloween/knock'),
+    clip('halloween/laugh'),
     ...takes('halloween/click', 5),
     // A ghost: "oooOOooo".
     [

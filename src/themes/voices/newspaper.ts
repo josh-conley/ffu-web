@@ -18,6 +18,6 @@ const TYPED = [0, 0.09, 0.17, 0.3, 0.38, 0.47, 0.6, 0.68]
 export const newspaper: Voice = {
   chime: [...TYPED.flatMap((at) => later(key(2200), at)), ...later(CARRIAGE, 0.82)],
   nav: clip('newspaper/nav'),
-  click: takes('newspaper/click', 3),
+  click: takes('newspaper/click', 4),
   scroll: takes('newspaper/scroll', 4),
 }

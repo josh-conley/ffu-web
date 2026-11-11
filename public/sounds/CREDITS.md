@@ -28,10 +28,10 @@ products the skins nod to.
 | `matrix/click-1.mp3` | Kenney, `computerNoise_000` | Kenney (kenney.nl) | CC0 |
 | `matrix/click-2.mp3` | Kenney, `computerNoise_002` | Kenney (kenney.nl) | CC0 |
 | `matrix/click-3.mp3` | Kenney, `computerNoise_003` | Kenney (kenney.nl) | CC0 |
-| `matrix/scroll-1.mp3` | Kenney, `glitch_001` | Kenney (kenney.nl) | CC0 |
-| `matrix/scroll-2.mp3` | Kenney, `glitch_003` | Kenney (kenney.nl) | CC0 |
-| `matrix/scroll-3.mp3` | Kenney, `glitch_004` | Kenney (kenney.nl) | CC0 |
-| `matrix/scroll-4.mp3` | Kenney, `glitch_002` | Kenney (kenney.nl) | CC0 |
+| `matrix/scroll-1.mp3` | [IBM M2 sound.ogg](https://commons.wikimedia.org/wiki/File:IBM_M2_sound.ogg) | Anonimski | CC0 |
+| `matrix/scroll-2.mp3` | [IBM M2 sound.ogg](https://commons.wikimedia.org/wiki/File:IBM_M2_sound.ogg) | Anonimski | CC0 |
+| `matrix/scroll-3.mp3` | [IBM M2 sound.ogg](https://commons.wikimedia.org/wiki/File:IBM_M2_sound.ogg) | Anonimski | CC0 |
+| `matrix/scroll-4.mp3` | [IBM M2 sound.ogg](https://commons.wikimedia.org/wiki/File:IBM_M2_sound.ogg) | Anonimski | CC0 |
 | `comic/click-1.mp3` | Kenney, `impactPunch_heavy_000` | Kenney (kenney.nl) | CC0 |
 | `comic/click-2.mp3` | Kenney, `laserRetro_000` | Kenney (kenney.nl) | CC0 |
 | `comic/click-3.mp3` | Kenney, `explosionCrunch_000` | Kenney (kenney.nl) | CC0 |
@@ -40,13 +40,12 @@ products the skins nod to.
 | `comic/scroll-2.mp3` | Kenney, `bookFlip2` | Kenney (kenney.nl) | CC0 |
 | `comic/scroll-3.mp3` | Kenney, `bookFlip3` | Kenney (kenney.nl) | CC0 |
 | `newspaper/nav.mp3` | [406243 stubb typewriter-ding-near-mono.wav](https://commons.wikimedia.org/wiki/File:406243_stubb_typewriter-ding-near-mono.wav) | _stubb | CC0 |
-| `newspaper/click-1.mp3` | Kenney, `switch1` | Kenney (kenney.nl) | CC0 |
-| `newspaper/click-2.mp3` | Kenney, `switch2` | Kenney (kenney.nl) | CC0 |
-| `newspaper/click-3.mp3` | Kenney, `switch3` | Kenney (kenney.nl) | CC0 |
+| `newspaper/click-1.mp3` | [WWS Typewriter.ogg](https://commons.wikimedia.org/wiki/File:WWS_Typewriter.ogg) | Work With Sounds / Konrad Gutkowski | CC BY 4.0 |
+| `newspaper/click-2.mp3` | [WWS Typewriter.ogg](https://commons.wikimedia.org/wiki/File:WWS_Typewriter.ogg) | Work With Sounds / Konrad Gutkowski | CC BY 4.0 |
+| `newspaper/click-3.mp3` | [WWS Typewriter.ogg](https://commons.wikimedia.org/wiki/File:WWS_Typewriter.ogg) | Work With Sounds / Konrad Gutkowski | CC BY 4.0 |
 | `newspaper/scroll-1.mp3` | Kenney, `card-slide-1` | Kenney (kenney.nl) | CC0 |
 | `newspaper/scroll-2.mp3` | Kenney, `card-slide-2` | Kenney (kenney.nl) | CC0 |
 | `newspaper/scroll-3.mp3` | Kenney, `card-slide-3` | Kenney (kenney.nl) | CC0 |
-| `halloween/nav.mp3` | Kenney, `doorOpen_1` | Kenney (kenney.nl) | CC0 |
 | `halloween/click-1.mp3` | Kenney, `creak1` | Kenney (kenney.nl) | CC0 |
 | `halloween/click-2.mp3` | Kenney, `doorClose_1` | Kenney (kenney.nl) | CC0 |
 | `halloween/click-3.mp3` | Kenney, `creak2` | Kenney (kenney.nl) | CC0 |
@@ -66,15 +65,20 @@ products the skins nod to.
 | `thanksgiving/scroll-2.mp3` | Kenney, `footstep_grass_001` | Kenney (kenney.nl) | CC0 |
 | `thanksgiving/scroll-3.mp3` | Kenney, `footstep_grass_002` | Kenney (kenney.nl) | CC0 |
 | `thanksgiving/scroll-4.mp3` | Kenney, `footstep_grass_003` | Kenney (kenney.nl) | CC0 |
-| `christmas/nav.mp3` | Kenney, `impactBell_heavy_003` | Kenney (kenney.nl) | CC0 |
+| `christmas/nav.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
 | `christmas/click-1.mp3` | Kenney, `impactBell_heavy_000` | Kenney (kenney.nl) | CC0 |
 | `christmas/click-2.mp3` | Kenney, `impactBell_heavy_001` | Kenney (kenney.nl) | CC0 |
 | `christmas/click-3.mp3` | Kenney, `impactBell_heavy_002` | Kenney (kenney.nl) | CC0 |
 | `christmas/click-4.mp3` | Kenney, `glass_001` | Kenney (kenney.nl) | CC0 |
-| `christmas/scroll-1.mp3` | Kenney, `footstep_snow_000` | Kenney (kenney.nl) | CC0 |
-| `christmas/scroll-2.mp3` | Kenney, `footstep_snow_001` | Kenney (kenney.nl) | CC0 |
-| `christmas/scroll-3.mp3` | Kenney, `footstep_snow_002` | Kenney (kenney.nl) | CC0 |
-| `christmas/scroll-4.mp3` | Kenney, `footstep_snow_003` | Kenney (kenney.nl) | CC0 |
+| `christmas/scroll-1.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
+| `christmas/scroll-2.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
+| `christmas/scroll-3.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
+| `christmas/scroll-4.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
 | `comic/click-5.mp3` | [Boing raw.ogg](https://commons.wikimedia.org/wiki/File:Boing_raw.ogg) | cfork | CC BY 4.0 |
 | `halloween/knock.mp3` | [Door knocker audio.ogg](https://commons.wikimedia.org/wiki/File:Door_knocker_audio.ogg) | Mx. Granger | CC0 |
 | `newspaper/scroll-4.mp3` | [Turning a page.ogg](https://commons.wikimedia.org/wiki/File:Turning_a_page.ogg) | planish | Public domain |
+| `christmas/chime.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
+| `christmas/click-5.mp3` | [Sleigh bells.wav](https://commons.wikimedia.org/wiki/File:Sleigh_bells.wav) | The Midnite Wolf | CC0 |
+| `halloween/howl.mp3` | [Wolf howls.ogg](https://commons.wikimedia.org/wiki/File:Wolf_howls.ogg) | unknown | Public domain |
+| `halloween/laugh.mp3` | [WAPP-Evil Laugh.wav](https://commons.wikimedia.org/wiki/File:WAPP-Evil_Laugh.wav) | Dued1 | CC0 |
+| `newspaper/click-4.mp3` | [WWS Typewriter.ogg](https://commons.wikimedia.org/wiki/File:WWS_Typewriter.ogg) | Work With Sounds / Konrad Gutkowski | CC BY 4.0 |
