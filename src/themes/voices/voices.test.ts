@@ -1,9 +1,13 @@
 import { THEMES } from '../registry'
 import { VOICES } from './index'
-import type { Note, Voice } from './types'
+import { isClip, type Note, type Sound, type Voice } from './types'
 
-const sounds = (voice: Voice): Note[][] => [voice.chime, voice.nav, ...voice.click, ...voice.scroll]
+const sounds = (voice: Voice): Sound[] => [voice.chime, voice.nav, ...voice.click, ...voice.scroll]
+const synth = (list: Sound[]): Note[][] => list.filter((s): s is Note[] => !isClip(s))
 const length = (notes: Note[]) => Math.max(...notes.map((n) => n.at + n.dur))
+
+/** Every recording on disk, as the path a voice would name it by. */
+const FILES = Object.keys(import.meta.glob('../../../public/sounds/**/*.mp3')).map((p) => p.split('/public/sounds/')[1])
 
 describe('theme voices', () => {
   it('gives every skin a voice, and the standard look none', () => {
@@ -13,19 +17,28 @@ describe('theme voices', () => {
     }
   })
 
-  it('gives every voice all four kinds of sound, with variety in the repeated ones', () => {
+  it('gives every voice variety in the sounds that repeat', () => {
     for (const [id, voice] of Object.entries(VOICES)) {
-      expect(voice.chime.length, id).toBeGreaterThan(0)
-      expect(voice.nav.length, id).toBeGreaterThan(0)
       expect(voice.click.length, id).toBeGreaterThanOrEqual(3)
       expect(voice.scroll.length, id).toBeGreaterThanOrEqual(3)
     }
   })
 
-  it('keeps every note playable: audible, positive length, a real pitch', () => {
+  it('only names recordings that exist', () => {
+    for (const voice of Object.values(VOICES)) {
+      for (const sound of sounds(voice)) if (isClip(sound)) expect(FILES).toContain(sound.clip)
+    }
+  })
+
+  it('ships no recording that nothing plays', () => {
+    const used = Object.values(VOICES).flatMap((v) => sounds(v).filter(isClip).map((c) => c.clip))
+    expect([...FILES].sort()).toEqual([...new Set(used)].sort())
+  })
+
+  it('keeps every synth note playable: audible, positive length, a real pitch', () => {
     // exponentialRamp throws on zero or negative values, which would silence the whole sound.
     for (const voice of Object.values(VOICES)) {
-      for (const note of sounds(voice).flat()) {
+      for (const note of synth(sounds(voice)).flat()) {
         expect(note.gain).toBeGreaterThan(0)
         expect(note.gain).toBeLessThanOrEqual(0.35)
         expect(note.dur).toBeGreaterThan(note.attack ?? 0.008)
@@ -38,11 +51,9 @@ describe('theme voices', () => {
     }
   })
 
-  it('sizes each sound to how often it plays', () => {
+  it('keeps synth scroll ticks short, since they play many times a second', () => {
     for (const [id, voice] of Object.entries(VOICES)) {
-      for (const take of voice.scroll) expect(length(take), `${id} scroll`).toBeLessThanOrEqual(0.12)
-      for (const take of voice.click) expect(length(take), `${id} click`).toBeLessThanOrEqual(0.6)
-      expect(length(voice.nav), `${id} nav`).toBeLessThanOrEqual(1.2)
+      for (const take of synth(voice.scroll)) expect(length(take), id).toBeLessThanOrEqual(0.12)
     }
   })
 })

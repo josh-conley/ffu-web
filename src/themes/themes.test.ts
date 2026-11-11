@@ -61,11 +61,13 @@ describe('theme store', () => {
     expect(localStorage.getItem('theme-holiday')).toBeNull()
   })
 
-  it('keeps sound off until asked', () => {
+  it('keeps sound off until asked', async () => {
     expect(getThemeState().sound).toBe(false)
     setThemeSound(true)
     expect(getThemeState().sound).toBe(true)
     expect(localStorage.getItem('theme-sound')).toBe('1')
+    // Turning sound on fetches the player in the background; let that land before the test ends.
+    await import('./themeSound')
   })
 
   it('drops the skin for the length of a capture, then puts it back', async () => {

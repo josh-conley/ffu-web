@@ -1,7 +1,7 @@
-// The vocabulary of the skins' sounds: notes for themeSound's little synth, and a few shapes that
-// several skins share. Nothing in this folder is a recording or a transcription of a real
-// product's sound; each voice is an original figure built to evoke its skin from oscillators and
-// filtered noise.
+// The vocabulary of the skins' sounds. A sound is either a recording (a public-domain or
+// Creative Commons clip under public/sounds, credited in CREDITS.md there) or, where no good
+// recording was found, notes for themeSound's little synth. Nothing is taken from the products
+// the skins nod to.
 
 export interface Note {
   /** An oscillator shape, or band-passed white noise (drums, shakers, wind, paper). */
@@ -22,18 +22,34 @@ export interface Note {
   vibrato?: { hz: number; depth: number }
 }
 
+/** A recording: a file under `public/sounds/` (see CREDITS.md there for where each came from). */
+export interface Clip {
+  clip: string
+  /** Volume relative to the file, which is already normalised. */
+  gain: number
+}
+
+/** One sound: either notes for the synth, or a recording. */
+export type Sound = Note[] | Clip
+
+export const isClip = (sound: Sound): sound is Clip => !Array.isArray(sound)
+export const clip = (path: string, gain = 1): Clip => ({ clip: `${path}.mp3`, gain })
+/** `count` numbered takes of one recording: `skin/name-1.mp3`, `skin/name-2.mp3`, ... */
+export const takes = (path: string, count: number, gain = 1): Clip[] =>
+  Array.from({ length: count }, (_, i) => clip(`${path}-${i + 1}`, gain))
+
 export interface Voice {
   /** Switching to the skin: the big one. */
-  chime: Note[]
+  chime: Sound
   /** Following a link to another page. */
-  nav: Note[]
+  nav: Sound
   /** Pressing a button, tab or select. Several takes, played in rotation so it never drones. */
-  click: Note[][]
+  click: Sound[]
   /**
    * While scrolling, one per tick. Stepped through in order going down and backwards going up, so
    * a voice can make it a scale that follows the page, or just vary the texture.
    */
-  scroll: Note[][]
+  scroll: Sound[]
 }
 
 export const steps = (count: number, make: (i: number) => Note[]): Note[] =>

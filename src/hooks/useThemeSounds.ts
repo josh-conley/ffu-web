@@ -13,8 +13,9 @@ const SCROLL_EVERY_MS = 110
 export function useThemeSounds(theme: ThemeId, enabled: boolean) {
   useEffect(() => {
     if (!enabled || theme === 'light' || theme === 'dark') return
-    // Fetched as soon as sound is on, so the first press already has it.
+    // Fetched as soon as sound is on, with the skin's recordings, so the first press already has them.
     const sounds = import('@/themes/themeSound')
+    void sounds.then((m) => m.preload(theme))
 
     // `click`, not `pointerdown`: iOS does not count pointerdown as the user gesture that audio
     // needs, and the context has to be woken inside that gesture (see themeStore's unlockAudio).

@@ -57,5 +57,7 @@ describe('ThemePicker', () => {
 
     await user.click(sound)
     expect(sound).toHaveAttribute('aria-checked', 'true')
+    // Turning sound on fetches the player in the background; let that land before the test ends.
+    await import('@/themes/themeSound')
   })
 })

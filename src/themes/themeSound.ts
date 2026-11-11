@@ -1,11 +1,11 @@
 import { audioContext, noiseBuffer } from '@/lib/audioContext'
 import type { ThemeId } from './registry'
 import { VOICES } from './voices'
-import type { Note } from './voices/types'
+import { isClip, type Note, type Sound } from './voices/types'
 
-// Opt-in UI sounds for the skins, synthesised with Web Audio: no asset files to host. This is the
-// player; what each skin sounds like is data in ./voices. Loaded on demand, only once a visitor
-// turns sound on.
+// Opt-in UI sounds for the skins. This is the player: recordings from public/sounds, and a small
+// Web Audio synth for the sounds that have no recording. What each skin sounds like is data in
+// ./voices. Loaded on demand, only once a visitor turns sound on.
 
 /** The sound source for one note: an oscillator, or looped noise through a band-pass. */
 function source(audio: AudioContext, note: Note, start: number): { node: AudioNode; src: AudioScheduledSourceNode } {
@@ -68,10 +68,54 @@ function play(notes: Note[], audio: AudioContext) {
   }
 }
 
-/** Sounds that answer a tap. The tap's own handler has already woken the audio context. */
-function playNow(notes: Note[] | undefined) {
+// Recordings, decoded once and kept. A skin's clips are fetched when it is first heard (or as
+// soon as sound is on with that skin showing: see `preload`), never before.
+const buffers = new Map<string, Promise<AudioBuffer | null>>()
+const decoded = new Map<string, AudioBuffer>()
+
+function buffer(audio: AudioContext, path: string): Promise<AudioBuffer | null> {
+  let pending = buffers.get(path)
+  if (!pending) {
+    pending = fetch(`/sounds/${path}`)
+      .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(String(res.status)))))
+      .then((bytes) => audio.decodeAudioData(bytes))
+      .then((buf) => {
+        decoded.set(path, buf)
+        return buf
+      })
+      // A missing or undecodable clip is silence, not an error on the page.
+      .catch(() => null)
+    buffers.set(path, pending)
+  }
+  return pending
+}
+
+function playBuffer(audio: AudioContext, buf: AudioBuffer, gain: number) {
+  const src = audio.createBufferSource()
+  src.buffer = buf
+  const vol = audio.createGain()
+  vol.gain.value = gain
+  src.connect(vol).connect(mix(audio))
+  src.start()
+}
+
+/** Fetch every recording a skin uses, so its first sounds are not late. */
+export function preload(theme: ThemeId) {
+  const voice = VOICES[theme]
   const audio = audioContext()
-  if (audio && notes) play(notes, audio)
+  if (!voice || !audio) return
+  for (const sound of [voice.chime, voice.nav, ...voice.click, ...voice.scroll]) {
+    if (isClip(sound)) void buffer(audio, sound.clip)
+  }
+}
+
+/** Sounds that answer a tap. The tap's own handler has already woken the audio context. */
+function playNow(sound: Sound | undefined) {
+  const audio = audioContext()
+  if (!audio || !sound) return
+  if (!isClip(sound)) return play(sound, audio)
+  // Waits for the file the first time; after that it is instant.
+  void buffer(audio, sound.clip).then((buf) => buf && playBuffer(audio, buf, sound.gain))
 }
 
 const wrap = (i: number, length: number) => ((i % length) + length) % length
@@ -90,12 +134,17 @@ let scrollStep = 0
  * One tick of scrolling; `direction` is 1 going down the page, -1 going up.
  *
  * Unlike a tap, a scroll cannot wake the audio context, and anything scheduled on a sleeping one
- * piles up and plays all at once when it wakes. So scroll ticks play only once it is running.
+ * piles up and plays all at once when it wakes. So scroll ticks play only once it is running, and
+ * a recording that has not arrived yet is skipped, not played late.
  */
 export function playScroll(theme: ThemeId, direction: 1 | -1) {
   const takes = VOICES[theme]?.scroll
   const audio = audioContext()
   if (!takes || audio?.state !== 'running') return
   scrollStep += direction
-  play(takes[wrap(scrollStep, takes.length)]!, audio)
+  const sound = takes[wrap(scrollStep, takes.length)]!
+  if (!isClip(sound)) return play(sound, audio)
+  const buf = decoded.get(sound.clip)
+  if (buf) playBuffer(audio, buf, sound.gain)
+  else void buffer(audio, sound.clip)
 }

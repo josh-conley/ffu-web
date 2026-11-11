@@ -747,3 +747,8 @@ colors, on the condition that it be universal without a refactor.
   of sound: the switch chime, a page-change sound, three or more press sounds played in rotation,
   and scroll sounds stepped with the direction of travel (Arcade plays a scale up and down the
   page). Still opt-in and still synthesised.
+- **Recorded clips, on a feature branch only for now** (2026-11-11): the synthesised presses did not
+  sound like what they claimed to be. `preview/theme-sounds` swaps most of them for recordings in
+  `public/sounds/` (Kenney CC0 packs, and public-domain / CC files from Wikimedia Commons, credited
+  in `public/sounds/CREDITS.md`), fetched only when sound is on. Josh asked that this stay
+  unmerged while he listens. The picks were made blind, by name and length; expect to swap some.

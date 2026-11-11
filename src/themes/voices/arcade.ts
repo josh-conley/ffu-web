@@ -1,4 +1,4 @@
-import { type Note, type Voice } from './types'
+import { clip, takes, type Note, type Voice } from './types'
 
 // A cabinet in a dark room, all bare square waves like the sound chips of the day. Taking a coin
 // and powering up; then lasers, coins and jumps on every press, a level-clear run when you change
@@ -16,27 +16,7 @@ export const arcade: Voice = {
     { type: 'square', hz: 1046.5, at: 0.99, dur: 0.5, gain: 0.05 },
     { type: 'triangle', hz: 130.81, at: 0.5, dur: 0.95, gain: 0.12 },
   ],
-  // Level clear.
-  nav: [
-    ...[523.25, 659.25, 783.99, 1046.5].map((hz, i): Note => ({ type: 'square', hz, at: i * 0.06, dur: 0.07, gain: 0.08 })),
-    { type: 'square', hz: 1318.5, at: 0.24, dur: 0.22, gain: 0.08 },
-    { type: 'triangle', hz: 130.81, at: 0, dur: 0.4, gain: 0.15 },
-  ],
-  click: [
-    // Laser.
-    [{ type: 'sawtooth', hz: 1900, toHz: 160, at: 0, dur: 0.16, gain: 0.12 }],
-    // Coin.
-    [
-      { type: 'square', hz: 987.77, at: 0, dur: 0.06, gain: 0.09 },
-      { type: 'square', hz: 1318.5, at: 0.06, dur: 0.24, gain: 0.09 },
-    ],
-    // Jump.
-    [{ type: 'square', hz: 260, toHz: 1000, at: 0, dur: 0.16, gain: 0.09 }],
-    // Explosion.
-    [
-      { type: 'noise', hz: 900, toHz: 120, q: 0.6, at: 0, dur: 0.28, gain: 0.3 },
-      { type: 'square', hz: 110, toHz: 40, at: 0, dur: 0.2, gain: 0.1 },
-    ],
-  ],
+  nav: clip('arcade/nav', 0.7),
+  click: takes('arcade/click', 5, 0.7),
   scroll: SCALE.map((hz): Note[] => [{ type: 'square', hz, at: 0, dur: 0.07, gain: 0.07 }]),
 }
