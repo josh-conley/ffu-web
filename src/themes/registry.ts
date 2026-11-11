@@ -9,7 +9,7 @@
 // The holiday skins also come on by themselves for their week (seasonal.ts).
 //
 // Adding a skin: one entry here, one `<id>.css` beside this file, optionally a voice in
-// themeSound.ts. If it is dark, add its id to the pre-paint script in index.html too (a test checks
+// voices/. If it is dark, add its id to the pre-paint script in index.html too (a test checks
 // the two lists agree). No component should need to change.
 
 export type ThemeId =

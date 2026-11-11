@@ -742,3 +742,8 @@ colors, on the condition that it be universal without a refactor.
   picking any theme during the week sticks for the rest of it, and the visitor's saved choice is
   never overwritten, so it returns on the Wednesday. Almost everyone has a saved light/dark choice
   (the old toggle stored one on every visit), which is why the default has to outrank it.
+- **Sounds are loud and constant on purpose** (2026-11-11): Josh found the first set underwhelming,
+  one generic click per skin. Each skin's voice (`src/themes/voices/<id>.ts`) now has four kinds
+  of sound: the switch chime, a page-change sound, three or more press sounds played in rotation,
+  and scroll sounds stepped with the direction of travel (Arcade plays a scale up and down the
+  page). Still opt-in and still synthesised.
