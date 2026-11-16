@@ -634,7 +634,7 @@ the site already loads; nothing stored.
 ## Deferred / not blocking Week 1
 
 - Playoff weeks (15–17) in the live "This Week" section — regular season only for now
-- H2H matrix, draft fun-facts, playoff machine, further live-active-week refinements — per
+- H2H matrix, draft fun-facts, further live-active-week refinements — per
   `CLAUDE.md` "Next / open"
 - Lineal Championship (`/lineal`) reads completed seasons only, so the belt won't move during a live
   season until that year is backfilled. Wiring `liveSleeper` games into `linealHistory` would fix
