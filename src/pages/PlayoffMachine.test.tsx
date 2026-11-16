@@ -38,6 +38,7 @@ const SEASON = {
 }
 
 const name = (id: string) => nameForYear(id, '2026') ?? id
+const TEAMS = SEASON.teams.map((t) => name(t.memberId))
 
 afterEach(() => vi.unstubAllGlobals())
 
@@ -64,8 +65,8 @@ function seedOrder(): string[] {
   return within(table)
     .getAllByRole('row')
     .slice(1)
-    // The cell opens with the clinch mark's screen-reader label ("Clinched …:"), when there is one.
-    .map((row) => (within(row).getAllByRole('cell')[1]!.textContent ?? '').replace(/^[^:]*:/, ''))
+    // The cell also holds a clinch label and, on a phone, the division: match on the team names.
+    .map((row) => TEAMS.find((team) => within(row).getAllByRole('cell')[1]!.textContent?.includes(team)) ?? '')
 }
 
 it('shows the current seeding, then re-seeds as winners are picked and un-picked', async () => {
@@ -137,4 +138,18 @@ it('marks a clinch once the picks make it certain', async () => {
   const row = screen.getAllByRole('row').find((r) => r.textContent?.includes(name('ffu-001')))!
   expect(within(row).getByText('Clinched a first-round bye:')).toBeInTheDocument()
   expect(screen.getByText(/Clinches count your picks as played/)).toBeInTheDocument()
+})
+
+it('on a phone, shows the playoff field above the games and opens the seeds from it', async () => {
+  const user = userEvent.setup()
+  renderMachine()
+  await waitFor(() => expect(screen.getByText('Seeds as it stands')).toBeInTheDocument())
+  const games = screen.getByRole('button', { name: 'Pick games' })
+  expect(games).toHaveAttribute('aria-pressed', 'true')
+  await user.click(screen.getByRole('button', { name: new RegExp(`^Playoff field: 1 ${name('ffu-001')}`) }))
+  expect(screen.getByRole('button', { name: 'Seeds' })).toHaveAttribute('aria-pressed', 'true')
+  // The switch counts picks, so the games tab says how many are in play.
+  await user.click(games)
+  await user.click(within(screen.getByRole('region', { name: 'Week 2' })).getAllByRole('button', { name: name('ffu-026') })[0]!)
+  expect(screen.getByRole('button', { name: 'Pick games (1)' })).toBeInTheDocument()
 })

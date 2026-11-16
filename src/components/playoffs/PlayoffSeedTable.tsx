@@ -13,8 +13,15 @@ import { CLINCH } from './clinchMarks'
 // than DataTable: the order IS the content (re-sorting by points would hide the seeding), and it
 // needs the cut line, which DataTable has no notion of. The by-division view reuses it per
 // division, ordered by place in the division and without the line.
+//
+// On a phone the Div column folds into a line under the team name and the cells tighten, so the
+// table needs little or no sideways scroll; it stays a table (a pinned layout, not cards).
 
 const STEP_LABEL: Record<TiebreakStep, string> = { h2h: 'H2H', points: 'PF' }
+
+/** A cell: the shared padding from sm up, tighter on a phone. */
+const TD = `${TD_BASE} max-sm:px-1.5`
+const TH = `${TH_BASE} max-sm:px-1.5`
 
 const CHIP = 'inline-flex items-center gap-1 border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide'
 
@@ -76,19 +83,23 @@ function SeedLine({ row, year, divisionName, clinch, lastIn }: LineProps) {
   const named = divisionName === undefined ? {} : { divisionName }
   return (
     <tr className={`${lastIn ? 'border-b-2 border-b-accent' : 'border-b border-border'} ${row.inPlayoffs ? '' : 'text-muted'}`}>
-      <td className={`${TD_BASE} text-right font-bold tabular-nums`}>{row.seed}</td>
-      <td className={`${TD_BASE} relative`}>
+      <td className={`${TD} text-right font-bold tabular-nums`}>{row.seed}</td>
+      <td className={`${TD} relative`}>
         <span className="flex items-center gap-1.5">
           <ClinchMark status={clinch} />
-          <TeamLink ffuId={row.memberId} className="gap-2 whitespace-nowrap font-semibold">
-            {nameForYear(row.memberId, year) ?? row.memberId}
+          <TeamLink
+            ffuId={row.memberId}
+            className="gap-2 font-semibold"
+            detail={divisionName === undefined ? undefined : <span className="text-[11px] font-normal text-muted sm:hidden">{divisionName}</span>}
+          >
+            <span className="max-sm:max-w-32 max-sm:truncate sm:whitespace-nowrap">{nameForYear(row.memberId, year) ?? row.memberId}</span>
           </TeamLink>
         </span>
       </td>
-      <td className={`${TD_BASE} whitespace-nowrap`}>{divisionName ?? '—'}</td>
-      <td className={`${TD_BASE} whitespace-nowrap tabular-nums`}>{recordLabel(row)}</td>
-      <td className={`${TD_BASE} text-right tabular-nums`}>{formatPoints(row.pointsFor)}</td>
-      <td className={TD_BASE}>
+      <td className={`${TD} whitespace-nowrap max-sm:hidden`}>{divisionName ?? '—'}</td>
+      <td className={`${TD} whitespace-nowrap tabular-nums`}>{recordLabel(row)}</td>
+      <td className={`${TD} text-right tabular-nums`}>{formatPoints(row.pointsFor)}</td>
+      <td className={TD}>
         <Notes row={row} year={year} {...named} />
       </td>
     </tr>
@@ -112,12 +123,15 @@ export function PlayoffSeedTable({ rows, year, divisions, clinches, caption, cut
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-accent text-accent-fg">
           <tr>
-            <th scope="col" className={`${TH_BASE} text-right`} title="Seed">#</th>
-            <th scope="col" className={`${TH_BASE} text-left`}>Team</th>
-            <th scope="col" className={`${TH_BASE} text-left`}>Div</th>
-            <th scope="col" className={`${TH_BASE} text-left`}>Record</th>
-            <th scope="col" className={`${TH_BASE} text-right`} title="Points for, from games played">PF</th>
-            <th scope="col" className={`${TH_BASE} text-left`}>Notes</th>
+            <th scope="col" className={`${TH} text-right`} title="Seed">#</th>
+            <th scope="col" className={`${TH} text-left`}>Team</th>
+            <th scope="col" className={`${TH} text-left max-sm:hidden`}>Div</th>
+            <th scope="col" className={`${TH} text-left`}>
+              <span className="sm:hidden" aria-hidden>W-L</span>
+              <span className="max-sm:sr-only">Record</span>
+            </th>
+            <th scope="col" className={`${TH} text-right`} title="Points for, from games played">PF</th>
+            <th scope="col" className={`${TH} text-left`}>Notes</th>
           </tr>
         </thead>
         <tbody>
