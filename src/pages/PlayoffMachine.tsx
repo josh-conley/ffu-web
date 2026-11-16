@@ -81,8 +81,11 @@ export function PlayoffMachine() {
   const { data: season, loading, error } = useSeason(tier, YEAR, YEAR !== '')
   const [picks, setPicks] = useState<MachinePicks>({})
 
+  // Wider than the site's max-w-5xl column on a large screen: the seeds table and the game picker
+  // sit side by side and were cramped at 1024px. Negative margins (as DataTable's fullBleed does)
+  // widen it to the window less a 1.5rem gutter each side, capped at 88rem. Phones are unchanged.
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:mx-[calc(50%-min(50vw-1.5rem,44rem))]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-extrabold uppercase tracking-tight">Playoff Machine</h1>
