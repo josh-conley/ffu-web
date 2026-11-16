@@ -98,8 +98,10 @@ formerly "Leaderboard" — the big career-stats table: league scope + filters, c
 reorder, full-bleed/sticky Team column, FA icons). Also in the Stats & More menu: **UPR Explorer**
 (`/upr-explorer`, every team-season's UPR through a chosen week, with the live season ranked
 against history), **Builds**
-(`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), and **ADP
-Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP).
+(`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), **ADP
+Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP),
+and **Playoff Machine** (`/playoff-machine`: pick the live season's remaining games, see the seeds;
+the league's seeding rules live in `selectors/playoffSeeding.ts`, see DECISIONS 2026-11-16).
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
 
 **Themes:** the header's palette button picks Light, Dark or a novelty **skin** (Windows XP,
@@ -180,7 +182,7 @@ its own `preview-<name>.ffu-web-preview.pages.dev` (see Who pushes where). `new.
 `ai-docs/DEPLOY.md`.
 
 **Next / open:** optional UPR-progression line chart (All-Time horserace + Members view);
-confirm ffu-035/ffu-048 (in the registry but never appear in data) belong. Deferred unless asked: H2H matrix, draft fun-facts, playoff machine, live playoff
+confirm ffu-035/ffu-048 (in the registry but never appear in data) belong. Deferred unless asked: H2H matrix, draft fun-facts, live playoff
 weeks (15–17). 2026-readiness checklist lives in `ai-docs/TODO.md`.
 
 **Weekly data refresh:** `.github/workflows/refresh-season.yml` (Tuesdays, Sep–Dec) runs

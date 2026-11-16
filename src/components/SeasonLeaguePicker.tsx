@@ -4,7 +4,8 @@ import { LEAGUE_STYLES } from './leagues'
 import { SELECT } from './controls'
 
 // Year dropdown + tier buttons. Tiers shown reflect what existed that year (ESPN era had no
-// Masters). Reused by every season-scoped page.
+// Masters). Reused by every season-scoped page. With a single year on offer (the Playoff Machine,
+// which only knows the season being played) the dropdown is left out: a one-option select is noise.
 //
 // `union` adds one more button beside the tiers, for a page that can also show the whole Union at
 // once (Standings' 36-team view). It is a separate prop rather than a fourth Tier: the Union is not
@@ -38,7 +39,7 @@ export function SeasonLeaguePicker({
   const tiers = tiersForYear(year)
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <select
+      {years.length > 1 && <select
         value={year}
         onChange={(e) => onYear(e.target.value)}
         aria-label="Season year"
@@ -49,7 +50,7 @@ export function SeasonLeaguePicker({
             {y}
           </option>
         ))}
-      </select>
+      </select>}
       <div className="flex flex-wrap gap-1" role="group" aria-label="League tier">
         {tiers.map((t) => {
           const selected = t === tier && union?.active !== true

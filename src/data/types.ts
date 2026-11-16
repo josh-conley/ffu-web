@@ -48,10 +48,8 @@ export interface SeasonTeam {
    * `standings[].rank` (verified identical to `playoffResults[].placement` in all data).
    * Absent only for an unfinished, active season.
    *
-   * NOTE: the regular-season playoff *seed* is deliberately NOT stored. It's a derived,
-   * active-season concern (division-leader seeding + H2H tiebreakers) that only matters while
-   * a live season's playoffs are being set; completed seasons care only about finalPlacement.
-   * When active-season support returns (deferred), a selector derives the seed on demand.
+   * NOTE: the regular-season playoff *seed* is deliberately NOT stored. It's derived on demand
+   * (division-leader seeding + H2H tiebreakers) by selectors/playoffSeeding.ts.
    */
   finalPlacement?: number
   /** Optional display label for `finalPlacement` (e.g. "1st"); else derived. */

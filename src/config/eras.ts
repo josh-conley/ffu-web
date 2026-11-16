@@ -16,3 +16,11 @@ export function regularSeasonWeeks(era: Era): number[] {
   const firstPlayoffWeek = Math.min(...playoffWeeks(era))
   return Array.from({ length: firstPlayoffWeek - 1 }, (_, i) => i + 1)
 }
+
+/**
+ * The playoff field a regular season sets, Sleeper era (all three tiers alike): six teams, the top
+ * two on a first-round bye. Seeds 1 and 2 go to the two best DIVISION WINNERS; the remaining
+ * division winner is guaranteed a place even when four other teams have better records. The seeding
+ * itself is derived in selectors/playoffSeeding.ts.
+ */
+export const PLAYOFF_FIELD = { teams: 6, byes: 2, divisionWinnerSeeds: 2 } as const

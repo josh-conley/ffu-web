@@ -105,7 +105,7 @@ export function ownerNames(ffuId: string): string[] {
 
 export { MEMBERS, SEASONS, OWNERS }
 export type { Member, Owner, SeasonMeta, Tier, Era, OwnerRole, MemberOwner } from './types'
-export { seasonLength, playoffWeeks, regularSeasonWeeks } from './eras'
+export { seasonLength, playoffWeeks, regularSeasonWeeks, PLAYOFF_FIELD } from './eras'
 export { getPrizeSchedule } from './prizes'
 export type { SeasonPrizeSchedule, TierPrizeSchedule, CrossUnionSchedule, CrossLeagueSchedule, CupPrizeSchedule } from './prizes'
 export { LIVE_LEAGUE_IDS }

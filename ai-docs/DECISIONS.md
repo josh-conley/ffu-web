@@ -5,6 +5,29 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-11-16 — Playoff seeding: division winners first, head to head, then points for
+
+**Decision (Josh).** Seeding, as `selectors/playoffSeeding.ts` derives it (Playoff Machine):
+- Seeds 1–2: the two best division winners. Everyone else, the third division winner included, is
+  one pool for seeds 3–12. The third division winner is guaranteed a spot: if the pool leaves it
+  7th or lower, it takes seed 6 and everyone from there down moves one place.
+- A tie on record is broken head to head, then points for. With three or more level, each team's
+  record in the games AMONG the tied teams orders them; whoever that still leaves level is ordered
+  by points for. Head to head is NOT re-applied to the teams it leaves level (that variant was
+  tried: it gets the 2025 Masters bracket wrong). Division winners are found the same way.
+- Picked (unplayed) games add W/L and head-to-head results but no points.
+
+**Checked against history.** Sleeper's built-in standings tiebreak is points for, then points
+against; head to head only happens when the commissioner seeds by hand, so the brackets record
+how the rules were applied each year. Byes and quarterfinal pairings (3v6, 4v5) were compared for
+all 15 Sleeper-era league seasons: these rules reproduce all three 2025 leagues (a regression test
+pins them) and 2022, but four earlier tie cases went by plain points for instead:
+2021 National, 2023 Premier, 2023 Masters, 2024 Premier. All 15 sets of byes match. Reported
+to Josh; the rules above are the current ones whatever earlier years did.
+
+**Constrains.** The regular-season `Standings` page still orders by win% then points for (it shows
+Sleeper's table, not the seeding). Switching it to these seeds is a separate decision.
+
 ## 2026-10-26 — Cup games are part of the head-to-head series; Cup stats never touch league totals
 
 **Decision.** (Josh) An FFU Cup game counts as a meeting in the one all-time H2H series (Compare,

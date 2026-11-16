@@ -4,11 +4,9 @@ import { regularSeasonComplete } from './games'
 // Regular-season standings: order teams by record for DISPLAY. Uses the STORED (Sleeper)
 // record/points so the table matches what owners see on Sleeper.
 //
-// Ported from the old ranking.ts, scoped to COMPLETED seasons (all current data): the tiebreaker
-// chain is winPct → pointsFor → stable order. The old H2H tiebreaker and the division-leader
-// PLAYOFF seeding (top-2 leaders seeded 1-2, 3rd-leader "bump") only ran for active seasons
-// (`isActiveYear`) — that's the deferred active-season playoff-seeding concern, not regular-season
-// standings. Add it back alongside live-season support when 2026 goes live.
+// The tiebreaker chain here is winPct → pointsFor → stable order: Sleeper's own table. The league's
+// PLAYOFF seeding (division winners seeded 1-2, head-to-head tiebreaks, the third division winner's
+// guaranteed spot) is a different ordering, derived in playoffSeeding.ts.
 
 export function winPct(record: TeamRecord): number {
   const games = record.wins + record.losses + record.ties
