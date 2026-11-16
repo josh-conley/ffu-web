@@ -1,7 +1,9 @@
 import { regularSeasonWeeks } from '@/config'
 import type { ScheduledGame, SeasonData } from '@/data'
 import { upcomingFixtures, winnerOf } from './games'
-import { playoffSeeding, type SeedingResult, type SeedRow } from './playoffSeeding'
+import { clinchStatuses, type ClinchStatus } from './playoffClinch'
+import { playoffSeeding, type SeedRow } from './playoffSeeding'
+import { tallyLines, type SeedingResult } from './playoffTiebreak'
 
 // The playoff machine: the season's remaining regular-season fixtures, a winner picked for any of
 // them, and the seeding that would follow. Picks carry no scores, so they move records and head to
@@ -57,9 +59,36 @@ export function pickedResults(weeks: readonly MachineWeek[], picks: MachinePicks
   )
 }
 
+function resultsWithPicks(season: SeasonData, picks: MachinePicks): SeedingResult[] {
+  return [...playedResults(season), ...pickedResults(machineWeeks(season), picks)]
+}
+
 /** The seeding as it stands, plus every picked result. With no picks: the current seeding. */
 export function projectedSeeding(season: SeasonData, picks: MachinePicks): SeedRow[] {
-  return playoffSeeding(season.teams, [...playedResults(season), ...pickedResults(machineWeeks(season), picks)])
+  return playoffSeeding(season.teams, resultsWithPicks(season, picks))
+}
+
+/** The status each team's FINAL seed gives it: exact, since there is nothing left to decide. */
+function finalStatuses(rows: readonly SeedRow[]): Map<string, ClinchStatus> {
+  return new Map(
+    rows.map((r) => [r.memberId, r.bye ? 'bye' : r.divisionWinner ? 'division' : r.inPlayoffs ? 'playoffs' : 'eliminated'] as const),
+  )
+}
+
+/**
+ * What each team has locked up with the picks applied, the unpicked games still open. Once the
+ * regular season is really over (no games left, no picks standing in for any), the seeds are final
+ * and so are the marks; until then the cautious bounds of playoffClinch.ts. Picks alone never make
+ * a seed final: a picked game carries no points, so a points-for tiebreak is still open.
+ */
+export function projectedClinches(season: SeasonData, picks: MachinePicks): Map<string, ClinchStatus> {
+  const weeks = machineWeeks(season)
+  if (weeks.length === 0) return finalStatuses(projectedSeeding(season, {}))
+  const open = weeks
+    .flatMap((w) => w.fixtures)
+    .filter((f) => !f.memberIds.includes(picks[f.key] ?? ''))
+    .map((f) => f.memberIds)
+  return clinchStatuses(tallyLines(season.teams, resultsWithPicks(season, picks)), open)
 }
 
 /** Toggles a pick: picking the current pick again clears it. Returns a new object. */

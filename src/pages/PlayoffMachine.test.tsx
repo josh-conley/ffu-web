@@ -64,7 +64,8 @@ function seedOrder(): string[] {
   return within(table)
     .getAllByRole('row')
     .slice(1)
-    .map((row) => within(row).getAllByRole('cell')[1]!.textContent ?? '')
+    // The cell opens with the clinch mark's screen-reader label ("Clinched …:"), when there is one.
+    .map((row) => (within(row).getAllByRole('cell')[1]!.textContent ?? '').replace(/^[^:]*:/, ''))
 }
 
 it('shows the current seeding, then re-seeds as winners are picked and un-picked', async () => {
@@ -97,4 +98,43 @@ it('clears every pick at once', async () => {
   await user.click(screen.getByRole('button', { name: 'Clear picks' }))
   expect(screen.getByText(/0 of 2 picked/)).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Clear picks' })).not.toBeInTheDocument()
+})
+
+it('explains a tiebreak in a popup naming the tied teams', async () => {
+  const user = userEvent.setup()
+  renderMachine()
+  await waitFor(() => expect(screen.getByText('Seeds as it stands')).toBeInTheDocument())
+  // ffu-008 wins the rematch: level with ffu-001 at 1-1 for the Diamond title, split head to head.
+  await user.click(within(screen.getByRole('region', { name: 'Week 2' })).getAllByRole('button', { name: name('ffu-008') })[0]!)
+  const chip = screen.getByRole('button', { name: `How ${name('ffu-001')}'s tie was broken` })
+  expect(chip).toHaveTextContent('PF')
+  await user.click(chip)
+  expect(chip).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByText('Level at 1-1 for the Diamond title')).toBeInTheDocument()
+  expect(screen.getByText('Head to head was level, so points for decided.')).toBeInTheDocument()
+  await user.keyboard('{Escape}')
+  expect(chip).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('shows each division on its own, and the division under each team in the picker', async () => {
+  const user = userEvent.setup()
+  renderMachine()
+  await waitFor(() => expect(screen.getByText('Seeds as it stands')).toBeInTheDocument())
+  expect(within(screen.getByRole('region', { name: 'Week 2' })).getAllByText('Gold')).toHaveLength(2)
+  await user.click(screen.getByRole('button', { name: 'By division' }))
+  expect(screen.getByRole('region', { name: 'Diamond division' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Gold division' })).toBeInTheDocument()
+  expect(screen.getAllByRole('table')).toHaveLength(2)
+})
+
+it('marks a clinch once the picks make it certain', async () => {
+  const user = userEvent.setup()
+  renderMachine()
+  await waitFor(() => expect(screen.getByText('Seeds as it stands')).toBeInTheDocument())
+  expect(screen.queryByText(/Clinched a first-round bye/)).not.toBeInTheDocument()
+  // ffu-001 sweeps ffu-008 (2-0 v 0-2), and only one other division's winner can reach 2 wins.
+  await user.click(within(screen.getByRole('region', { name: 'Week 2' })).getAllByRole('button', { name: name('ffu-001') })[0]!)
+  const row = screen.getAllByRole('row').find((r) => r.textContent?.includes(name('ffu-001')))!
+  expect(within(row).getByText('Clinched a first-round bye:')).toBeInTheDocument()
+  expect(screen.getByText(/Clinches count your picks as played/)).toBeInTheDocument()
 })

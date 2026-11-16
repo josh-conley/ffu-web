@@ -1,6 +1,7 @@
 import type { SeasonData } from '@/data'
 import { playedResults } from './playoffMachine'
-import { playoffSeeding, type SeedingResult, type SeedingTeam } from './playoffSeeding'
+import { playoffSeeding, type SeedRow } from './playoffSeeding'
+import { levelOnHeadToHead, type SeedingResult, type SeedingTeam } from './playoffTiebreak'
 import masters2025 from '../../public/data/2025/masters.json'
 import national2025 from '../../public/data/2025/national.json'
 import premier2025 from '../../public/data/2025/premier.json'
@@ -13,6 +14,9 @@ const game = (winner: string, loser: string, w = 100, l = 90): SeedingResult => 
 })
 /** `n` identical results. */
 const times = (n: number, result: SeedingResult): SeedingResult[] => Array.from({ length: n }, () => result)
+
+/** How the team's place in its seeding pool was decided, if it was level with anyone there. */
+const step = (r: SeedRow) => r.tiebreaks.find((t) => t.context !== 'division')?.step
 
 const seedsOf = (teams: SeedingTeam[], results: SeedingResult[]) => playoffSeeding(teams, results).map((r) => r.memberId)
 
@@ -97,12 +101,12 @@ describe('playoffSeeding — tiebreakers (no divisions)', () => {
     // A and B both 1-1; B beat A, but A scored far more.
     const results = [game('B', 'A', 80, 70), game('A', 'X', 200, 10), game('X', 'B', 81, 80)]
     const rows = playoffSeeding(teams.slice(0, 2), results)
-    expect(rows.slice(0, 2).map((r) => [r.memberId, r.tiebreak])).toEqual([['B', 'h2h'], ['A', 'h2h']])
+    expect(rows.slice(0, 2).map((r) => [r.memberId, step(r)])).toEqual([['B', 'h2h'], ['A', 'h2h']])
   })
 
   it('goes to points for when head to head is split', () => {
     const results = [game('A', 'B', 100, 90), game('B', 'A', 150, 90)]
-    expect(playoffSeeding(teams.slice(0, 2), results).map((r) => [r.memberId, r.tiebreak])).toEqual([
+    expect(playoffSeeding(teams.slice(0, 2), results).map((r) => [r.memberId, step(r)])).toEqual([
       ['B', 'points'],
       ['A', 'points'],
     ])
@@ -124,7 +128,7 @@ describe('playoffSeeding — tiebreakers (no divisions)', () => {
     ]
     const rows = playoffSeeding(teams.slice(0, 3), results)
     expect(rows.map((r) => r.memberId)).toEqual(['A', 'B', 'C'])
-    expect(rows.map((r) => r.tiebreak)).toEqual(['points', 'points', 'h2h'])
+    expect(rows.map(step)).toEqual(['points', 'points', 'h2h'])
   })
 
   it('counts a tie as half a win, on the record and head to head', () => {
@@ -154,5 +158,72 @@ describe('playoffSeeding — reproduces the real 2025 playoff fields', () => {
     const byes = pairs(16).flat().filter((id) => !inQuarters.has(id))
     expect(byes.map((id) => seedOf.get(id)).sort()).toEqual([1, 2])
     expect(quarters.map((pair) => pair.map((id) => seedOf.get(id)!).sort().join('v')).sort()).toEqual(['3v6', '4v5'])
+  })
+})
+
+describe('playoffSeeding — the working behind each tie', () => {
+  it('records who was level, their head-to-head records and points, in the order placed', () => {
+    const teams = ['A', 'B', 'C'].map((memberId) => ({ memberId }))
+    const results = [
+      game('B', 'A', 90, 80), game('A', 'C', 200, 80), game('A', 'C', 200, 80),
+      game('C', 'B', 90, 80), game('B', 'C', 90, 80),
+      game('A', 'X'), game('X', 'A'), game('X', 'A'),
+      game('B', 'X'), game('X', 'B'), game('X', 'B'),
+      game('C', 'X'), game('C', 'X'),
+    ]
+    const [a] = playoffSeeding(teams, results)
+    const tie = a!.tiebreaks[0]!
+    expect(tie).toMatchObject({ context: 'field', step: 'points', record: { wins: 3, losses: 3, ties: 0 } })
+    expect(tie.teams.map((t) => [t.memberId, t.headToHead.wins, t.headToHead.losses])).toEqual([
+      ['A', 2, 1],
+      ['B', 2, 1],
+      ['C', 1, 3],
+    ])
+    expect(tie.teams[0]!.pointsFor).toBeGreaterThan(tie.teams[1]!.pointsFor)
+  })
+
+  it('keeps a division title tie for the teams in it, and the division ranks', () => {
+    const teams: SeedingTeam[] = [
+      { memberId: 'A', divisionId: 1 },
+      { memberId: 'B', divisionId: 1 },
+      { memberId: 'C', divisionId: 1 },
+    ]
+    // A and B 2-1, B won their meeting; C 0-2 is not part of the title tie.
+    const rows = playoffSeeding(teams, [game('B', 'A'), game('A', 'C'), game('A', 'X'), game('B', 'C'), game('X', 'B')])
+    const byId = new Map(rows.map((r) => [r.memberId, r]))
+    expect(byId.get('B')).toMatchObject({ divisionWinner: true, divisionRank: 1 })
+    expect(byId.get('A')!.divisionRank).toBe(2)
+    expect(byId.get('B')!.tiebreaks.map((t) => [t.context, t.step])).toEqual([['division', 'h2h']])
+    expect(byId.get('A')!.tiebreaks.map((t) => [t.context, t.step])).toEqual([['division', 'h2h']])
+    expect(byId.get('C')!.tiebreaks).toEqual([])
+  })
+
+  it('shows the third division winner the tie that cost it a bye', () => {
+    const teams: SeedingTeam[] = [
+      { memberId: 'A', divisionId: 1 },
+      { memberId: 'C', divisionId: 2 },
+      { memberId: 'E', divisionId: 3 },
+    ]
+    // All three winners 2-1: A beat C, C beat E, E beat A — a circle, so points for decides; E has fewest.
+    const rows = playoffSeeding(teams, [game('A', 'C', 130), game('C', 'E', 120), game('E', 'A', 110)])
+    const e = rows.find((r) => r.memberId === 'E')!
+    expect(e.seed).toBe(3)
+    expect(e.tiebreaks.map((t) => t.context)).toContain('divisionWinners')
+  })
+})
+
+describe('levelOnHeadToHead', () => {
+  it('names the tied teams that matched a team head to head', () => {
+    const tie = {
+      step: 'points' as const,
+      record: { wins: 3, losses: 3, ties: 0 },
+      teams: [
+        { memberId: 'A', headToHead: { wins: 2, losses: 1, ties: 0 }, pointsFor: 900 },
+        { memberId: 'B', headToHead: { wins: 2, losses: 1, ties: 0 }, pointsFor: 800 },
+        { memberId: 'C', headToHead: { wins: 1, losses: 3, ties: 0 }, pointsFor: 950 },
+      ],
+    }
+    expect(levelOnHeadToHead(tie, 'A')).toEqual(['B'])
+    expect(levelOnHeadToHead(tie, 'C')).toEqual([])
   })
 })

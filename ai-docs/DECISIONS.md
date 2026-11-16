@@ -25,6 +25,13 @@ pins them) and 2022, but four earlier tie cases went by plain points for instead
 2021 National, 2023 Premier, 2023 Masters, 2024 Premier. All 15 sets of byes match. Reported
 to Josh; the rules above are the current ones whatever earlier years did.
 
+**Clinch marks (z bye, y division, x playoff spot, e eliminated)** are proven from record bounds
+(`selectors/playoffClinch.ts`), never by enumerating outcomes (24 open games is 16.7M). The field
+is always the division winners plus the best of the rest, which keeps the bounds exact about the
+rules, but tiebreakers are never counted in a team's favour: a mark is always true, and can show up a
+game late. Picks count as played; once the real regular season is over the marks come from the final
+seeds instead.
+
 **Constrains.** The regular-season `Standings` page still orders by win% then points for (it shows
 Sleeper's table, not the seeding). Switching it to these seeds is a separate decision.
 

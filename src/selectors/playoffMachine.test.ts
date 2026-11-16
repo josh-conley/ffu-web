@@ -1,5 +1,5 @@
 import type { Game, ScheduledGame, SeasonData, SeasonTeam } from '@/data'
-import { fixtureKey, machineWeeks, pickedResults, projectedSeeding, togglePick } from './playoffMachine'
+import { fixtureKey, machineWeeks, pickedResults, projectedClinches, projectedSeeding, togglePick } from './playoffMachine'
 
 const team = (memberId: string, divisionId: number): SeasonTeam => ({
   memberId,
@@ -80,5 +80,22 @@ describe('togglePick', () => {
     expect(one).toEqual({ x: 'A', k: 'B' })
     expect(togglePick(one, 'k', 'C')).toEqual({ x: 'A', k: 'C' })
     expect(togglePick(one, 'k', 'B')).toEqual({ x: 'A' })
+  })
+})
+
+describe('projectedClinches', () => {
+  it('with a game left in each division, settles only what four teams in a six-team field already are', () => {
+    // Everyone is in (four teams, six spots); neither division is won while its rematch is open.
+    expect(Object.fromEntries(projectedClinches(season, {}))).toEqual({ A: 'playoffs', B: 'playoffs', C: 'playoffs', D: 'playoffs' })
+  })
+
+  it('reads the final seeds once the regular season is over', () => {
+    const finished = {
+      ...season,
+      games: [...season.games, played(2, ['B', 100], ['A', 90]), played(2, ['D', 70], ['C', 95])],
+      schedule: season.schedule!.filter((f) => f.week !== 15),
+    } as SeasonData
+    // A and B 1-1, split, A on points: A wins division 1. C 2-0 wins division 2. Four teams, all in.
+    expect(Object.fromEntries(projectedClinches(finished, {}))).toEqual({ C: 'bye', A: 'bye', B: 'playoffs', D: 'playoffs' })
   })
 })
