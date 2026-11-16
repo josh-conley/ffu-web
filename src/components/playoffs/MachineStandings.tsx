@@ -4,7 +4,7 @@ import { segButton } from '../controls'
 import { CLINCH } from './clinchMarks'
 import { PlayoffSeedTable } from './PlayoffSeedTable'
 
-// The machine's standings: the seeds in one table, or each division's race on its own (ordered by
+// The machine's standings: the seeds in one table ("Overall", as Standings names it), or each division's race on its own (ordered by
 // place in the division, the seed alongside). The clinch legend sits under either.
 
 export type StandingsView = 'seeds' | 'divisions'
@@ -64,7 +64,7 @@ export function MachineStandings({ rows, year, divisions, clinches, heading, vie
         {divisions.length > 0 && (
           <div className="flex gap-1" role="group" aria-label="Standings view">
             <button type="button" aria-pressed={!byDivision} onClick={() => onView('seeds')} className={segButton(!byDivision)}>
-              Seeds
+              Overall
             </button>
             <button type="button" aria-pressed={byDivision} onClick={() => onView('divisions')} className={segButton(byDivision)}>
               By division
