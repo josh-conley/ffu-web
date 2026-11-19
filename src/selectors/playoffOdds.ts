@@ -31,6 +31,8 @@ export interface OddsFormat {
 export interface CurrentTeam {
   memberId: string
   tier: Tier
+  /** Their UPR at that point, when the table is by UPR. */
+  upr?: number
 }
 
 export interface RecordOddsRow {
@@ -62,6 +64,9 @@ export interface RecordOddsTable {
 /** Fewer teams than this at a record and the percentage is an anecdote; the page says so. */
 export const SMALL_SAMPLE = 5
 
+/** Some history, but too little to read the percentage as more than an anecdote. */
+export const isSmallSample = (cell: OddsCell): boolean => cell.teams > 0 && cell.teams < SMALL_SAMPLE
+
 /** Share that made it, 0–100, or undefined with no history. */
 export const oddsPct = (cell: OddsCell | undefined): number | undefined =>
   cell === undefined || cell.teams === 0 ? undefined : (100 * cell.made) / cell.teams
@@ -70,7 +75,16 @@ export const oddsPct = (cell: OddsCell | undefined): number | undefined =>
 export const isFinishedSeason = (s: SeasonData): boolean =>
   s.teams.some((t) => t.finalPlacement !== undefined) && s.games.some((g) => !g.isPlayoff)
 
-const lengthOf = (s: SeasonData): number => regularSeasonWeeks(s.era).length
+/** How many regular-season games a season ran to. */
+export const regularSeasonLength = (s: SeasonData): number => regularSeasonWeeks(s.era).length
+const lengthOf = regularSeasonLength
+
+/** The teams that finished inside the playoff field: what "made the playoffs" means on the page. */
+export function playoffTeams(season: SeasonData): Set<string> {
+  return new Set(
+    season.teams.filter((t) => t.finalPlacement !== undefined && t.finalPlacement <= PLAYOFF_FIELD.teams).map((t) => t.memberId),
+  )
+}
 
 /**
  * The finished seasons by length: `primary` is the length the most recent season was played at,
@@ -117,12 +131,11 @@ function recordsAfter(season: SeasonData, games: number): Map<string, WeekRecord
 function tallyAt(sample: SeasonData[], games: number): Map<string, OddsCell & { record: WeekRecord }> {
   const tallies = new Map<string, OddsCell & { record: WeekRecord }>()
   for (const season of sample) {
-    const placings = new Map(season.teams.map((t) => [t.memberId, t.finalPlacement]))
+    const made = playoffTeams(season)
     for (const [memberId, record] of recordsAfter(season, games)) {
       const key = recordKey(record)
       const tally = tallies.get(key) ?? { record, made: 0, teams: 0 }
-      const place = placings.get(memberId)
-      tally.made += place !== undefined && place <= PLAYOFF_FIELD.teams ? 1 : 0
+      tally.made += made.has(memberId) ? 1 : 0
       tally.teams += 1
       tallies.set(key, tally)
     }

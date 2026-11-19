@@ -49,7 +49,7 @@ export const NAV: readonly NavEntry[] = [
       // pick names the page you land on. Revised 2026-09-25: the shortened forms ("All-Time",
       // "Builds", "Lineal Champ", ...) read as different pages from the headings they opened.
       { to: '/playoff-machine', label: 'Playoff Machine', end: false },
-      { to: '/playoff-odds', label: 'Playoff Odds by Record', end: false },
+      { to: '/playoff-odds', label: 'Playoff Odds', end: false },
       { to: '/stats', label: 'All-Time Stats', end: false },
       { to: '/upr-explorer', label: 'UPR Explorer', end: false },
       { to: '/records', label: 'Records', end: false },
