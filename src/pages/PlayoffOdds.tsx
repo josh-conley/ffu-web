@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { PLAYOFF_FIELD } from '@/config'
 import type { SeasonData } from '@/data'
 import { useAllSeasons } from '@/hooks/useLeagueData'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -44,7 +45,6 @@ function Tables({ seasons, view, games }: { seasons: SeasonData[]; view: OddsSea
           year={view.year ?? ''}
           title={`Playoff Odds After ${table.games} Games`}
           meta={metaFor(table.games, view)}
-          copyFilename={`ffu-playoff-odds-${table.games}-games.png`}
         />
       ))}
     </div>
@@ -52,8 +52,8 @@ function Tables({ seasons, view, games }: { seasons: SeasonData[]; view: OddsSea
 }
 
 /**
- * Historical playoff odds by record: of the teams that were 7-3, how many made it. Built for the
- * FFUN, so each table is a capturable block like Around the Union's.
+ * Historical playoff odds by record: of the teams that were 7-3, how many made it. The commissioner
+ * asked for it to write about in the FFUN, so it is a reference table, not a capture block.
  */
 export function PlayoffOdds() {
   const { data: seasons, loading, error } = useAllSeasons()
@@ -67,7 +67,13 @@ export function PlayoffOdds() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold uppercase tracking-tight">Playoff Odds by Record</h1>
+      <div className="space-y-1">
+        <h1 className="text-2xl font-extrabold uppercase tracking-tight">Playoff Odds by Record</h1>
+        <p className="text-sm text-muted">
+          How often teams at each record went on to make the {PLAYOFF_FIELD.teams}-team playoff field. Each
+          season length also gets its own column, with the games those seasons had left at that point.
+        </p>
+      </div>
       <label className="flex items-center gap-2 text-sm font-medium">
         <span className="text-muted">After</span>
         <select className={SELECT} value={String(games)} onChange={(e) => setGames(e.target.value)}>
