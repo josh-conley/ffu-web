@@ -70,10 +70,8 @@ it('switches to odds by UPR range, without win or loss columns', async () => {
   expect(screen.getByRole('button', { name: 'By UPR' })).toHaveAttribute('aria-pressed', 'true')
   expect(headers().slice(0, 2)).toEqual(['UPR', 'Playoff oddsafter game 10'])
   expect(headers().some((h) => /With a/.test(h ?? ''))).toBe(false)
-  const ranges = within(table()).getAllByRole('rowheader').map((h) => h.textContent!)
-  expect(ranges.every((r) => /^\d+–\d+9$/.test(r))).toBe(true)
-  const floors = ranges.map((r) => Number(r.split('–')[0]))
-  expect(floors).toEqual([...floors].sort((a, b) => b - a))
+  const ranges = within(table()).getAllByRole('rowheader').map((h) => h.textContent)
+  expect(ranges).toEqual(['Over 179', '170–179', '160–169', '150–159', '140–149', '130–139', '120–129', '110–119', '100–109', '90–99', 'Under 90'])
   expect(screen.getByText(/Ranges are raw UPR/)).toBeInTheDocument()
 })
 

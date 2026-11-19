@@ -29,7 +29,8 @@ const threeWeeks = [
   game(3, ['c', 110], ['b', 100]),
 ]
 const upr = seasonUpr({ games: threeWeeks })
-const floor = (id: string) => Math.floor(upr.get(id)! / 10) * 10
+// The row a team lands in: its 10-point floor, clamped into the open rows (180+, under 90).
+const floor = (id: string) => Math.min(180, Math.max(80, Math.floor(upr.get(id)! / 10) * 10))
 
 describe('uprOdds', () => {
   it('puts each team in its 10-point range and counts who made the playoff field', () => {
@@ -41,18 +42,31 @@ describe('uprOdds', () => {
     expect(table.rows.reduce((n, r) => n + r.odds.teams, 0)).toBe(4)
   })
 
-  it('runs best first with every range between, gaps included', () => {
+  it('always has 180+, every range down to 90–99, and under 90, best first', () => {
     const s = season('2023', 'sleeper', threeWeeks, [team('a', 1), team('b', 2), team('c', 3), team('d', 4)])
-    const floors = uprOdds([s], 3).rows.map((r) => r.floor)
-    expect(floors[0]).toBe(floor('a'))
-    expect(floors.at(-1)).toBe(floor('d'))
-    expect(floors.every((f, i) => i === 0 || floors[i - 1]! - f === 10)).toBe(true)
+    const rows = uprOdds([s], 3).rows
+    expect(rows.map((r) => r.floor)).toEqual([180, 170, 160, 150, 140, 130, 120, 110, 100, 90, 80])
+    expect(rows[0]!.open).toBe('above')
+    expect(rows.at(-1)!.open).toBe('below')
+    expect(rows.filter((r) => r.open === undefined)).toHaveLength(9)
   })
 
-  it('has no rows before UPR exists, nor for seasons shorter than the game count', () => {
+  it('puts ratings past either end in the open rows', () => {
+    const blowouts = [
+      game(1, ['a', 260], ['b', 40]),
+      game(2, ['a', 260], ['b', 40]),
+      game(3, ['a', 260], ['b', 40]),
+    ]
+    const s = season('2023', 'sleeper', blowouts, [team('a', 1), team('b', 12)])
+    const rows = uprOdds([s], 3).rows
+    expect(rows[0]!.odds).toEqual({ made: 1, teams: 1 })
+    expect(rows.at(-1)!.odds).toEqual({ made: 0, teams: 1 })
+  })
+
+  it('has no rows before UPR exists, and no history from seasons shorter than the game count', () => {
     const s = season('2019', 'espn', threeWeeks, [team('a', 1), team('b', 2), team('c', 3), team('d', 4)])
     expect(uprOdds([s], 2).rows).toEqual([])
-    expect(uprOdds([s], 14).rows).toEqual([])
+    expect(uprOdds([s], 14).rows.every((r) => r.odds.teams === 0)).toBe(true)
   })
 
   it('lists the current season in its ranges, best first, without counting it', () => {

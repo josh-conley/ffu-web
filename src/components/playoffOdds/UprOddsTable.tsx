@@ -1,4 +1,4 @@
-import { UPR_RANGE, type UprOddsTable as Table } from '@/selectors'
+import { UPR_RANGE, type UprOddsTable as Table, type UprRangeRow } from '@/selectors'
 import { OddsHead, OddsWithCount, TeamList } from './OddsCells'
 import { HEAD, ODDS, ROW_HEAD, TEAMS } from './styles'
 
@@ -8,8 +8,12 @@ import { HEAD, ODDS, ROW_HEAD, TEAMS } from './styles'
  * on the score, not just the result, so there is no single "next" range to point at.
  */
 
-/** "150–159": the range's whole-number span (a 159.99 rating is in it). */
-const rangeLabel = (floor: number) => `${floor}–${floor + UPR_RANGE - 1}`
+/** "150–159" (a 159.99 rating is in it), or the open rows at either end: "Over 179", "Under 90". */
+function rangeLabel(row: UprRangeRow): string {
+  if (row.open === 'above') return `Over ${row.floor - 1}`
+  if (row.open === 'below') return `Under ${row.floor + UPR_RANGE}`
+  return `${row.floor}–${row.floor + UPR_RANGE - 1}`
+}
 
 export function UprOddsTable({ table, year }: { table: Table; year: string }) {
   return (
@@ -28,7 +32,7 @@ export function UprOddsTable({ table, year }: { table: Table; year: string }) {
           {table.rows.map((row) => (
             <tr key={row.floor} className="bg-surface">
               <th scope="row" className={ROW_HEAD}>
-                {rangeLabel(row.floor)}
+                {rangeLabel(row)}
               </th>
               <td className={ODDS}>
                 <OddsWithCount cell={row.odds} />
