@@ -10,8 +10,11 @@ import { RecapPanel } from './recap/RecapPanel'
  * ones), then this season's teams at each record.
  */
 
-const CELL = 'border border-border px-2 py-1.5'
-const HEAD = `${CELL} border-text text-center text-xs font-bold`
+const CELL = 'border border-border px-3 py-1.5'
+// No wrapping in the headers or the odds: the team list is the column that soaks up the width, and
+// left to auto layout it squeezes every other column down to one word per line.
+const HEAD = 'border border-text px-3 py-2 whitespace-nowrap text-center text-xs font-bold'
+const ODDS = `${CELL} whitespace-nowrap text-center font-mono tabular-nums`
 
 /** "2021–25", or a single year when the group is one season. */
 const yearSpan = (g: { firstYear: string; lastYear: string }) =>
@@ -46,19 +49,19 @@ function Teams({ teams, year }: { teams: CurrentTeam[]; year: string }) {
 function Row({ row, year, showTeams }: { row: OddsRow; year: string; showTeams: boolean }) {
   return (
     <tr className="bg-surface">
-      <th scope="row" className={`${CELL} text-center font-mono font-bold tabular-nums`}>
+      <th scope="row" className={`${CELL} whitespace-nowrap text-center font-mono font-bold tabular-nums`}>
         {recordLabel(row.record)}
       </th>
-      <td className={`${CELL} text-center font-mono tabular-nums`}>
+      <td className={ODDS}>
         <Odds cell={row.all} />
       </td>
       {row.byGroup.map((cell, i) => (
-        <td key={i} className={`${CELL} text-center font-mono tabular-nums`}>
+        <td key={i} className={ODDS}>
           <Odds cell={cell} />
         </td>
       ))}
       {showTeams && (
-        <td className={`${CELL} text-left`}>
+        <td className={`${CELL} w-full text-left`}>
           <Teams teams={row.current} year={year} />
         </td>
       )}
