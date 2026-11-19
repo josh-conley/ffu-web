@@ -16,6 +16,10 @@ export function formatPoints(n: number): string {
   return POINTS.format(n)
 }
 
+/** A run of seasons, e.g. "2021–25", or a single year when the run is one season. */
+export const yearSpan = (f: { firstYear: string; lastYear: string }): string =>
+  f.firstYear === f.lastYear ? f.firstYear : `${f.firstYear}–${f.lastYear.slice(2)}`
+
 /** A team's record, e.g. "7-6" or "7-6-1" — ties shown only when there are any. */
 export function recordLabel(record: { wins: number; losses: number; ties: number }): string {
   const { wins, losses, ties } = record

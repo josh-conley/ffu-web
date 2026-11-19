@@ -5,18 +5,19 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
-## 2026-11-18 — Playoff odds by record: 13-game seasons pooled AND shown apart
+## 2026-11-18 — Playoff odds by record: current-length seasons by default, 13-game ones opt-in
 
-**Decision.** `/playoff-odds` (asked for by the commissioner for the FFUN) lines seasons up by
-games PLAYED: "7-3" is every team that was 7-3 after 10 games. The pooled "All seasons" column
-counts every finished season; each regular-season length (14 games, 2021 on; 13 games, ESPN
-2018–20) also gets its own column, headed with how many games it had left at that point.
+**Decision (Josh, revised the same day).** `/playoff-odds` (asked for by the commissioner, to
+write about in the FFUN) is one table after N games played: per win-loss record, the share of teams
+that made the playoff field, then the share after a win and after a loss in game N+1 (with the
+move), then this season's teams at that record. The sample is the seasons played at the current
+length (14 games, 2021 on). An "Include 2018–20" toggle pools in the 13-game ESPN seasons, with a
+note that those teams had fewer games left at the same record. Tied records (one tie game in FFU
+history) are a footnote, not rows. Odds from fewer than `SMALL_SAMPLE` (5) teams are greyed.
 
-**Why.** After 10 games a 13-game season had 3 left and a 14-game one 4, so the same record is a
-slightly stronger position in the old era. Lining up by games LEFT instead would compare different
-records (6-3 vs 7-3) and can't share a row. The difference turned out small (7-3: 100% of 13 in the
-ESPN years vs 89% of 28 since), so pooling is the headline and the split is there for anyone who
-wants it. A length drops out once the game count passes it (no 13-game column after 14 games).
+**Why.** The first version showed both eras as side-by-side columns over two tables (this week and
+next); Josh found it cluttered. Lining up by games LEFT instead would compare different records
+(6-3 vs 7-3) and can't share a row, so the older seasons are pooled by games played, opt-in.
 
 "Made the playoffs" is a final placing inside `PLAYOFF_FIELD.teams` (6). It matched the
 championship-bracket teams in all 20 finished league-seasons when checked.
