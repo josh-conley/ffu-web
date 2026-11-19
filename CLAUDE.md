@@ -145,6 +145,11 @@ push after every green change** without being asked. Where it goes depends on wh
      merging, CI must be green and the branch up to date (if `main` moved and conflicts, merge
      `main` in, never rebase or force-push, and let the preview redeploy); then merge with a
      **merge commit** and delete the branch.
+- **On Josh's laptop, he reviews locally first** (since 2026-11-18). A visible change is ready for
+  him on a local dev server the moment it's made: his on `:5173` if it's running (it serves whatever
+  branch is checked out), else start one on `:5199`. Give him the `localhost` link straight away,
+  without waiting on a preview deploy. A big change still goes up as a `preview/` branch + PR, but
+  that's the route to `main` (and how cloud sessions show work), not his first look.
 - **The commissioner's changes always go through a `preview/` branch and PR**, whatever their size.
 - **`auto/requests`** is the Discord bot's rolling branch (served at `preview.ffunion.com`, kept in
   sync with `main` by `sync-requests.yml`). Sessions don't put their own work there.
