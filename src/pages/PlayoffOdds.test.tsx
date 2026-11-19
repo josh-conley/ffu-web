@@ -29,35 +29,36 @@ const renderPage = (entry = '/playoff-odds') =>
 
 const ready = () => waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Playoff Odds by Record'))
 
-it('shows the asked-for game count and the one after it, every record in each', async () => {
-  renderPage('/playoff-odds?games=10')
-  await ready()
-  const [ten, eleven] = screen.getAllByRole('table')
-  expect(screen.getByText('Playoff Odds After 10 Games')).toBeInTheDocument()
-  expect(screen.getByText('Playoff Odds After 11 Games')).toBeInTheDocument()
-  // 10-0 down to 0-10, plus any tied records history has.
-  const records = within(ten!).getAllByRole('rowheader').map((h) => h.textContent)
-  expect(records[0]).toBe('10-0')
-  expect(records.at(-1)).toBe('0-10')
-  expect(within(eleven!).getAllByRole('rowheader')[0]).toHaveTextContent('11-0')
-})
+const table = () => screen.getByRole('table')
+const headers = () => within(table()).getAllByRole('columnheader').map((h) => h.textContent)
 
-it('shows the shorter ESPN-era seasons in their own column, with games left', async () => {
+it('shows one table: every win-loss record, its odds now and after a win or a loss', async () => {
   renderPage('/playoff-odds?games=10')
   await ready()
-  const head = within(screen.getAllByRole('table')[0]!).getAllByRole('columnheader').map((h) => h.textContent)
-  expect(head.slice(0, 2)).toEqual(['Record', 'All seasons2018–25'])
-  expect(head).toContain('2018–2013 games · 3 left')
-  expect(head.some((h) => /14 games · 4 left/.test(h ?? ''))).toBe(true)
-})
-
-it('changes game count from the picker', async () => {
-  renderPage('/playoff-odds?games=10')
-  await ready()
-  await userEvent.selectOptions(screen.getByRole('combobox'), '13')
-  expect(screen.getByText('Playoff Odds After 13 Games')).toBeInTheDocument()
-  // After 14 games no 13-game season is left to compare, and there is no next table.
-  await userEvent.selectOptions(screen.getByRole('combobox'), '14')
   expect(screen.getAllByRole('table')).toHaveLength(1)
-  expect(screen.queryByText(/13 games ·/)).not.toBeInTheDocument()
+  const records = within(table()).getAllByRole('rowheader').map((h) => h.textContent)
+  // 10-0 down to 0-10, and no tied record takes a row.
+  expect(records).toEqual(Array.from({ length: 11 }, (_, i) => `${10 - i}-${i}`))
+  expect(headers().slice(0, 4)).toEqual(['Record', 'Playoff oddsafter game 10', 'With a winafter game 11', 'With a lossafter game 11'])
+})
+
+it('draws on the current-length seasons by default, with a toggle to pool in the shorter ones', async () => {
+  renderPage('/playoff-odds?games=10')
+  await ready()
+  expect(screen.getByText(/From the 2021–25 seasons/)).toBeInTheDocument()
+  expect(screen.queryByText(/13 regular-season games/)).not.toBeInTheDocument()
+  const toggle = screen.getByRole('button', { name: 'Include 2018–20' })
+  expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await userEvent.click(toggle)
+  expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByText(/From the 2018–25 seasons/)).toBeInTheDocument()
+  expect(screen.getByText(/2018–20 seasons had 13 regular-season games, not 14/)).toBeInTheDocument()
+})
+
+it('drops the win and loss columns after the last game', async () => {
+  renderPage('/playoff-odds?games=10')
+  await ready()
+  await userEvent.selectOptions(screen.getByRole('combobox'), '14')
+  expect(headers()).not.toContain('With a winafter game 15')
+  expect(headers()[1]).toBe('Playoff oddsafter game 14')
 })

@@ -1,37 +1,55 @@
 import { nameForYear } from '@/config'
-import type { CurrentTeam, OddsCell, OddsGroup, OddsRow, OddsTable } from '@/selectors'
+import { oddsPct, SMALL_SAMPLE, type CurrentTeam, type OddsCell, type RecordOddsRow, type RecordOddsTable } from '@/selectors'
 import { recordLabel } from './format'
 import { LEAGUE_STYLES } from './leagues'
 
 /**
- * One game count's historical playoff odds by record: the pooled odds,
- * then each season length on its own (so the 13-game ESPN years can be read apart from the 14-game
- * ones), then this season's teams at each record.
+ * Historical playoff odds by record after N games, one row per record: the odds now, where a win
+ * or a loss next week would move them, and this season's teams sitting at that record. Built so a
+ * row answers "what is this week's game worth?" without reading across two tables.
  */
 
 const CELL = 'border border-border px-3 py-1.5'
-// No wrapping in the headers or the odds: the team list is the column that soaks up the width, and
-// left to auto layout it squeezes every other column down to one word per line.
+// No wrapping in the headers or the odds: the team list is the column that soaks up the width.
 const HEAD = 'border border-border px-3 py-2 whitespace-nowrap text-center text-xs font-bold'
 const ODDS = `${CELL} whitespace-nowrap text-center font-mono tabular-nums`
 
-/** "2021–25", or a single year when the group is one season. */
-const yearSpan = (g: { firstYear: string; lastYear: string }) =>
-  g.firstYear === g.lastYear ? g.firstYear : `${g.firstYear}–${g.lastYear.slice(2)}`
+const isSmall = (cell: OddsCell) => cell.teams > 0 && cell.teams < SMALL_SAMPLE
+const pctLabel = (pct: number) => `${Math.round(pct)}%`
 
-function Odds({ cell }: { cell: OddsCell }) {
-  if (cell.teams === 0) return <span className="text-muted">—</span>
+/** The odds now, with the count behind them. */
+function NowOdds({ cell }: { cell: OddsCell }) {
+  const pct = oddsPct(cell)
+  if (pct === undefined) return <span className="text-muted">—</span>
   return (
-    <>
-      <span className="font-bold">{Math.round((100 * cell.made) / cell.teams)}%</span>{' '}
+    <span className={isSmall(cell) ? 'text-muted' : undefined}>
+      <span className="font-bold">{pctLabel(pct)}</span>{' '}
       <span className="text-xs text-muted">
         {cell.made}/{cell.teams}
       </span>
-    </>
+    </span>
   )
 }
 
-function Teams({ teams, year }: { teams: CurrentTeam[]; year: string }) {
+/** The odds after next week's result, and how far that moves them from now. */
+function NextOdds({ cell, from, record }: { cell: OddsCell; from: OddsCell; record: string }) {
+  const pct = oddsPct(cell)
+  if (pct === undefined) return <span className="text-muted">—</span>
+  const base = oddsPct(from)
+  const move = base === undefined ? undefined : Math.round(pct) - Math.round(base)
+  return (
+    <span className={isSmall(cell) ? 'text-muted' : undefined} title={`${cell.made} of ${cell.teams} teams at ${record} made it`}>
+      <span className="font-bold">{pctLabel(pct)}</span>
+      {move !== undefined && move !== 0 && (
+        <span className={`ml-1.5 text-xs ${isSmall(cell) ? '' : move > 0 ? 'text-positive' : 'text-negative'}`}>
+          {move > 0 ? `+${move}` : `−${-move}`}
+        </span>
+      )}
+    </span>
+  )
+}
+
+export function TeamList({ teams, year }: { teams: CurrentTeam[]; year: string }) {
   return (
     <ul className="flex flex-wrap gap-x-3 gap-y-0.5">
       {teams.map((t) => (
@@ -45,82 +63,66 @@ function Teams({ teams, year }: { teams: CurrentTeam[]; year: string }) {
   )
 }
 
-function Row({ row, year, showTeams }: { row: OddsRow; year: string; showTeams: boolean }) {
+function Row({ row, year, showTeams }: { row: RecordOddsRow; year: string; showTeams: boolean }) {
+  const { wins, losses } = row.record
   return (
     <tr className="bg-surface">
       <th scope="row" className={`${CELL} whitespace-nowrap text-center font-mono font-bold tabular-nums`}>
         {recordLabel(row.record)}
       </th>
       <td className={ODDS}>
-        <Odds cell={row.all} />
+        <NowOdds cell={row.now} />
       </td>
-      {row.byGroup.map((cell, i) => (
-        <td key={i} className={ODDS}>
-          <Odds cell={cell} />
+      {row.afterWin !== undefined && (
+        <td className={ODDS}>
+          <NextOdds cell={row.afterWin} from={row.now} record={`${wins + 1}-${losses}`} />
         </td>
-      ))}
+      )}
+      {row.afterLoss !== undefined && (
+        <td className={ODDS}>
+          <NextOdds cell={row.afterLoss} from={row.now} record={`${wins}-${losses + 1}`} />
+        </td>
+      )}
       {showTeams && (
         <td className={`${CELL} w-full text-left`}>
-          <Teams teams={row.current} year={year} />
+          <TeamList teams={row.current} year={year} />
         </td>
       )}
     </tr>
   )
 }
 
-function GroupHead({ group, games }: { group: OddsGroup; games: number }) {
-  const left = group.seasonLength - games
+function Head({ label, sub }: { label: string; sub: string }) {
   return (
     <th scope="col" className={HEAD}>
-      {yearSpan(group)}
-      <span className="block font-normal opacity-80">
-        {group.seasonLength} games · {left === 0 ? 'final' : `${left} left`}
-      </span>
+      {label}
+      <span className="block font-normal opacity-80">{sub}</span>
     </th>
   )
 }
 
-export function PlayoffOddsTable({
-  table,
-  year,
-  title,
-  meta,
-}: {
-  table: OddsTable
-  /** The current season, whose team names the last column shows. */
-  year: string
-  title: string
-  meta?: string
-}) {
-  const span = table.groups.length > 0 ? yearSpan({ firstYear: table.groups.at(-1)!.firstYear, lastYear: table.groups[0]!.lastYear }) : ''
+export function PlayoffOddsTable({ table, year }: { table: RecordOddsTable; year: string }) {
+  const next = table.rows[0]?.afterWin !== undefined
   return (
-    <section className="space-y-2">
-      <div className="flex flex-wrap items-baseline gap-x-3">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-text">{title}</h2>
-        {meta !== undefined && <span className="text-xs text-muted">{meta}</span>}
-      </div>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full border-collapse text-sm">
-          <thead className="bg-accent text-accent-fg">
-            <tr>
-              <th scope="col" className={HEAD}>Record</th>
-              <th scope="col" className={HEAD}>
-                All seasons
-                <span className="block font-normal opacity-80">{span}</span>
-              </th>
-              {table.groups.map((g) => (
-                <GroupHead key={g.seasonLength} group={g} games={table.games} />
-              ))}
-              {table.currentPlayed && <th scope="col" className={HEAD}>{year} teams</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {table.rows.map((row) => (
-              <Row key={recordLabel(row.record)} row={row} year={year} showTeams={table.currentPlayed} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <div className="overflow-x-auto border border-border">
+      <table className="w-full border-collapse text-sm">
+        <thead className="bg-accent text-accent-fg">
+          <tr>
+            <th scope="col" className={HEAD}>
+              Record
+            </th>
+            <Head label="Playoff odds" sub={`after game ${table.games}`} />
+            {next && <Head label="With a win" sub={`after game ${table.games + 1}`} />}
+            {next && <Head label="With a loss" sub={`after game ${table.games + 1}`} />}
+            {table.currentPlayed && <Head label={`${year} teams`} sub={`after game ${table.games}`} />}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row) => (
+            <Row key={recordLabel(row.record)} row={row} year={year} showTeams={table.currentPlayed} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
