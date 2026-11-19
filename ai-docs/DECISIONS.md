@@ -5,6 +5,22 @@ re-litigated. Newest first. Keep each entry to what was decided, why, and what i
 
 ---
 
+## 2026-11-18 — Playoff odds by record: 13-game seasons pooled AND shown apart
+
+**Decision.** `/playoff-odds` (asked for by the commissioner for the FFUN) lines seasons up by
+games PLAYED: "7-3" is every team that was 7-3 after 10 games. The pooled "All seasons" column
+counts every finished season; each regular-season length (14 games, 2021 on; 13 games, ESPN
+2018–20) also gets its own column, headed with how many games it had left at that point.
+
+**Why.** After 10 games a 13-game season had 3 left and a 14-game one 4, so the same record is a
+slightly stronger position in the old era. Lining up by games LEFT instead would compare different
+records (6-3 vs 7-3) and can't share a row. The difference turned out small (7-3: 100% of 13 in the
+ESPN years vs 89% of 28 since), so pooling is the headline and the split is there for anyone who
+wants it. A length drops out once the game count passes it (no 13-game column after 14 games).
+
+"Made the playoffs" is a final placing inside `PLAYOFF_FIELD.teams` (6). It matched the
+championship-bracket teams in all 20 finished league-seasons when checked.
+
 ## 2026-11-16 — Playoff seeding: division winners first, head to head, then points for
 
 **Decision (Josh).** Seeding, as `selectors/playoffSeeding.ts` derives it (Playoff Machine):
