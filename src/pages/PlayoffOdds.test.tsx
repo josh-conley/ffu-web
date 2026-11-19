@@ -27,7 +27,7 @@ const renderPage = (entry = '/playoff-odds') =>
     </MemoryRouter>,
   )
 
-const ready = () => waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Playoff Odds by Record'))
+const ready = () => waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Playoff Odds'))
 
 const table = () => screen.getByRole('table')
 const headers = () => within(table()).getAllByRole('columnheader').map((h) => h.textContent)
@@ -61,4 +61,26 @@ it('drops the win and loss columns after the last game', async () => {
   await userEvent.selectOptions(screen.getByRole('combobox'), '14')
   expect(headers()).not.toContain('With a winafter game 15')
   expect(headers()[1]).toBe('Playoff oddsafter game 14')
+})
+
+it('switches to odds by UPR range, without win or loss columns', async () => {
+  renderPage('/playoff-odds?games=10')
+  await ready()
+  await userEvent.click(screen.getByRole('button', { name: 'By UPR' }))
+  expect(screen.getByRole('button', { name: 'By UPR' })).toHaveAttribute('aria-pressed', 'true')
+  expect(headers().slice(0, 2)).toEqual(['UPR', 'Playoff oddsafter game 10'])
+  expect(headers().some((h) => /With a/.test(h ?? ''))).toBe(false)
+  const ranges = within(table()).getAllByRole('rowheader').map((h) => h.textContent!)
+  expect(ranges.every((r) => /^\d+–\d+9$/.test(r))).toBe(true)
+  const floors = ranges.map((r) => Number(r.split('–')[0]))
+  expect(floors).toEqual([...floors].sort((a, b) => b - a))
+  expect(screen.getByText(/Ranges are raw UPR/)).toBeInTheDocument()
+})
+
+it('starts the UPR game picker where UPR starts', async () => {
+  renderPage('/playoff-odds?by=upr&games=1')
+  await ready()
+  const options = within(screen.getByRole('combobox')).getAllByRole('option')
+  expect(options[0]).toHaveTextContent(/^3 games/)
+  expect(screen.getByRole('combobox')).not.toHaveValue('1')
 })

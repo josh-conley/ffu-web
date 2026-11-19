@@ -1,6 +1,6 @@
 import type { Era, Tier } from '@/config/types'
 import type { Game, SeasonData, SeasonTeam } from '@/data'
-import { isFinishedSeason, longestSeason, oddsFormats, oddsPct, oddsSample, oddsSeasonView, recordOdds } from './playoffOdds'
+import { isFinishedSeason, isSmallSample, longestSeason, oddsFormats, oddsPct, oddsSample, oddsSeasonView, recordOdds } from './playoffOdds'
 
 const game = (week: number, winner: string, loser: string, tie = false): Game => ({
   week,
@@ -110,6 +110,9 @@ describe('helpers', () => {
     expect(oddsPct({ made: 3, teams: 4 })).toBe(75)
     expect(oddsPct({ made: 0, teams: 0 })).toBeUndefined()
     expect(oddsPct(undefined)).toBeUndefined()
+    expect(isSmallSample({ made: 1, teams: 4 })).toBe(true)
+    expect(isSmallSample({ made: 1, teams: 5 })).toBe(false)
+    expect(isSmallSample({ made: 0, teams: 0 })).toBe(false)
   })
 })
 

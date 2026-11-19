@@ -101,9 +101,10 @@ against history), **Builds**
 (`/builds`, roster-construction stats by draft), **Milestone Watch** (`/milestones`), **ADP
 Comparison** (`/adp-comparison`, the live season's picks vs the other leagues and Sleeper ADP),
 **Playoff Machine** (`/playoff-machine`: pick the live season's remaining games, see the seeds;
-the league's seeding rules live in `selectors/playoffSeeding.ts`, see DECISIONS 2026-11-16), and **Playoff Odds by
-Record** (`/playoff-odds`: how often teams at each record after N games made the playoffs, and after
-a win or a loss next week, with the live season's teams listed; see DECISIONS 2026-11-18).
+the league's seeding rules live in `selectors/playoffSeeding.ts`, see DECISIONS 2026-11-16), and **Playoff
+Odds** (`/playoff-odds`: how often teams at each record after N games made the playoffs, and after
+a win or a loss next week, or by 10-point UPR range, with the live season's teams listed; see
+DECISIONS 2026-11-18).
 The Cup has an unlisted operator view, `/cup/draw`, for running the draw live on stream.
 
 **Themes:** the header's palette button picks Light, Dark or a novelty **skin** (Windows XP,

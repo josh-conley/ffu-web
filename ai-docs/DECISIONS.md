@@ -22,6 +22,15 @@ next); Josh found it cluttered. Lining up by games LEFT instead would compare di
 "Made the playoffs" is a final placing inside `PLAYOFF_FIELD.teams` (6). It matched the
 championship-bracket teams in all 20 finished league-seasons when checked.
 
+**By UPR (added 2026-11-18, Josh).** A "By UPR" switch shows the same odds per raw-UPR range,
+10 points wide, with no win/loss columns (a UPR's next value depends on the score, not just the
+result). Ranges, not each league's UPR rank, by Josh's choice: rank would cancel out scoring that
+varies season to season (league average after week 10: 130 in 2023, 143 in 2025), which ranges mix
+together, and the page notes that. Worth knowing when writing about it: playoff spots go by
+record, so UPR is the weaker predictor (after week 10, 2021–25, the top 6 by record held 69 of 84
+eventual playoff teams, the top 6 by UPR 66). Its value is spotting teams better or worse than
+their record. UPR mode starts at `UPR_MIN_WEEKS` (3). The page is now just "Playoff Odds".
+
 ## 2026-11-16 — Playoff seeding: division winners first, head to head, then points for
 
 **Decision (Josh).** Seeding, as `selectors/playoffSeeding.ts` derives it (Playoff Machine):
