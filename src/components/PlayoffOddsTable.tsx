@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { nameForYear } from '@/config'
 import { oddsPct, SMALL_SAMPLE, type CurrentTeam, type OddsCell, type RecordOddsRow, type RecordOddsTable } from '@/selectors'
 import { recordLabel } from './format'
@@ -17,34 +18,50 @@ const ODDS = `${CELL} whitespace-nowrap text-center font-mono tabular-nums`
 const isSmall = (cell: OddsCell) => cell.teams > 0 && cell.teams < SMALL_SAMPLE
 const pctLabel = (pct: number) => `${Math.round(pct)}%`
 
-/** The odds now, with the count behind them. */
-function NowOdds({ cell }: { cell: OddsCell }) {
-  const pct = oddsPct(cell)
-  if (pct === undefined) return <span className="text-muted">—</span>
+/**
+ * Every odds cell is the same two lines with fixed slots, so the percentages line up across a row
+ * and down a column: a small caption line on top (the record a win or loss leads to, blank for the
+ * odds now), then the percentage right-aligned in a "100%"-wide slot with its aside (count or move)
+ * in a fixed slot after it. Without the slots a 3-digit aside or a missing move nudges the centred
+ * percentage sideways.
+ */
+function OddsSlots({ caption, pct, aside, muted }: { caption?: string; pct: ReactNode; aside?: ReactNode; muted: boolean }) {
   return (
-    <span className={isSmall(cell) ? 'text-muted' : undefined}>
-      <span className="font-bold">{pctLabel(pct)}</span>{' '}
-      <span className="text-xs text-muted">
-        {cell.made}/{cell.teams}
+    <span className={`inline-flex flex-col items-center ${muted ? 'text-muted' : ''}`}>
+      <span className="text-[11px] leading-tight text-muted" aria-hidden={caption === undefined}>
+        {caption ?? ' '}
+      </span>
+      <span className="inline-flex items-baseline">
+        <span className="w-[4ch] text-right font-bold">{pct}</span>
+        <span className="ml-1.5 w-[5ch] text-left text-xs">{aside}</span>
       </span>
     </span>
   )
 }
 
-/** The odds after next week's result, and how far that moves them from now. */
+/** The odds now, with the count behind them. */
+function NowOdds({ cell }: { cell: OddsCell }) {
+  const pct = oddsPct(cell)
+  if (pct === undefined) return <OddsSlots pct={<span className="font-normal text-muted">—</span>} muted={false} />
+  const count = (
+    <span className="text-muted">
+      {cell.made}/{cell.teams}
+    </span>
+  )
+  return <OddsSlots pct={pctLabel(pct)} aside={count} muted={isSmall(cell)} />
+}
+
+/** The odds after next week's result, the record it leads to, and how far it moves them from now. */
 function NextOdds({ cell, from, record }: { cell: OddsCell; from: OddsCell; record: string }) {
   const pct = oddsPct(cell)
-  if (pct === undefined) return <span className="text-muted">—</span>
+  if (pct === undefined) return <OddsSlots caption={record} pct={<span className="font-normal text-muted">—</span>} muted={false} />
   const base = oddsPct(from)
-  const move = base === undefined ? undefined : Math.round(pct) - Math.round(base)
+  const move = base === undefined ? 0 : Math.round(pct) - Math.round(base)
+  const tone = isSmall(cell) ? '' : move > 0 ? 'text-positive' : 'text-negative'
+  const aside = move === 0 ? undefined : <span className={tone}>{move > 0 ? `+${move}` : `−${-move}`}</span>
   return (
-    <span className={isSmall(cell) ? 'text-muted' : undefined} title={`${cell.made} of ${cell.teams} teams at ${record} made it`}>
-      <span className="font-bold">{pctLabel(pct)}</span>
-      {move !== undefined && move !== 0 && (
-        <span className={`ml-1.5 text-xs ${isSmall(cell) ? '' : move > 0 ? 'text-positive' : 'text-negative'}`}>
-          {move > 0 ? `+${move}` : `−${-move}`}
-        </span>
-      )}
+    <span title={`${cell.made} of ${cell.teams} teams at ${record} made it`}>
+      <OddsSlots caption={record} pct={pctLabel(pct)} aside={aside} muted={isSmall(cell)} />
     </span>
   )
 }
